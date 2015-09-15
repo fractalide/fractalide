@@ -218,9 +218,9 @@ impl Component {
                         CompMsg::Stop => { state.stop(); },
                         CompMsg::Halt => { break; },
                         CompMsg::RunEnd(closure, inputs, outputs)  => { state.run_end(closure, inputs, outputs); },
-                        CompMsg::AddInputPort(name, rec) => { state.add_input_port(name, rec); },
-                        CompMsg::AddOutputPort(name) => { state.add_output_port(name); },
-                        CompMsg::ConnectOutputPort(port, send) => { state.connect_output_port(port, send); },
+                        CompMsg::AddInputPort(name, rec) => { state.receive_edit_msg(CompMsg::AddInputPort(name, rec)); },
+                        CompMsg::AddOutputPort(name) => { state.receive_edit_msg(CompMsg::AddOutputPort(name)); },
+                        CompMsg::ConnectOutputPort(port, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port, send)); },
                     }
                 }
             });
@@ -267,6 +267,8 @@ struct State {
     closure: Option<BoxedClosure>,
     in_receivers: Option<InputPorts>,
     out_senders: Option<OutputPorts>,
+    can_run: bool,
+    edit_msgs: Vec<CompMsg>,
 }
 
 impl State {
@@ -276,36 +278,57 @@ impl State {
             closure: Some(c),
             in_receivers: Some(InputPorts::new()),
             out_senders: Some(OutputPorts::new()),
+            can_run: false,
+            edit_msgs: vec![],
         }
     }
 
-    fn add_input_port(&mut self, name: &'static str, rec: Receiver<i32>) {
-        if let Some(ref mut inputs) = self.in_receivers {
-            inputs.add(name, rec);
+    fn edit_component(&mut self, msg: CompMsg){
+        match msg {
+            CompMsg::AddInputPort(name, rec) => {
+                self.in_receivers.as_mut().unwrap().add(name, rec);
+            },
+            CompMsg::AddOutputPort(name) => {
+                self.out_senders.as_mut().unwrap().add(name);
+            },
+            CompMsg::ConnectOutputPort(name, send) => {
+                self.out_senders.as_mut().unwrap().connect(name, send);
+            },
+            _ => { },
+        }
+
+    }
+
+    fn receive_edit_msg(&mut self, msg: CompMsg){
+        if self.can_run {
+            self.edit_msgs.push(msg);
+        } else {
+            self.edit_component(msg);
         }
     }
 
-    fn add_output_port(&mut self, name: &'static str) {
-        if let Some(ref mut outputs) = self.out_senders {
-            outputs.add(name);
+    fn start(&mut self) { 
+        if !self.can_run {
+            self.can_run = true;
+            self.run(); 
         }
     }
 
-    fn connect_output_port(&mut self, port: &'static str, send: SyncSender<i32>) {
-        if let Some(ref mut out_s) = self.out_senders {
-            out_s.connect(port, send);
-        }
+    fn stop(&mut self) { 
+        self.can_run = false;
     }
-
-    fn start(&mut self) { self.run(); }
-
-    fn stop(&mut self) { }
 
     fn run_end(&mut self, c: BoxedClosure, i: InputPorts, o: OutputPorts) {
         self.closure = Some(c);
         self.in_receivers = Some(i);
         self.out_senders = Some(o);
-        self.run();
+        let msgs = mem::replace(&mut self.edit_msgs, vec![]);
+        for msg in msgs {
+            self.edit_component(msg);
+        }
+        if self.can_run {
+            self.run();
+        }
     }
 
     fn run(&mut self) {
@@ -319,4 +342,45 @@ impl State {
             control_sender.send(CompMsg::RunEnd(c, inputs, outputs)).unwrap();
         });
     }
+}
+
+#[test]
+fn edit_state_tests() {
+    struct Test; 
+    impl Closure for Test {
+        fn run(&mut self, input: &InputPorts, output: &OutputPorts){
+        }
+    }
+    let (tx, rx) = channel();
+    let mut state = State::new(Box::new(Test), tx);
+
+    // Add while not running
+    assert!(state.edit_msgs.len() == 0);
+    state.receive_edit_msg(CompMsg::AddOutputPort("input"));
+    assert!(state.edit_msgs.len() == 0);
+    assert!(state.out_senders.as_mut().unwrap().output.len() == 1);
+
+    // Add while running
+    state.start();
+    state.receive_edit_msg(CompMsg::AddOutputPort("input2"));
+    // Must save the msg
+    assert!(state.edit_msgs.len() == 1);
+    assert!(state.out_senders.is_none());
+    // At the end, the msg must read. As the closure run again, we have
+    // no access to the out_senders
+    state.run_end(Box::new(Test), InputPorts::new(), OutputPorts::new());
+    assert!(state.edit_msgs.len() == 0);
+    assert!(state.out_senders.is_none());
+
+    // Add after stop
+    state.receive_edit_msg(CompMsg::AddOutputPort("input3"));
+    state.stop();
+    state.run_end(Box::new(Test), InputPorts::new(), OutputPorts::new());
+    assert!(state.edit_msgs.len() == 0);
+    assert!(state.out_senders.as_mut().unwrap().output.len() == 1);
+
+    // receive useless msgs
+    rx.recv();
+    rx.recv();
+
 }
