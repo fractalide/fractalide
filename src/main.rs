@@ -7,13 +7,15 @@ use component::*;
 struct Display {
     pre: String,
 }
-
 impl Display {
-    fn new(pre: &'static str) -> Self {
-        Display { pre: pre.to_string(), }
+    fn new_component(pre: &'static str) -> ComponentCreator {
+        ComponentCreator {
+            closure: Box::new(Display { pre: pre.to_string(), }), 
+            input_ports: vec!["input"],
+            output_ports: vec!["output"],
+        }
     }
 }
-
 impl Closure for Display {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
         let msg = inputs.recv("input").ok().expect("a message");
@@ -24,6 +26,15 @@ impl Closure for Display {
 
 // The Adder Component
 struct Adder;
+impl Adder {
+    fn new_component() -> ComponentCreator {
+        ComponentCreator {
+            closure: Box::new(Adder),
+            input_ports: vec!["x", "y"],
+            output_ports: vec!["result"],
+        }
+    }
+}
 impl Closure for Adder {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
         let x = inputs.recv("x").ok().expect("must be a x");
@@ -34,22 +45,10 @@ impl Closure for Adder {
 
 fn main() {
     // Create 4 components : 3 display, 1 adder 
-    let mut dx = Component::new(Box::new(Display::new("x : ")));
-    dx.add_input_port("input");
-    dx.add_output_port("output");
-
-    let mut dy = Component::new(Box::new(Display::new("y : ")));
-    dy.add_input_port("input");
-    dy.add_output_port("output");
-
-    let mut dr = Component::new(Box::new(Display::new("result : ")));
-    dr.add_input_port("input");
-    dy.add_output_port("output");
-
-    let mut a1 = Component::new(Box::new(Adder));
-    a1.add_input_port("x");
-    a1.add_input_port("y");
-    a1.add_output_port("result");
+    let mut dx = Component::new(Display::new_component("x : "));
+    let mut dy = Component::new(Display::new_component("y : "));
+    let mut dr = Component::new(Display::new_component("result : "));
+    let mut a1 = Component::new(Adder::new_component());
 
     /*
      * Graph like 

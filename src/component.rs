@@ -181,6 +181,12 @@ fn input_output_ports_tests() {
  * The two use a channel to interact.
  */
 
+pub struct ComponentCreator {
+    pub closure: Box<Closure + Send + 'static>,
+    pub input_ports: Vec<&'static str>,
+    pub output_ports: Vec<&'static str>,
+}
+
 pub trait Closure {
     fn run(&mut self, input_ports: &InputPorts, output_ports: &OutputPorts);
 }
@@ -205,11 +211,11 @@ pub struct Component {
 }
 
 impl Component {
-    pub fn new<T: Closure + Send + 'static>(c: Box<T>) -> Self {
+    pub fn new(c: ComponentCreator) -> Self {
         let (control_s, control_r) = channel();
         {
             let control_sender = control_s.clone();
-            let mut state = State::new(c, control_sender);
+            let mut state = State::new(c.closure, control_sender);
             thread::spawn(move || {
                 loop {
                     let msg = control_r.recv().unwrap();
@@ -225,10 +231,17 @@ impl Component {
                 }
             });
         }
-        Component {
+        let mut comp = Component {
             sender: control_s,
             input_senders: HashMap::new(),
+        };
+        for input in c.input_ports {
+            comp.add_input_port(input);
         }
+        for output in c.output_ports {
+            comp.add_output_port(output);
+        }
+        comp
     }
 
     pub fn add_input_port(&mut self, name: &'static str) {
