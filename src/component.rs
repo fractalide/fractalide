@@ -16,6 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
+#![feature(core)]
+#![feature(alloc)]
+use std::marker::Reflect;
+use std::raw::TraitObject;
+use std::boxed;
 
 use std::collections::HashMap;
 
@@ -25,6 +30,7 @@ use std::sync::mpsc::channel;
 
 use std::thread;
 use std::mem;
+use std::any::Any;
 
 /*
  * Input Ports for the state, only the receivers
@@ -35,8 +41,10 @@ pub enum InputPortError {
     CannotRecv(RecvError),
 }
 
+type IP = Box<Any + Send>;
+
 pub struct InputPorts {
-    input: HashMap<&'static str, Receiver<i32>>,
+    input: HashMap<&'static str, Receiver<IP>>,
 }
 
 impl InputPorts {
@@ -45,22 +53,26 @@ impl InputPorts {
         InputPorts { input: HashMap::new(), }
     }
 
-    fn add(&mut self, name: &'static str, rec: Receiver<i32>) -> Option<Receiver<i32>> {
+    fn add(&mut self, name: &'static str, rec: Receiver<IP>) -> Option<Receiver<IP>> {
         self.input.insert(name, rec) 
     }
 
-    fn remove(&mut self, name: &'static str) -> Option<Receiver<i32>> {
+    fn remove(&mut self, name: &'static str) -> Option<Receiver<IP>> {
         self.input.remove(&name)
     }
 
-    pub fn recv(&self, name: &'static str) -> Result<i32, InputPortError> {
+    pub fn recv<T: Reflect + 'static>(&self, name: &'static str) -> Result<T, InputPortError> {
         let port = self.input.get(name);
         match port {
             None => { Err(InputPortError::InputPortNotFind(name)) }
             Some(port) => {
-                match port.recv() {
-                    Ok(msg) => { Ok(msg) },
-                    Err(err) => { Err(InputPortError::CannotRecv(err)) },
+                unsafe {
+                    let obj: Box<Any> = port.recv().unwrap();
+                    if !(*obj).is::<T>(){
+                        panic!("Type mismatch");
+                    }
+                    let raw: TraitObject = mem::transmute(boxed::into_raw(obj));
+                    Ok(*Box::from_raw(raw.data as *mut T))
                 }
             }
         }
@@ -90,11 +102,11 @@ fn input_ports_tests() {
 
 pub enum OutputPortError {
     OutputPortNotFind(&'static str),
-    CannotSend(SendError<i32>),
+    CannotSend(SendError<IP>),
 }
 
 pub struct OutputPorts {
-    output: HashMap<&'static str, Option<SyncSender<i32>>>,
+    output: HashMap<&'static str, Option<SyncSender<IP>>>,
 }
 
 impl OutputPorts {
@@ -102,15 +114,15 @@ impl OutputPorts {
         OutputPorts { output: HashMap::new(), }
     }
 
-    fn add(&mut self, name: &'static str) -> Option<Option<SyncSender<i32>>>{
+    fn add(&mut self, name: &'static str) -> Option<Option<SyncSender<IP>>>{
         self.output.insert(name, None)
     }
 
-    fn remove(&mut self, name: &'static str) -> Option<Option<SyncSender<i32>>> {
+    fn remove(&mut self, name: &'static str) -> Option<Option<SyncSender<IP>>> {
         self.output.remove(name)
     }
 
-    fn connect(&mut self, name: &'static str, send: SyncSender<i32>) -> Result<(), OutputPortError> {
+    fn connect(&mut self, name: &'static str, send: SyncSender<IP>) -> Result<(), OutputPortError> {
         if !self.output.contains_key(name) {
             Err(OutputPortError::OutputPortNotFind(name))
         } else {
@@ -119,7 +131,7 @@ impl OutputPorts {
         }
     }
 
-    pub fn send(&self, name: &'static str, msg: i32) -> Result<(), OutputPortError> {
+    pub fn send<T: Any + Send>(&self, name: &'static str, msg: T) -> Result<(), OutputPortError> {
         let sender = self.output.get(name);
         match sender {
             None => { Err(OutputPortError::OutputPortNotFind(name)) },
@@ -127,7 +139,7 @@ impl OutputPorts {
                 match *port {
                     None => { Ok(()) },
                     Some(ref send) => {
-                        let res = send.send(msg);
+                        let res = send.send(Box::new(msg));
                         if res.is_ok() { Ok(()) }
                         else { Err(OutputPortError::CannotSend(res.unwrap_err())) }
                     }
@@ -196,8 +208,8 @@ pub type BoxedClosure = Box<Closure + Send>;
 enum CompMsg {
     Start, Stop, Halt,
     RunEnd(BoxedClosure, InputPorts, OutputPorts),
-    ConnectOutputPort(&'static str, SyncSender<i32>),
-    AddInputPort(&'static str, Receiver<i32>),
+    ConnectOutputPort(&'static str, SyncSender<IP>),
+    AddInputPort(&'static str, Receiver<IP>),
     AddOutputPort(&'static str),
 }
 
@@ -207,7 +219,7 @@ enum CompError {
 
 pub struct Component {
     sender: Sender<CompMsg>,
-    input_senders: HashMap<&'static str, SyncSender<i32>>,
+    input_senders: HashMap<&'static str, SyncSender<IP>>,
 }
 
 impl Component {
@@ -265,7 +277,7 @@ impl Component {
         self.sender.send(CompMsg::Start).unwrap();
     }
 
-    pub fn get_sender(&self, name: &'static str) -> Option<SyncSender<i32>> {
+    pub fn get_sender(&self, name: &'static str) -> Option<SyncSender<IP>> {
         match self.input_senders.get(name) {
             None => { None },
             Some(s) => {

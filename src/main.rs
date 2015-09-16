@@ -1,24 +1,26 @@
+#![feature(core)]
+#![feature(alloc)]
 use std::thread;
 
 mod component;
 use component::*;
 
 // The Display Component
-struct Display {
+struct DisplayInt {
     pre: String,
 }
-impl Display {
+impl DisplayInt {
     fn new_component(pre: &'static str) -> ComponentCreator {
         ComponentCreator {
-            closure: Box::new(Display { pre: pre.to_string(), }), 
+            closure: Box::new(DisplayInt { pre: pre.to_string(), }), 
             input_ports: vec!["input"],
             output_ports: vec!["output"],
         }
     }
 }
-impl Closure for Display {
+impl Closure for DisplayInt {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
-        let msg = inputs.recv("input").ok().expect("a message");
+        let msg: i32 = inputs.recv("input").ok().expect("a message");
         println!("{}{}", self.pre, msg);
         outputs.send("output", msg);
     }
@@ -37,17 +39,35 @@ impl Adder {
 }
 impl Closure for Adder {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
-        let x = inputs.recv("x").ok().expect("must be a x");
-        let y = inputs.recv("y").ok().expect("must be a y");
+        let x: i32 = inputs.recv("x").ok().expect("must be a x");
+        let y: i32 = inputs.recv("y").ok().expect("must be a y");
         outputs.send("result", x+y);
+    }
+}
+
+struct VecLen;
+impl VecLen {
+    fn new_component() -> ComponentCreator {
+        ComponentCreator {
+            closure: Box::new(VecLen),
+            input_ports: vec!["input"],
+            output_ports: vec!["output"],
+        }
+    }
+}
+impl Closure for VecLen {
+    fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
+        let v: Vec<i32> = inputs.recv("input").ok().expect("must be an input");
+        println!("len : {}", v.len());
+        outputs.send("output", v);
     }
 }
 
 fn main() {
     // Create 4 components : 3 display, 1 adder 
-    let mut dx = Component::new(Display::new_component("x : "));
-    let mut dy = Component::new(Display::new_component("y : "));
-    let mut dr = Component::new(Display::new_component("result : "));
+    let mut dx = Component::new(DisplayInt::new_component("x : "));
+    let mut dy = Component::new(DisplayInt::new_component("y : "));
+    let dr = Component::new(DisplayInt::new_component("result : "));
     let mut a1 = Component::new(Adder::new_component());
 
     /*
@@ -66,15 +86,22 @@ fn main() {
     dr.start();
     a1.start();
 
+    // Vec test
+    let v = Component::new(VecLen::new_component());
+    let input = v.get_sender("input").unwrap();
+    v.start();
+
 
     // Get the input ports and send numbers
     let x = dx.get_sender("input").unwrap();
     let y = dy.get_sender("input").unwrap();
-    x.send(11).unwrap();
-    y.send(111).unwrap();
-    x.send(111).unwrap();
-    y.send(1111).unwrap();
+    x.send(Box::new(11)).unwrap();
+    y.send(Box::new(111)).unwrap();
+    x.send(Box::new(111)).unwrap();
+    y.send(Box::new(1111)).unwrap();
 
-    println!("Hello, world!");
+    thread::sleep_ms(2000);
+    input.send(Box::new(vec![1, 2, 3])).unwrap();
+
     thread::sleep_ms(2000);
 }
