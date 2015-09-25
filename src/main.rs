@@ -20,10 +20,10 @@ impl DisplayInt {
 }
 impl Closure for DisplayInt {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
-        let port = inputs.get_simple("input").unwrap();
+        let port = inputs.simple.get("input").unwrap();
         let msg: i32 = port.recv_ip().unwrap();
         println!("{}{}", self.pre, msg);
-        let out = outputs.get_simple("output").unwrap();
+        let out = outputs.simple.get("output").unwrap();
         out.send(msg);
     }
 }
@@ -41,11 +41,11 @@ impl Adder {
 }
 impl Closure for Adder {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
-        let port_x = inputs.get_simple("x").unwrap();
-        let port_y = inputs.get_simple("y").unwrap();
+        let port_x = inputs.simple.get("x").unwrap();
+        let port_y = inputs.simple.get("y").unwrap();
         let x: i32 = port_x.recv_ip().unwrap();
         let y: i32 = port_y.recv_ip().unwrap();
-        let out = outputs.get_simple("result").unwrap();
+        let out = outputs.simple.get("result").unwrap();
         out.send(x+y);
     }
 }
@@ -62,10 +62,10 @@ impl VecLen {
 }
 impl Closure for VecLen {
     fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
-        let port = inputs.get_simple("input").unwrap();
+        let port = inputs.simple.get("input").unwrap();
         let v: Vec<i32> = port.recv_ip().unwrap();
         println!("len : {}", v.len());
-        let out = outputs.get_simple("output").unwrap();
+        let out = outputs.simple.get("output").unwrap();
         out.send(v);
     }
 }
