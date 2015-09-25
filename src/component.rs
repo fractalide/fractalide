@@ -36,64 +36,68 @@ use std::any::Any;
  * Input Ports for the state, only the receivers
  */
 
-pub enum InputPortError {
-    InputPortNotFind(&'static str),
-    CannotRecv(RecvError),
-}
-
 type IP = Box<Any + Send>;
 
+pub trait InputPort<T> {
+    fn recv_ip<I: Reflect + 'static>(&self) -> Result<I, RecvError>;
+}
+impl InputPort<IP> for Receiver<IP> {
+    fn recv_ip<I: Reflect + 'static>(&self) -> Result<I, RecvError> {
+        unsafe {
+            let obj: Box<Any> = self.recv().unwrap();
+            if !(*obj).is::<I>(){
+                panic!("Type mismatch");
+            }
+            let raw: TraitObject = mem::transmute(boxed::into_raw(obj));
+            Ok(*Box::from_raw(raw.data as *mut I))
+        }
+    }
+}
+
 pub struct InputPorts {
-    input: HashMap<&'static str, Receiver<IP>>,
+   simple: HashMap<&'static str, Receiver<IP>>,
 }
 
 impl InputPorts {
 
     fn new() -> Self {
-        InputPorts { input: HashMap::new(), }
+        InputPorts { simple: HashMap::new(), }
     }
 
-    fn add(&mut self, name: &'static str, rec: Receiver<IP>) -> Option<Receiver<IP>> {
-        self.input.insert(name, rec) 
+    fn add_simple(&mut self, name: &'static str, rec: Receiver<IP>) -> Option<Receiver<IP>> {
+        self.simple.insert(name, rec) 
     }
 
-    fn remove(&mut self, name: &'static str) -> Option<Receiver<IP>> {
-        self.input.remove(&name)
+    fn remove_simple(&mut self, name: &'static str) -> Option<Receiver<IP>> {
+        self.simple.remove(&name)
     }
 
-    pub fn recv<T: Reflect + 'static>(&self, name: &'static str) -> Result<T, InputPortError> {
-        let port = self.input.get(name);
-        match port {
-            None => { Err(InputPortError::InputPortNotFind(name)) }
-            Some(port) => {
-                unsafe {
-                    let obj: Box<Any> = port.recv().unwrap();
-                    if !(*obj).is::<T>(){
-                        panic!("Type mismatch");
-                    }
-                    let raw: TraitObject = mem::transmute(boxed::into_raw(obj));
-                    Ok(*Box::from_raw(raw.data as *mut T))
-                }
-            }
-        }
+    pub fn get_simple(&self, name: &'static str) -> Option<&Receiver<IP>> {
+        self.simple.get(name)
     }
-
 }
 
 #[test]
 fn input_ports_tests() {
    let mut input = InputPorts::new();
    let (tx, rx) = sync_channel(16);
-   input.add("input", rx);
-   tx.send(42).unwrap();
-   let result = input.recv("input").ok().expect("There is no message in the channel");
+   input.add_simple("input", rx);
+   tx.send(Box::new(42)).unwrap();
+   {
+   let port = input.get_simple("input").unwrap();
+   let result: i32 = port.recv_ip().unwrap();
    assert_eq!(result, 42);
-   let recv = input.remove("input");
+   }
+   {
+   let recv = input.remove_simple("input");
    assert!(recv.is_some());
-   let recv = input.remove("input");
+   }
+   {
+   let recv = input.remove_simple("input");
    assert!(recv.is_none());
-   let result = input.recv("input");
-   assert!(result.is_err());
+   }
+   let port = input.get_simple("input");
+   assert!(port.is_none());
 }
 
 /*
@@ -101,53 +105,60 @@ fn input_ports_tests() {
  */
 
 pub enum OutputPortError {
-    OutputPortNotFind(&'static str),
+    NotConnected,
     CannotSend(SendError<IP>),
 }
 
+pub struct OutputPort {
+    send: Option<SyncSender<IP>>,
+}
+impl OutputPort {
+    fn new() -> Self {
+        OutputPort { send: None, }
+    }
+
+    pub fn connect(&mut self, send: SyncSender<IP>){
+        self.send = Some(send);
+    }
+
+    pub fn send<T: Any + Send>(&self, msg: T) -> Result<(), OutputPortError> {
+        if self.send.is_none() {
+            Err(OutputPortError::NotConnected)
+        } else {
+            let send = self.send.as_ref().unwrap();
+            let res = send.send(Box::new(msg));
+            if res.is_ok() { Ok(()) }
+            else { Err(OutputPortError::CannotSend(res.unwrap_err())) }
+        }
+    }
+
+
+}
+
 pub struct OutputPorts {
-    output: HashMap<&'static str, Option<SyncSender<IP>>>,
+    simple: HashMap<&'static str, OutputPort>,
 }
 
 impl OutputPorts {
     fn new() -> Self {
-        OutputPorts { output: HashMap::new(), }
+        OutputPorts { simple: HashMap::new(), }
     }
 
-    fn add(&mut self, name: &'static str) -> Option<Option<SyncSender<IP>>>{
-        self.output.insert(name, None)
+    pub fn add_simple(&mut self, name: &'static str) -> Option<OutputPort>{
+        self.simple.insert(name, OutputPort::new())
     }
 
-    fn remove(&mut self, name: &'static str) -> Option<Option<SyncSender<IP>>> {
-        self.output.remove(name)
+    pub fn remove_simple(&mut self, name: &'static str) -> Option<OutputPort> {
+        self.simple.remove(name)
     }
 
-    fn connect(&mut self, name: &'static str, send: SyncSender<IP>) -> Result<(), OutputPortError> {
-        if !self.output.contains_key(name) {
-            Err(OutputPortError::OutputPortNotFind(name))
-        } else {
-            self.output.insert(name, Some(send));
-            Ok(())
-        }
+    pub fn get_simple(&self, name: &'static str) -> Option<&OutputPort> {
+        self.simple.get(name)
     }
 
-    pub fn send<T: Any + Send>(&self, name: &'static str, msg: T) -> Result<(), OutputPortError> {
-        let sender = self.output.get(name);
-        match sender {
-            None => { Err(OutputPortError::OutputPortNotFind(name)) },
-            Some(port) => {
-                match *port {
-                    None => { Ok(()) },
-                    Some(ref send) => {
-                        let res = send.send(Box::new(msg));
-                        if res.is_ok() { Ok(()) }
-                        else { Err(OutputPortError::CannotSend(res.unwrap_err())) }
-                    }
-                }
-            }
-        }
+    fn get_simple_mut(&mut self, name: &'static str) -> Option<&mut OutputPort> {
+        self.simple.get_mut(name)
     }
-
 }
 
 
@@ -155,20 +166,24 @@ impl OutputPorts {
 fn output_ports_tests() {
    let mut output = OutputPorts::new();
    let (tx, rx) = sync_channel(16);
-   let res = output.send("output", 42);
-   assert!(res.is_err());
-   let res = output.connect("output", tx.clone());
-   assert!(res.is_err());
-   output.add("output");
-   let res = output.remove("output");
-   assert!(res.is_some());
-   let res = output.remove("output");
+   {
+   let res = output.get_simple("output");
    assert!(res.is_none());
-
-   output.add("output");
-   output.connect("output", tx);
-   output.send("output", 42);
-   let res = rx.recv().unwrap();
+   }
+   output.add_simple("output");
+   {
+   let res = output.remove_simple("output");
+   assert!(res.is_some());
+   }
+   {
+   let res = output.remove_simple("output");
+   assert!(res.is_none());
+   }
+   output.add_simple("output");
+   let mut out = output.get_simple_mut("output").unwrap();
+   out.connect(tx);
+   out.send(42);
+   let res: i32 = rx.recv_ip().unwrap();
    assert_eq!(res, 42);
 }
 
@@ -177,11 +192,14 @@ fn input_output_ports_tests() {
     let mut input = InputPorts::new();
     let mut output = OutputPorts::new();
     let (tx, rx) = sync_channel(16);
-    input.add("input", rx);
-    output.add("output");
-    output.connect("output", tx);
-    output.send("output", 42);
-    assert_eq!(input.recv("input").ok().expect(""), 42);
+    input.add_simple("input", rx);
+    output.add_simple("output");
+    let out = output.get_simple_mut("output").unwrap();
+    out.connect(tx);
+    out.send(42);
+    let port = input.get_simple("input").unwrap();
+    let msg: i32 = port.recv_ip().unwrap();
+    assert_eq!(msg, 42);
 }
 
 
@@ -311,13 +329,14 @@ impl State {
     fn edit_component(&mut self, msg: CompMsg){
         match msg {
             CompMsg::AddInputPort(name, rec) => {
-                self.in_receivers.as_mut().unwrap().add(name, rec);
+                self.in_receivers.as_mut().unwrap().add_simple(name, rec);
             },
             CompMsg::AddOutputPort(name) => {
-                self.out_senders.as_mut().unwrap().add(name);
+                self.out_senders.as_mut().unwrap().add_simple(name);
             },
             CompMsg::ConnectOutputPort(name, send) => {
-                self.out_senders.as_mut().unwrap().connect(name, send);
+                let port = self.out_senders.as_mut().unwrap().get_simple_mut(name).unwrap();
+                port.connect(send);
             },
             _ => { },
         }
@@ -383,7 +402,7 @@ fn edit_state_tests() {
     assert!(state.edit_msgs.len() == 0);
     state.receive_edit_msg(CompMsg::AddOutputPort("input"));
     assert!(state.edit_msgs.len() == 0);
-    assert!(state.out_senders.as_mut().unwrap().output.len() == 1);
+    assert!(state.out_senders.as_mut().unwrap().simple.len() == 1);
 
     // Add while running
     state.start();
@@ -402,7 +421,7 @@ fn edit_state_tests() {
     state.stop();
     state.run_end(Box::new(Test), InputPorts::new(), OutputPorts::new());
     assert!(state.edit_msgs.len() == 0);
-    assert!(state.out_senders.as_mut().unwrap().output.len() == 1);
+    assert!(state.out_senders.as_mut().unwrap().simple.len() == 1);
 
     // receive useless msgs
     rx.recv();
