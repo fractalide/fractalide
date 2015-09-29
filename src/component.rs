@@ -142,11 +142,15 @@ impl OutputPort for HashMap<&'static str, OutputSender> {
 
 pub struct OutputPorts {
     pub simple: HashMap<&'static str, OutputSender>,
+    pub array: HashMap<&'static str, HashMap<&'static str, OutputSender>>,
 }
 
 impl OutputPorts {
     fn new() -> Self {
-        OutputPorts { simple: HashMap::new(), }
+        OutputPorts { 
+            simple: HashMap::new(),
+            array: HashMap::new(),
+        }
     }
 }
 
@@ -156,7 +160,7 @@ fn output_ports_tests() {
    let mut output = OutputPorts::new();
    let (tx, rx) = sync_channel(16);
    {
-   let res = output.simple.insert("output");
+   let res = output.simple.insert_empty("output");
    assert!(res.is_none());
    }
    output.simple.insert_empty("output");
@@ -168,7 +172,7 @@ fn output_ports_tests() {
    let res = output.simple.remove("output");
    assert!(res.is_none());
    }
-   output.simple.add_empty("output");
+   output.simple.insert_empty("output");
    let mut out = output.simple.get_mut("output").unwrap();
    out.connect(tx);
    out.send(42);
@@ -182,7 +186,7 @@ fn input_output_ports_tests() {
     let mut output = OutputPorts::new();
     let (tx, rx) = sync_channel(16);
     input.simple.insert("input", rx);
-    output.simple.insert("output");
+    output.simple.insert_empty("output");
     let out = output.simple.get_mut("output").unwrap();
     out.connect(tx);
     out.send(42);
@@ -204,6 +208,8 @@ pub struct ComponentCreator {
     pub closure: Box<Closure + Send + 'static>,
     pub input_ports: Vec<&'static str>,
     pub output_ports: Vec<&'static str>,
+    pub input_array_ports: Vec<&'static str>,
+    pub output_array_ports: Vec<&'static str>,
 }
 
 pub trait Closure {
@@ -216,17 +222,24 @@ enum CompMsg {
     Start, Stop, Halt,
     RunEnd(BoxedClosure, InputPorts, OutputPorts),
     ConnectOutputPort(&'static str, SyncSender<IP>),
+    ConnectOutputArrayPort(&'static str, &'static str, SyncSender<IP>),
     AddInputPort(&'static str, Receiver<IP>),
+    AddInputArrayPort(&'static str),
+    AddInputArraySelection(&'static str, &'static str, Receiver<IP>),
     AddOutputPort(&'static str),
+    AddOutputArrayPort(&'static str),
+    AddOutputArraySelection(&'static str, &'static str),
 }
 
 enum CompError {
     PortNotFound(&'static str),
 }
 
+
 pub struct Component {
     sender: Sender<CompMsg>,
-    input_senders: HashMap<&'static str, SyncSender<IP>>,
+    input_simple_senders: HashMap<&'static str, SyncSender<IP>>,
+    input_array_senders: HashMap<&'static str, HashMap<&'static str, SyncSender<IP>>>,
 }
 
 impl Component {
@@ -244,15 +257,21 @@ impl Component {
                         CompMsg::Halt => { break; },
                         CompMsg::RunEnd(closure, inputs, outputs)  => { state.run_end(closure, inputs, outputs); },
                         CompMsg::AddInputPort(name, rec) => { state.receive_edit_msg(CompMsg::AddInputPort(name, rec)); },
+                        CompMsg::AddInputArrayPort(name) => { state.receive_edit_msg(CompMsg::AddInputArrayPort(name)); },
+                        CompMsg::AddInputArraySelection(name, selection, rec) => { state.receive_edit_msg(CompMsg::AddInputArraySelection(name, selection, rec)); },
                         CompMsg::AddOutputPort(name) => { state.receive_edit_msg(CompMsg::AddOutputPort(name)); },
+                        CompMsg::AddOutputArrayPort(name) => { state.receive_edit_msg(CompMsg::AddOutputArrayPort(name)); },
+                        CompMsg::AddOutputArraySelection(name, selection) => { state.receive_edit_msg(CompMsg::AddOutputArraySelection(name, selection)); },
                         CompMsg::ConnectOutputPort(port, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port, send)); },
+                        CompMsg::ConnectOutputArrayPort(port, selection, send) => { state.receive_edit_msg(CompMsg::ConnectOutputArrayPort(port, selection, send)); },
                     }
                 }
             });
         }
         let mut comp = Component {
             sender: control_s,
-            input_senders: HashMap::new(),
+            input_simple_senders: HashMap::new(),
+            input_array_senders: HashMap::new(),
         };
         for input in c.input_ports {
             comp.add_input_port(input);
@@ -260,23 +279,70 @@ impl Component {
         for output in c.output_ports {
             comp.add_output_port(output);
         }
+        for input in c.input_array_ports {
+            comp.add_input_array_port(input);
+        }
+        for output in c.output_array_ports {
+            comp.add_output_array_port(output);
+        }
         comp
     }
 
     pub fn add_input_port(&mut self, name: &'static str) {
         let (tx, rx) = sync_channel(16);
-        self.input_senders.insert(name, tx);
+        self.input_simple_senders.insert(name, tx);
         self.sender.send(CompMsg::AddInputPort(name, rx)).unwrap();
+    }
+
+    pub fn add_input_array_port(&mut self, name: &'static str) {
+        self.input_array_senders.insert(name, HashMap::new());
+        self.sender.send(CompMsg::AddInputArrayPort(name)).unwrap();
+    }
+    
+    pub fn add_input_array_selection(&mut self, name: &'static str, selection: &'static str) {
+        let (tx, rx) = sync_channel(16);
+        let mut array = self.input_array_senders.get_mut(name).unwrap();
+        array.insert(selection, tx);
+        self.sender.send(CompMsg::AddInputArraySelection(name, selection, rx)).unwrap();
     }
 
     pub fn add_output_port(&mut self, name: &'static str) {
         self.sender.send(CompMsg::AddOutputPort(name)).unwrap();
     }
 
-    pub fn connect_output_port(&mut self, name: &'static str, rec: &Component, dest: &'static str) {
-        let s = rec.get_sender(dest);
+    pub fn add_output_array_port(&mut self, name: &'static str) {
+        self.sender.send(CompMsg::AddOutputArrayPort(name)).unwrap();
+    }
+
+    pub fn add_output_array_selection(&mut self, name: &'static str, selection: &'static str) {
+        self.sender.send(CompMsg::AddOutputArraySelection(name, selection)).unwrap();
+    }
+
+    pub fn connect_output_port(&mut self, port_out: &'static str, rec: &Component, port_in: &'static str) {
+        let s = rec.get_sender(port_in);
         if let Some(s) = s {
-            self.sender.send(CompMsg::ConnectOutputPort(name, s)).unwrap();
+            self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).unwrap();
+        }
+    }
+
+    pub fn connect_output_port_to_array(&mut self, port_out: &'static str, rec: &Component, port_in: &'static str, selection_in: &'static str) {
+        let s = rec.get_array_sender(port_in, selection_in);
+        if let Some(s) = s {
+            self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).unwrap();
+        }
+    }
+
+    pub fn connect_output_array_port(&mut self, port_out: &'static str, selection_out: &'static str, rec: &Component, port_in: &'static str) {
+        let s = rec.get_sender(port_in);
+        if let Some(s) = s {
+            self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).unwrap();
+        }
+    }
+
+    pub fn connect_output_array_port_to_array(&mut self, port_out: &'static str, selection_out: &'static str, rec: &Component, port_in: &'static str, selection_in: &'static str) {
+        let s = rec.get_array_sender(port_in, selection_in);
+        if let Some(s) = s {
+            self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).unwrap();
         }
     }
 
@@ -285,9 +351,19 @@ impl Component {
     }
 
     pub fn get_sender(&self, name: &'static str) -> Option<SyncSender<IP>> {
-        match self.input_senders.get(name) {
+        match self.input_simple_senders.get(name) {
             None => { None },
             Some(s) => {
+                Some(s.clone())
+            }
+        }
+    }
+
+    pub fn get_array_sender(&self, name: &'static str, selection: &'static str) -> Option<SyncSender<IP>> {
+        let port = self.input_array_senders.get(name).unwrap();
+        match port.get(selection) {
+            None => { None },
+            Some(s) => { 
                 Some(s.clone())
             }
         }
@@ -320,13 +396,32 @@ impl State {
             CompMsg::AddInputPort(name, rec) => {
                 self.in_receivers.as_mut().unwrap().simple.insert(name, rec);
             },
+            CompMsg::AddInputArrayPort(name) => {
+                self.in_receivers.as_mut().unwrap().array.insert(name, HashMap::new());
+            }
+            CompMsg::AddInputArraySelection(name, selection, rec) => {
+                let mut port = self.in_receivers.as_mut().unwrap().array.get_mut(name).unwrap();
+                port.insert(selection, rec);
+            }
             CompMsg::AddOutputPort(name) => {
                 self.out_senders.as_mut().unwrap().simple.insert_empty(name);
+            },
+            CompMsg::AddOutputArrayPort(name) => {
+                self.out_senders.as_mut().unwrap().array.insert(name, HashMap::new());
+            },
+            CompMsg::AddOutputArraySelection(name, selection) => {
+                let mut port = self.out_senders.as_mut().unwrap().array.get_mut(name).expect("Unable to found the array port");
+                port.insert_empty(selection);
             },
             CompMsg::ConnectOutputPort(name, send) => {
                 let port = self.out_senders.as_mut().unwrap().simple.get_mut(name).unwrap();
                 port.connect(send);
             },
+            CompMsg::ConnectOutputArrayPort(name, selection, send) => {
+                let mut port = self.out_senders.as_mut().unwrap().array.get_mut(name).unwrap();
+                let mut selection = port.get_mut(selection).unwrap();
+                selection.connect(send);
+            }
             _ => { },
         }
 

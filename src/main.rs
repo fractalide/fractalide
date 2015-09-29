@@ -15,6 +15,8 @@ impl DisplayInt {
             closure: Box::new(DisplayInt { pre: pre.to_string(), }), 
             input_ports: vec!["input"],
             output_ports: vec!["output"],
+            input_array_ports: vec![],
+            output_array_ports: vec![],
         }
     }
 }
@@ -36,6 +38,8 @@ impl Adder {
             closure: Box::new(Adder),
             input_ports: vec!["x", "y"],
             output_ports: vec!["result"],
+            input_array_ports: vec![],
+            output_array_ports: vec![],
         }
     }
 }
@@ -50,6 +54,66 @@ impl Closure for Adder {
     }
 }
 
+// Adder with array port
+struct ArrayAdder;
+impl ArrayAdder {
+    fn new_component() -> ComponentCreator {
+        ComponentCreator {
+            closure: Box::new(ArrayAdder),
+            input_ports: vec![],
+            output_ports: vec!["result"],
+            input_array_ports: vec!["numbers"],
+            output_array_ports: vec![],
+        }
+    }
+}
+impl Closure for ArrayAdder {
+    fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
+        let numbers = inputs.array.get("numbers").unwrap();
+        let res = numbers.values().fold(0, |acc, port| {
+            let msg: i32 = port.recv_ip().unwrap();
+            acc + msg
+        });
+        let out = outputs.simple.get("result").unwrap();
+        out.send(res);
+    }
+}
+
+// Load balancer
+struct LoadBalancer {
+    actual: usize,   
+}
+impl LoadBalancer {
+    fn new_component() -> ComponentCreator {
+        ComponentCreator {
+            closure: Box::new(LoadBalancer { actual: 0, }),
+            input_ports: vec!["input"],
+            output_ports: vec![],
+            input_array_ports: vec![],
+            output_array_ports: vec!["output"],
+        }
+    }
+}
+impl Closure for LoadBalancer {
+    fn run(&mut self, inputs: &InputPorts, outputs: &OutputPorts) {
+        // get the correct output port
+        let output = outputs.array.get("output").unwrap();
+        // TODO : check if there is at least one output
+        if (self.actual > output.len()-1){ self.actual = 0; }
+        let mut list: Vec<_> = output.iter().collect();
+        list.sort_by(|&a, &b| { (a.0).cmp((&b.0)) });
+        let port = list.get(self.actual).unwrap();
+
+        // send the IP
+        let in_port = inputs.simple.get("input").unwrap();
+        let ip: i32 = in_port.recv_ip().unwrap();
+        (port.1).send(ip).ok().expect("LoadBalancer: cannot send");
+        self.actual += 1;
+    }
+
+}   
+
+
 struct VecLen;
 impl VecLen {
     fn new_component() -> ComponentCreator {
@@ -57,6 +121,8 @@ impl VecLen {
             closure: Box::new(VecLen),
             input_ports: vec!["input"],
             output_ports: vec!["output"],
+            input_array_ports: vec![],
+            output_array_ports: vec![],
         }
     }
 }
@@ -71,44 +137,53 @@ impl Closure for VecLen {
 }
 
 fn main() {
-    // Create 4 components : 3 display, 1 adder 
-    let mut dx = Component::new(DisplayInt::new_component("x : "));
-    let mut dy = Component::new(DisplayInt::new_component("y : "));
-    let dr = Component::new(DisplayInt::new_component("result : "));
-    let mut a1 = Component::new(Adder::new_component());
+    let mut array_add = Component::new(ArrayAdder::new_component());
+    let mut load_bal = Component::new(LoadBalancer::new_component());
+    let da = Component::new(DisplayInt::new_component("a : "));
+    let db = Component::new(DisplayInt::new_component("b : "));
+    let dc = Component::new(DisplayInt::new_component("c : "));
 
     /*
-     * Graph like 
-     *   "11" -> input dx(display) output -> x a1(adder) result -> input dr(display)
-     *   "111" -> input dy(display) oiutput -> y a1()
+     * Graph like
+     * "22" -> numbers[1] array_add() result -> input lb(LoadBalancer) output[a] -> input da()
+     * "222" -> numbers[2] array_add()
+     * lb() output[b] -> input db()
+     * lb() output[z] -> input dc()
      */
-    a1.connect_output_port("result", &dr, "input");
-    dx.connect_output_port("output", &a1, "x");
-    dy.connect_output_port("output", &a1, "y");
+    array_add.add_input_array_selection("numbers", "1");
+    array_add.add_input_array_selection("numbers", "2");
+    array_add.connect_output_port("result", &load_bal, "input");
 
+    load_bal.add_output_array_selection("output", "a");
+    load_bal.add_output_array_selection("output", "b");
+    load_bal.add_output_array_selection("output", "z");
+    load_bal.connect_output_array_port("output", "a", &da, "input");
+    load_bal.connect_output_array_port("output", "b", &db, "input");
+    load_bal.connect_output_array_port("output", "z", &dc, "input");
 
-    // Start the comp
-    dx.start();
-    dy.start();
-    dr.start();
-    a1.start();
+    // Start
+    array_add.start();
+    load_bal.start();
+    da.start();
+    db.start();
+    dc.start();
 
-    // Vec test
-    let v = Component::new(VecLen::new_component());
-    let input = v.get_sender("input").unwrap();
-    v.start();
-
-
-    // Get the input ports and send numbers
-    let x = dx.get_sender("input").unwrap();
-    let y = dy.get_sender("input").unwrap();
-    x.send(Box::new(11)).unwrap();
-    y.send(Box::new(111)).unwrap();
-    x.send(Box::new(111)).unwrap();
-    y.send(Box::new(1111)).unwrap();
+    // Array test
+    println!("Array Test");
+    let n1 = array_add.get_array_sender("numbers", "1").unwrap();
+    let n2 = array_add.get_array_sender("numbers", "2").unwrap();
+    n1.send(Box::new(11)).unwrap();
+    n2.send(Box::new(111)).unwrap();
+    n1.send(Box::new(22)).unwrap();
+    n2.send(Box::new(222)).unwrap();
+    n1.send(Box::new(33)).unwrap();
+    n1.send(Box::new(44)).unwrap();
+    n1.send(Box::new(55)).unwrap();
+    n2.send(Box::new(333)).unwrap();
+    thread::sleep_ms(1000);
+    n2.send(Box::new(444)).unwrap();
+    n2.send(Box::new(555)).unwrap();
 
     thread::sleep_ms(2000);
-    input.send(Box::new(vec![1, 2, 3])).unwrap();
 
-    thread::sleep_ms(2000);
 }
