@@ -1,3 +1,6 @@
+#![feature(reflect_marker)]
+#![feature(raw)]
+#![feature(box_raw)]
 #![feature(core)]
 #![feature(alloc)]
 use std::thread;

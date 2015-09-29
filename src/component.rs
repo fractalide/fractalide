@@ -48,7 +48,7 @@ impl ReceiverIP<IP> for Receiver<IP> {
             if !(*obj).is::<I>(){
                 panic!("Type mismatch");
             }
-            let raw: TraitObject = mem::transmute(boxed::into_raw(obj));
+            let raw: TraitObject = mem::transmute(Box::into_raw(obj));
             Ok(*Box::from_raw(raw.data as *mut I))
         }
     }
