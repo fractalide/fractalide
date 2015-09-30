@@ -2,3 +2,7 @@
 name = "fractalide"
 version = "0.0.1"
 authors = ["denis"]
+
+[[bin]]
+name = "fractalide"
+path = "src/bin/main.rs"
