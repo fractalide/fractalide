@@ -1,7 +1,7 @@
 extern crate fractalide;
 
 use self::fractalide::component;
-use self::fractalide::component::{Component, OutputSender, IP, CompRunner};
+use self::fractalide::component::{Component, OutputSender, IP, CompRunner, InputSenders};
 
 use std::fmt::Debug;
 
@@ -27,33 +27,25 @@ struct AdderOutputPorts {
 }
 
 struct Adder {
-    input_senders: AdderInputSender,
     input_receivers: AdderInputReceiver,
     output_ports: AdderOutputPorts,
 }
 
 impl Adder {
-    fn new() -> Self {
+    fn new() -> (Box<Component + Send>, Box<InputSenders>) {
         let (xs, xr) = sync_channel(16);
         let (ys, yr) = sync_channel(16);
-        Adder {
-            input_senders: AdderInputSender { x: xs, y: ys, },
+        let comp = Adder {
             input_receivers: AdderInputReceiver { x: xr, y: yr, },
             output_ports: AdderOutputPorts { output: OutputSender::new(), },
-        }
+        };
+        let is = AdderInputSender { x: xs, y: ys, };
+        (Box::new(comp), Box::new(is))
     }
 
     
 }
 impl Component for Adder {
-    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
-        match port {
-            "x" => { Some(Box::new(self.input_senders.x.clone())) },
-            "y" => { Some(Box::new(self.input_senders.y.clone())) },
-            _ => { None },
-        }
-    }
-
     fn connect(&mut self, port:&'static str, send: Box<Any>){
         match port {
             "output" => { 
@@ -70,6 +62,15 @@ impl Component for Adder {
         let res = self.output_ports.output.send(x+y);
     }
 }
+impl InputSenders for AdderInputSender {
+    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
+        match port {
+            "x" => { Some(Box::new(self.x.clone())) },
+            "y" => { Some(Box::new(self.y.clone())) },
+            _ => { None },
+        }
+    }
+}
 
 struct DisplayInputSender<T> {
     input: SyncSender<T>,
@@ -82,28 +83,21 @@ struct DisplayOutput<T> {
 }
 
 struct Display<T> {
-    input_senders: DisplayInputSender<T>,
     input_receivers: DisplayInputReceiver<T>,
     output_ports: DisplayOutput<T>,
 }
 impl<T: Debug + Reflect + IP> Display<T>{
-    fn new() -> Self {
-        let (xs, xr) = sync_channel(16);
-        Display{
-            input_senders: DisplayInputSender { input: xs, },
+    fn new() -> (Box<Component + Send>, Box<InputSenders>) {
+        let (xs, xr) = sync_channel::<T>(16);
+        let comp = Display{
             input_receivers: DisplayInputReceiver { input: xr, },
             output_ports: DisplayOutput { output: OutputSender::new(), },
-        }
+        };
+        let is = DisplayInputSender { input: xs, };
+        (Box::new(comp), Box::new(is))
     }
 }
 impl<T: Debug + Reflect + IP> Component for Display<T> {
-    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
-        match port {
-            "input" => { Some(Box::new(self.input_senders.input.clone())) },
-            _ => { None },
-        }
-    }
-
     fn connect(&mut self, port:&'static str, send: Box<Any>){
         match port {
             "output" => { self.output_ports.output.connect(component::downcast(send)); },
@@ -118,24 +112,27 @@ impl<T: Debug + Reflect + IP> Component for Display<T> {
         self.output_ports.output.send(i);
     }
 }
+
+impl<T: Debug + Reflect + IP> InputSenders for DisplayInputSender<T> {
+    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
+        match port {
+            "input" => { Some(Box::new(self.input.clone())) },
+            _ => { None },
+        }
+    }
+}
+
+
 pub fn testAdder() {
-    let mut a = Adder::new();
+    let mut a = CompRunner::new(Adder::new());
+    let mut d = CompRunner::new(Display::<i32>::new());
+
+    a.connect("output", &d, "input");
+
     let x = a.get_sender("x").unwrap();
     let x: SyncSender<i32> = component::downcast(x);
     let y = a.get_sender("y").unwrap();
     let y: SyncSender<i32> = component::downcast(y);
-    let mut a = CompRunner::new(Box::new(a));
-    let mut d = CompRunner::new(Box::new(Display::<i32>::new()));
-
-    a.connect("output", &d, "input");
-
-    // Type mandatory, is it will be ok?
-    // a.connect::<i32, Display<i32>>("output", &d, "input");
-    // Cannot do :
-    // let s = d.get_sender("input").unwrap();
-    // a.connect("output", s);
-    //
-    thread::sleep_ms(500);
 
     x.send(1).unwrap();
     y.send(11).unwrap();
@@ -149,11 +146,13 @@ pub fn testAdder() {
 
 
     thread::sleep_ms(2000);
-    // let mut d = Display::<String>::new();
-    // let i = d.get_sender("input").unwrap();
-    // let i: SyncSender<String> = component::downcast(i);
-    // i.send("hello Fractalide".to_string()).unwrap();
-    // d.run();
+    
+    let mut d = CompRunner::new(Display::<String>::new());
+    let i = d.get_sender("input").unwrap();
+    let i: SyncSender<String> = component::downcast(i);
+    i.send("hello Fractalide".to_string()).unwrap();
+    d.start();
 
+    thread::sleep_ms(2000);
 
 }

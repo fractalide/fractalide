@@ -26,9 +26,12 @@ use std::raw::TraitObject;
 use std::mem;
 use std::thread;
 
+pub trait InputSenders {
+    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
+}
+
 pub trait Component: Send{
     fn run(&self);
-    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
     fn connect(&mut self, port_out: &'static str, send: Box<Any>);
 }
 
@@ -82,17 +85,17 @@ pub type BoxedComp = Box<Component + Send + 'static>;
 enum CompMsg {
     Start, Stop, Halt,
     RunEnd(BoxedComp),
-    GetSender(&'static str, Sender<CompMsg>, &'static str),
     ConnectOutputPort(&'static str, Box<Any + Send + 'static>),
 }
 
 pub struct CompRunner {
     sender: Sender<CompMsg>,
+    input_senders: Box<InputSenders>,
 }
 impl CompRunner {
-    pub fn new(c: BoxedComp) -> Self {
+    pub fn new(c: (BoxedComp, Box<InputSenders>)) -> Self {
         let (s,r) = channel();
-        let mut state = State::new(c, s.clone());
+        let mut state = State::new(c.0, s.clone());
         thread::spawn(move || {
             loop {
                 let msg = r.recv().unwrap();
@@ -101,22 +104,24 @@ impl CompRunner {
                     CompMsg::Stop => { state.stop(); },
                     CompMsg::Halt => { break; },
                     CompMsg::RunEnd(comp) => { state.run_end(comp); },
-                    CompMsg::GetSender(port, sender, port_in) => { state.get_sender(port, sender, port_in); },
                     CompMsg::ConnectOutputPort(port_out, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port_out, send)); },
                 }
             }
         });
         CompRunner{
             sender: s,
+            input_senders: c.1,
         }
     }
 
-    fn get_sender(&self, port_out: &'static str, send: Sender<CompMsg>, port_in: &'static str){
-        self.sender.send(CompMsg::GetSender(port_out, send, port_in));
-    }
-
     pub fn connect(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str){
-        comp.get_sender(port_out, self.sender.clone(), port_in);
+        let s = comp.get_sender(port_in).unwrap();
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s));
+    }
+    
+    
+    pub fn get_sender(&self, port_in: &'static str) -> Option<Box<Any + Send + 'static>> {
+        self.input_senders.get_sender(port_in)
     }
 
     pub fn start(&self) {
@@ -192,12 +197,6 @@ impl State {
         }
     }
 
-    fn get_sender(&self, port_out: &'static str, sender: Sender<CompMsg>, port_in: &'static str){
-        if let Some(ref c) = self.comp {
-            let s = c.get_sender(port_in).unwrap();
-            sender.send(CompMsg::ConnectOutputPort(port_out, s)).unwrap();
-        }
-    }
 }
 
 
