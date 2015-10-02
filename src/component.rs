@@ -30,8 +30,14 @@ pub trait InputSenders {
     fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
 }
 
-pub trait Component: Send{
+pub trait Component: ComponentRun + ComponentConnect {}
+impl<T> Component for T where T: ComponentRun + ComponentConnect {}
+
+pub trait ComponentRun: Send{
     fn run(&self);
+}
+
+pub trait ComponentConnect: Send {
     fn connect(&mut self, port_out: &'static str, send: Box<Any>);
 }
 
@@ -200,3 +206,100 @@ impl State {
 }
 
 
+#[macro_export]
+macro_rules! component {
+    (
+        $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
+        inputs($i_name:ident $i_name2:ident $( ( $($i_t:ident$(: $i_tr:ident)* ),* ) )* => ($($input_field_name:ident: $input_field_type:ty ),* )),
+        outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
+        fn run(&$arg:ident) $fun:block
+    ) 
+        =>
+    {
+        /* Input ports part */
+        struct $i_name<$( $( $i_t ),* )*> {
+            $(
+                $input_field_name: SyncSender<$input_field_type>
+            ),*
+        }
+
+        struct $i_name2<$( $( $i_t ),* )*> {
+            $(
+                $input_field_name: Receiver<$input_field_type>
+            ),*
+        }
+
+        impl<$( $( $i_t: $($i_tr)* ),* )*> InputSenders for $i_name<$( $( $i_t),* )*>{
+            fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
+                match port {
+                    $(
+                        stringify!($input_field_name) => { Some(Box::new(self.$input_field_name.clone())) }
+                    ),*
+                    _ => { None },
+                }    
+            }
+
+        }
+
+        /* Output ports part */
+        struct $o_name<$( $( $o_t ),* )*> {
+            $(
+                $output_field_name: OutputSender<$output_field_type>
+            ),*
+        }
+
+        impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentConnect for $name<$( $( $c_t ),* ),* >{
+            fn connect(&mut self, port: &'static str, send: Box<Any>) {
+                match port {
+                    $(
+                        stringify!($output_field_name) => { self.outputs.$output_field_name.connect(component::downcast(send)); }
+                    ),*
+                    _ => {},
+                }    
+            }
+        }
+
+        /* Global component */
+
+        struct $name<$( $( $c_t ),* )*> {
+            inputs: $i_name2<$( $( $i_t ),* )*>,
+            outputs: $o_name<$( $( $o_t ),* )*>,
+        }
+
+        impl<$( $( $c_t: $($c_tr)* ),* )*> $name<$( $( $c_t ),* ),*>{
+            fn new() -> (Box<Component + Send>, Box<InputSenders>) {
+                // Creation of the inputs
+                $(
+                    let $input_field_name = sync_channel::<$input_field_type>(16);
+                )*
+                let s = $i_name {
+                $(
+                    $input_field_name: $input_field_name.0
+                ),*    
+                };
+                let r = $i_name2 {
+                $(
+                    $input_field_name: $input_field_name.1
+                ),*    
+                };
+
+                // Creation of the output
+                let out = $o_name {
+                    $(
+                        $output_field_name: OutputSender::new()
+                    ),*    
+                };
+
+                // Put it together
+                let comp = $name{
+                    inputs: r, outputs: out
+                };
+                (Box::new(comp), Box::new(s))
+            }
+        }
+
+        impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentRun for $name<$( $( $c_t ),* ),* >{
+            fn run(&$arg) $fun
+        }    
+    }
+}
