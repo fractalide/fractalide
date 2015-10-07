@@ -51,6 +51,8 @@ pub trait ComponentRun: Send{
 pub trait ComponentConnect: Send {
     fn connect(&mut self, port_out: &'static str, send: Box<Any>);
     fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
+    fn add_output_selection(&mut self, port: &'static str, selection: &'static str);
+    fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>);
 }
 
 pub fn downcast<I: Reflect + 'static>(i: Box<Any>) -> I {
@@ -104,9 +106,9 @@ enum CompMsg {
     Start, Stop, Halt,
     RunEnd(BoxedComp),
     AddInputArraySelection(&'static str, &'static str, Box<Any + Send + 'static>),
-    //AddOutputArraySelection(&'static str, &'static str),
+    AddOutputArraySelection(&'static str, &'static str),
     ConnectOutputPort(&'static str, Box<Any + Send + 'static>),
-    // ConnectOutputArrayPort(&'static str, &'static str, Box<Any + Send + 'static>),
+    ConnectOutputArrayPort(&'static str, &'static str, Box<Any + Send + 'static>),
 }
 
 pub struct CompRunner {
@@ -127,7 +129,9 @@ impl CompRunner {
                     CompMsg::Halt => { break; },
                     CompMsg::RunEnd(comp) => { state.run_end(comp); },
                     CompMsg::ConnectOutputPort(port_out, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port_out, send)); },
+                    CompMsg::ConnectOutputArrayPort(port, selection, send) => { state.receive_edit_msg(CompMsg::ConnectOutputArrayPort(port, selection, send)); },
                     CompMsg::AddInputArraySelection(port, selection, rec) => { state.receive_edit_msg(CompMsg::AddInputArraySelection(port, selection, rec)); },
+                    CompMsg::AddOutputArraySelection(port, selection) => { state.receive_edit_msg(CompMsg::AddOutputArraySelection(port, selection)); },
                 }
             }
         });
@@ -142,6 +146,21 @@ impl CompRunner {
         let s = comp.get_sender(port_in).unwrap();
         self.sender.send(CompMsg::ConnectOutputPort(port_out, s));
     }
+
+    pub fn connect_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str){
+        let s = comp.get_sender(port_in).expect("CompRunner -> connect_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s));
+    }
+
+    pub fn connect_to_array(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
+        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_to_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s));
+    }
+
+    pub fn connect_array_to_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
+        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_array_to_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s));
+    }
     
     
     pub fn get_sender(&self, port_in: &'static str) -> Option<Box<Any + Send + 'static>> {
@@ -152,10 +171,14 @@ impl CompRunner {
         self.input_array_senders.get_selection_sender(port, selection)
     }
 
-    pub fn add_array_selection(&mut self, port: &'static str, selection: &'static str) {
+    pub fn add_input_array_selection(&mut self, port: &'static str, selection: &'static str) {
         let (s, r) = self.input_array_senders.get_sender_receiver(port).unwrap();
         self.input_array_senders.add_selection_sender(port, selection, s);
         self.sender.send(CompMsg::AddInputArraySelection(port, selection, r));
+    }
+
+    pub fn add_output_array_selection(&self, port: &'static str, selection: &'static str) {
+        self.sender.send(CompMsg::AddOutputArraySelection(port, selection));
     }
 
     pub fn start(&self) {
@@ -227,9 +250,19 @@ impl State {
                     c.connect(port_out, send);
                 }
             },
+            CompMsg::ConnectOutputArrayPort(port_out, selection, send) => {
+                if let Some(ref mut c) = self.comp {
+                    c.connect_array(port_out, selection, send);
+                }
+            },
             CompMsg::AddInputArraySelection(port, selection, rec) => {
                 if let Some(ref mut c) = self.comp {
                     c.add_selection_receiver(port, selection, rec);
+                }
+            }
+            CompMsg::AddOutputArraySelection(port, selection) => {
+                if let Some(ref mut c) = self.comp {
+                    c.add_output_selection(port, selection);
                 }
             }
 
@@ -247,6 +280,7 @@ macro_rules! component {
         inputs($i_name:ident $i_name2:ident $( ( $($i_t:ident$(: $i_tr:ident)* ),* ) )* => ($($input_field_name:ident: $input_field_type:ty ),* )),
         inputs_array($ia_name: ident $ia_name2:ident $( ( $($ia_t:ident$(: $ia_tr:ident)* ),* ) )* => ($($input_array_name:ident: $input_array_type:ty),* )),
         outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
+        outputs_array($oa_name:ident $( ( $($oa_t:ident$(: $oa_tr:ident)* ),* ) )* => ($($output_array_name:ident: $output_array_type:ty ),* )),
         fn run(&$arg:ident) $fun:block
     ) 
         =>
@@ -342,12 +376,22 @@ macro_rules! component {
 
 
         /* Output ports part */
+
+        // simple
         struct $o_name<$( $( $o_t ),* )*> {
             $(
                 $output_field_name: OutputSender<$output_field_type>
             ),*
         }
 
+        // array
+        struct $oa_name<$( $( $oa_t ),* )*> {
+            $(
+                $output_array_name: HashMap<&'static str, OutputSender<$output_array_type>>
+            ),*
+        }
+
+        // simple and array
         impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentConnect for $name<$( $( $c_t ),* ),* >{
             fn connect(&mut self, port: &'static str, send: Box<Any>) {
                 match port {
@@ -361,6 +405,28 @@ macro_rules! component {
             fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>) {
                 self.inputs_array.add_selection_receiver(port, selection, rec);
             }
+
+            fn add_output_selection(&mut self, port: &'static str, selection: &'static str){
+                match port {
+                    $(
+                        stringify!($output_array_name) => { self.outputs_array.$output_array_name.insert(selection, OutputSender::new()); }
+                    ),*
+                    _ => {},
+                }    
+
+            }
+
+            fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>){
+                match port {
+                    $(
+                        stringify!($output_array_name) => { 
+                            let mut s = self.outputs_array.$output_array_name.get_mut(selection).expect("connect_array : selection not found");
+                            s.connect(component::downcast(send)); 
+                        }
+                    ),*
+                    _ => {},
+                }    
+            }
         }
 
         /* Global component */
@@ -369,6 +435,7 @@ macro_rules! component {
             inputs: $i_name2<$( $( $i_t ),* )*>,
             inputs_array:$ia_name2<$( $( $ia_t ),* )*>,
             outputs: $o_name<$( $( $o_t ),* )*>,
+            outputs_array: $oa_name<$( $( $oa_t ),* )*>,
         }
 
         impl<$( $( $c_t: $($c_tr)* ),* )*> $name<$( $( $c_t ),* ),*>{
@@ -403,13 +470,20 @@ macro_rules! component {
                 // Creation of the output
                 let out = $o_name {
                     $(
-                        $output_field_name: OutputSender::new()
+                        $output_field_name: OutputSender::new(),
                     ),*    
+                };
+
+                // Creation of the array output
+                let out_array = $oa_name {
+                    $(
+                        $output_array_name: HashMap::<&'static str, OutputSender<$output_array_type>>::new(),
+                    ),*
                 };
 
                 // Put it together
                 let comp = $name{
-                    inputs: r, outputs: out, inputs_array: a_r
+                    inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array
                 };
                 (Box::new(comp), Box::new(s), Box::new(a_s))
             }
