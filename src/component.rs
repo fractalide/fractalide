@@ -16,8 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-use std::sync::mpsc::{SyncSender, Sender, Receiver, SendError};
-use std::sync::mpsc::sync_channel;
+use std::sync::mpsc::{SyncSender, Sender, SendError};
 use std::sync::mpsc::channel;
 
 use std::any::Any;
@@ -25,7 +24,6 @@ use std::marker::Reflect;
 use std::raw::TraitObject;
 use std::mem;
 use std::thread;
-use std::collections::HashMap;
 
 pub trait InputSenders {
     fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
@@ -144,22 +142,22 @@ impl CompRunner {
 
     pub fn connect(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str){
         let s = comp.get_sender(port_in).unwrap();
-        self.sender.send(CompMsg::ConnectOutputPort(port_out, s));
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
     }
 
     pub fn connect_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str){
         let s = comp.get_sender(port_in).expect("CompRunner -> connect_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s));
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
     }
 
     pub fn connect_to_array(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
         let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_to_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputPort(port_out, s));
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
     }
 
     pub fn connect_array_to_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
         let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_array_to_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s));
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
     }
     
     
@@ -174,15 +172,15 @@ impl CompRunner {
     pub fn add_input_array_selection(&mut self, port: &'static str, selection: &'static str) {
         let (s, r) = self.input_array_senders.get_sender_receiver(port).unwrap();
         self.input_array_senders.add_selection_sender(port, selection, s);
-        self.sender.send(CompMsg::AddInputArraySelection(port, selection, r));
+        self.sender.send(CompMsg::AddInputArraySelection(port, selection, r)).ok().expect("unable to send to the state");
     }
 
     pub fn add_output_array_selection(&self, port: &'static str, selection: &'static str) {
-        self.sender.send(CompMsg::AddOutputArraySelection(port, selection));
+        self.sender.send(CompMsg::AddOutputArraySelection(port, selection)).ok().expect("unable to send to the state");
     }
 
     pub fn start(&self) {
-        self.sender.send(CompMsg::Start).unwrap();
+        self.sender.send(CompMsg::Start).ok().expect("unable to send to the state");
     }
 
 }
@@ -216,7 +214,7 @@ impl State {
     }
     
     fn run(&mut self) {
-        let mut c= mem::replace(&mut self.comp, None).unwrap();
+        let c = mem::replace(&mut self.comp, None).unwrap();
         let rs = self.runner_s.clone();
         thread::spawn(move || {
             c.run();
@@ -288,12 +286,14 @@ macro_rules! component {
         /* Input ports part */
 
         // simple
+        #[allow(dead_code)]
         struct $i_name<$( $( $i_t ),* )*> {
             $(
                 $input_field_name: SyncSender<$input_field_type>
             ),*
         }
 
+        #[allow(dead_code)]
         struct $i_name2<$( $( $i_t ),* )*> {
             $(
                 $input_field_name: Receiver<$input_field_type>
@@ -312,11 +312,13 @@ macro_rules! component {
         }
 
         // array
+        #[allow(dead_code)]
         struct $ia_name<$( $( $ia_t ),* )*> {
             $(
                 $input_array_name: HashMap<&'static str, SyncSender<$input_array_type>>
             ),*    
         }
+        #[allow(dead_code)]
         struct $ia_name2<$( $( $ia_t ),* )*> {
             $(
                 $input_array_name: HashMap<&'static str, Receiver<$input_array_type>>
@@ -324,11 +326,11 @@ macro_rules! component {
         }
 
         impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for $ia_name<$( $( $ia_t),* )*>{
-            fn get_selection_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>> {
+            fn get_selection_sender(&self, port: &'static str, _selection: &'static str) -> Option<Box<Any + Send + 'static>> {
                 match port {
                     $(
                         stringify!($input_array_name) => { 
-                            let p = self.$input_array_name.get(selection).expect("get_selection_sender : the port doesn't exist");
+                            let p = self.$input_array_name.get(_selection).expect("get_selection_sender : the port doesn't exist");
                             Some(Box::new(p.clone())) 
                         }
                     ),*
@@ -336,11 +338,11 @@ macro_rules! component {
                 }    
             }
 
-            fn add_selection_sender(&mut self, port: &'static str, selection: &'static str, sender: Box<Any>){
+            fn add_selection_sender(&mut self, port: &'static str, _selection: &'static str, _sender: Box<Any>){
                 match port {
                     $(
                         stringify!($input_array_name) => { 
-                             self.$input_array_name.insert(selection, component::downcast(sender));
+                             self.$input_array_name.insert(_selection, component::downcast(_sender));
 
                         }
                     ),*
@@ -362,11 +364,11 @@ macro_rules! component {
         }
 
         impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for $ia_name2<$( $( $ia_t),* )*>{
-            fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, receiver: Box<Any>){
+            fn add_selection_receiver(&mut self, port: &'static str, _selection: &'static str, _receiver: Box<Any>){
                 match port {
                     $(
                         stringify!($input_array_name) => { 
-                            self.$input_array_name.insert(selection, component::downcast(receiver));
+                            self.$input_array_name.insert(_selection, component::downcast(_receiver));
                         }
                     ),*
                     _ => { println!("add_selection_receivers : Add Nothing!"); },
@@ -378,6 +380,7 @@ macro_rules! component {
         /* Output ports part */
 
         // simple
+        #[allow(dead_code)]
         struct $o_name<$( $( $o_t ),* )*> {
             $(
                 $output_field_name: OutputSender<$output_field_type>
@@ -385,6 +388,7 @@ macro_rules! component {
         }
 
         // array
+        #[allow(dead_code)]
         struct $oa_name<$( $( $oa_t ),* )*> {
             $(
                 $output_array_name: HashMap<&'static str, OutputSender<$output_array_type>>
@@ -393,10 +397,10 @@ macro_rules! component {
 
         // simple and array
         impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentConnect for $name<$( $( $c_t ),* ),* >{
-            fn connect(&mut self, port: &'static str, send: Box<Any>) {
+            fn connect(&mut self, port: &'static str, _send: Box<Any>) {
                 match port {
                     $(
-                        stringify!($output_field_name) => { self.outputs.$output_field_name.connect(component::downcast(send)); }
+                        stringify!($output_field_name) => { self.outputs.$output_field_name.connect(component::downcast(_send)); }
                     ),*
                     _ => {},
                 }    
@@ -406,22 +410,22 @@ macro_rules! component {
                 self.inputs_array.add_selection_receiver(port, selection, rec);
             }
 
-            fn add_output_selection(&mut self, port: &'static str, selection: &'static str){
+            fn add_output_selection(&mut self, port: &'static str, _selection: &'static str){
                 match port {
                     $(
-                        stringify!($output_array_name) => { self.outputs_array.$output_array_name.insert(selection, OutputSender::new()); }
+                        stringify!($output_array_name) => { self.outputs_array.$output_array_name.insert(_selection, OutputSender::new()); }
                     ),*
                     _ => {},
                 }    
 
             }
 
-            fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>){
+            fn connect_array(&mut self, port: &'static str, _selection: &'static str, _send: Box<Any>){
                 match port {
                     $(
                         stringify!($output_array_name) => { 
-                            let mut s = self.outputs_array.$output_array_name.get_mut(selection).expect("connect_array : selection not found");
-                            s.connect(component::downcast(send)); 
+                            let mut s = self.outputs_array.$output_array_name.get_mut(_selection).expect("connect_array : selection not found");
+                            s.connect(component::downcast(_send)); 
                         }
                     ),*
                     _ => {},
@@ -431,6 +435,7 @@ macro_rules! component {
 
         /* Global component */
 
+        #[allow(dead_code)]
         struct $name<$( $( $c_t ),* )*> {
             inputs: $i_name2<$( $( $i_t ),* )*>,
             inputs_array:$ia_name2<$( $( $ia_t ),* )*>,
