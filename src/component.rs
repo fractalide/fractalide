@@ -16,415 +16,221 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-#![feature(core)]
-#![feature(alloc)]
-use std::marker::Reflect;
-use std::raw::TraitObject;
-use std::boxed;
-
-use std::collections::HashMap;
-
-use std::sync::mpsc::{SyncSender, Sender, Receiver, SendError, RecvError};
-use std::sync::mpsc::sync_channel;
+use std::sync::mpsc::{SyncSender, Sender, SendError};
 use std::sync::mpsc::channel;
 
-use std::thread;
-use std::mem;
 use std::any::Any;
+use std::marker::Reflect;
+use std::raw::TraitObject;
+use std::mem;
+use std::thread;
 
-/*
- * Input Ports for the state, only the receivers
- */
-
-pub type IP = Box<Any + Send>;
-
-pub trait ReceiverIP<T> {
-    fn recv_ip<I: Reflect + 'static>(&self) -> Result<I, RecvError>;
+pub trait InputSenders {
+    fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
 }
-impl ReceiverIP<IP> for Receiver<IP> {
-    fn recv_ip<I: Reflect + 'static>(&self) -> Result<I, RecvError> {
-        unsafe {
-            let obj: Box<Any> = self.recv().unwrap();
-            if !(*obj).is::<I>(){
-                panic!("Type mismatch");
-            }
-            let raw: TraitObject = mem::transmute(Box::into_raw(obj));
-            Ok(*Box::from_raw(raw.data as *mut I))
+
+pub trait InputArraySenders {
+    fn get_selection_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>>;
+    fn add_selection_sender(&mut self, port: &'static str, selection: &'static str, sender: Box<Any>);
+    fn get_sender_receiver(&self, port: &'static str) -> Option<(Box<Any + Send + 'static>, Box<Any + Send + 'static>)>;
+}
+
+pub trait InputArrayReceivers {
+    fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
+}
+
+pub trait Component: ComponentRun + ComponentConnect {}
+impl<T> Component for T where T: ComponentRun + ComponentConnect {}
+
+pub trait ComponentRun: Send{
+    fn run(&self);
+}
+
+pub trait ComponentConnect: Send {
+    fn connect(&mut self, port_out: &'static str, send: Box<Any>);
+    fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
+    fn add_output_selection(&mut self, port: &'static str, selection: &'static str);
+    fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>);
+}
+
+pub fn downcast<I: Reflect + 'static>(i: Box<Any>) -> I {
+    unsafe {
+        let obj: Box<Any> = i;
+        if !(*obj).is::<I>(){
+            panic!("Type mismatch");
         }
+        let raw: TraitObject = mem::transmute(Box::into_raw(obj));
+        *Box::from_raw(raw.data as *mut I)
     }
 }
 
-trait InputPort {
+pub trait IP: Send + Reflect + 'static {}
+impl<T> IP for T where T: Send + Reflect + 'static {}
+
+
+pub struct OutputSender<T> {
+    send: Option<SyncSender<T>>,
 }
-impl InputPort for HashMap<&'static str, Receiver<IP>> {}
-
-pub struct InputPorts {
-   pub simple: HashMap<&'static str, Receiver<IP>>,
-   pub array: HashMap<&'static str, HashMap<&'static str, Receiver<IP>>>,
-}
-
-impl InputPorts {
-
-    fn new() -> Self {
-        InputPorts { 
-            simple: HashMap::new(), 
-            array: HashMap::new(),
-        }
-    }
-}
-
-#[test]
-fn input_ports_tests() {
-   let mut input = InputPorts::new();
-   let (tx, rx) = sync_channel(16);
-   input.simple.insert("input", rx);
-   tx.send(Box::new(42)).unwrap();
-   {
-   let port = input.simple.get("input").unwrap();
-   let result: i32 = port.recv_ip().unwrap();
-   assert_eq!(result, 42);
-   }
-   {
-   let recv = input.simple.remove("input");
-   assert!(recv.is_some());
-   }
-   {
-   let recv = input.simple.remove("input");
-   assert!(recv.is_none());
-   }
-   let port = input.simple.get("input");
-   assert!(port.is_none());
-}
-
-/*
- * Output Ports for the state
- */
-
-pub enum OutputPortError {
+pub enum OutputPortError<T> {
     NotConnected,
-    CannotSend(SendError<IP>),
+    CannotSend(SendError<T>),
 }
 
-pub struct OutputSender {
-    send: Option<SyncSender<IP>>,
-}
-impl OutputSender {
-    fn new() -> Self {
+impl<T> OutputSender<T> {
+    pub fn new() -> Self {
         OutputSender { send: None, }
     }
 
-    pub fn connect(&mut self, send: SyncSender<IP>){
+    pub fn connect(&mut self, send: SyncSender<T>){
         self.send = Some(send);
     }
 
-    pub fn send<T: Any + Send>(&self, msg: T) -> Result<(), OutputPortError> {
+    pub fn send(&self, msg: T) -> Result<(), OutputPortError<T>> {
         if self.send.is_none() {
             Err(OutputPortError::NotConnected)
         } else {
             let send = self.send.as_ref().unwrap();
-            let res = send.send(Box::new(msg));
+            let res = send.send(msg);
             if res.is_ok() { Ok(()) }
             else { Err(OutputPortError::CannotSend(res.unwrap_err())) }
         }
     }
-
-
 }
+impl<T> Reflect for OutputSender<T> where T: Reflect {}
 
-trait OutputPort {
-    fn insert_empty(&mut self, name: &'static str) -> Option<OutputSender>; 
-}
-impl OutputPort for HashMap<&'static str, OutputSender> {
-    fn insert_empty(&mut self, name: &'static str) -> Option<OutputSender>{
-        self.insert(name, OutputSender::new())
-    }
-}
-
-pub struct OutputPorts {
-    pub simple: HashMap<&'static str, OutputSender>,
-    pub array: HashMap<&'static str, HashMap<&'static str, OutputSender>>,
-}
-
-impl OutputPorts {
-    fn new() -> Self {
-        OutputPorts { 
-            simple: HashMap::new(),
-            array: HashMap::new(),
-        }
-    }
-}
-
-
-#[test]
-fn output_ports_tests() {
-   let mut output = OutputPorts::new();
-   let (tx, rx) = sync_channel(16);
-   {
-   let res = output.simple.insert_empty("output");
-   assert!(res.is_none());
-   }
-   output.simple.insert_empty("output");
-   {
-   let res = output.simple.remove("output");
-   assert!(res.is_some());
-   }
-   {
-   let res = output.simple.remove("output");
-   assert!(res.is_none());
-   }
-   output.simple.insert_empty("output");
-   let mut out = output.simple.get_mut("output").unwrap();
-   out.connect(tx);
-   out.send(42);
-   let res: i32 = rx.recv_ip().unwrap();
-   assert_eq!(res, 42);
-}
-
-#[test]
-fn input_output_ports_tests() {
-    let mut input = InputPorts::new();
-    let mut output = OutputPorts::new();
-    let (tx, rx) = sync_channel(16);
-    input.simple.insert("input", rx);
-    output.simple.insert_empty("output");
-    let out = output.simple.get_mut("output").unwrap();
-    out.connect(tx);
-    out.send(42);
-    let port = input.simple.get("input").unwrap();
-    let msg: i32 = port.recv_ip().unwrap();
-    assert_eq!(msg, 42);
-}
-
-
-/*
- * Component Structure
- * Divided in two : component and state. 
- * The component is the user interface for the component.
- * The state is the running part of the component, in a Thread.
- * The two use a channel to interact.
- */
-
-pub struct ComponentCreator {
-    pub closure: Box<Closure + Send + 'static>,
-    pub input_ports: Vec<&'static str>,
-    pub output_ports: Vec<&'static str>,
-    pub input_array_ports: Vec<&'static str>,
-    pub output_array_ports: Vec<&'static str>,
-}
-
-pub trait Closure {
-    fn run(&mut self, input_ports: &InputPorts, output_ports: &OutputPorts);
-}
-
-pub type BoxedClosure = Box<Closure + Send>;
+pub type BoxedComp = Box<Component + Send + 'static>;
 
 enum CompMsg {
     Start, Stop, Halt,
-    RunEnd(BoxedClosure, InputPorts, OutputPorts),
-    ConnectOutputPort(&'static str, SyncSender<IP>),
-    ConnectOutputArrayPort(&'static str, &'static str, SyncSender<IP>),
-    AddInputPort(&'static str, Receiver<IP>),
-    AddInputArrayPort(&'static str),
-    AddInputArraySelection(&'static str, &'static str, Receiver<IP>),
-    AddOutputPort(&'static str),
-    AddOutputArrayPort(&'static str),
+    RunEnd(BoxedComp),
+    AddInputArraySelection(&'static str, &'static str, Box<Any + Send + 'static>),
     AddOutputArraySelection(&'static str, &'static str),
+    ConnectOutputPort(&'static str, Box<Any + Send + 'static>),
+    ConnectOutputArrayPort(&'static str, &'static str, Box<Any + Send + 'static>),
 }
 
-enum CompError {
-    PortNotFound(&'static str),
-}
-
-
-pub struct Component {
+pub struct CompRunner {
     sender: Sender<CompMsg>,
-    input_simple_senders: HashMap<&'static str, SyncSender<IP>>,
-    input_array_senders: HashMap<&'static str, HashMap<&'static str, SyncSender<IP>>>,
+    input_senders: Box<InputSenders>,
+    input_array_senders: Box<InputArraySenders>,
 }
-
-impl Component {
-    pub fn new(c: ComponentCreator) -> Self {
-        let (control_s, control_r) = channel();
-        {
-            let control_sender = control_s.clone();
-            let mut state = State::new(c.closure, control_sender);
-            thread::spawn(move || {
-                loop {
-                    let msg = control_r.recv().unwrap();
-                    match msg {
-                        CompMsg::Start => { state.start(); },
-                        CompMsg::Stop => { state.stop(); },
-                        CompMsg::Halt => { break; },
-                        CompMsg::RunEnd(closure, inputs, outputs)  => { state.run_end(closure, inputs, outputs); },
-                        CompMsg::AddInputPort(name, rec) => { state.receive_edit_msg(CompMsg::AddInputPort(name, rec)); },
-                        CompMsg::AddInputArrayPort(name) => { state.receive_edit_msg(CompMsg::AddInputArrayPort(name)); },
-                        CompMsg::AddInputArraySelection(name, selection, rec) => { state.receive_edit_msg(CompMsg::AddInputArraySelection(name, selection, rec)); },
-                        CompMsg::AddOutputPort(name) => { state.receive_edit_msg(CompMsg::AddOutputPort(name)); },
-                        CompMsg::AddOutputArrayPort(name) => { state.receive_edit_msg(CompMsg::AddOutputArrayPort(name)); },
-                        CompMsg::AddOutputArraySelection(name, selection) => { state.receive_edit_msg(CompMsg::AddOutputArraySelection(name, selection)); },
-                        CompMsg::ConnectOutputPort(port, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port, send)); },
-                        CompMsg::ConnectOutputArrayPort(port, selection, send) => { state.receive_edit_msg(CompMsg::ConnectOutputArrayPort(port, selection, send)); },
-                    }
+impl CompRunner {
+    pub fn new(c: (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)) -> Self {
+        let (s,r) = channel();
+        let mut state = State::new(c.0, s.clone());
+        thread::spawn(move || {
+            loop {
+                let msg = r.recv().unwrap();
+                match msg {
+                    CompMsg::Start => { state.start(); },
+                    CompMsg::Stop => { state.stop(); },
+                    CompMsg::Halt => { break; },
+                    CompMsg::RunEnd(comp) => { state.run_end(comp); },
+                    CompMsg::ConnectOutputPort(port_out, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port_out, send)); },
+                    CompMsg::ConnectOutputArrayPort(port, selection, send) => { state.receive_edit_msg(CompMsg::ConnectOutputArrayPort(port, selection, send)); },
+                    CompMsg::AddInputArraySelection(port, selection, rec) => { state.receive_edit_msg(CompMsg::AddInputArraySelection(port, selection, rec)); },
+                    CompMsg::AddOutputArraySelection(port, selection) => { state.receive_edit_msg(CompMsg::AddOutputArraySelection(port, selection)); },
                 }
-            });
+            }
+        });
+        CompRunner{
+            sender: s,
+            input_senders: c.1,
+            input_array_senders: c.2,
         }
-        let mut comp = Component {
-            sender: control_s,
-            input_simple_senders: HashMap::new(),
-            input_array_senders: HashMap::new(),
-        };
-        for input in c.input_ports {
-            comp.add_input_port(input);
-        }
-        for output in c.output_ports {
-            comp.add_output_port(output);
-        }
-        for input in c.input_array_ports {
-            comp.add_input_array_port(input);
-        }
-        for output in c.output_array_ports {
-            comp.add_output_array_port(output);
-        }
-        comp
     }
 
-    pub fn add_input_port(&mut self, name: &'static str) {
-        let (tx, rx) = sync_channel(16);
-        self.input_simple_senders.insert(name, tx);
-        self.sender.send(CompMsg::AddInputPort(name, rx)).unwrap();
+    pub fn connect(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str){
+        let s = comp.get_sender(port_in).unwrap();
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
     }
 
-    pub fn add_input_array_port(&mut self, name: &'static str) {
-        self.input_array_senders.insert(name, HashMap::new());
-        self.sender.send(CompMsg::AddInputArrayPort(name)).unwrap();
+    pub fn connect_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str){
+        let s = comp.get_sender(port_in).expect("CompRunner -> connect_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
+    }
+
+    pub fn connect_to_array(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
+        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_to_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
+    }
+
+    pub fn connect_array_to_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
+        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_array_to_array -> don't find the sender");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
     }
     
-    pub fn add_input_array_selection(&mut self, name: &'static str, selection: &'static str) {
-        let (tx, rx) = sync_channel(16);
-        let mut array = self.input_array_senders.get_mut(name).unwrap();
-        array.insert(selection, tx);
-        self.sender.send(CompMsg::AddInputArraySelection(name, selection, rx)).unwrap();
+    
+    pub fn get_sender(&self, port_in: &'static str) -> Option<Box<Any + Send + 'static>> {
+        self.input_senders.get_sender(port_in)
     }
 
-    pub fn add_output_port(&mut self, name: &'static str) {
-        self.sender.send(CompMsg::AddOutputPort(name)).unwrap();
+    pub fn get_array_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>> {
+        self.input_array_senders.get_selection_sender(port, selection)
     }
 
-    pub fn add_output_array_port(&mut self, name: &'static str) {
-        self.sender.send(CompMsg::AddOutputArrayPort(name)).unwrap();
+    pub fn add_input_array_selection(&mut self, port: &'static str, selection: &'static str) {
+        let (s, r) = self.input_array_senders.get_sender_receiver(port).unwrap();
+        self.input_array_senders.add_selection_sender(port, selection, s);
+        self.sender.send(CompMsg::AddInputArraySelection(port, selection, r)).ok().expect("unable to send to the state");
     }
 
-    pub fn add_output_array_selection(&mut self, name: &'static str, selection: &'static str) {
-        self.sender.send(CompMsg::AddOutputArraySelection(name, selection)).unwrap();
-    }
-
-    pub fn connect_output_port(&mut self, port_out: &'static str, rec: &Component, port_in: &'static str) {
-        let s = rec.get_sender(port_in);
-        if let Some(s) = s {
-            self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).unwrap();
-        }
-    }
-
-    pub fn connect_output_port_to_array(&mut self, port_out: &'static str, rec: &Component, port_in: &'static str, selection_in: &'static str) {
-        let s = rec.get_array_sender(port_in, selection_in);
-        if let Some(s) = s {
-            self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).unwrap();
-        }
-    }
-
-    pub fn connect_output_array_port(&mut self, port_out: &'static str, selection_out: &'static str, rec: &Component, port_in: &'static str) {
-        let s = rec.get_sender(port_in);
-        if let Some(s) = s {
-            self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).unwrap();
-        }
-    }
-
-    pub fn connect_output_array_port_to_array(&mut self, port_out: &'static str, selection_out: &'static str, rec: &Component, port_in: &'static str, selection_in: &'static str) {
-        let s = rec.get_array_sender(port_in, selection_in);
-        if let Some(s) = s {
-            self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).unwrap();
-        }
+    pub fn add_output_array_selection(&self, port: &'static str, selection: &'static str) {
+        self.sender.send(CompMsg::AddOutputArraySelection(port, selection)).ok().expect("unable to send to the state");
     }
 
     pub fn start(&self) {
-        self.sender.send(CompMsg::Start).unwrap();
+        self.sender.send(CompMsg::Start).ok().expect("unable to send to the state");
     }
 
-    pub fn get_sender(&self, name: &'static str) -> Option<SyncSender<IP>> {
-        match self.input_simple_senders.get(name) {
-            None => { None },
-            Some(s) => {
-                Some(s.clone())
-            }
-        }
-    }
-
-    pub fn get_array_sender(&self, name: &'static str, selection: &'static str) -> Option<SyncSender<IP>> {
-        let port = self.input_array_senders.get(name).unwrap();
-        match port.get(selection) {
-            None => { None },
-            Some(s) => { 
-                Some(s.clone())
-            }
-        }
-    }
 }
 
 struct State {
-    control_sender:Sender<CompMsg>,
-    closure: Option<BoxedClosure>,
-    in_receivers: Option<InputPorts>,
-    out_senders: Option<OutputPorts>,
+    runner_s: Sender<CompMsg>,
+    comp: Option<BoxedComp>,
     can_run: bool,
     edit_msgs: Vec<CompMsg>,
 }
 
 impl State {
-    fn new(c: BoxedClosure, cs: Sender<CompMsg>) -> Self {
+    fn new(c: BoxedComp, rs: Sender<CompMsg>) -> Self {
         State {
-            control_sender: cs,
-            closure: Some(c),
-            in_receivers: Some(InputPorts::new()),
-            out_senders: Some(OutputPorts::new()),
+            runner_s: rs,
+            comp: Some(c),
             can_run: false,
             edit_msgs: vec![],
         }
     }
 
-    fn edit_component(&mut self, msg: CompMsg){
-        match msg {
-            CompMsg::AddInputPort(name, rec) => {
-                self.in_receivers.as_mut().unwrap().simple.insert(name, rec);
-            },
-            CompMsg::AddInputArrayPort(name) => {
-                self.in_receivers.as_mut().unwrap().array.insert(name, HashMap::new());
-            }
-            CompMsg::AddInputArraySelection(name, selection, rec) => {
-                let mut port = self.in_receivers.as_mut().unwrap().array.get_mut(name).unwrap();
-                port.insert(selection, rec);
-            }
-            CompMsg::AddOutputPort(name) => {
-                self.out_senders.as_mut().unwrap().simple.insert_empty(name);
-            },
-            CompMsg::AddOutputArrayPort(name) => {
-                self.out_senders.as_mut().unwrap().array.insert(name, HashMap::new());
-            },
-            CompMsg::AddOutputArraySelection(name, selection) => {
-                let mut port = self.out_senders.as_mut().unwrap().array.get_mut(name).expect("Unable to found the array port");
-                port.insert_empty(selection);
-            },
-            CompMsg::ConnectOutputPort(name, send) => {
-                let port = self.out_senders.as_mut().unwrap().simple.get_mut(name).unwrap();
-                port.connect(send);
-            },
-            CompMsg::ConnectOutputArrayPort(name, selection, send) => {
-                let mut port = self.out_senders.as_mut().unwrap().array.get_mut(name).unwrap();
-                let mut selection = port.get_mut(selection).unwrap();
-                selection.connect(send);
-            }
-            _ => { },
+    fn start(&mut self) {
+        if !self.can_run {
+            self.can_run = true;
+            self.run();
         }
+    }
 
+    fn stop(&mut self) {
+        self.can_run = false;
+    }
+    
+    fn run(&mut self) {
+        let c = mem::replace(&mut self.comp, None).unwrap();
+        let rs = self.runner_s.clone();
+        thread::spawn(move || {
+            c.run();
+            rs.send(CompMsg::RunEnd(c)).unwrap();
+        });
+    }
+
+    fn run_end(&mut self, c: BoxedComp) {
+        self.comp = Some(c);
+        let msgs = mem::replace(&mut self.edit_msgs, vec![]);
+        for msg in msgs {
+            self.edit_component(msg);
+        }
+        if self.can_run {
+            self.run();
+        }
     }
 
     fn receive_edit_msg(&mut self, msg: CompMsg){
@@ -435,80 +241,261 @@ impl State {
         }
     }
 
-    fn start(&mut self) { 
-        if !self.can_run {
-            self.can_run = true;
-            self.run(); 
+    fn edit_component(&mut self, msg: CompMsg){
+        match msg{
+            CompMsg::ConnectOutputPort(port_out, send) => {
+                if let Some(ref mut c) = self.comp {
+                    c.connect(port_out, send);
+                }
+            },
+            CompMsg::ConnectOutputArrayPort(port_out, selection, send) => {
+                if let Some(ref mut c) = self.comp {
+                    c.connect_array(port_out, selection, send);
+                }
+            },
+            CompMsg::AddInputArraySelection(port, selection, rec) => {
+                if let Some(ref mut c) = self.comp {
+                    c.add_selection_receiver(port, selection, rec);
+                }
+            }
+            CompMsg::AddOutputArraySelection(port, selection) => {
+                if let Some(ref mut c) = self.comp {
+                    c.add_output_selection(port, selection);
+                }
+            }
+
+            _ => { panic!("Wrong edit message"); }
         }
     }
 
-    fn stop(&mut self) { 
-        self.can_run = false;
-    }
-
-    fn run_end(&mut self, c: BoxedClosure, i: InputPorts, o: OutputPorts) {
-        self.closure = Some(c);
-        self.in_receivers = Some(i);
-        self.out_senders = Some(o);
-        let msgs = mem::replace(&mut self.edit_msgs, vec![]);
-        for msg in msgs {
-            self.edit_component(msg);
-        }
-        if self.can_run {
-            self.run();
-        }
-    }
-
-    fn run(&mut self) {
-        let mut c = mem::replace(&mut self.closure, None).unwrap();
-        let inputs = mem::replace(&mut self.in_receivers, None).unwrap();
-        let outputs = mem::replace(&mut self.out_senders, None).unwrap();
-        let control_sender = self.control_sender.clone();
-
-        thread::spawn(move || {
-            c.run(&inputs, &outputs);
-            control_sender.send(CompMsg::RunEnd(c, inputs, outputs)).unwrap();
-        });
-    }
 }
 
-#[test]
-fn edit_state_tests() {
-    struct Test; 
-    impl Closure for Test {
-        fn run(&mut self, input: &InputPorts, output: &OutputPorts){
+
+#[macro_export]
+macro_rules! component {
+    (
+        $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
+        inputs($i_name:ident $i_name2:ident $( ( $($i_t:ident$(: $i_tr:ident)* ),* ) )* => ($($input_field_name:ident: $input_field_type:ty ),* )),
+        inputs_array($ia_name: ident $ia_name2:ident $( ( $($ia_t:ident$(: $ia_tr:ident)* ),* ) )* => ($($input_array_name:ident: $input_array_type:ty),* )),
+        outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
+        outputs_array($oa_name:ident $( ( $($oa_t:ident$(: $oa_tr:ident)* ),* ) )* => ($($output_array_name:ident: $output_array_type:ty ),* )),
+        fn run(&$arg:ident) $fun:block
+    ) 
+        =>
+    {
+        /* Input ports part */
+
+        // simple
+        #[allow(dead_code)]
+        struct $i_name<$( $( $i_t ),* )*> {
+            $(
+                $input_field_name: SyncSender<$input_field_type>
+            ),*
         }
+
+        #[allow(dead_code)]
+        struct $i_name2<$( $( $i_t ),* )*> {
+            $(
+                $input_field_name: Receiver<$input_field_type>
+            ),*
+        }
+
+        impl<$( $( $i_t: $($i_tr)* ),* )*> InputSenders for $i_name<$( $( $i_t),* )*>{
+            fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
+                match port {
+                    $(
+                        stringify!($input_field_name) => { Some(Box::new(self.$input_field_name.clone())) }
+                    ),*
+                    _ => { None },
+                }    
+            }
+        }
+
+        // array
+        #[allow(dead_code)]
+        struct $ia_name<$( $( $ia_t ),* )*> {
+            $(
+                $input_array_name: HashMap<&'static str, SyncSender<$input_array_type>>
+            ),*    
+        }
+        #[allow(dead_code)]
+        struct $ia_name2<$( $( $ia_t ),* )*> {
+            $(
+                $input_array_name: HashMap<&'static str, Receiver<$input_array_type>>
+            ),*    
+        }
+
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for $ia_name<$( $( $ia_t),* )*>{
+            fn get_selection_sender(&self, port: &'static str, _selection: &'static str) -> Option<Box<Any + Send + 'static>> {
+                match port {
+                    $(
+                        stringify!($input_array_name) => { 
+                            let p = self.$input_array_name.get(_selection).expect("get_selection_sender : the port doesn't exist");
+                            Some(Box::new(p.clone())) 
+                        }
+                    ),*
+                    _ => { None },
+                }    
+            }
+
+            fn add_selection_sender(&mut self, port: &'static str, _selection: &'static str, _sender: Box<Any>){
+                match port {
+                    $(
+                        stringify!($input_array_name) => { 
+                             self.$input_array_name.insert(_selection, component::downcast(_sender));
+
+                        }
+                    ),*
+                    _ => { println!("add_selection_sender : Add Nothing!"); },
+                }    
+            }
+
+            fn get_sender_receiver(&self, port: &'static str) -> Option<(Box<Any + Send + 'static>, Box<Any + Send + 'static>)>{
+                match port {
+                    $(
+                        stringify!($input_array_name) => { 
+                            let (s, r) : (SyncSender<$input_array_type>, Receiver<$input_array_type>)= sync_channel(16);
+                            Some((Box::new(s), Box::new(r)))
+                        }
+                    ),*
+                    _ => { None },
+                }    
+            }
+        }
+
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for $ia_name2<$( $( $ia_t),* )*>{
+            fn add_selection_receiver(&mut self, port: &'static str, _selection: &'static str, _receiver: Box<Any>){
+                match port {
+                    $(
+                        stringify!($input_array_name) => { 
+                            self.$input_array_name.insert(_selection, component::downcast(_receiver));
+                        }
+                    ),*
+                    _ => { println!("add_selection_receivers : Add Nothing!"); },
+                }    
+            }
+        }
+
+
+        /* Output ports part */
+
+        // simple
+        #[allow(dead_code)]
+        struct $o_name<$( $( $o_t ),* )*> {
+            $(
+                $output_field_name: OutputSender<$output_field_type>
+            ),*
+        }
+
+        // array
+        #[allow(dead_code)]
+        struct $oa_name<$( $( $oa_t ),* )*> {
+            $(
+                $output_array_name: HashMap<&'static str, OutputSender<$output_array_type>>
+            ),*
+        }
+
+        // simple and array
+        impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentConnect for $name<$( $( $c_t ),* ),* >{
+            fn connect(&mut self, port: &'static str, _send: Box<Any>) {
+                match port {
+                    $(
+                        stringify!($output_field_name) => { self.outputs.$output_field_name.connect(component::downcast(_send)); }
+                    ),*
+                    _ => {},
+                }    
+            }
+
+            fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>) {
+                self.inputs_array.add_selection_receiver(port, selection, rec);
+            }
+
+            fn add_output_selection(&mut self, port: &'static str, _selection: &'static str){
+                match port {
+                    $(
+                        stringify!($output_array_name) => { self.outputs_array.$output_array_name.insert(_selection, OutputSender::new()); }
+                    ),*
+                    _ => {},
+                }    
+
+            }
+
+            fn connect_array(&mut self, port: &'static str, _selection: &'static str, _send: Box<Any>){
+                match port {
+                    $(
+                        stringify!($output_array_name) => { 
+                            let mut s = self.outputs_array.$output_array_name.get_mut(_selection).expect("connect_array : selection not found");
+                            s.connect(component::downcast(_send)); 
+                        }
+                    ),*
+                    _ => {},
+                }    
+            }
+        }
+
+        /* Global component */
+
+        #[allow(dead_code)]
+        struct $name<$( $( $c_t ),* )*> {
+            inputs: $i_name2<$( $( $i_t ),* )*>,
+            inputs_array:$ia_name2<$( $( $ia_t ),* )*>,
+            outputs: $o_name<$( $( $o_t ),* )*>,
+            outputs_array: $oa_name<$( $( $oa_t ),* )*>,
+        }
+
+        impl<$( $( $c_t: $($c_tr)* ),* )*> $name<$( $( $c_t ),* ),*>{
+            fn new() -> (Box<Component + Send>, Box<InputSenders>, Box<InputArraySenders>) {
+                // Creation of the inputs
+                $(
+                    let $input_field_name = sync_channel::<$input_field_type>(16);
+                )*
+                let s = $i_name {
+                $(
+                    $input_field_name: $input_field_name.0
+                ),*    
+                };
+                let r = $i_name2 {
+                $(
+                    $input_field_name: $input_field_name.1
+                ),*    
+                };
+
+                // Creation of the array inputs
+                let a_s = $ia_name {
+                $(
+                    $input_array_name: HashMap::<&'static str, SyncSender<$input_array_type>>::new(),
+                ),*
+                };
+                let a_r = $ia_name2 {
+                $(
+                    $input_array_name: HashMap::<&'static str, Receiver<$input_array_type>>::new(),
+                ),*
+                };
+
+                // Creation of the output
+                let out = $o_name {
+                    $(
+                        $output_field_name: OutputSender::new(),
+                    ),*    
+                };
+
+                // Creation of the array output
+                let out_array = $oa_name {
+                    $(
+                        $output_array_name: HashMap::<&'static str, OutputSender<$output_array_type>>::new(),
+                    ),*
+                };
+
+                // Put it together
+                let comp = $name{
+                    inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array
+                };
+                (Box::new(comp), Box::new(s), Box::new(a_s))
+            }
+        }
+
+        impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentRun for $name<$( $( $c_t ),* ),* >{
+            fn run(&$arg) $fun
+        }    
     }
-    let (tx, rx) = channel();
-    let mut state = State::new(Box::new(Test), tx);
-
-    // Add while not running
-    assert!(state.edit_msgs.len() == 0);
-    state.receive_edit_msg(CompMsg::AddOutputPort("input"));
-    assert!(state.edit_msgs.len() == 0);
-    assert!(state.out_senders.as_mut().unwrap().simple.len() == 1);
-
-    // Add while running
-    state.start();
-    state.receive_edit_msg(CompMsg::AddOutputPort("input2"));
-    // Must save the msg
-    assert!(state.edit_msgs.len() == 1);
-    assert!(state.out_senders.is_none());
-    // At the end, the msg must read. As the closure run again, we have
-    // no access to the out_senders
-    state.run_end(Box::new(Test), InputPorts::new(), OutputPorts::new());
-    assert!(state.edit_msgs.len() == 0);
-    assert!(state.out_senders.is_none());
-
-    // Add after stop
-    state.receive_edit_msg(CompMsg::AddOutputPort("input3"));
-    state.stop();
-    state.run_end(Box::new(Test), InputPorts::new(), OutputPorts::new());
-    assert!(state.edit_msgs.len() == 0);
-    assert!(state.out_senders.as_mut().unwrap().simple.len() == 1);
-
-    // receive useless msgs
-    rx.recv();
-    rx.recv();
-
 }
