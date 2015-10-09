@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
-use std::sync::mpsc::{SyncSender, Sender, SendError};
+use std::sync::mpsc::{SyncSender, Sender, Receiver, SendError};
 use std::sync::mpsc::channel;
 
 use std::any::Any;
@@ -43,7 +43,7 @@ pub trait Component: ComponentRun + ComponentConnect {}
 impl<T> Component for T where T: ComponentRun + ComponentConnect {}
 
 pub trait ComponentRun: Send{
-    fn run(&self);
+    fn run(&mut self);
 }
 
 pub trait ComponentConnect: Send {
@@ -97,6 +97,39 @@ impl<T> OutputSender<T> {
     }
 }
 impl<T> Reflect for OutputSender<T> where T: Reflect {}
+
+pub struct OptionReceiver<T> {
+    opt: Option<T>,
+    receiver: Receiver<T>,
+}
+impl<T: Clone> OptionReceiver<T> {
+    pub fn new(r: Receiver<T>) -> Self {
+        OptionReceiver{ 
+            opt: None,
+            receiver: r,
+        }
+    }
+
+    fn recv_last(&mut self, acc: Option<T>) -> T {
+        let msg = self.receiver.try_recv();
+        match msg {
+            Ok(msg) => {
+                self.recv_last(Some(msg))
+            },
+            _ => {
+                if acc.is_some() { acc.unwrap() }
+                else { self.receiver.recv().unwrap() }
+            }
+        }
+    }
+
+    pub fn recv(&mut self) -> T {
+        let actual = mem::replace(&mut self.opt, None);
+        let opt = self.recv_last(actual); 
+        self.opt = Some(opt.clone());
+        opt
+    }
+}
 
 pub type BoxedComp = Box<Component + Send + 'static>;
 
@@ -214,7 +247,7 @@ impl State {
     }
     
     fn run(&mut self) {
-        let c = mem::replace(&mut self.comp, None).unwrap();
+        let mut c = mem::replace(&mut self.comp, None).unwrap();
         let rs = self.runner_s.clone();
         thread::spawn(move || {
             c.run();
@@ -279,7 +312,8 @@ macro_rules! component {
         inputs_array($ia_name: ident $ia_name2:ident $( ( $($ia_t:ident$(: $ia_tr:ident)* ),* ) )* => ($($input_array_name:ident: $input_array_type:ty),* )),
         outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
         outputs_array($oa_name:ident $( ( $($oa_t:ident$(: $oa_tr:ident)* ),* ) )* => ($($output_array_name:ident: $output_array_type:ty ),* )),
-        fn run(&$arg:ident) $fun:block
+        $( option($option_type:ty), )*
+        fn run(&mut $arg:ident) $fun:block
     ) 
         =>
     {
@@ -289,23 +323,35 @@ macro_rules! component {
         #[allow(dead_code)]
         struct $i_name<$( $( $i_t ),* )*> {
             $(
-                $input_field_name: SyncSender<$input_field_type>
-            ),*
+                $input_field_name: SyncSender<$input_field_type>,
+            )*
+            $( 
+                option: SyncSender<$option_type>,
+            )*
         }
 
         #[allow(dead_code)]
         struct $i_name2<$( $( $i_t ),* )*> {
             $(
-                $input_field_name: Receiver<$input_field_type>
-            ),*
+                $input_field_name: Receiver<$input_field_type>,
+            )*
+            $( 
+                option: OptionReceiver<$option_type>,
+            )*
         }
 
         impl<$( $( $i_t: $($i_tr)* ),* )*> InputSenders for $i_name<$( $( $i_t),* )*>{
             fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
                 match port {
                     $(
-                        stringify!($input_field_name) => { Some(Box::new(self.$input_field_name.clone())) }
-                    ),*
+                        stringify!($input_field_name) => { Some(Box::new(self.$input_field_name.clone())) },
+                    )*
+                    $(
+                        "option" => { 
+                            let s : SyncSender<$option_type> = self.option.clone();
+                            Some(Box::new(s)) 
+                        }, 
+                    )*
                     _ => { None },
                 }    
             }
@@ -315,14 +361,14 @@ macro_rules! component {
         #[allow(dead_code)]
         struct $ia_name<$( $( $ia_t ),* )*> {
             $(
-                $input_array_name: HashMap<&'static str, SyncSender<$input_array_type>>
-            ),*    
+                $input_array_name: HashMap<&'static str, SyncSender<$input_array_type>>,
+            )*    
         }
         #[allow(dead_code)]
         struct $ia_name2<$( $( $ia_t ),* )*> {
             $(
-                $input_array_name: HashMap<&'static str, Receiver<$input_array_type>>
-            ),*    
+                $input_array_name: HashMap<&'static str, Receiver<$input_array_type>>,
+            )*    
         }
 
         impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for $ia_name<$( $( $ia_t),* )*>{
@@ -432,7 +478,7 @@ macro_rules! component {
                 }    
             }
         }
-
+        
         /* Global component */
 
         #[allow(dead_code)]
@@ -449,15 +495,26 @@ macro_rules! component {
                 $(
                     let $input_field_name = sync_channel::<$input_field_type>(16);
                 )*
+                $( 
+                    let options = sync_channel::<$option_type>(16);
+                    let options_s = options.0;
+                    let options_r = OptionReceiver::new(options.1);
+                )*
                 let s = $i_name {
                 $(
-                    $input_field_name: $input_field_name.0
-                ),*    
+                    $input_field_name: $input_field_name.0,
+                )*    
+                $(
+                    option: options_s as SyncSender<$option_type>,
+                )*
                 };
                 let r = $i_name2 {
                 $(
-                    $input_field_name: $input_field_name.1
-                ),*    
+                    $input_field_name: $input_field_name.1,
+                )*    
+                $(
+                    option: options_r as OptionReceiver<$option_type>,
+                )*
                 };
 
                 // Creation of the array inputs
@@ -488,14 +545,14 @@ macro_rules! component {
 
                 // Put it together
                 let comp = $name{
-                    inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array
+                    inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array,
                 };
                 (Box::new(comp), Box::new(s), Box::new(a_s))
             }
         }
 
         impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentRun for $name<$( $( $c_t ),* ),* >{
-            fn run(&$arg) $fun
+            fn run(&mut $arg) $fun
         }    
     }
 }
