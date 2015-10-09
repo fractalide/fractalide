@@ -25,34 +25,166 @@ use std::raw::TraitObject;
 use std::mem;
 use std::thread;
 
+/* 
+ *
+ * There are two main parts for a component : the component itself and the part that manage the
+ * connections and the running part. 
+ *
+ * Each component must implement some trait (InputSenders, InputArraySenders, InputArrayReceivers,
+ * ComponentRun and ComponentConnect). These traits give all the information for the connection
+ * between several components.
+ *
+ * The CompRunner, that manages the connection and the run of the component only interact with the
+ * Trait of the component.
+ *
+ */
+ 
+/// Manage the simple input ports of a component.
+///
+/// The trait had one method that allows to get the syncsender of the port "port"
+///
 pub trait InputSenders {
+    /// Get the SyncSender of the port "port".
+    /// If the port exists, this method return a SyncSender casted as a Box<Any>.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let sync_sender_boxed = inputs.get_sender("input").unwrap();
+    /// let sync_sender: SyncSender<i32> = downcast(sync_sender_boxed);
+    /// ```
     fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>>; 
 }
 
+/// Manage the array input ports of a component.
+///
+/// The trait, with the InputArrayReceivers,  allows to add and retrieve and create an array input port. 
+/// # Example
+///
+///
+/// ```
+/// let (s, r) = inputs_array.get_sender_receiver("numbers").unwrap();
+/// inputs_array.add_selection_sender("numbers", "1", s);
+/// inputs_array.add_selection_receiver("numbers", "1", r);
+///
+/// let sync_sender_boxed = inputs.get_sender("input").unwrap();
+/// let sync_sender: SyncSender<i32> = downcast(sync_sender_boxed);
+/// ```
 pub trait InputArraySenders {
+    /// Get the SyncSender of the selection "selection" of the port "port".
+    /// If the selection port exists, this method return a SyncSender casted as a Box<Any>.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let sync_sender_boxed = inputs_array.get_selectionsender("numbers", "1").unwrap();
+    /// let sync_sender: SyncSender<i32> = downcast(sync_sender_boxed);
+    /// ```
     fn get_selection_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>>;
+
+    /// Allow to add a SyncSender in an array input port.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let (s, _) = sync_channel(16);
+    /// inputs_array.add_selection_sender("numbers", "1", s);
+    /// ```
     fn add_selection_sender(&mut self, port: &'static str, selection: &'static str, sender: Box<Any>);
+    /// This method create a SyncSender and a Receiver for the array input port "port".
+    /// It returns a tuple (SyncSender, Receiver) both casted at Box<Any>
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let (s, r) = inputs_array.get_sender_receiver("numbers").unwrap();
+    /// let s: SyncSender<i32> = downcast(s);
+    /// let r: Recever<i32> = downcast(r);
+    /// ```
     fn get_sender_receiver(&self, port: &'static str) -> Option<(Box<Any + Send + 'static>, Box<Any + Send + 'static>)>;
 }
 
+/// Manage the array input ports of a component.
+///
+/// The trait, with the InputArraySenders,  allows to add and retrieve and create an array input port. 
+/// # Example
+///
+///
+/// ```
+/// let (s, r) = inputs_array.get_sender_receiver("numbers").unwrap();
+/// inputs_array.add_selection_sender("numbers", "1", s);
+/// inputs_array.add_selection_receiver("numbers", "1", r);
+///
+/// let sync_sender_boxed = inputs.get_sender("input").unwrap();
+/// let sync_sender: SyncSender<i32> = downcast(sync_sender_boxed);
+/// ```
 pub trait InputArrayReceivers {
+    /// Allow to add a Receiver in an array input port.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let (_, r) = sync_channel(16);
+    /// inputs_array.add_selection_receiver("numbers", "1", r);
+    /// ```
     fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
 }
 
+/// Allows to manage a component from outside
 pub trait Component: ComponentRun + ComponentConnect {}
 impl<T> Component for T where T: ComponentRun + ComponentConnect {}
 
+/// Allows to run a component once
 pub trait ComponentRun: Send{
+    /// Runs the component once. It read and write on the input and output ports.
     fn run(&mut self);
 }
 
+/// Allows to manage the simple and array output port
 pub trait ComponentConnect: Send {
+    /// Connects the output port "port" with a specific SyncSender
+    /// # Example
+    ///
+    /// ```
+    /// component.connect("output", a_sync_sender);
+    /// ```
     fn connect(&mut self, port_out: &'static str, send: Box<Any>);
-    fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
+    /// Create a selection "selection" for the array output port "port"
+    /// # Example
+    ///
+    /// ```
+    /// component.add_output_selection("output", "1");
+    /// ```
     fn add_output_selection(&mut self, port: &'static str, selection: &'static str);
+    /// Connects the selection "selection" of the array output port "port" with a specific SyncSender
+    /// # Example
+    ///
+    /// ```
+    /// component.connect_array("output", "1", a_sync_sender);
+    /// ```
     fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>);
+    /// Add a Receiver for the selection "selection" of the array input port "port"
+    /// # Example
+    ///
+    /// ```
+    /// component.add_selection_receiver("numbers", "1", a_receiver);
+    /// ```
+    fn add_selection_receiver(&mut self, port: &'static str, selection: &'static str, rec: Box<Any>);
 }
 
+/// Define the minimal traits that an IP must have
+pub trait IP: Send + Reflect + 'static {}
+impl<T> IP for T where T: Send + Reflect + 'static {}
+
+/// Downcast a Box<Any> to a type I. It returns the ownership of the variable, not a borrow.
+///
+/// # Example 
+///
+/// ```
+/// let a: i32 = 32;
+/// let b = Box::new(a) as Box<Any>;
+/// let c: i32 = downcast(b);
+/// ```
 pub fn downcast<I: Reflect + 'static>(i: Box<Any>) -> I {
     unsafe {
         let obj: Box<Any> = i;
@@ -64,27 +196,44 @@ pub fn downcast<I: Reflect + 'static>(i: Box<Any>) -> I {
     }
 }
 
-pub trait IP: Send + Reflect + 'static {}
-impl<T> IP for T where T: Send + Reflect + 'static {}
-
-
-pub struct OutputSender<T> {
-    send: Option<SyncSender<T>>,
-}
+/// Error for the OutputSender.
+///
+/// It says if the output port is not connected, or a classical SendError message.
 pub enum OutputPortError<T> {
     NotConnected,
     CannotSend(SendError<T>),
 }
 
+/// Represent a output port.
+///
+/// It allows to connect the port and send an IP through it.
+///
+/// # Example
+///
+/// ```
+/// let (s, r) = sync_channel(16);
+/// let os = OutputSender::<i32>::new();
+/// os.connect(s);
+/// os.send(23);
+/// assert_eq!(r.recv().unwrap(), 23);
+/// ```
+pub struct OutputSender<T> {
+    send: Option<SyncSender<T>>,
+}
 impl<T> OutputSender<T> {
+    /// Create a new unconnected OutputSender structure.
     pub fn new() -> Self {
         OutputSender { send: None, }
     }
 
+    /// Connect the OutputSener structure with the given SyncSender
     pub fn connect(&mut self, send: SyncSender<T>){
         self.send = Some(send);
     }
 
+    /// Send a message to the OutputPort. If the port is unconnected, it return a
+    /// OutputPortError::NotConnected. If there is an error while the transfer, it return the
+    /// corresponding SendError message.
     pub fn send(&self, msg: T) -> Result<(), OutputPortError<T>> {
         if self.send.is_none() {
             Err(OutputPortError::NotConnected)
@@ -98,11 +247,35 @@ impl<T> OutputSender<T> {
 }
 impl<T> Reflect for OutputSender<T> where T: Reflect {}
 
+/// Represent the default options simple input port
+///
+/// It is different from a classical Receiver because it :
+///
+/// * Remember the last message received
+/// 
+/// * If there is more than one message inside the channel, it keeps only the last one.
+///
+/// * If there is no message in the channel, it sends the last one. If it is the first message, it
+/// block until there is a message
+///
+/// # Example
+///
+/// ```
+/// let (s, r) = sync_channel(16);
+/// let or = OptionReceiver::new(r);
+/// s.send(23).unwrap();
+/// assert_eq!(or.recv().unwrap(), 23);
+/// assert_eq!(or.recv().unwrap(), 23);
+/// s.send(42).unwrap();
+/// s.send(666).unwrap();
+/// assert_eq!(or.recv().unwrap(), 666);
+/// ```
 pub struct OptionReceiver<T> {
     opt: Option<T>,
     receiver: Receiver<T>,
 }
 impl<T: Clone> OptionReceiver<T> {
+    /// Return a new OptionReceiver for the Receiver "r"
     pub fn new(r: Receiver<T>) -> Self {
         OptionReceiver{ 
             opt: None,
@@ -123,6 +296,7 @@ impl<T: Clone> OptionReceiver<T> {
         }
     }
 
+    /// Return a message.
     pub fn recv(&mut self) -> T {
         let actual = mem::replace(&mut self.opt, None);
         let opt = self.recv_last(actual); 
@@ -131,6 +305,7 @@ impl<T: Clone> OptionReceiver<T> {
     }
 }
 
+/// Represent a component in a Box 
 pub type BoxedComp = Box<Component + Send + 'static>;
 
 enum CompMsg {
@@ -142,12 +317,30 @@ enum CompMsg {
     ConnectOutputArrayPort(&'static str, &'static str, Box<Any + Send + 'static>),
 }
 
+/// Deal with a running component. 
+///
+/// This structure allows to manage a running component that is connected inside a graph. It do all
+/// the modification between two executions.
+///
 pub struct CompRunner {
     sender: Sender<CompMsg>,
     input_senders: Box<InputSenders>,
     input_array_senders: Box<InputArraySenders>,
 }
 impl CompRunner {
+    /// Create a new CompRunner. 
+    ///
+    /// ```c``` is a tuple of three elements : 
+    ///
+    /// 1) The component in a Box
+    ///
+    /// 2) A Trait Object which implement InputSenders
+    ///
+    /// 3) A Trait Object which implement InputArraySenders
+    ///
+    ///
+    /// The trait object are used to return the SyncSenders of the component
+    /// 
     pub fn new(c: (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)) -> Self {
         let (s,r) = channel();
         let mut state = State::new(c.0, s.clone());
@@ -173,51 +366,120 @@ impl CompRunner {
         }
     }
 
+    /// Start the component. It will run the inside function "run" until it was stopped.
+    pub fn start(&self) {
+        self.sender.send(CompMsg::Start).ok().expect("unable to send to the state");
+    }
+
+    /// Connect a simple output port to a simple input port from another component.
+    ///
+    /// # Example
+    ///
+    /// In FBP : 
+    ///
+    /// ```
+    /// comp_runner() output => input display()
+    /// ```
+    ///
+    /// In Rust : 
+    ///
+    /// ```
+    /// comp_runner.connect("output", &display, "input");
+    /// ```
     pub fn connect(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str){
         let s = comp.get_sender(port_in).unwrap();
         self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
     }
 
+    /// Connect an array output port to a simple input port from another component.
+    ///
+    /// # Example
+    ///
+    /// In FBP : 
+    ///
+    /// ```
+    /// comp_runner() outputs[1] => input display()
+    /// ```
+    ///
+    /// In Rust : 
+    ///
+    /// ```
+    /// comp_runner.connect_array("outputs", "1", &display, "input");
+    /// ```
     pub fn connect_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str){
         let s = comp.get_sender(port_in).expect("CompRunner -> connect_array -> don't find the sender");
         self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
     }
 
+    /// Connect a simple output port to an array input port from another component.
+    ///
+    /// # Example
+    ///
+    /// In FBP : 
+    ///
+    /// ```
+    /// comp_runner() output => numbers[1] adder()
+    /// ```
+    ///
+    /// In Rust : 
+    ///
+    /// ```
+    /// comp_runner.connect_array("output", &adder, "numbers", "1");
+    /// ```
     pub fn connect_to_array(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
         let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_to_array -> don't find the sender");
         self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
     }
 
+    /// Connect an array output port to an array input port from another component.
+    ///
+    /// # Example
+    ///
+    /// In FBP : 
+    ///
+    /// ```
+    /// comp_runner() outputs[a] => numbers[1] adder()
+    /// ```
+    ///
+    /// In Rust : 
+    ///
+    /// ```
+    /// comp_runner.connect_array("outputs", "a", &adder, "numbers", "1");
+    /// ```
     pub fn connect_array_to_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
         let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_array_to_array -> don't find the sender");
         self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
     }
     
     
-    pub fn get_sender(&self, port_in: &'static str) -> Option<Box<Any + Send + 'static>> {
-        self.input_senders.get_sender(port_in)
+    /// Returns a SyncSender from the simple input port "port"
+    pub fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
+        self.input_senders.get_sender(port)
     }
 
+    /// Returns a SyncSender from the selection "selection" of the array input port "port"
     pub fn get_array_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>> {
         self.input_array_senders.get_selection_sender(port, selection)
     }
 
+    /// Modify the component to add the selection "selection" to the array input port "port"
     pub fn add_input_array_selection(&mut self, port: &'static str, selection: &'static str) {
         let (s, r) = self.input_array_senders.get_sender_receiver(port).unwrap();
         self.input_array_senders.add_selection_sender(port, selection, s);
         self.sender.send(CompMsg::AddInputArraySelection(port, selection, r)).ok().expect("unable to send to the state");
     }
 
+    /// Modify the component to add the selection "selection" to the array output port "port"
     pub fn add_output_array_selection(&self, port: &'static str, selection: &'static str) {
         self.sender.send(CompMsg::AddOutputArraySelection(port, selection)).ok().expect("unable to send to the state");
     }
 
-    pub fn start(&self) {
-        self.sender.send(CompMsg::Start).ok().expect("unable to send to the state");
-    }
-
 }
 
+/* 
+ *  A state is the internal representation of a ComponentRunner. It holds the component between the
+ *  execution.
+ */
 struct State {
     runner_s: Sender<CompMsg>,
     comp: Option<BoxedComp>,
