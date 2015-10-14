@@ -6,7 +6,7 @@
 extern crate fractalide;
 
 use self::fractalide::component;
-use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, CompRunner, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver};
+use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, CompRunner, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver, CountSender, CountReceiver, count_channel};
 
 use std::fmt::Debug;
 
@@ -86,9 +86,9 @@ pub fn main() {
     a.add_input_array_selection("numbers", "y");
 
     let x = a.get_array_sender("numbers", "x").unwrap();
-    let x: SyncSender<i32> = component::downcast(x);
+    let x: CountSender<i32> = component::downcast(x);
     let y = a.get_array_sender("numbers", "y").unwrap();
-    let y: SyncSender<i32> = component::downcast(y);
+    let y: CountSender<i32> = component::downcast(y);
 
 
     x.send(1).unwrap();
@@ -135,11 +135,11 @@ pub fn main() {
     lb.connect_array("output", "2", &d2, "input");
     lb.connect_array("output", "z", &d3, "input");
     let acc = lb.get_sender("acc").unwrap();
-    let acc: SyncSender<usize> = component::downcast(acc);
+    let acc: CountSender<usize> = component::downcast(acc);
     acc.send(0).unwrap();
 
     let i = lb.get_sender("input").unwrap();
-    let i: SyncSender<String> = component::downcast(i);
+    let i: CountSender<String> = component::downcast(i);
     d1.start();
     d3.start();
     lb.start();
