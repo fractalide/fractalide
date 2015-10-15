@@ -29,6 +29,7 @@ use std::raw::TraitObject;
 use std::mem;
 use std::thread;
 
+use fvm::CompMsg;
 /* 
  *
  * There are two main parts for a component : the component itself and the part that manage the
@@ -152,7 +153,7 @@ pub trait ComponentConnect: Send {
     /// ```ignore
     /// component.connect("output", a_sync_sender);
     /// ```
-    fn connect(&mut self, port_out: &'static str, send: Box<Any>);
+    fn connect(&mut self, port_out: &'static str, send: Box<Any>, dest: &'static str, sched: Sender<CompMsg>);
     /// Create a selection "selection" for the array output port "port"
     /// # Example
     ///
@@ -166,7 +167,7 @@ pub trait ComponentConnect: Send {
     /// ```ignore
     /// component.connect_array("output", "1", a_sync_sender);
     /// ```
-    fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>);
+    fn connect_array(&mut self, port: &'static str, selection: &'static str, send: Box<Any>, dest: &'static str, sched: Sender<CompMsg>);
     /// Add a Receiver for the selection "selection" of the array input port "port"
     /// # Example
     ///
@@ -259,28 +260,44 @@ impl<T> OutputSender<T> {
 pub struct CountSender<T> {
     send: SyncSender<T>,
     pub count: Arc<AtomicUsize>,
+    sched: Option<(&'static str, Sender<CompMsg>)>,
 }
 impl<T> CountSender<T> {
     pub fn new(sender: SyncSender<T>, atom: Arc<AtomicUsize>) -> Self {
         CountSender {
             send: sender,
             count: atom,
+            sched: None,
         }
     }
 
     pub fn send(&self, msg: T) -> Result<(), SendError<T>> {
         let res = self.send.send(msg);
         if res.is_ok() {
+            if let Some((ref n, ref s)) = self.sched {
+                s.send(CompMsg::Start(n)).ok().expect("CountSender send : Cannot send to the scheduler");
+            }
             self.count.fetch_add(1, Ordering::SeqCst);
         }
         res
     }
+
+    pub fn set_sched(&mut self, name: &'static str, sched: Sender<CompMsg>) {
+        self.sched = Some((name, sched));
+    }
 }
+
 impl<T> Clone for CountSender<T> {
     fn clone(&self) -> Self {
+        let sched = if let Some((ref n, ref s)) = self.sched {
+            Some((n.clone(), s.clone()))
+        } else {
+            None
+        };
         CountSender {
             send: self.send.clone(),
             count: self.count.clone(),
+            sched: sched,
         }
     }
 }
@@ -394,268 +411,21 @@ impl<T: Clone> OptionReceiver<T> {
         self.opt = Some(opt.clone());
         opt
     }
-}
 
-/// Represent a component in a Box 
-pub type BoxedComp = Box<Component + Send + 'static>;
-
-enum CompMsg {
-    Start, Stop, Halt,
-    RunEnd(BoxedComp),
-    AddInputArraySelection(&'static str, &'static str, Box<Any + Send + 'static>),
-    AddOutputArraySelection(&'static str, &'static str),
-    ConnectOutputPort(&'static str, Box<Any + Send + 'static>),
-    ConnectOutputArrayPort(&'static str, &'static str, Box<Any + Send + 'static>),
-}
-
-/// Deal with a running component. 
-///
-/// This structure allows to manage a running component that is connected inside a graph. It do all
-/// the modification between two executions.
-///
-pub struct CompRunner {
-    sender: Sender<CompMsg>,
-    input_senders: Box<InputSenders>,
-    input_array_senders: Box<InputArraySenders>,
-}
-impl CompRunner {
-    /// Create a new CompRunner. 
-    ///
-    /// ```c``` is a tuple of three elements : 
-    ///
-    /// 1) The component in a Box
-    ///
-    /// 2) A Trait Object which implement InputSenders
-    ///
-    /// 3) A Trait Object which implement InputArraySenders
-    ///
-    ///
-    /// The trait object are used to return the SyncSenders of the component
-    /// 
-    pub fn new(c: (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)) -> Self {
-        let (s,r) = channel();
-        let mut state = State::new(c.0, s.clone());
-        thread::spawn(move || {
-            loop {
-                let msg = r.recv().unwrap();
-                match msg {
-                    CompMsg::Start => { state.start(); },
-                    CompMsg::Stop => { state.stop(); },
-                    CompMsg::Halt => { break; },
-                    CompMsg::RunEnd(comp) => { state.run_end(comp); },
-                    CompMsg::ConnectOutputPort(port_out, send) => { state.receive_edit_msg(CompMsg::ConnectOutputPort(port_out, send)); },
-                    CompMsg::ConnectOutputArrayPort(port, selection, send) => { state.receive_edit_msg(CompMsg::ConnectOutputArrayPort(port, selection, send)); },
-                    CompMsg::AddInputArraySelection(port, selection, rec) => { state.receive_edit_msg(CompMsg::AddInputArraySelection(port, selection, rec)); },
-                    CompMsg::AddOutputArraySelection(port, selection) => { state.receive_edit_msg(CompMsg::AddOutputArraySelection(port, selection)); },
-                }
-            }
-        });
-        CompRunner{
-            sender: s,
-            input_senders: c.1,
-            input_array_senders: c.2,
-        }
-    }
-
-    /// Start the component. It will run the inside function "run" until it was stopped.
-    pub fn start(&self) {
-        self.sender.send(CompMsg::Start).ok().expect("unable to send to the state");
-    }
-
-    /// Connect a simple output port to a simple input port from another component.
-    ///
-    /// # Example
-    ///
-    /// In FBP : 
-    ///
-    /// ```ignore
-    /// comp_runner() output => input display()
-    /// ```
-    ///
-    /// In Rust : 
-    ///
-    /// ```ignore
-    /// comp_runner.connect("output", &display, "input");
-    /// ```
-    pub fn connect(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str){
-        let s = comp.get_sender(port_in).unwrap();
-        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
-    }
-
-    /// Connect an array output port to a simple input port from another component.
-    ///
-    /// # Example
-    ///
-    /// In FBP : 
-    ///
-    /// ```ignore
-    /// comp_runner() outputs[1] => input display()
-    /// ```
-    ///
-    /// In Rust : 
-    ///
-    /// ```ignore
-    /// comp_runner.connect_array("outputs", "1", &display, "input");
-    /// ```
-    pub fn connect_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str){
-        let s = comp.get_sender(port_in).expect("CompRunner -> connect_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
-    }
-
-    /// Connect a simple output port to an array input port from another component.
-    ///
-    /// # Example
-    ///
-    /// In FBP : 
-    ///
-    /// ```ignore
-    /// comp_runner() output => numbers[1] adder()
-    /// ```
-    ///
-    /// In Rust : 
-    ///
-    /// ```ignore
-    /// comp_runner.connect_array("output", &adder, "numbers", "1");
-    /// ```
-    pub fn connect_to_array(&self, port_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
-        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_to_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputPort(port_out, s)).ok().expect("unable to send to the state");
-    }
-
-    /// Connect an array output port to an array input port from another component.
-    ///
-    /// # Example
-    ///
-    /// In FBP : 
-    ///
-    /// ```ignore
-    /// comp_runner() outputs[a] => numbers[1] adder()
-    /// ```
-    ///
-    /// In Rust : 
-    ///
-    /// ```ignore
-    /// comp_runner.connect_array("outputs", "a", &adder, "numbers", "1");
-    /// ```
-    pub fn connect_array_to_array(&self, port_out: &'static str, selection_out: &'static str, comp: &CompRunner, port_in: &'static str, selection_in: &'static str){
-        let s = comp.get_array_sender(port_in, selection_in).expect("CompRunner -> connect_array_to_array -> don't find the sender");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(port_out, selection_out, s)).ok().expect("unable to send to the state");
-    }
-    
-    
-    /// Returns a SyncSender from the simple input port "port"
-    pub fn get_sender(&self, port: &'static str) -> Option<Box<Any + Send + 'static>> {
-        self.input_senders.get_sender(port)
-    }
-
-    /// Returns a SyncSender from the selection "selection" of the array input port "port"
-    pub fn get_array_sender(&self, port: &'static str, selection: &'static str) -> Option<Box<Any + Send + 'static>> {
-        self.input_array_senders.get_selection_sender(port, selection)
-    }
-
-    /// Modify the component to add the selection "selection" to the array input port "port"
-    pub fn add_input_array_selection(&mut self, port: &'static str, selection: &'static str) {
-        let (s, r) = self.input_array_senders.get_sender_receiver(port).unwrap();
-        self.input_array_senders.add_selection_sender(port, selection, s);
-        self.sender.send(CompMsg::AddInputArraySelection(port, selection, r)).ok().expect("unable to send to the state");
-    }
-
-    /// Modify the component to add the selection "selection" to the array output port "port"
-    pub fn add_output_array_selection(&self, port: &'static str, selection: &'static str) {
-        self.sender.send(CompMsg::AddOutputArraySelection(port, selection)).ok().expect("unable to send to the state");
-    }
-
-}
-
-/* 
- *  A state is the internal representation of a ComponentRunner. It holds the component between the
- *  execution.
- */
-struct State {
-    runner_s: Sender<CompMsg>,
-    comp: Option<BoxedComp>,
-    can_run: bool,
-    edit_msgs: Vec<CompMsg>,
-}
-
-impl State {
-    fn new(c: BoxedComp, rs: Sender<CompMsg>) -> Self {
-        State {
-            runner_s: rs,
-            comp: Some(c),
-            can_run: false,
-            edit_msgs: vec![],
-        }
-    }
-
-    fn start(&mut self) {
-        if !self.can_run {
-            self.can_run = true;
-            self.run();
-        }
-    }
-
-    fn stop(&mut self) {
-        self.can_run = false;
-    }
-    
-    fn run(&mut self) {
-        let mut c = mem::replace(&mut self.comp, None).unwrap();
-        let rs = self.runner_s.clone();
-        thread::spawn(move || {
-            c.run();
-            rs.send(CompMsg::RunEnd(c)).unwrap();
-        });
-    }
-
-    fn run_end(&mut self, c: BoxedComp) {
-        self.comp = Some(c);
-        let msgs = mem::replace(&mut self.edit_msgs, vec![]);
-        for msg in msgs {
-            self.edit_component(msg);
-        }
-        if self.can_run {
-            self.run();
-        }
-    }
-
-    fn receive_edit_msg(&mut self, msg: CompMsg){
-        if self.can_run {
-            self.edit_msgs.push(msg);
+    /// Return a message or an error 
+    pub fn try_recv(&mut self) -> Result<T, TryRecvError> {
+        let opt = self.receiver.try_recv();
+        if opt.is_ok() {
+            self.opt = Some(opt.clone().unwrap());
         } else {
-            self.edit_component(msg);
-        }
-    }
-
-    fn edit_component(&mut self, msg: CompMsg){
-        match msg{
-            CompMsg::ConnectOutputPort(port_out, send) => {
-                if let Some(ref mut c) = self.comp {
-                    c.connect(port_out, send);
-                }
-            },
-            CompMsg::ConnectOutputArrayPort(port_out, selection, send) => {
-                if let Some(ref mut c) = self.comp {
-                    c.connect_array(port_out, selection, send);
-                }
-            },
-            CompMsg::AddInputArraySelection(port, selection, rec) => {
-                if let Some(ref mut c) = self.comp {
-                    c.add_selection_receiver(port, selection, rec);
-                }
+            if let Some(ref o) = self.opt {
+                return Ok(o.clone());
             }
-            CompMsg::AddOutputArraySelection(port, selection) => {
-                if let Some(ref mut c) = self.comp {
-                    c.add_output_selection(port, selection);
-                }
-            }
-
-            _ => { panic!("Wrong edit message"); }
         }
+        opt
+            
     }
-
 }
-
 
 #[macro_export]
 macro_rules! component {
@@ -796,10 +566,14 @@ macro_rules! component {
 
         // simple and array
         impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentConnect for $name<$( $( $c_t ),* ),* >{
-            fn connect(&mut self, port: &'static str, _send: Box<Any>) {
+            fn connect(&mut self, port: &'static str, _send: Box<Any>, _name: &'static str, _sched: Sender<CompMsg>) {
                 match port {
                     $(
-                        stringify!($output_field_name) => { self.outputs.$output_field_name.connect(component::downcast(_send)); }
+                        stringify!($output_field_name) => { 
+                            let mut down: CountSender<$output_field_type> = component::downcast(_send);
+                            down.set_sched(_name, _sched);
+                            self.outputs.$output_field_name.connect(down); 
+                        }
                     ),*
                     _ => {},
                 }    
@@ -819,19 +593,31 @@ macro_rules! component {
 
             }
 
-            fn connect_array(&mut self, port: &'static str, _selection: &'static str, _send: Box<Any>){
+            fn connect_array(&mut self, port: &'static str, _selection: &'static str, _send: Box<Any>, _name: &'static str, _sched: Sender<CompMsg>){
                 match port {
                     $(
                         stringify!($output_array_name) => { 
                             let mut s = self.outputs_array.$output_array_name.get_mut(_selection).expect("connect_array : selection not found");
-                            s.connect(component::downcast(_send)); 
+                            let mut down: CountSender<$output_array_type> = component::downcast(_send);
+                            down.set_sched(_name, _sched);
+                            s.connect(down); 
                         }
                     ),*
                     _ => {},
                 }    
             }
 
-            fn is_ips(&self) -> bool { false }
+            fn is_ips(&self) -> bool { 
+                $(
+                    if self.inputs.$input_field_name.count.load(Ordering::Relaxed) > 0 { return true; }
+                )*
+                $(
+                    for i in self.inputs_array.$input_array_name.values() {
+                        if i.count.load(Ordering::Relaxed) > 0 { return true; }
+                    }
+                )*
+                false 
+            }
         }
         
         /* Global component */

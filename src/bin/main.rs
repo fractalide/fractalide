@@ -6,18 +6,31 @@
 extern crate fractalide;
 
 use self::fractalide::component;
-use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, CompRunner, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver, CountSender, CountReceiver, count_channel};
+use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver, CountSender, CountReceiver, count_channel};
+use self::fractalide::fvm::{CompMsg, FVM};
 
 use std::fmt::Debug;
 
-use std::sync::mpsc::{SyncSender, Receiver};
+use std::sync::mpsc::{SyncSender, Receiver, Sender};
 use std::sync::mpsc::sync_channel;
+use std::sync::atomic::Ordering;
 use std::any::Any;
 use std::collections::HashMap;
 
 use std::thread;
 use std::mem;
 
+component! {
+    IIPC,
+    inputs(IIPCS IIPCR => ()),
+    inputs_array(IIPCAS IIPCAR => ()),
+    outputs(IIPCO => (output: i32)),
+    outputs_array(IIPCOA => ()),
+    fn run(&mut self) {
+        let _ = self.outputs.output.send(42);
+        let _ = self.outputs.output.send(42);
+    }
+}
 
 component! {
     Adder, 
@@ -46,8 +59,11 @@ component! {
     option(String),
     fn run(&mut self){
         let i = self.inputs.input.recv().unwrap();
-        let pre = self.inputs.option.recv();
-        println!("{} {:?}", pre, i);
+        let pre = match self.inputs.option.try_recv() {
+            Ok(msg) => { msg },
+            _ => { "".to_string() },
+        };
+        println!("{}{:?}", pre, i);
         let _ = self.outputs.output.send(i);
     }
 }
@@ -75,83 +91,85 @@ component! {
         
 
 pub fn main() {
-    let mut a = CompRunner::new(Adder::new());
-    let mut d = CompRunner::new(Display::<i32>::new());
-    let o = d.get_sender("option").unwrap();
+    let mut fvm = FVM::new();
+    fvm.add_component("iip1", IIPC::new());
+    fvm.add_component("display1", Display::<i32>::new());
+    fvm.connect("iip1", "output", "display1", "input");
+    fvm.start("iip1");
+
+    thread::sleep_ms(1000);
+    println!("");
+    println!("");
+
+    fvm.add_component("adder", Adder::new());
+    fvm.add_component("display_adder", Display::<i32>::new());
+    let o = fvm.get_sender("display_adder", "option");
     let o: SyncSender<String> = component::downcast(o);
 
-    a.connect("output", &d, "input");
+    fvm.connect("adder", "output", "display_adder", "input");
 
-    a.add_input_array_selection("numbers", "x");
-    a.add_input_array_selection("numbers", "y");
+    fvm.add_input_array_selection("adder", "numbers", "x");
+    fvm.add_input_array_selection("adder", "numbers", "y");
 
-    let x = a.get_array_sender("numbers", "x").unwrap();
+    let x = fvm.get_array_sender("adder", "numbers", "x");
     let x: CountSender<i32> = component::downcast(x);
-    let y = a.get_array_sender("numbers", "y").unwrap();
+    let y = fvm.get_array_sender("adder", "numbers", "y");
     let y: CountSender<i32> = component::downcast(y);
 
 
+    o.send("first test : ".to_string());
     x.send(1).unwrap();
     y.send(11).unwrap();
     x.send(2).unwrap();
     y.send(22).unwrap();
     x.send(3).unwrap();
-    a.start();
-    d.start();
-    println!("Display is started");
+    fvm.start("adder");
     thread::sleep_ms(2000);
-    println!("Display receive the option");
-    o.send("first test".to_string());
-    thread::sleep_ms(1000);
-    o.send("first test change".to_string());
-    o.send("first test change twices".to_string());
-    thread::sleep_ms(1000);
+    o.send("first test change : ".to_string());
+    o.send("first test change twices : ".to_string());
+    thread::sleep_ms(2000);
     y.send(33).unwrap();
-
+ 
+    thread::sleep_ms(2000);
+    println!("");
+    println!("");
+ 
+ 
+    fvm.add_component("dlb1", Display::<String>::new());
+    fvm.add_component("dlb2", Display::<String>::new());
+    fvm.add_component("dlb3", Display::<String>::new());
+    fvm.add_component("lb", LoadBalancer::<String>::new());
+ 
+    let o = fvm.get_sender("dlb1", "option");
+    let o: SyncSender<String> = component::downcast(o);
+    o.send("lb first display : ".to_string());
+    let o = fvm.get_sender("dlb2", "option");
+    let o: SyncSender<String> = component::downcast(o);
+    o.send("lb second display : ".to_string());
+    let o = fvm.get_sender("dlb3", "option");
+    let o: SyncSender<String> = component::downcast(o);
+    o.send("lb third display : ".to_string());
     thread::sleep_ms(1000);
-
-
-    let d1 = CompRunner::new(Display::<String>::new());
-    let d2 = CompRunner::new(Display::<String>::new());
-    let d3 = CompRunner::new(Display::<String>::new());
-    let lb = CompRunner::new(LoadBalancer::<String>::new());
-
-    let o = d1.get_sender("option").unwrap();
-    let o: SyncSender<String> = component::downcast(o);
-    o.send("lb first display".to_string());
-    let o = d2.get_sender("option").unwrap();
-    let o: SyncSender<String> = component::downcast(o);
-    o.send("lb second display".to_string());
-    let o = d3.get_sender("option").unwrap();
-    let o: SyncSender<String> = component::downcast(o);
-    o.send("lb third display".to_string());
-    thread::sleep_ms(1000);
-
-    lb.connect("acc", &lb, "acc");
-    lb.add_output_array_selection("output", "1");
-    lb.add_output_array_selection("output", "2");
-    lb.add_output_array_selection("output", "z");
-    lb.connect_array("output", "1", &d1, "input");
-    lb.connect_array("output", "2", &d2, "input");
-    lb.connect_array("output", "z", &d3, "input");
-    let acc = lb.get_sender("acc").unwrap();
+ 
+    fvm.connect("lb", "acc", "lb", "acc");
+    fvm.add_output_array_selection("lb", "output", "1");
+    fvm.add_output_array_selection("lb", "output", "2");
+    fvm.add_output_array_selection("lb", "output", "z");
+    fvm.connect_array("lb", "output", "1", "dlb1", "input");
+    fvm.connect_array("lb", "output", "2", "dlb2", "input");
+    fvm.connect_array("lb", "output", "z", "dlb3", "input");
+    let acc = fvm.get_sender("lb", "acc");
     let acc: CountSender<usize> = component::downcast(acc);
     acc.send(0).unwrap();
-
-    let i = lb.get_sender("input").unwrap();
+ 
+    let i = fvm.get_sender("lb", "input");
     let i: CountSender<String> = component::downcast(i);
-    d1.start();
-    d3.start();
-    lb.start();
-
+    fvm.start("lb");
+ 
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(1000);
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(1000);
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(1000);
-    d2.start();
-
+    i.send("hello Fractalide".to_string()).unwrap();
     thread::sleep_ms(2000);
 
 }
