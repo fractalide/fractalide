@@ -412,18 +412,27 @@ impl<T: Clone> OptionReceiver<T> {
         opt
     }
 
-    /// Return a message or an error 
-    pub fn try_recv(&mut self) -> Result<T, TryRecvError> {
-        let opt = self.receiver.try_recv();
-        if opt.is_ok() {
-            self.opt = Some(opt.clone().unwrap());
-        } else {
-            if let Some(ref o) = self.opt {
-                return Ok(o.clone());
+    fn try_recv_last(&mut self, acc: Option<T>) -> Result<T, TryRecvError> {
+        let msg = self.receiver.try_recv();
+        match msg {
+            Ok(msg) => {
+                self.try_recv_last(Some(msg))
+            }
+            _ => {
+                if acc.is_some() { Ok(acc.unwrap()) }
+                else { msg }
             }
         }
+    }
+
+    /// Return a message or an error 
+    pub fn try_recv(&mut self) -> Result<T, TryRecvError> {
+        let actual = mem::replace(&mut self.opt, None);
+        let opt = self.try_recv_last(actual);
+        if opt.is_ok() {
+            self.opt = Some(opt.clone().unwrap());
+        } 
         opt
-            
     }
 }
 
