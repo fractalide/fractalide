@@ -6,5 +6,5 @@ license = "AGPL-3.0"
 homepage = "http://github.com/fractalide/fractalide"
 repository = "http://github.com/fractalide/fractalide"
 description = """
-Fractalide, a flow base programming environment in Rust
+Fractalide, a Flow-based programming environment in Rust
 """
