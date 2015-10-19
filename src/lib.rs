@@ -4,3 +4,4 @@
 
 pub mod component;
 pub mod fvm;
+pub mod subnet;
