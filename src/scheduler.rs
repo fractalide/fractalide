@@ -9,16 +9,25 @@ use std::any::Any;
 use std::mem;
 use std::marker::Reflect;
 
+/// All the messages that can be send between the "exterior scheduler" and the "interior scheduler". 
 pub enum CompMsg {
+    /// Add a new component. The String is the name, the BoxedComp is the component itself
     NewComponent(String, BoxedComp),
+    /// Ask the scheduler to start the component named "String"
     Start(String),
+    /// Tell the scheduler that the component "BoxedComp" name "String" end his run
     RunEnd(String, BoxedComp),
+    /// Tell to add a selection to an input array port
     AddInputArraySelection(String, String, String, Box<Any + Send + 'static>),
+    /// Tell to ad a selection to an output array port
     AddOutputArraySelection(String, String, String),
+    /// Connect an Output port
     ConnectOutputPort(String, String, Box<Any + Send + 'static>, String, Sender<CompMsg>),
+    /// Connect an Output array port
     ConnectOutputArrayPort(String, String, String, Box<Any + Send + 'static>, String, Sender<CompMsg>),
 }
 
+/// Retains each component information for the "exterior scheduler"
 pub struct Comp {
     input_senders: Box<InputSenders>,
     input_array_senders: Box<InputArraySenders>,
@@ -27,10 +36,14 @@ pub struct Comp {
 /// Represent a component in a Box 
 pub type BoxedComp = Box<Component + Send + 'static>;
 
+/// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
+    /// Will be private, public for debug
     pub components: HashMap<String, Comp>,
     sender: Sender<CompMsg>,
+    /// Used by the subnets
     pub subnet_names: HashMap<String, (String, String)>,
+    /// Used by the subnets
     pub subnet_start: HashMap<String, Vec<String>>,
 }
 
