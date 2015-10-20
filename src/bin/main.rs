@@ -208,7 +208,6 @@ pub fn main() {
     let o: SyncSender<String> = fvm.get_option("display_and".to_string());
     o.send("And result : ".to_string());
 
-    thread::sleep_ms(1000);
     a.send(true).unwrap();
     b.send(false).unwrap();
 

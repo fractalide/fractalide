@@ -276,10 +276,10 @@ impl<T> CountSender<T> {
     pub fn send(&self, msg: T) -> Result<(), SendError<T>> {
         let res = self.send.send(msg);
         if res.is_ok() {
+            self.count.fetch_add(1, Ordering::SeqCst);
             if let Some((ref n, ref s)) = self.sched {
                 s.send(CompMsg::Start(n.to_string())).ok().expect("CountSender send : Cannot send to the scheduler");
             }
-            self.count.fetch_add(1, Ordering::SeqCst);
         }
         res
     }
