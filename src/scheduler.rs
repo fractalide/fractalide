@@ -155,8 +155,16 @@ impl Scheduler {
 
     pub fn get_option<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
         let (comp, port) = self.get_subnet_name(comp, "option".to_string());
-        let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
+        let r_comp = self.components.get(&comp).expect("Scheduler get_option : the component doesn't exist");
+        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_option : The comp_in doesn't have the port_in port");
+        let s: SyncSender<T> = downcast(sender);
+        s
+    }
+
+    pub fn get_acc<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
+        let (comp, port) = self.get_subnet_name(comp, "acc".to_string());
+        let r_comp = self.components.get(&comp).expect("Scheduler get_acc : the component doesn't exist");
+        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_acc : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
         s
     }

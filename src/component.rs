@@ -446,7 +446,8 @@ macro_rules! component {
         inputs_array($ia_name: ident $ia_name2:ident $( ( $($ia_t:ident$(: $ia_tr:ident)* ),* ) )* => ($($input_array_name:ident: $input_array_type:ty),* )),
         outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
         outputs_array($oa_name:ident $( ( $($oa_t:ident$(: $oa_tr:ident)* ),* ) )* => ($($output_array_name:ident: $output_array_type:ty ),* )),
-        $( option($option_type:ty), )*
+        option($($option_type:ty)*), 
+        acc($($acc_type:ty)*),
         fn run(&mut $arg:ident) $fun:block
     ) 
         =>
@@ -462,6 +463,9 @@ macro_rules! component {
             $( 
                 option: SyncSender<$option_type>,
             )*
+            $(
+                acc: SyncSender<$acc_type>,
+            )*
         }
 
         #[allow(dead_code)]
@@ -471,6 +475,9 @@ macro_rules! component {
             )*
             $( 
                 option: OptionReceiver<$option_type>,
+            )*
+            $(
+                acc: Receiver<$acc_type>,
             )*
         }
 
@@ -485,6 +492,12 @@ macro_rules! component {
                             let s : SyncSender<$option_type> = self.option.clone();
                             Some(Box::new(s)) 
                         }, 
+                    )*
+                    $(
+                        "acc" => {
+                            let s: SyncSender<$acc_type> = self.acc.clone();
+                            Some(Box::new(s))
+                        },
                     )*
                     _ => { None },
                 }    
@@ -565,8 +578,11 @@ macro_rules! component {
         #[allow(dead_code)]
         struct $o_name<$( $( $o_t ),* )*> {
             $(
-                $output_field_name: OutputSender<$output_field_type>
-            ),*
+                $output_field_name: OutputSender<$output_field_type>,
+            )*
+            $(
+                acc: SyncSender<$acc_type>,
+            )*
         }
 
         // array
@@ -668,12 +684,20 @@ macro_rules! component {
                     let options_s = options.0;
                     let options_r = OptionReceiver::new(options.1);
                 )*
+                $(
+                    let accs = sync_channel::<$acc_type>(1);
+                    let accs_s = accs.0;
+                    let accs_r = accs.1;
+                )*
                 let s = $i_name {
                 $(
                     $input_field_name: $input_field_name.0,
                 )*    
                 $(
                     option: options_s as SyncSender<$option_type>,
+                )*
+                $(
+                    acc: accs_s.clone() as SyncSender<$acc_type>,
                 )*
                 };
                 let r = $i_name2 {
@@ -682,6 +706,9 @@ macro_rules! component {
                 )*    
                 $(
                     option: options_r as OptionReceiver<$option_type>,
+                )*
+                $(
+                    acc: accs_r as Receiver<$acc_type>,
                 )*
                 };
 
@@ -701,7 +728,10 @@ macro_rules! component {
                 let out = $o_name {
                     $(
                         $output_field_name: OutputSender::new(),
-                    ),*    
+                    )*    
+                    $(
+                        acc: accs_s as SyncSender<$acc_type>,
+                    )*
                 };
 
                 // Creation of the array output

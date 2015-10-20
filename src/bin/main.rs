@@ -27,6 +27,8 @@ component! {
     inputs_array(NANDIIA NANDIIB => ()),
     outputs(NANDO => (output:bool)),
     outputs_array(NANDOA => ()),
+    option(),
+    acc(),
     fn run(&mut self) {
         let a = self.inputs.a.recv().unwrap();
         let b = self.inputs.b.recv().unwrap();
@@ -41,6 +43,8 @@ component! {
     inputs_array(IIPCAS IIPCAR => ()),
     outputs(IIPCO => (output: i32)),
     outputs_array(IIPCOA => ()),
+    option(),
+    acc(),
     fn run(&mut self) {
         let _ = self.outputs.output.send(42);
         let _ = self.outputs.output.send(666);
@@ -53,6 +57,8 @@ component! {
     inputs_array(AIIS AIIR => (numbers: i32)),
     outputs(AO => (output:i32)),
     outputs_array(AAO => ()),
+    option(),
+    acc(),
     fn run(&mut self) {
         let res = self.inputs_array.numbers.values().fold(0, |acc, port| {
             let msg = port.recv().unwrap();
@@ -72,6 +78,7 @@ component! {
     outputs(DO (T: DisplayIP) => (output: T)),
     outputs_array(DAO => ()),
     option(String),
+    acc(),
     fn run(&mut self){
         let i = self.inputs.input.recv().unwrap();
         let pre = match self.inputs.option.try_recv() {
@@ -91,6 +98,8 @@ component! {
     inputs_array(CAS CAR => ()),
     outputs(CO => ()),
     outputs_array(CAO (T: CloneIP) => (output: T)),
+    option(),
+    acc(),
     fn run(&mut self) {
         let msg = self.inputs.input.recv().unwrap();
         for out in self.outputs_array.output.values() {
@@ -101,10 +110,12 @@ component! {
 
 component! {
     LoadBalancer, (T: IP),
-    inputs(LBS LBR (T: IP) => (acc: usize, input: T)),
+    inputs(LBS LBR (T: IP) => (input: T)),
     inputs_array(LBAS LBAR => ()),
-    outputs(LBO => (acc: usize)),
+    outputs(LBO => ()),
     outputs_array(LBOA (T: IP) => (output: T)),
+    option(),
+    acc(usize),
     fn run(&mut self) {
         // Find the good output port
         let mut actual = self.inputs.acc.recv().unwrap();
@@ -215,45 +226,42 @@ pub fn main() {
     b.send(true).unwrap();
 
     thread::sleep_ms(2000);
-//     println!("");
-//     println!("");
-//  
-//  
-//     fvm.add_component("dlb1", Display::<String>::new());
-//     fvm.add_component("dlb2", Display::<String>::new());
-//     fvm.add_component("dlb3", Display::<String>::new());
-//     fvm.add_component("lb", LoadBalancer::<String>::new());
-//  
-//     let o = fvm.get_sender("dlb1", "option");
-//     let o: SyncSender<String> = component::downcast(o);
-//     o.send("lb first display : ".to_string());
-//     let o = fvm.get_sender("dlb2", "option");
-//     let o: SyncSender<String> = component::downcast(o);
-//     o.send("lb second display : ".to_string());
-//     let o = fvm.get_sender("dlb3", "option");
-//     let o: SyncSender<String> = component::downcast(o);
-//     o.send("lb third display : ".to_string());
-//     thread::sleep_ms(1000);
-//  
-//     fvm.connect("lb", "acc", "lb", "acc");
-//     fvm.add_output_array_selection("lb", "output", "1");
-//     fvm.add_output_array_selection("lb", "output", "2");
-//     fvm.add_output_array_selection("lb", "output", "z");
-//     fvm.connect_array("lb", "output", "1", "dlb1", "input");
-//     fvm.connect_array("lb", "output", "2", "dlb2", "input");
-//     fvm.connect_array("lb", "output", "z", "dlb3", "input");
-//     let acc = fvm.get_sender("lb", "acc");
-//     let acc: CountSender<usize> = component::downcast(acc);
-//     acc.send(0).unwrap();
-//  
-//     let i = fvm.get_sender("lb", "input");
-//     let i: CountSender<String> = component::downcast(i);
-//     fvm.start("lb");
-//  
-//     i.send("hello Fractalide".to_string()).unwrap();
-//     i.send("hello Fractalide".to_string()).unwrap();
-//     i.send("hello Fractalide".to_string()).unwrap();
-//     i.send("hello Fractalide".to_string()).unwrap();
-//     thread::sleep_ms(2000);
+    println!("");
+    println!("");
+ 
+ 
+    fvm.add_component("dlb1".into(), Display::<String>::new());
+    fvm.add_component("dlb2".into(), Display::<String>::new());
+    fvm.add_component("dlb3".into(), Display::<String>::new());
+    fvm.add_component("lb".into(), LoadBalancer::<String>::new());
+ 
+    let o: SyncSender<String> = fvm.get_option("dlb1".into());
+    o.send("lb first display : ".into());
+    let o: SyncSender<String> = fvm.get_option("dlb2".into());
+    o.send("lb second display : ".to_string());
+    let o: SyncSender<String> = fvm.get_option("dlb3".into());
+    o.send("lb third display : ".to_string());
+    thread::sleep_ms(1000);
+ 
+    fvm.connect("lb".into(), "acc".into(), "lb".into(), "acc".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "1".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "2".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "z".into());
+    fvm.connect_array("lb".into(), "output".into(), "1".into(), "dlb1".into(), "input".into());
+    fvm.connect_array("lb".into(), "output".into(), "2".into(), "dlb2".into(), "input".into());
+    fvm.connect_array("lb".into(), "output".into(), "z".into(), "dlb3".into(), "input".into());
+ 
+    let acc: SyncSender<usize> = fvm.get_acc("lb".into());
+    acc.send(0).unwrap();
+    let i: CountSender<String> = fvm.get_sender("lb".into(), "input".into());
+
+    i.send("hello Fractalide".to_string()).unwrap();
+    thread::sleep_ms(200);
+    i.send("hello Fractalide".to_string()).unwrap();
+    thread::sleep_ms(200);
+    i.send("hello Fractalide".to_string()).unwrap();
+    thread::sleep_ms(200);
+    i.send("hello Fractalide".to_string()).unwrap();
+    thread::sleep_ms(2000);
 
 }
