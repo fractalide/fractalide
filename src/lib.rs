@@ -3,5 +3,5 @@
 #![feature(concat_idents)]
 
 pub mod component;
-pub mod fvm;
+pub mod scheduler;
 pub mod subnet;

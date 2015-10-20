@@ -29,7 +29,7 @@ use std::raw::TraitObject;
 use std::mem;
 use std::thread;
 
-use fvm::CompMsg;
+use scheduler::CompMsg;
 /* 
  *
  * There are two main parts for a component : the component itself and the part that manage the

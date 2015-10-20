@@ -27,41 +27,41 @@ pub struct Comp {
 /// Represent a component in a Box 
 pub type BoxedComp = Box<Component + Send + 'static>;
 
-pub struct FVM {
+pub struct Scheduler {
     pub components: HashMap<String, Comp>,
     sender: Sender<CompMsg>,
     pub subnet_names: HashMap<String, (String, String)>,
     pub subnet_start: HashMap<String, Vec<String>>,
 }
 
-impl FVM {
+impl Scheduler {
     pub fn new() -> Self {
         let (s, r) = channel();
-        let mut FVMS = FVMState::new(s.clone());
+        let mut SchedS = SchedState::new(s.clone());
         thread::spawn(move || {
             loop {
                 let msg = r.recv().unwrap();
                 match msg {
-                    CompMsg::NewComponent(name, comp) => { FVMS.new_component(name, comp); },
-                    CompMsg::Start(name) => { FVMS.start(name); },
-                    CompMsg::RunEnd(name, BoxedComp) => { FVMS.run_end(name, BoxedComp); },
+                    CompMsg::NewComponent(name, comp) => { SchedS.new_component(name, comp); },
+                    CompMsg::Start(name) => { SchedS.start(name); },
+                    CompMsg::RunEnd(name, BoxedComp) => { SchedS.run_end(name, BoxedComp); },
                     CompMsg::AddInputArraySelection(name, port, selection, recv) => { 
-                        FVMS.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv)); 
+                        SchedS.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv)); 
                     },
                     CompMsg::AddOutputArraySelection(name, port, selection) => { 
-                        FVMS.edit_component(name, EditCmp::AddOutputArraySelection(port, selection)); 
+                        SchedS.edit_component(name, EditCmp::AddOutputArraySelection(port, selection)); 
                     },
                     CompMsg::ConnectOutputPort(name, port, send, dest, sched) => { 
-                        FVMS.edit_component(name, EditCmp::ConnectOutputPort(port, send, dest, sched)); 
+                        SchedS.edit_component(name, EditCmp::ConnectOutputPort(port, send, dest, sched)); 
                     },
                     CompMsg::ConnectOutputArrayPort(name, port, selection, send, dest, sched) => {
-                        FVMS.edit_component(name, EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched)); 
+                        SchedS.edit_component(name, EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched)); 
                     },
                 }
             }
         });
             
-        FVM { components: HashMap::new(), sender: s, subnet_names: HashMap::new(), subnet_start: HashMap::new() }
+        Scheduler { components: HashMap::new(), sender: s, subnet_names: HashMap::new(), subnet_start: HashMap::new() }
     }
 
     pub fn add_component(&mut self, name: String, c: (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)) {
@@ -69,7 +69,7 @@ impl FVM {
             input_senders: c.1,
             input_array_senders: c.2,
         });
-        self.sender.send(CompMsg::NewComponent(name, c.0)).expect("add_component : unable to send to fvm state");
+        self.sender.send(CompMsg::NewComponent(name, c.0)).expect("add_component : unable to send to scheduler state");
     }
 
     pub fn add_subnet(&mut self, name: String, g: Graph) {
@@ -78,9 +78,9 @@ impl FVM {
 
     pub fn start(&self, name: String) {
         match self.subnet_start.get(&name) {
-            None => { self.sender.send(CompMsg::Start(name)).expect("start: unable to send to fvm state"); },
+            None => { self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); },
             Some(vec) => {
-                for n in vec { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to fvm state"); }
+                for n in vec { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to sched state"); }
             },
         }
     }
@@ -88,53 +88,53 @@ impl FVM {
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
-        let comp = self.components.get(&comp_in).expect("FVM connect : the component doesn't exist");
-        let s = comp.input_senders.get_sender(port_in.clone()).expect("FVM connect : The comp_in doesn't have the port_in port");
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("FVM connect: unable to send to fvm state");
+        let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
+        let s = comp.input_senders.get_sender(port_in.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
+        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to sched state");
     }
 
     pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
-        let comp = self.components.get(&comp_in).expect("FVM connect : the component doesn't exist");
-        let s = comp.input_senders.get_sender(port_in.clone()).expect("FVM connect : The comp_in doesn't have the port_in port");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("FVM connect: unable to send to fvm state");
+        let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
+        let s = comp.input_senders.get_sender(port_in.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
-        let comp = self.components.get(&comp_in).expect("FVM connect : the component doesn't exist");
-        let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("FVM connect : The comp_in doesn't have the selection_in selection of the port_in port");
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("FVM connect: unable to send to fvm state");
+        let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
+        let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("Scheduler connect : The comp_in doesn't have the selection_in selection of the port_in port");
+        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
-        let comp = self.components.get(&comp_in).expect("FVM connect : the component doesn't exist");
-        let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("FVM connect : The comp_in doesn't have the selection_in selection of the port_in port");
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("FVM connect: unable to send to fvm state");
+        let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
+        let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("Scheduler connect : The comp_in doesn't have the selection_in selection of the port_in port");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) {
         let (comp, port) = self.get_subnet_name(comp, port);
-        let mut comp_in = self.components.get_mut(&comp).expect("FVM add_input_array_selection : the component doesn't exist");
+        let mut comp_in = self.components.get_mut(&comp).expect("Scheduler add_input_array_selection : the component doesn't exist");
         if comp_in.input_array_senders.get_selection_sender(port.clone(), selection.clone()).is_some() { return; }
-        let (s, r) = comp_in.input_array_senders.get_sender_receiver(port.clone()).expect("FVM add_input_array_selection : The port doesn't exist");
+        let (s, r) = comp_in.input_array_senders.get_sender_receiver(port.clone()).expect("Scheduler add_input_array_selection : The port doesn't exist");
         comp_in.input_array_senders.add_selection_sender(port.clone(), selection.clone(), s);
-        self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, r)).ok().expect("FVM add_input_array_selection : Unable to send to fvm state");
+        self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, r)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
     }
 
     pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) {
         let (comp, port) = self.get_subnet_name(comp, port);
-        self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("FVM add_output_array_selection : Unable to send to fvm state");
+        self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
     }
 
     pub fn get_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String) -> CountSender<T> {
         let (comp, port) = self.get_subnet_name(comp, port);
-        let r_comp = self.components.get(&comp).expect("FVM get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("FVM connect : The comp_in doesn't have the port_in port");
+        let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
+        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
         sender.set_sched(comp, self.sender.clone());
         sender
@@ -142,16 +142,16 @@ impl FVM {
 
     pub fn get_option<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
         let (comp, port) = self.get_subnet_name(comp, "option".to_string());
-        let r_comp = self.components.get(&comp).expect("FVM get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("FVM connect : The comp_in doesn't have the port_in port");
+        let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
+        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
         s
     }
 
     pub fn get_array_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String, selection: String) -> CountSender<T> {
         let (comp, port) = self.get_subnet_name(comp, port);
-        let r_comp = self.components.get(&comp).expect("FVM get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("FVM connect : The comp_in doesn't have the port_in port");
+        let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
+        let mut sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
         sender.set_sched(comp, self.sender.clone());
         sender
@@ -182,15 +182,15 @@ struct CompState {
     connections: usize,
 }
 
-struct FVMState {
-    fvm_sender: Sender<CompMsg>,
+struct SchedState {
+    sched_sender: Sender<CompMsg>,
     components: HashMap<String, CompState>,
 }
 
-impl FVMState {
+impl SchedState {
     fn new(s: Sender<CompMsg>) -> Self {
-        FVMState {
-            fvm_sender: s,
+        SchedState {
+            sched_sender: s,
             components: HashMap::new(),
         }
     }
@@ -207,7 +207,7 @@ impl FVMState {
     fn start(&mut self, name: String) {
         // println!("Start {}", name);
         let start = {
-            let mut comp = self.components.get_mut(&name).expect("FVMState start : component not found");
+            let mut comp = self.components.get_mut(&name).expect("SchedState start : component not found");
             comp.can_run = true;
             comp.comp.is_some()
         };
@@ -218,7 +218,7 @@ impl FVMState {
 
     fn run_end(&mut self, name: String, box_comp: BoxedComp) {
         let must_restart = {
-            let mut comp = self.components.get_mut(&name).expect("FVMState RunEnd : component doesn't exist");
+            let mut comp = self.components.get_mut(&name).expect("SchedState RunEnd : component doesn't exist");
             let must_restart = box_comp.is_ips();
             comp.comp = Some(box_comp);
             must_restart
@@ -229,17 +229,17 @@ impl FVMState {
     }
 
     fn run(&mut self, name: String) {
-        let mut o_comp = self.components.get_mut(&name).expect("FVMSate run : component doesn't exist");
-        let mut b_comp = mem::replace(&mut o_comp.comp, None).expect("FVMState run : cannot run if already running");
-        let fvm_s = self.fvm_sender.clone();
+        let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
+        let mut b_comp = mem::replace(&mut o_comp.comp, None).expect("SchedState run : cannot run if already running");
+        let sched_s = self.sched_sender.clone();
         thread::spawn(move || {
             b_comp.run();
-            fvm_s.send(CompMsg::RunEnd(name, b_comp)).expect("FVMState run : unable to send RunEnd");
+            sched_s.send(CompMsg::RunEnd(name, b_comp)).expect("SchedState run : unable to send RunEnd");
         });
     }
 
     fn edit_component(&mut self, name: String, msg: EditCmp){
-        let mut comp = self.components.get_mut(&name).expect("FVMState edit_component : component doesn't exist");
+        let mut comp = self.components.get_mut(&name).expect("SchedState edit_component : component doesn't exist");
         if let Some(ref mut c) = comp.comp {
             match msg {
                 EditCmp::AddInputArraySelection(port, selection, recv) => {

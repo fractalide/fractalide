@@ -7,7 +7,7 @@ extern crate fractalide;
 
 use self::fractalide::component;
 use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver, CountSender, CountReceiver, count_channel};
-use self::fractalide::fvm::{CompMsg, FVM};
+use self::fractalide::scheduler::{CompMsg, Scheduler};
 use self::fractalide::subnet::*;
 
 use std::fmt::Debug;
@@ -122,7 +122,7 @@ component! {
         
 
 pub fn main() {
-    let mut fvm = FVM::new();
+    let mut fvm = Scheduler::new();
     // fvm.add_component("iip1".to_string(), IIPC::new());
     // fvm.add_component("display1".to_string(), Display::<i32>::new());
     // fvm.subnet_names.insert("kikin".to_string(), ("display1".to_string(), "input".to_string()));
@@ -208,6 +208,7 @@ pub fn main() {
     let o: SyncSender<String> = fvm.get_option("display_and".to_string());
     o.send("And result : ".to_string());
 
+    thread::sleep_ms(1000);
     a.send(true).unwrap();
     b.send(false).unwrap();
 
