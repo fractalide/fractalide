@@ -1,7 +1,7 @@
 use component::{Component, InputSenders, InputArraySenders, CountSender, downcast};
 use subnet::{SubNet, Graph};
 use std::collections::HashMap;
-use std::sync::mpsc::{Sender, Receiver, SyncSender};
+use std::sync::mpsc::{Sender, SyncSender};
 use std::sync::mpsc::channel;
 use std::thread;
 
@@ -50,25 +50,25 @@ pub struct Scheduler {
 impl Scheduler {
     pub fn new() -> Self {
         let (s, r) = channel();
-        let mut SchedS = SchedState::new(s.clone());
+        let mut sched_s = SchedState::new(s.clone());
         thread::spawn(move || {
             loop {
                 let msg = r.recv().unwrap();
                 match msg {
-                    CompMsg::NewComponent(name, comp) => { SchedS.new_component(name, comp); },
-                    CompMsg::Start(name) => { SchedS.start(name); },
-                    CompMsg::RunEnd(name, BoxedComp) => { SchedS.run_end(name, BoxedComp); },
+                    CompMsg::NewComponent(name, comp) => { sched_s.new_component(name, comp); },
+                    CompMsg::Start(name) => { sched_s.start(name); },
+                    CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp); },
                     CompMsg::AddInputArraySelection(name, port, selection, recv) => { 
-                        SchedS.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv)); 
+                        sched_s.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv)); 
                     },
                     CompMsg::AddOutputArraySelection(name, port, selection) => { 
-                        SchedS.edit_component(name, EditCmp::AddOutputArraySelection(port, selection)); 
+                        sched_s.edit_component(name, EditCmp::AddOutputArraySelection(port, selection)); 
                     },
                     CompMsg::ConnectOutputPort(name, port, send, dest, sched) => { 
-                        SchedS.edit_component(name, EditCmp::ConnectOutputPort(port, send, dest, sched)); 
+                        sched_s.edit_component(name, EditCmp::ConnectOutputPort(port, send, dest, sched)); 
                     },
                     CompMsg::ConnectOutputArrayPort(name, port, selection, send, dest, sched) => {
-                        SchedS.edit_component(name, EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched)); 
+                        sched_s.edit_component(name, EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched)); 
                     },
                 }
             }
@@ -147,7 +147,7 @@ impl Scheduler {
     pub fn get_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String) -> CountSender<T> {
         let (comp, port) = self.get_subnet_name(comp, port);
         let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
+        let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
         sender.set_sched(comp, self.sender.clone());
         sender
@@ -156,7 +156,7 @@ impl Scheduler {
     pub fn get_option<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
         let (comp, port) = self.get_subnet_name(comp, "option".to_string());
         let r_comp = self.components.get(&comp).expect("Scheduler get_option : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_option : The comp_in doesn't have the port_in port");
+        let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_option : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
         s
     }
@@ -164,7 +164,7 @@ impl Scheduler {
     pub fn get_acc<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
         let (comp, port) = self.get_subnet_name(comp, "acc".to_string());
         let r_comp = self.components.get(&comp).expect("Scheduler get_acc : the component doesn't exist");
-        let mut sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_acc : The comp_in doesn't have the port_in port");
+        let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_acc : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
         s
     }
@@ -172,7 +172,7 @@ impl Scheduler {
     pub fn get_array_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String, selection: String) -> CountSender<T> {
         let (comp, port) = self.get_subnet_name(comp, port);
         let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
-        let mut sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("Scheduler connect : The comp_in doesn't have the port_in port");
+        let sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
         sender.set_sched(comp, self.sender.clone());
         sender
@@ -200,7 +200,7 @@ struct CompState {
     comp: Option<BoxedComp>,
     can_run: bool,
     edit_msgs: Vec<EditCmp>,
-    connections: usize,
+    connections: usize, // TODO : graceful shutdown
 }
 
 struct SchedState {

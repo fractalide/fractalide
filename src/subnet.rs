@@ -1,11 +1,5 @@
-use component::{IP, Component, ComponentRun, ComponentConnect, InputSenders, InputArraySenders};
-use super::scheduler::{Scheduler, CompMsg};
-
-use std::sync::mpsc::{Sender};
-use std::collections::HashMap;
-use std::any::Any;
-
-use std::mem;
+use component::{Component, ComponentConnect, InputSenders, InputArraySenders};
+use super::scheduler::{Scheduler};
 
 #[derive(Clone)]
 pub struct Graph {
@@ -50,7 +44,7 @@ impl SubNet {
             sched.subnet_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
         }
         let mut start = vec![];
-        for mut node in g.nodes {
+        for node in g.nodes {
             match node.sort {
                 COrG::C(fun) => {
                     let comp = fun();

@@ -1,4 +1,3 @@
-#![feature(reflect_marker)]
 #![feature(concat_idents)]
 #![feature(braced_empty_structs)]
 
@@ -92,7 +91,7 @@ component! {
     fn run(&mut self) {
         let msg = self.inputs.input.recv().unwrap();
         for out in self.outputs_array.output.values() {
-            out.send(msg.clone());
+            out.send(msg.clone()).ok().unwrap();
         }
     }
     pub trait CloneIP: Clone + IP {}
@@ -178,13 +177,13 @@ pub fn main() {
     fvm.add_subnet("firstnot".to_string(), not.clone());
     fvm.add_component("display_not".to_string(), Display::new::<bool>());
     let o: SyncSender<String> = fvm.get_option("display_not".to_string());
-    o.send("Not result : ".to_string());
+    let _ = o.send("Not result : ".to_string());
     fvm.connect("firstnot".to_string(), "output".to_string(), "display_not".to_string(), "input".to_string());
 
 
     let s: CountSender<bool> = fvm.get_sender("firstnot".to_string(), "input".to_string());
-    s.send(true);
-    s.send(false);
+    s.send(true).unwrap();
+    s.send(false).unwrap();
 
     thread::sleep_ms(2000);
     println!("");
@@ -208,7 +207,7 @@ pub fn main() {
     let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());
     let b: CountSender<bool> = fvm.get_sender("firstand".to_string(), "b".to_string());
     let o: SyncSender<String> = fvm.get_option("display_and".to_string());
-    o.send("And result : ".to_string());
+    o.send("And result : ".to_string()).ok().unwrap();
 
     a.send(true).unwrap();
     b.send(false).unwrap();
@@ -227,11 +226,11 @@ pub fn main() {
     fvm.add_component("lb".into(), LoadBalancer::new::<String>());
  
     let o: SyncSender<String> = fvm.get_option("dlb1".into());
-    o.send("lb first display : ".into());
+    o.send("lb first display : ".into()).ok().unwrap();
     let o: SyncSender<String> = fvm.get_option("dlb2".into());
-    o.send("lb second display : ".to_string());
+    o.send("lb second display : ".to_string()).ok().unwrap();
     let o: SyncSender<String> = fvm.get_option("dlb3".into());
-    o.send("lb third display : ".to_string());
+    o.send("lb third display : ".to_string()).ok().unwrap();
     thread::sleep_ms(1000);
  
     fvm.connect("lb".into(), "acc".into(), "lb".into(), "acc".into());
