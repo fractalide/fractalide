@@ -17,7 +17,6 @@
  *
  */
 use std::sync::mpsc::{SyncSender, Sender, Receiver, SendError, RecvError, TryRecvError};
-use std::sync::mpsc::channel;
 use std::sync::mpsc::sync_channel;
 use std::sync::Arc;
 
@@ -27,7 +26,6 @@ use std::any::Any;
 use std::marker::Reflect;
 use std::raw::TraitObject;
 use std::mem;
-use std::thread;
 
 use scheduler::CompMsg;
 /* 
@@ -442,21 +440,41 @@ impl<T: Clone> OptionReceiver<T> {
 macro_rules! component {
     (
         $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
-        inputs($i_name:ident $i_name2:ident $( ( $($i_t:ident$(: $i_tr:ident)* ),* ) )* => ($($input_field_name:ident: $input_field_type:ty ),* )),
-        inputs_array($ia_name: ident $ia_name2:ident $( ( $($ia_t:ident$(: $ia_tr:ident)* ),* ) )* => ($($input_array_name:ident: $input_array_type:ty),* )),
-        outputs($o_name:ident $( ( $($o_t:ident$(: $o_tr:ident)* ),* ) )* => ($($output_field_name:ident: $output_field_type:ty ),* )),
-        outputs_array($oa_name:ident $( ( $($oa_t:ident$(: $oa_tr:ident)* ),* ) )* => ($($output_array_name:ident: $output_array_type:ty ),* )),
+        inputs(( $($i_t:ident$(: $i_tr:ident)* ),*) => ($($input_field_name:ident: $input_field_type:ty ),* )),
+        inputs_array(( $($ia_t:ident$(: $ia_tr:ident)* ),* ) => ($($input_array_name:ident: $input_array_type:ty),* )),
+        outputs(( $($o_t:ident$(: $o_tr:ident)* ),* ) => ($($output_field_name:ident: $output_field_type:ty ),* )),
+        outputs_array(( $($oa_t:ident$(: $oa_tr:ident)* ),* ) => ($($output_array_name:ident: $output_array_type:ty ),* )),
         option($($option_type:ty)*), 
         acc($($acc_type:ty)*),
         fn run(&mut $arg:ident) $fun:block
+        $($more:item)*
     ) 
         =>
     {
+        #[allow(non_snake_case)]
+        mod $name {
+        use fractalide::component;
+        use fractalide::component::*;
+        use fractalide::scheduler::{CompMsg};
+
+        #[allow(unused_imports)]
+        use std::sync::mpsc::{SyncSender, Receiver, Sender};
+        #[allow(unused_imports)]
+        use std::sync::mpsc::sync_channel;
+        #[allow(unused_imports)]
+        use std::sync::atomic::Ordering;
+        #[allow(unused_imports)]
+        use std::any::Any;
+        #[allow(unused_imports)]
+        use std::collections::HashMap;
+
+        $($more)*
+
         /* Input ports part */
 
         // simple
         #[allow(dead_code)]
-        struct $i_name<$( $( $i_t ),* )*> {
+        struct InputS<$( $i_t ),*> {
             $(
                 $input_field_name: CountSender<$input_field_type>,
             )*
@@ -469,7 +487,7 @@ macro_rules! component {
         }
 
         #[allow(dead_code)]
-        struct $i_name2<$( $( $i_t ),* )*> {
+        struct InputR<$($i_t ),*> {
             $(
                 $input_field_name: CountReceiver<$input_field_type>,
             )*
@@ -481,7 +499,7 @@ macro_rules! component {
             )*
         }
 
-        impl<$( $( $i_t: $($i_tr)* ),* )*> InputSenders for $i_name<$( $( $i_t),* )*>{
+        impl<$( $i_t: $($i_tr)* ),* > InputSenders for InputS<$( $i_t),*>{
             fn get_sender(&self, port: String) -> Option<Box<Any + Send + 'static>> {
                 match &(port[..]) {
                     $(
@@ -506,19 +524,19 @@ macro_rules! component {
 
         // array
         #[allow(dead_code)]
-        struct $ia_name<$( $( $ia_t ),* )*> {
+        struct InputAS< $( $ia_t ),* > {
             $(
                 $input_array_name: HashMap<String, CountSender<$input_array_type>>,
             )*    
         }
         #[allow(dead_code)]
-        struct $ia_name2<$( $( $ia_t ),* )*> {
+        struct InputAR< $( $ia_t ),* > {
             $(
                 $input_array_name: HashMap<String, CountReceiver<$input_array_type>>,
             )*    
         }
 
-        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for $ia_name<$( $( $ia_t),* )*>{
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for InputAS< $( $ia_t),* >{
             fn get_selection_sender(&self, port: String, _selection: String) -> Option<Box<Any + Send + 'static>> {
                 match &(port[..]) {
                     $(
@@ -558,7 +576,7 @@ macro_rules! component {
             }
         }
 
-        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for $ia_name2<$( $( $ia_t),* )*>{
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for InputAR< $( $ia_t),* >{
             fn add_selection_receiver(&mut self, port: String, _selection: String, _receiver: Box<Any>){
                 match &(port[..]) {
                     $(
@@ -576,7 +594,7 @@ macro_rules! component {
 
         // simple
         #[allow(dead_code)]
-        struct $o_name<$( $( $o_t ),* )*> {
+        struct Output< $( $o_t ),* > {
             $(
                 $output_field_name: OutputSender<$output_field_type>,
             )*
@@ -587,7 +605,7 @@ macro_rules! component {
 
         // array
         #[allow(dead_code)]
-        struct $oa_name<$( $( $oa_t ),* )*> {
+        struct OutputA< $( $oa_t ),* > {
             $(
                 $output_array_name: HashMap<String, OutputSender<$output_array_type>>
             ),*
@@ -667,90 +685,90 @@ macro_rules! component {
 
         #[allow(dead_code)]
         struct $name<$( $( $c_t ),* )*> {
-            inputs: $i_name2<$( $( $i_t ),* )*>,
-            inputs_array:$ia_name2<$( $( $ia_t ),* )*>,
-            outputs: $o_name<$( $( $o_t ),* )*>,
-            outputs_array: $oa_name<$( $( $oa_t ),* )*>,
+            inputs: InputR<$( $i_t ),*>,
+            inputs_array:InputAR<$( $( $ia_t ),* )*>,
+            outputs: Output<$( $o_t ),*>,
+            outputs_array: OutputA< $( $oa_t ),* >,
         }
 
-        impl<$( $( $c_t: $($c_tr)* ),* )*> $name<$( $( $c_t ),* ),*>{
-            fn new() -> (Box<Component + Send>, Box<InputSenders>, Box<InputArraySenders>) {
-                // Creation of the inputs
+        #[allow(dead_code)]
+        pub fn new<$( $( $c_t: $($c_tr)* ),* )*>() -> (Box<Component + Send>, Box<InputSenders>, Box<InputArraySenders>) {
+            // Creation of the inputs
+            $(
+                let $input_field_name = count_channel::<$input_field_type>(16);
+            )*
+            $( 
+                let options = sync_channel::<$option_type>(16);
+                let options_s = options.0;
+                let options_r = OptionReceiver::new(options.1);
+            )*
+            $(
+                let accs = sync_channel::<$acc_type>(1);
+                let accs_s = accs.0;
+                let accs_r = accs.1;
+            )*
+            let s = InputS {
+            $(
+                $input_field_name: $input_field_name.0,
+            )*    
+            $(
+                option: options_s as SyncSender<$option_type>,
+            )*
+            $(
+                acc: accs_s.clone() as SyncSender<$acc_type>,
+            )*
+            };
+            let r = InputR {
+            $(
+                $input_field_name: $input_field_name.1,
+            )*    
+            $(
+                option: options_r as OptionReceiver<$option_type>,
+            )*
+            $(
+                acc: accs_r as Receiver<$acc_type>,
+            )*
+            };
+
+            // Creation of the array inputs
+            let a_s = InputAS {
+            $(
+                $input_array_name: HashMap::<String, CountSender<$input_array_type>>::new(),
+            ),*
+            };
+            let a_r = InputAR {
+            $(
+                $input_array_name: HashMap::<String, CountReceiver<$input_array_type>>::new(),
+            ),*
+            };
+
+            // Creation of the output
+            let out = Output {
                 $(
-                    let $input_field_name = count_channel::<$input_field_type>(16);
-                )*
-                $( 
-                    let options = sync_channel::<$option_type>(16);
-                    let options_s = options.0;
-                    let options_r = OptionReceiver::new(options.1);
-                )*
-                $(
-                    let accs = sync_channel::<$acc_type>(1);
-                    let accs_s = accs.0;
-                    let accs_r = accs.1;
-                )*
-                let s = $i_name {
-                $(
-                    $input_field_name: $input_field_name.0,
+                    $output_field_name: OutputSender::new(),
                 )*    
                 $(
-                    option: options_s as SyncSender<$option_type>,
+                    acc: accs_s as SyncSender<$acc_type>,
                 )*
-                $(
-                    acc: accs_s.clone() as SyncSender<$acc_type>,
-                )*
-                };
-                let r = $i_name2 {
-                $(
-                    $input_field_name: $input_field_name.1,
-                )*    
-                $(
-                    option: options_r as OptionReceiver<$option_type>,
-                )*
-                $(
-                    acc: accs_r as Receiver<$acc_type>,
-                )*
-                };
+            };
 
-                // Creation of the array inputs
-                let a_s = $ia_name {
+            // Creation of the array output
+            let out_array = OutputA {
                 $(
-                    $input_array_name: HashMap::<String, CountSender<$input_array_type>>::new(),
+                    $output_array_name: HashMap::<String, OutputSender<$output_array_type>>::new(),
                 ),*
-                };
-                let a_r = $ia_name2 {
-                $(
-                    $input_array_name: HashMap::<String, CountReceiver<$input_array_type>>::new(),
-                ),*
-                };
+            };
 
-                // Creation of the output
-                let out = $o_name {
-                    $(
-                        $output_field_name: OutputSender::new(),
-                    )*    
-                    $(
-                        acc: accs_s as SyncSender<$acc_type>,
-                    )*
-                };
-
-                // Creation of the array output
-                let out_array = $oa_name {
-                    $(
-                        $output_array_name: HashMap::<String, OutputSender<$output_array_type>>::new(),
-                    ),*
-                };
-
-                // Put it together
-                let comp = $name{
-                    inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array,
-                };
-                (Box::new(comp), Box::new(s), Box::new(a_s))
-            }
+            // Put it together
+            let comp = $name{
+                inputs: r, outputs: out, inputs_array: a_r, outputs_array: out_array,
+            };
+            (Box::new(comp), Box::new(s), Box::new(a_s))
         }
 
         impl<$( $( $c_t: $($c_tr)* ),* )*> ComponentRun for $name<$( $( $c_t ),* ),* >{
             fn run(&mut $arg) $fun
         }    
+        }
     }
 }

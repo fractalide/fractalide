@@ -5,28 +5,18 @@
 #[macro_use]
 extern crate fractalide;
 
-use self::fractalide::component;
-use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, InputSenders, InputArraySenders, InputArrayReceivers, OptionReceiver, CountSender, CountReceiver, count_channel};
-use self::fractalide::scheduler::{CompMsg, Scheduler};
+use self::fractalide::scheduler::{Scheduler};
 use self::fractalide::subnet::*;
+use self::fractalide::component::{CountSender};
 
-use std::fmt::Debug;
-
-use std::sync::mpsc::{SyncSender, Receiver, Sender};
-use std::sync::mpsc::sync_channel;
-use std::sync::atomic::Ordering;
-use std::any::Any;
-use std::collections::HashMap;
-
+use std::sync::mpsc::SyncSender;
 use std::thread;
-use std::mem;
-
 component! {
     Nand,
-    inputs(NANDIA NANDIB => (a: bool, b: bool)),
-    inputs_array(NANDIIA NANDIIB => ()),
-    outputs(NANDO => (output:bool)),
-    outputs_array(NANDOA => ()),
+    inputs(() => (a: bool, b: bool)),
+    inputs_array(() => ()),
+    outputs(() => (output:bool)),
+    outputs_array(() => ()),
     option(),
     acc(),
     fn run(&mut self) {
@@ -39,10 +29,10 @@ component! {
 
 component! {
     IIPC,
-    inputs(IIPCS IIPCR => ()),
-    inputs_array(IIPCAS IIPCAR => ()),
-    outputs(IIPCO => (output: i32)),
-    outputs_array(IIPCOA => ()),
+    inputs(() => ()),
+    inputs_array(() => ()),
+    outputs(() => (output: i32)),
+    outputs_array(() => ()),
     option(),
     acc(),
     fn run(&mut self) {
@@ -53,10 +43,10 @@ component! {
 
 component! {
     Adder, 
-    inputs(AIS AIR => ()),
-    inputs_array(AIIS AIIR => (numbers: i32)),
-    outputs(AO => (output:i32)),
-    outputs_array(AAO => ()),
+    inputs(() => ()),
+    inputs_array(() => (numbers: i32)),
+    outputs(() => (output:i32)),
+    outputs_array(() => ()),
     option(),
     acc(),
     fn run(&mut self) {
@@ -68,15 +58,13 @@ component! {
     }
 }   
 
-trait DisplayIP: Debug + IP {}
-impl <T> DisplayIP for T where T : Debug + IP {}
 
 component! {
     Display, (T: DisplayIP),
-    inputs(DIS DIR (T: DisplayIP) => (input: T)),
-    inputs_array(DIIS DIIR => ()),
-    outputs(DO (T: DisplayIP) => (output: T)),
-    outputs_array(DAO => ()),
+    inputs((T: DisplayIP) => (input: T)),
+    inputs_array(() => ()),
+    outputs((T: DisplayIP) => (output: T)),
+    outputs_array(() => ()),
     option(String),
     acc(),
     fn run(&mut self){
@@ -88,16 +76,17 @@ component! {
         println!("{}{:?}", pre, i);
         let _ = self.outputs.output.send(i);
     }
+    use std::fmt::Debug;
+    pub trait DisplayIP: Debug + IP {}
+    impl <T> DisplayIP for T where T : Debug + IP {}
 }
 
-trait CloneIP: Clone + IP {}
-impl <T> CloneIP for T where T: Clone + IP {}
 component! {
     CloneC, (T: CloneIP),
-    inputs(CS CR (T: CloneIP) => (input: T)),
-    inputs_array(CAS CAR => ()),
-    outputs(CO => ()),
-    outputs_array(CAO (T: CloneIP) => (output: T)),
+    inputs((T: CloneIP) => (input: T)),
+    inputs_array(() => ()),
+    outputs(() => ()),
+    outputs_array((T: CloneIP) => (output: T)),
     option(),
     acc(),
     fn run(&mut self) {
@@ -106,14 +95,16 @@ component! {
             out.send(msg.clone());
         }
     }
+    pub trait CloneIP: Clone + IP {}
+    impl <T> CloneIP for T where T: Clone + IP {}
 }
 
 component! {
     LoadBalancer, (T: IP),
-    inputs(LBS LBR (T: IP) => (input: T)),
-    inputs_array(LBAS LBAR => ()),
-    outputs(LBO => ()),
-    outputs_array(LBOA (T: IP) => (output: T)),
+    inputs((T: IP) => (input: T)),
+    inputs_array(() => ()),
+    outputs(() => ()),
+    outputs_array((T: IP) => (output: T)),
     option(),
     acc(usize),
     fn run(&mut self) {
@@ -173,7 +164,7 @@ pub fn main() {
     //println!("");
 
     let nand1 = Node{ name: "nand1".to_string(), sort: COrG::C(Nand::new) };
-    let clone = Node{ name: "clone".to_string(), sort: COrG::C(CloneC::<bool>::new) };
+    let clone = Node{ name: "clone".to_string(), sort: COrG::C(CloneC::new::<bool>) };
     let edge1 = Edge::Array2simple("clone".to_string(), "output".to_string(), "1".to_string(), "nand1".to_string(), "a".to_string());
     let edge2 = Edge::Array2simple("clone".to_string(), "output".to_string(), "2".to_string(), "nand1".to_string(), "b".to_string());
     let not = Graph {
@@ -185,7 +176,7 @@ pub fn main() {
     };
 
     fvm.add_subnet("firstnot".to_string(), not.clone());
-    fvm.add_component("display_not".to_string(), Display::<bool>::new());
+    fvm.add_component("display_not".to_string(), Display::new::<bool>());
     let o: SyncSender<String> = fvm.get_option("display_not".to_string());
     o.send("Not result : ".to_string());
     fvm.connect("firstnot".to_string(), "output".to_string(), "display_not".to_string(), "input".to_string());
@@ -212,7 +203,7 @@ pub fn main() {
     };
 
     fvm.add_subnet("firstand".to_string(), g);
-    fvm.add_component("display_and".to_string(), Display::<bool>::new());
+    fvm.add_component("display_and".to_string(), Display::new::<bool>());
     fvm.connect("firstand".to_string(), "output".to_string(), "display_and".to_string(), "input".to_string());
     let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());
     let b: CountSender<bool> = fvm.get_sender("firstand".to_string(), "b".to_string());
@@ -230,10 +221,10 @@ pub fn main() {
     println!("");
  
  
-    fvm.add_component("dlb1".into(), Display::<String>::new());
-    fvm.add_component("dlb2".into(), Display::<String>::new());
-    fvm.add_component("dlb3".into(), Display::<String>::new());
-    fvm.add_component("lb".into(), LoadBalancer::<String>::new());
+    fvm.add_component("dlb1".into(), Display::new::<String>());
+    fvm.add_component("dlb2".into(), Display::new::<String>());
+    fvm.add_component("dlb3".into(), Display::new::<String>());
+    fvm.add_component("lb".into(), LoadBalancer::new::<String>());
  
     let o: SyncSender<String> = fvm.get_option("dlb1".into());
     o.send("lb first display : ".into());
