@@ -439,11 +439,11 @@ impl<T: Clone> OptionReceiver<T> {
 #[macro_export]
 macro_rules! component {
     (
-        $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
-        inputs(( $($i_t:ident$(: $i_tr:ident)* ),*) => ($($input_field_name:ident: $input_field_type:ty ),* )),
-        inputs_array(( $($ia_t:ident$(: $ia_tr:ident)* ),* ) => ($($input_array_name:ident: $input_array_type:ty),* )),
-        outputs(( $($o_t:ident$(: $o_tr:ident)* ),* ) => ($($output_field_name:ident: $output_field_type:ty ),* )),
-        outputs_array(( $($oa_t:ident$(: $oa_tr:ident)* ),* ) => ($($output_array_name:ident: $output_array_type:ty ),* )),
+       $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
+        inputs($( $input_field_name:ident: $input_field_type:ty ),* $( where $( $i_t:ident$(: $i_tr:ident)* ),* )* ),
+        inputs_array($( $input_array_name:ident: $input_array_type:ty ),* $( where $( $ia_t:ident$(: $ia_tr:ident)* ),* )* ),
+        outputs($($output_field_name:ident: $output_field_type:ty ),* $( where $($o_t:ident$(: $o_tr:ident)* ),* )* ),
+        outputs_array($($output_array_name:ident: $output_array_type:ty ),* $( where $($oa_t:ident$(: $oa_tr:ident)* ),* )* ),
         option($($option_type:ty)*), 
         acc($($acc_type:ty)*),
         fn run(&mut $arg:ident) $fun:block
@@ -474,7 +474,7 @@ macro_rules! component {
 
         // simple
         #[allow(dead_code)]
-        struct InputS<$( $i_t ),*> {
+        struct InputS<$( $( $i_t ),* )*> {
             $(
                 $input_field_name: CountSender<$input_field_type>,
             )*
@@ -487,7 +487,7 @@ macro_rules! component {
         }
 
         #[allow(dead_code)]
-        struct InputR<$($i_t ),*> {
+        struct InputR<$( $( $i_t ),* )*> {
             $(
                 $input_field_name: CountReceiver<$input_field_type>,
             )*
@@ -499,7 +499,7 @@ macro_rules! component {
             )*
         }
 
-        impl<$( $i_t: $($i_tr)* ),* > InputSenders for InputS<$( $i_t),*>{
+        impl<$( $( $i_t: $($i_tr)* ),* )*> InputSenders for InputS<$( $( $i_t),* )*>{
             fn get_sender(&self, port: String) -> Option<Box<Any + Send + 'static>> {
                 match &(port[..]) {
                     $(
@@ -524,19 +524,19 @@ macro_rules! component {
 
         // array
         #[allow(dead_code)]
-        struct InputAS< $( $ia_t ),* > {
+        struct InputAS< $( $( $ia_t ),* )* > {
             $(
                 $input_array_name: HashMap<String, CountSender<$input_array_type>>,
             )*    
         }
         #[allow(dead_code)]
-        struct InputAR< $( $ia_t ),* > {
+        struct InputAR< $( $( $ia_t ),* )*> {
             $(
                 $input_array_name: HashMap<String, CountReceiver<$input_array_type>>,
             )*    
         }
 
-        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for InputAS< $( $ia_t),* >{
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArraySenders for InputAS< $( $( $ia_t),* )*>{
             fn get_selection_sender(&self, port: String, _selection: String) -> Option<Box<Any + Send + 'static>> {
                 match &(port[..]) {
                     $(
@@ -576,7 +576,7 @@ macro_rules! component {
             }
         }
 
-        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for InputAR< $( $ia_t),* >{
+        impl<$( $( $ia_t: $($ia_tr)* ),* )*> InputArrayReceivers for InputAR< $( $( $ia_t),* )*>{
             fn add_selection_receiver(&mut self, port: String, _selection: String, _receiver: Box<Any>){
                 match &(port[..]) {
                     $(
@@ -594,7 +594,7 @@ macro_rules! component {
 
         // simple
         #[allow(dead_code)]
-        struct Output< $( $o_t ),* > {
+        struct Output< $( $( $o_t ),* )*> {
             $(
                 $output_field_name: OutputSender<$output_field_type>,
             )*
@@ -605,7 +605,7 @@ macro_rules! component {
 
         // array
         #[allow(dead_code)]
-        struct OutputA< $( $oa_t ),* > {
+        struct OutputA< $( $( $oa_t ),* )*> {
             $(
                 $output_array_name: HashMap<String, OutputSender<$output_array_type>>
             ),*
@@ -685,10 +685,10 @@ macro_rules! component {
 
         #[allow(dead_code)]
         struct $name<$( $( $c_t ),* )*> {
-            inputs: InputR<$( $i_t ),*>,
+            inputs: InputR<$( $( $i_t ),* )*>,
             inputs_array:InputAR<$( $( $ia_t ),* )*>,
-            outputs: Output<$( $o_t ),*>,
-            outputs_array: OutputA< $( $oa_t ),* >,
+            outputs: Output<$( $( $o_t ),* )*>,
+            outputs_array: OutputA< $( $( $oa_t ),* )*>,
         }
 
         #[allow(dead_code)]

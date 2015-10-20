@@ -12,10 +12,10 @@ use std::sync::mpsc::SyncSender;
 use std::thread;
 component! {
     Nand,
-    inputs(() => (a: bool, b: bool)),
-    inputs_array(() => ()),
-    outputs(() => (output:bool)),
-    outputs_array(() => ()),
+    inputs(a: bool, b: bool),
+    inputs_array(),
+    outputs(output:bool),
+    outputs_array(),
     option(),
     acc(),
     fn run(&mut self) {
@@ -28,10 +28,10 @@ component! {
 
 component! {
     IIPC,
-    inputs(() => ()),
-    inputs_array(() => ()),
-    outputs(() => (output: i32)),
-    outputs_array(() => ()),
+    inputs(),
+    inputs_array(),
+    outputs(output: i32),
+    outputs_array(),
     option(),
     acc(),
     fn run(&mut self) {
@@ -42,10 +42,10 @@ component! {
 
 component! {
     Adder, 
-    inputs(() => ()),
-    inputs_array(() => (numbers: i32)),
-    outputs(() => (output:i32)),
-    outputs_array(() => ()),
+    inputs(),
+    inputs_array(numbers: i32),
+    outputs(output:i32),
+    outputs_array(),
     option(),
     acc(),
     fn run(&mut self) {
@@ -60,10 +60,10 @@ component! {
 
 component! {
     Display, (T: DisplayIP),
-    inputs((T: DisplayIP) => (input: T)),
-    inputs_array(() => ()),
-    outputs((T: DisplayIP) => (output: T)),
-    outputs_array(() => ()),
+    inputs(input: T where T: DisplayIP),
+    inputs_array(),
+    outputs(output: T where T: DisplayIP),
+    outputs_array(),
     option(String),
     acc(),
     fn run(&mut self){
@@ -82,10 +82,10 @@ component! {
 
 component! {
     CloneC, (T: CloneIP),
-    inputs((T: CloneIP) => (input: T)),
-    inputs_array(() => ()),
-    outputs(() => ()),
-    outputs_array((T: CloneIP) => (output: T)),
+    inputs(input: T where T: CloneIP),
+    inputs_array(),
+    outputs(),
+    outputs_array(output: T where T: CloneIP),
     option(),
     acc(),
     fn run(&mut self) {
@@ -99,11 +99,31 @@ component! {
 }
 
 component! {
+    ConcatC, (T: IP),
+    inputs(),
+    inputs_array(inputs: T where T: IP),
+    outputs(output: T where T: IP),
+    outputs_array(),
+    option(),
+    acc(usize),
+    fn run(&mut self){
+        let mut actual = self.inputs.acc.recv().unwrap();
+        if actual > self.inputs_array.inputs.len()-1 { actual = 0; }
+        let mut list: Vec<_> = self.inputs_array.inputs.iter().collect();
+        list.sort_by(|&a, &b| { (a.0).cmp((&b.0)) });
+        let port = list.get(actual).unwrap();
+        self.outputs.output.send(port.1.recv().unwrap()).ok().unwrap();
+        self.outputs.acc.send(actual+1).ok().unwrap();
+
+    }
+}
+
+component! {
     LoadBalancer, (T: IP),
-    inputs((T: IP) => (input: T)),
-    inputs_array(() => ()),
-    outputs(() => ()),
-    outputs_array((T: IP) => (output: T)),
+    inputs(input: T where T: IP),
+    inputs_array(),
+    outputs(),
+    outputs_array(output: T where T: IP),
     option(),
     acc(usize),
     fn run(&mut self) {
@@ -252,6 +272,33 @@ pub fn main() {
     i.send("hello Fractalide".to_string()).unwrap();
     thread::sleep_ms(200);
     i.send("hello Fractalide".to_string()).unwrap();
+
     thread::sleep_ms(2000);
+    println!("");
+    println!("");
+
+    fvm.add_component("concat".into(), ConcatC::new::<i32>());
+    fvm.add_input_array_selection("concat".into(), "inputs".into(), "a".into());
+    fvm.add_input_array_selection("concat".into(), "inputs".into(), "b".into());
+    let acc: SyncSender<usize> = fvm.get_acc("concat".into());
+    acc.send(0).unwrap();
+
+    fvm.add_component("display_concat".into(), Display::new::<i32>());
+    let o: SyncSender<String> = fvm.get_option("display_concat".into());
+    let _ = o.send("concat result : ".into());
+
+    fvm.connect("concat".into(), "output".into(), "display_concat".into(), "input".into());
+
+    let a = fvm.get_array_sender("concat".into(), "inputs".into(), "a".into());
+    let b = fvm.get_array_sender("concat".into(), "inputs".into(), "b".into());
+
+    b.send(2).unwrap();
+    thread::sleep_ms(1000);
+    a.send(1).unwrap();
+    a.send(1).unwrap();
+    b.send(2).unwrap();
+
+    thread::sleep_ms(2000);
+
 
 }
