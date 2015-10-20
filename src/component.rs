@@ -734,12 +734,12 @@ macro_rules! component {
             let a_s = InputAS {
             $(
                 $input_array_name: HashMap::<String, CountSender<$input_array_type>>::new(),
-            ),*
+            )*
             };
             let a_r = InputAR {
             $(
                 $input_array_name: HashMap::<String, CountReceiver<$input_array_type>>::new(),
-            ),*
+            )*
             };
 
             // Creation of the output
@@ -756,7 +756,7 @@ macro_rules! component {
             let out_array = OutputA {
                 $(
                     $output_array_name: HashMap::<String, OutputSender<$output_array_type>>::new(),
-                ),*
+                )*
             };
 
             // Put it together
