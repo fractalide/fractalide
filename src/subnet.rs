@@ -5,7 +5,8 @@ use super::scheduler::{Scheduler};
 pub struct Graph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
-    pub virtual_ports: Vec<VirtualPort>,
+    pub virtual_input_ports: Vec<VirtualPort>,
+    pub virtual_output_ports: Vec<VirtualPort>,
     pub iips: Vec<IIP>,
 }
 
@@ -40,8 +41,11 @@ pub struct SubNet;
 impl SubNet {
     pub fn new(g: Graph, name: String, sched: &mut Scheduler) { 
         // TODO Make virtual input and output different
-        for vp in g.virtual_ports {
-            sched.subnet_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
+        for vp in g.virtual_input_ports {
+            sched.subnet_input_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
+        }
+        for vp in g.virtual_output_ports {
+            sched.subnet_output_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
         }
         let mut start = vec![];
         for node in g.nodes {

@@ -169,8 +169,8 @@ pub fn main() {
     let not = Graph {
         nodes: vec![nand1, clone],
         edges: vec![edge1, edge2],
-        virtual_ports: vec![VirtualPort("input".to_string(), "clone".to_string(), "input".to_string()), 
-                            VirtualPort("output".to_string(), "nand1".to_string(), "output".to_string())],
+        virtual_input_ports: vec![VirtualPort("input".to_string(), "clone".to_string(), "input".to_string()),], 
+        virtual_output_ports: vec![VirtualPort("output".to_string(), "nand1".to_string(), "output".to_string()),],
         iips: vec![],
     };
 
@@ -195,9 +195,9 @@ pub fn main() {
     let g = Graph {
         nodes: vec![nand1, sn_not],
         edges: vec![edge3],
-        virtual_ports: vec![VirtualPort("a".to_string(), "nand1".to_string(), "a".to_string()), 
-                            VirtualPort("b".to_string(), "nand1".to_string(), "b".to_string()),
-                            VirtualPort("output".to_string(), "not".to_string(), "output".to_string())],
+        virtual_input_ports: vec![VirtualPort("a".to_string(), "nand1".to_string(), "a".to_string()), 
+                            VirtualPort("b".to_string(), "nand1".to_string(), "b".to_string()),],
+        virtual_output_ports: vec![VirtualPort("output".to_string(), "not".to_string(), "output".to_string()),],
         iips: vec![],
     };
 

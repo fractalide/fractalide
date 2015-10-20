@@ -42,7 +42,9 @@ pub struct Scheduler {
     pub components: HashMap<String, Comp>,
     sender: Sender<CompMsg>,
     /// Used by the subnets
-    pub subnet_names: HashMap<String, (String, String)>,
+    pub subnet_input_names: HashMap<String, (String, String)>,
+    /// Used by the subnets
+    pub subnet_output_names: HashMap<String, (String, String)>,
     /// Used by the subnets
     pub subnet_start: HashMap<String, Vec<String>>,
 }
@@ -74,7 +76,13 @@ impl Scheduler {
             }
         });
             
-        Scheduler { components: HashMap::new(), sender: s, subnet_names: HashMap::new(), subnet_start: HashMap::new() }
+        Scheduler { 
+            components: HashMap::new(), 
+            sender: s,
+            subnet_input_names: HashMap::new(),
+            subnet_output_names: HashMap::new(),
+            subnet_start: HashMap::new(),
+        }
     }
 
     pub fn add_component(&mut self, name: String, c: (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)) {
@@ -99,39 +107,39 @@ impl Scheduler {
     }
 
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String){
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
         let s = comp.input_senders.get_sender(port_in.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to sched state");
     }
 
     pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String){
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
         let s = comp.input_senders.get_sender(port_in.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String){
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
         let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("Scheduler connect : The comp_in doesn't have the selection_in selection of the port_in port");
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String){
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let comp = self.components.get(&comp_in).expect("Scheduler connect : the component doesn't exist");
         let s = comp.input_array_senders.get_selection_sender(port_in.clone(), selection_in.clone()).expect("Scheduler connect : The comp_in doesn't have the selection_in selection of the port_in port");
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, s, comp_in, self.sender.clone())).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) {
-        let (comp, port) = self.get_subnet_name(comp, port);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
         let mut comp_in = self.components.get_mut(&comp).expect("Scheduler add_input_array_selection : the component doesn't exist");
         if comp_in.input_array_senders.get_selection_sender(port.clone(), selection.clone()).is_some() { return; }
         let (s, r) = comp_in.input_array_senders.get_sender_receiver(port.clone()).expect("Scheduler add_input_array_selection : The port doesn't exist");
@@ -140,12 +148,12 @@ impl Scheduler {
     }
 
     pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) {
-        let (comp, port) = self.get_subnet_name(comp, port);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::Out);
         self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
     }
 
     pub fn get_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String) -> CountSender<T> {
-        let (comp, port) = self.get_subnet_name(comp, port);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
         let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
         let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
@@ -154,7 +162,7 @@ impl Scheduler {
     }
 
     pub fn get_option<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
-        let (comp, port) = self.get_subnet_name(comp, "option".to_string());
+        let (comp, port) = self.get_subnet_name(comp, "option".to_string(), VPType::In);
         let r_comp = self.components.get(&comp).expect("Scheduler get_option : the component doesn't exist");
         let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_option : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
@@ -162,7 +170,7 @@ impl Scheduler {
     }
 
     pub fn get_acc<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
-        let (comp, port) = self.get_subnet_name(comp, "acc".to_string());
+        let (comp, port) = self.get_subnet_name(comp, "acc".to_string(), VPType::In);
         let r_comp = self.components.get(&comp).expect("Scheduler get_acc : the component doesn't exist");
         let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_acc : The comp_in doesn't have the port_in port");
         let s: SyncSender<T> = downcast(sender);
@@ -170,7 +178,7 @@ impl Scheduler {
     }
 
     pub fn get_array_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String, selection: String) -> CountSender<T> {
-        let (comp, port) = self.get_subnet_name(comp, port);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
         let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
         let sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("Scheduler connect : The comp_in doesn't have the port_in port");
         let mut sender: CountSender<T> = downcast(sender);
@@ -178,15 +186,22 @@ impl Scheduler {
         sender
     }
 
-    fn get_subnet_name(&self, comp: String, port: String) -> (String, String) {
+    fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
         let concat = comp.clone() + &port;
-        let real_name = self.subnet_names.get(&concat);
+        let real_name = match vp_type {
+            VPType::In => { self.subnet_input_names.get(&concat) },
+            VPType::Out => { self.subnet_output_names.get(&concat) },
+        };
         if let Some(&(ref c, ref p)) = real_name {
-            self.get_subnet_name(c.clone(), p.clone())
+            self.get_subnet_name(c.clone(), p.clone(), vp_type)
         } else {
             (comp, port)
         }
     }
+}
+
+enum VPType {
+    In, Out
 }
 
 enum EditCmp {
