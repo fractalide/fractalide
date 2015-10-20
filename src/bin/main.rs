@@ -1,30 +1,54 @@
-#![feature(reflect_marker)]
 #![feature(concat_idents)]
 #![feature(braced_empty_structs)]
 
 #[macro_use]
 extern crate fractalide;
 
-use self::fractalide::component;
-use self::fractalide::component::{Component, ComponentRun, ComponentConnect, OutputSender, IP, CompRunner, InputSenders, InputArraySenders, InputArrayReceivers};
+use self::fractalide::scheduler::{Scheduler};
+use self::fractalide::subnet::*;
+use self::fractalide::component::{CountSender};
 
-use std::fmt::Debug;
-
-use std::sync::mpsc::{SyncSender, Receiver};
-use std::sync::mpsc::sync_channel;
-use std::any::Any;
-use std::collections::HashMap;
-
+use std::sync::mpsc::SyncSender;
 use std::thread;
+component! {
+    Nand,
+    inputs(() => (a: bool, b: bool)),
+    inputs_array(() => ()),
+    outputs(() => (output:bool)),
+    outputs_array(() => ()),
+    option(),
+    acc(),
+    fn run(&mut self) {
+        let a = self.inputs.a.recv().unwrap();
+        let b = self.inputs.b.recv().unwrap();
+        let out = if a == false || b == false { true } else {false};
+        let _ = self.outputs.output.send(out).ok().expect("Nand: cannot send out");
+    }
+}
 
+component! {
+    IIPC,
+    inputs(() => ()),
+    inputs_array(() => ()),
+    outputs(() => (output: i32)),
+    outputs_array(() => ()),
+    option(),
+    acc(),
+    fn run(&mut self) {
+        let _ = self.outputs.output.send(42);
+        let _ = self.outputs.output.send(666);
+    }
+}
 
 component! {
     Adder, 
-    inputs(AIS AIR => ()),
-    inputs_array(AIIS AIIR => (numbers: i32)),
-    outputs(AO => (output:i32)),
-    outputs_array(AAO => ()),
-    fn run(&self) {
+    inputs(() => ()),
+    inputs_array(() => (numbers: i32)),
+    outputs(() => (output:i32)),
+    outputs_array(() => ()),
+    option(),
+    acc(),
+    fn run(&mut self) {
         let res = self.inputs_array.numbers.values().fold(0, |acc, port| {
             let msg = port.recv().unwrap();
             acc + msg
@@ -33,29 +57,56 @@ component! {
     }
 }   
 
-trait DisplayIP: Debug + IP {}
-impl <T> DisplayIP for T where T : Debug + IP {}
 
 component! {
     Display, (T: DisplayIP),
-    inputs(DIS DIR (T: DisplayIP) => (input: T)),
-    inputs_array(DIIS DIIR => ()),
-    outputs(DO (T: DisplayIP) => (output: T)),
-    outputs_array(DAO => ()),
-    fn run(&self){
+    inputs((T: DisplayIP) => (input: T)),
+    inputs_array(() => ()),
+    outputs((T: DisplayIP) => (output: T)),
+    outputs_array(() => ()),
+    option(String),
+    acc(),
+    fn run(&mut self){
         let i = self.inputs.input.recv().unwrap();
-        println!("Debug {:?}", i);
+        let pre = match self.inputs.option.try_recv() {
+            Ok(msg) => { msg },
+            _ => { "".to_string() },
+        };
+        println!("{}{:?}", pre, i);
         let _ = self.outputs.output.send(i);
     }
+    use std::fmt::Debug;
+    pub trait DisplayIP: Debug + IP {}
+    impl <T> DisplayIP for T where T : Debug + IP {}
+}
+
+component! {
+    CloneC, (T: CloneIP),
+    inputs((T: CloneIP) => (input: T)),
+    inputs_array(() => ()),
+    outputs(() => ()),
+    outputs_array((T: CloneIP) => (output: T)),
+    option(),
+    acc(),
+    fn run(&mut self) {
+        let msg = self.inputs.input.recv().unwrap();
+        for out in self.outputs_array.output.values() {
+            out.send(msg.clone()).ok().unwrap();
+        }
+    }
+    pub trait CloneIP: Clone + IP {}
+    impl <T> CloneIP for T where T: Clone + IP {}
 }
 
 component! {
     LoadBalancer, (T: IP),
-    inputs(LBS LBR (T: IP) => (acc: usize, input: T)),
-    inputs_array(LBAS LBAR => ()),
-    outputs(LBO => (acc: usize)),
-    outputs_array(LBOA (T: IP) => (output: T)),
-    fn run(&self) {
+    inputs((T: IP) => (input: T)),
+    inputs_array(() => ()),
+    outputs(() => ()),
+    outputs_array((T: IP) => (output: T)),
+    option(),
+    acc(usize),
+    fn run(&mut self) {
         // Find the good output port
         let mut actual = self.inputs.acc.recv().unwrap();
         if actual > self.outputs_array.output.len()-1 { actual = 0; }
@@ -72,64 +123,135 @@ component! {
         
 
 pub fn main() {
-    let mut a = CompRunner::new(Adder::new());
-    let d = CompRunner::new(Display::<i32>::new());
+    let mut fvm = Scheduler::new();
+    // fvm.add_component("iip1".to_string(), IIPC::new());
+    // fvm.add_component("display1".to_string(), Display::<i32>::new());
+    // fvm.subnet_names.insert("kikin".to_string(), ("display1".to_string(), "input".to_string()));
+    // fvm.connect("iip1".to_string(), "output".to_string(), "kik".to_string(), "in".to_string());
+    // fvm.start("iip1".to_string());
 
-    a.connect("output", &d, "input");
+    // thread::sleep_ms(1000);
+    // println!("");
+    // println!("");
 
-    a.add_input_array_selection("numbers", "x");
-    a.add_input_array_selection("numbers", "y");
+    //fvm.add_component("adder".to_string(), Adder::new());
+    //fvm.add_component("display_adder".to_string(), Display::<i32>::new());
+    //let o: SyncSender<String> = fvm.get_option("display_adder".to_string());
 
-    let x = a.get_array_sender("numbers", "x").unwrap();
-    let x: SyncSender<i32> = component::downcast(x);
-    let y = a.get_array_sender("numbers", "y").unwrap();
-    let y: SyncSender<i32> = component::downcast(y);
+    //fvm.connect("adder".to_string(), "output".to_string(), "display_adder".to_string(), "input".to_string());
+
+    //fvm.add_input_array_selection("adder".to_string(), "numbers".to_string(), "x".to_string());
+    //fvm.add_input_array_selection("adder".to_string(), "numbers".to_string(), "y".to_string());
+
+    //let x: CountSender<i32> = fvm.get_array_sender("adder".to_string(), "numbers".to_string(), "x".to_string());
+    //let y: CountSender<i32> = fvm.get_array_sender("adder".to_string(), "numbers".to_string(), "y".to_string());
 
 
-    x.send(1).unwrap();
-    y.send(11).unwrap();
-    x.send(2).unwrap();
-    y.send(22).unwrap();
-    x.send(3).unwrap();
-    a.start();
-    d.start();
-    y.send(33).unwrap();
+    //o.send("first test : ".to_string());
+    //x.send(1).unwrap();
+    //y.send(11).unwrap();
+    //x.send(2).unwrap();
+    //y.send(22).unwrap();
+    //x.send(3).unwrap();
+    //thread::sleep_ms(2000);
+    //o.send("first test change : ".to_string());
+    //o.send("first test change twices : ".to_string());
+    //y.send(33).unwrap();
+ 
+    //thread::sleep_ms(2000);
+    //println!("");
+    //println!("");
 
+    let nand1 = Node{ name: "nand1".to_string(), sort: COrG::C(Nand::new) };
+    let clone = Node{ name: "clone".to_string(), sort: COrG::C(CloneC::new::<bool>) };
+    let edge1 = Edge::Array2simple("clone".to_string(), "output".to_string(), "1".to_string(), "nand1".to_string(), "a".to_string());
+    let edge2 = Edge::Array2simple("clone".to_string(), "output".to_string(), "2".to_string(), "nand1".to_string(), "b".to_string());
+    let not = Graph {
+        nodes: vec![nand1, clone],
+        edges: vec![edge1, edge2],
+        virtual_input_ports: vec![VirtualPort("input".to_string(), "clone".to_string(), "input".to_string()),], 
+        virtual_output_ports: vec![VirtualPort("output".to_string(), "nand1".to_string(), "output".to_string()),],
+        iips: vec![],
+    };
+
+    fvm.add_subnet("firstnot".to_string(), not.clone());
+    fvm.add_component("display_not".to_string(), Display::new::<bool>());
+    let o: SyncSender<String> = fvm.get_option("display_not".to_string());
+    let _ = o.send("Not result : ".to_string());
+    fvm.connect("firstnot".to_string(), "output".to_string(), "display_not".to_string(), "input".to_string());
+
+
+    let s: CountSender<bool> = fvm.get_sender("firstnot".to_string(), "input".to_string());
+    s.send(true).unwrap();
+    s.send(false).unwrap();
+
+    thread::sleep_ms(2000);
+    println!("");
+    println!("");
+
+    let nand1 = Node{ name: "nand1".to_string(), sort: COrG::C(Nand::new) };
+    let sn_not = Node{ name: "not".to_string(), sort: COrG::G(not) };
+    let edge3 = Edge::Simple2simple("nand1".to_string(), "output".to_string(), "not".to_string(), "input".to_string());
+    let g = Graph {
+        nodes: vec![nand1, sn_not],
+        edges: vec![edge3],
+        virtual_input_ports: vec![VirtualPort("a".to_string(), "nand1".to_string(), "a".to_string()), 
+                            VirtualPort("b".to_string(), "nand1".to_string(), "b".to_string()),],
+        virtual_output_ports: vec![VirtualPort("output".to_string(), "not".to_string(), "output".to_string()),],
+        iips: vec![],
+    };
+
+    fvm.add_subnet("firstand".to_string(), g);
+    fvm.add_component("display_and".to_string(), Display::new::<bool>());
+    fvm.connect("firstand".to_string(), "output".to_string(), "display_and".to_string(), "input".to_string());
+    let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());
+    let b: CountSender<bool> = fvm.get_sender("firstand".to_string(), "b".to_string());
+    let o: SyncSender<String> = fvm.get_option("display_and".to_string());
+    o.send("And result : ".to_string()).ok().unwrap();
+
+    a.send(true).unwrap();
+    b.send(false).unwrap();
+
+    a.send(true).unwrap();
+    b.send(true).unwrap();
+
+    thread::sleep_ms(2000);
+    println!("");
+    println!("");
+ 
+ 
+    fvm.add_component("dlb1".into(), Display::new::<String>());
+    fvm.add_component("dlb2".into(), Display::new::<String>());
+    fvm.add_component("dlb3".into(), Display::new::<String>());
+    fvm.add_component("lb".into(), LoadBalancer::new::<String>());
+ 
+    let o: SyncSender<String> = fvm.get_option("dlb1".into());
+    o.send("lb first display : ".into()).ok().unwrap();
+    let o: SyncSender<String> = fvm.get_option("dlb2".into());
+    o.send("lb second display : ".to_string()).ok().unwrap();
+    let o: SyncSender<String> = fvm.get_option("dlb3".into());
+    o.send("lb third display : ".to_string()).ok().unwrap();
     thread::sleep_ms(1000);
-
-
-    let d1 = CompRunner::new(Display::<String>::new());
-    let d2 = CompRunner::new(Display::<String>::new());
-    let d3 = CompRunner::new(Display::<String>::new());
-    let lb = CompRunner::new(LoadBalancer::<String>::new());
-
-    thread::sleep_ms(1000);
-
-    lb.connect("acc", &lb, "acc");
-    lb.add_output_array_selection("output", "1");
-    lb.add_output_array_selection("output", "2");
-    lb.add_output_array_selection("output", "z");
-    lb.connect_array("output", "1", &d1, "input");
-    lb.connect_array("output", "2", &d2, "input");
-    lb.connect_array("output", "z", &d3, "input");
-    let acc = lb.get_sender("acc").unwrap();
-    let acc: SyncSender<usize> = component::downcast(acc);
+ 
+    fvm.connect("lb".into(), "acc".into(), "lb".into(), "acc".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "1".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "2".into());
+    fvm.add_output_array_selection("lb".into(), "output".into(), "z".into());
+    fvm.connect_array("lb".into(), "output".into(), "1".into(), "dlb1".into(), "input".into());
+    fvm.connect_array("lb".into(), "output".into(), "2".into(), "dlb2".into(), "input".into());
+    fvm.connect_array("lb".into(), "output".into(), "z".into(), "dlb3".into(), "input".into());
+ 
+    let acc: SyncSender<usize> = fvm.get_acc("lb".into());
     acc.send(0).unwrap();
-
-    let i = lb.get_sender("input").unwrap();
-    let i: SyncSender<String> = component::downcast(i);
-    d1.start();
-    d3.start();
-    lb.start();
+    let i: CountSender<String> = fvm.get_sender("lb".into(), "input".into());
 
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(2000);
+    thread::sleep_ms(200);
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(2000);
+    thread::sleep_ms(200);
     i.send("hello Fractalide".to_string()).unwrap();
-    thread::sleep_ms(2000);
-    d2.start();
-
+    thread::sleep_ms(200);
+    i.send("hello Fractalide".to_string()).unwrap();
     thread::sleep_ms(2000);
 
 }
