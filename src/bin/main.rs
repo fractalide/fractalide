@@ -235,7 +235,8 @@ pub fn main() {
     a.send(true).unwrap();
     b.send(true).unwrap();
 
-    thread::sleep_ms(2000);
+    fvm.join();
+    let mut fvm = Scheduler::new();
     println!("");
     println!("");
  
@@ -251,7 +252,6 @@ pub fn main() {
     o.send("lb second display : ".to_string()).ok().unwrap();
     let o: SyncSender<String> = fvm.get_option("dlb3".into());
     o.send("lb third display : ".to_string()).ok().unwrap();
-    thread::sleep_ms(1000);
  
     fvm.connect("lb".into(), "acc".into(), "lb".into(), "acc".into());
     fvm.add_output_array_selection("lb".into(), "output".into(), "1".into());
@@ -273,7 +273,8 @@ pub fn main() {
     thread::sleep_ms(200);
     i.send("hello Fractalide".to_string()).unwrap();
 
-    thread::sleep_ms(2000);
+    fvm.join();
+    let mut fvm = Scheduler::new();
     println!("");
     println!("");
 
@@ -292,13 +293,14 @@ pub fn main() {
     let a = fvm.get_array_sender("concat".into(), "inputs".into(), "a".into());
     let b = fvm.get_array_sender("concat".into(), "inputs".into(), "b".into());
 
+    println!("Start concat");
     b.send(2).unwrap();
     thread::sleep_ms(1000);
     a.send(1).unwrap();
     a.send(1).unwrap();
     b.send(2).unwrap();
 
-    thread::sleep_ms(2000);
+    fvm.join();
 
 
 }
