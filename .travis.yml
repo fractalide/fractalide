@@ -1,3 +1,5 @@
 language: rust
 rust:
         - nightly
+notifications:
+  irc: "chat.freenode.net#fractalide"
