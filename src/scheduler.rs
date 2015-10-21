@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use std::sync::mpsc::{Sender, SyncSender};
 use std::sync::mpsc::channel;
 use std::thread;
+use std::thread::JoinHandle;
 
 use std::any::Any;
 use std::mem;
@@ -15,6 +16,8 @@ pub enum CompMsg {
     NewComponent(String, BoxedComp),
     /// Ask the scheduler to start the component named "String"
     Start(String),
+    /// Stop the scheduler
+    Halt, HaltState,
     /// Tell the scheduler that the component "BoxedComp" name "String" end his run
     RunEnd(String, BoxedComp),
     /// Tell to add a selection to an input array port
@@ -47,18 +50,21 @@ pub struct Scheduler {
     pub subnet_output_names: HashMap<String, (String, String)>,
     /// Used by the subnets
     pub subnet_start: HashMap<String, Vec<String>>,
+    th: JoinHandle<()>,
 }
 
 impl Scheduler {
     pub fn new() -> Self {
         let (s, r) = channel();
         let mut sched_s = SchedState::new(s.clone());
-        thread::spawn(move || {
+        let th = thread::spawn(move || {
             loop {
                 let msg = r.recv().unwrap();
                 match msg {
                     CompMsg::NewComponent(name, comp) => { sched_s.new_component(name, comp); },
                     CompMsg::Start(name) => { sched_s.start(name); },
+                    CompMsg::Halt => { break; },
+                    CompMsg::HaltState => { sched_s.halt(); },
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp); },
                     CompMsg::AddInputArraySelection(name, port, selection, recv) => { 
                         sched_s.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv)); 
@@ -82,6 +88,7 @@ impl Scheduler {
             subnet_input_names: HashMap::new(),
             subnet_output_names: HashMap::new(),
             subnet_start: HashMap::new(),
+            th: th,
         }
     }
 
@@ -93,7 +100,7 @@ impl Scheduler {
         self.sender.send(CompMsg::NewComponent(name, c.0)).expect("add_component : unable to send to scheduler state");
     }
 
-    pub fn add_subnet(&mut self, name: String, g: Graph) {
+    pub fn add_subnet(&mut self, name: String, g: &Graph) {
         SubNet::new(g, name, self);
     }
 
@@ -198,6 +205,11 @@ impl Scheduler {
             (comp, port)
         }
     }
+
+    pub fn join(self) {
+        self.sender.send(CompMsg::HaltState).ok().expect("Scheduler join : Cannot send HaltState");
+        self.th.join().ok().expect("Scheduelr join : Cannot join the thread");
+    }
 }
 
 enum VPType {
@@ -215,12 +227,13 @@ struct CompState {
     comp: Option<BoxedComp>,
     can_run: bool,
     edit_msgs: Vec<EditCmp>,
-    connections: usize, // TODO : graceful shutdown
 }
 
 struct SchedState {
     sched_sender: Sender<CompMsg>,
     components: HashMap<String, CompState>,
+    connections: usize,
+    can_halt: bool,
 }
 
 impl SchedState {
@@ -228,6 +241,8 @@ impl SchedState {
         SchedState {
             sched_sender: s,
             components: HashMap::new(),
+            connections: 0,
+            can_halt: false,
         }
     }
 
@@ -236,7 +251,6 @@ impl SchedState {
             comp: Some(comp), 
             can_run: false, 
             edit_msgs: vec![],
-            connections: 0,
         });
     }
 
@@ -252,9 +266,20 @@ impl SchedState {
         } 
     }
 
-    fn run_end(&mut self, name: String, box_comp: BoxedComp) {
+    fn halt(&mut self) {
+        self.can_halt = true;
+        if self.connections <= 0 {
+            self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
+        }
+    }
+
+    fn run_end(&mut self, name: String, mut box_comp: BoxedComp) {
         let must_restart = {
             let mut comp = self.components.get_mut(&name).expect("SchedState RunEnd : component doesn't exist");
+            let vec = mem::replace(&mut comp.edit_msgs, vec![]);
+            for msg in vec {
+                Self::edit_one_comp(&mut box_comp, msg);
+            }
             let must_restart = box_comp.is_ips();
             comp.comp = Some(box_comp);
             must_restart
@@ -262,12 +287,17 @@ impl SchedState {
         if must_restart {
             self.run(name);
         }
+        self.connections -= 1;
+        if self.connections <= 0 && self.can_halt {
+            self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
+        }
     }
 
     fn run(&mut self, name: String) {
         let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
         let mut b_comp = mem::replace(&mut o_comp.comp, None).expect("SchedState run : cannot run if already running");
         let sched_s = self.sched_sender.clone();
+        self.connections += 1;
         thread::spawn(move || {
             b_comp.run();
             sched_s.send(CompMsg::RunEnd(name, b_comp)).expect("SchedState run : unable to send RunEnd");
@@ -277,24 +307,28 @@ impl SchedState {
     fn edit_component(&mut self, name: String, msg: EditCmp){
         let mut comp = self.components.get_mut(&name).expect("SchedState edit_component : component doesn't exist");
         if let Some(ref mut c) = comp.comp {
-            match msg {
-                EditCmp::AddInputArraySelection(port, selection, recv) => {
-                        c.add_selection_receiver(port, selection, recv);
-                }
-                EditCmp::AddOutputArraySelection(port, selection) => {
-                        c.add_output_selection(port, selection);
-                }
-                EditCmp::ConnectOutputPort(port, send, dest, sched) => {
-                        c.connect(port, send, dest, sched);
-                }
-                EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched) => {
-                        c.connect_array(port, selection, send, dest, sched);
-                }
-            }
+            let mut c = c;
+            Self::edit_one_comp(&mut c, msg); 
         } else {
             comp.edit_msgs.push(msg);
         }
+    }
 
+    fn edit_one_comp(c: &mut BoxedComp, msg: EditCmp) {
+        match msg {
+            EditCmp::AddInputArraySelection(port, selection, recv) => {
+                    c.add_selection_receiver(port, selection, recv);
+            }
+            EditCmp::AddOutputArraySelection(port, selection) => {
+                    c.add_output_selection(port, selection);
+            }
+            EditCmp::ConnectOutputPort(port, send, dest, sched) => {
+                    c.connect(port, send, dest, sched);
+            }
+            EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched) => {
+                    c.connect_array(port, selection, send, dest, sched);
+            }
+        }
     }
 }   
 
