@@ -273,9 +273,13 @@ impl SchedState {
         }
     }
 
-    fn run_end(&mut self, name: String, box_comp: BoxedComp) {
+    fn run_end(&mut self, name: String, mut box_comp: BoxedComp) {
         let must_restart = {
             let mut comp = self.components.get_mut(&name).expect("SchedState RunEnd : component doesn't exist");
+            let vec = mem::replace(&mut comp.edit_msgs, vec![]);
+            for msg in vec {
+                Self::edit_one_comp(&mut box_comp, msg);
+            }
             let must_restart = box_comp.is_ips();
             comp.comp = Some(box_comp);
             must_restart
@@ -303,24 +307,28 @@ impl SchedState {
     fn edit_component(&mut self, name: String, msg: EditCmp){
         let mut comp = self.components.get_mut(&name).expect("SchedState edit_component : component doesn't exist");
         if let Some(ref mut c) = comp.comp {
-            match msg {
-                EditCmp::AddInputArraySelection(port, selection, recv) => {
-                        c.add_selection_receiver(port, selection, recv);
-                }
-                EditCmp::AddOutputArraySelection(port, selection) => {
-                        c.add_output_selection(port, selection);
-                }
-                EditCmp::ConnectOutputPort(port, send, dest, sched) => {
-                        c.connect(port, send, dest, sched);
-                }
-                EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched) => {
-                        c.connect_array(port, selection, send, dest, sched);
-                }
-            }
+            let mut c = c;
+            Self::edit_one_comp(&mut c, msg); 
         } else {
             comp.edit_msgs.push(msg);
         }
+    }
 
+    fn edit_one_comp(c: &mut BoxedComp, msg: EditCmp) {
+        match msg {
+            EditCmp::AddInputArraySelection(port, selection, recv) => {
+                    c.add_selection_receiver(port, selection, recv);
+            }
+            EditCmp::AddOutputArraySelection(port, selection) => {
+                    c.add_output_selection(port, selection);
+            }
+            EditCmp::ConnectOutputPort(port, send, dest, sched) => {
+                    c.connect(port, send, dest, sched);
+            }
+            EditCmp::ConnectOutputArrayPort(port, selection, send, dest, sched) => {
+                    c.connect_array(port, selection, send, dest, sched);
+            }
+        }
     }
 }   
 
