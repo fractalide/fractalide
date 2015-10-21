@@ -12,7 +12,7 @@ pub struct Graph {
 
 
 #[derive(Clone)]
-pub struct Node {
+pub struct Node{
     pub name: String,
     pub sort: COrG,
 }
@@ -39,47 +39,47 @@ pub struct IIP(String, pub String, pub String);
 
 pub struct SubNet;
 impl SubNet {
-    pub fn new(g: Graph, name: String, sched: &mut Scheduler) { 
+    pub fn new(g: &Graph, name: String, sched: &mut Scheduler) { 
         // TODO Make virtual input and output different
-        for vp in g.virtual_input_ports {
-            sched.subnet_input_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
+        for vp in &g.virtual_input_ports {
+            sched.subnet_input_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2.clone()));
         }
-        for vp in g.virtual_output_ports {
-            sched.subnet_output_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2));
+        for vp in &g.virtual_output_ports {
+            sched.subnet_output_names.insert(name.clone() + &vp.0, (name.clone() + &vp.1, vp.2.clone()));
         }
         let mut start = vec![];
-        for node in g.nodes {
+        for node in &g.nodes {
             match node.sort {
-                COrG::C(fun) => {
+                COrG::C(ref fun) => {
                     let comp = fun();
                     if !comp.0.is_input_ports() {
                         start.push(name.clone() + &node.name);
                     }
                     sched.add_component(name.clone() + &node.name, comp);
                 }
-                COrG::G(graph) => {
-                    sched.add_subnet(name.clone() + &node.name, graph);
+                COrG::G(ref graph) => {
+                    sched.add_subnet(name.clone() + &node.name, &graph);
                 }
             }
         }
         sched.subnet_start.insert(name.clone(), start);
-        for edge in g.edges {
+        for edge in &g.edges {
             match edge {
-                Edge::Simple2simple(comp_out, port_out, comp_in, port_in) => { 
-                    sched.connect(name.clone() + &comp_out, port_out, name.clone() + &comp_in, port_in); 
+                &Edge::Simple2simple(ref comp_out, ref port_out, ref comp_in, ref port_in) => { 
+                    sched.connect(name.clone() + &comp_out, port_out.clone(), name.clone() + &comp_in, port_in.clone()); 
                 },
-                Edge::Simple2array(comp_out, port_out, comp_in, port_in, selection_in) => { 
+                &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => { 
                     sched.add_input_array_selection(name.clone() + &comp_in, port_in.clone(), selection_in.clone());
-                    sched.connect_to_array(name.clone() + &comp_out, port_out, comp_in, name.clone() + &port_in, selection_in); 
+                    sched.connect_to_array(name.clone() + &comp_out, port_out.clone(), comp_in.clone(), name.clone() + &port_in, selection_in.clone()); 
                 },
-                Edge::Array2simple(comp_out, port_out, selection_out, comp_in, port_in) => { 
+                &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => { 
                     sched.add_output_array_selection(name.clone() + &comp_out, port_out.clone(), selection_out.clone());
-                    sched.connect_array(name.clone() + &comp_out, port_out, selection_out, name.clone() + &comp_in, port_in); 
+                    sched.connect_array(name.clone() + &comp_out, port_out.clone(), selection_out.clone(), name.clone() + &comp_in, port_in.clone()); 
                 },
-                Edge::Array2array(comp_out, port_out, selection_out, comp_in, port_in, selection_in) => { 
+                &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => { 
                     sched.add_input_array_selection(name.clone() + &comp_in, port_in.clone(), selection_in.clone());
                     sched.add_output_array_selection(name.clone() + &comp_out, port_out.clone(), selection_out.clone());
-                    sched.connect_array_to_array(name.clone() + &comp_out, port_out, selection_out, comp_in, name.clone() + &port_in, selection_in); 
+                    sched.connect_array_to_array(name.clone() + &comp_out, port_out.clone(), selection_out.clone(), comp_in.clone(), name.clone() + &port_in, selection_in.clone()); 
                 },
 
             }

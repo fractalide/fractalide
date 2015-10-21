@@ -194,7 +194,7 @@ pub fn main() {
         iips: vec![],
     };
 
-    fvm.add_subnet("firstnot".to_string(), not.clone());
+    fvm.add_subnet("firstnot".to_string(), &not);
     fvm.add_component("display_not".to_string(), Display::new::<bool>());
     let o: SyncSender<String> = fvm.get_option("display_not".to_string());
     let _ = o.send("Not result : ".to_string());
@@ -221,7 +221,7 @@ pub fn main() {
         iips: vec![],
     };
 
-    fvm.add_subnet("firstand".to_string(), g);
+    fvm.add_subnet("firstand".to_string(), &g);
     fvm.add_component("display_and".to_string(), Display::new::<bool>());
     fvm.connect("firstand".to_string(), "output".to_string(), "display_and".to_string(), "input".to_string());
     let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());

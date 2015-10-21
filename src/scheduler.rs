@@ -100,7 +100,7 @@ impl Scheduler {
         self.sender.send(CompMsg::NewComponent(name, c.0)).expect("add_component : unable to send to scheduler state");
     }
 
-    pub fn add_subnet(&mut self, name: String, g: Graph) {
+    pub fn add_subnet(&mut self, name: String, g: &Graph) {
         SubNet::new(g, name, self);
     }
 
