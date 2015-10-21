@@ -5,6 +5,4 @@ authors = ["Denis Michiels <dmichiels@gmail.com>"]
 license = "AGPL-3.0"
 homepage = "http://github.com/fractalide/fractalide"
 repository = "http://github.com/fractalide/fractalide"
-description = """
-Fractalide, a Flow-based programming environment in Rust
-"""
+description = "Fractalide, a Flow-based programming environment in Rust"
