@@ -262,6 +262,7 @@ impl SchedState {
             comp.comp.is_some()
         };
         if start {
+            self.connections += 1;
             self.run(name);
         } 
     }
@@ -286,10 +287,11 @@ impl SchedState {
         };
         if must_restart {
             self.run(name);
-        }
-        self.connections -= 1;
-        if self.connections <= 0 && self.can_halt {
-            self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
+        } else {
+            self.connections -= 1;
+            if self.connections <= 0 && self.can_halt {
+                self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
+            }
         }
     }
 
@@ -297,7 +299,6 @@ impl SchedState {
         let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
         let mut b_comp = mem::replace(&mut o_comp.comp, None).expect("SchedState run : cannot run if already running");
         let sched_s = self.sched_sender.clone();
-        self.connections += 1;
         thread::spawn(move || {
             b_comp.run();
             sched_s.send(CompMsg::RunEnd(name, b_comp)).expect("SchedState run : unable to send RunEnd");
