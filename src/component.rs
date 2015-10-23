@@ -166,6 +166,10 @@ pub trait ComponentConnect: Send {
     /// component.connect_array("output", "1", a_sync_sender);
     /// ```
     fn connect_array(&mut self, port: String, selection: String, send: Box<Any + Send + 'static>, dest: String, sched: Sender<CompMsg>);
+    /// Disconnect the output port "port" 
+    fn disconnect(&mut self, port: String);
+    /// Disconnect the selection "selection" of the output array port "port" 
+    fn disconnect_array(&mut self, port: String, selection: String);
     /// Add a Receiver for the selection "selection" of the array input port "port"
     /// # Example
     ///
@@ -240,6 +244,11 @@ impl<T> OutputSender<T> {
         self.send = Some(send);
     }
 
+    /// Disconect
+    pub fn disconnect(&mut self) {
+        self.send = None;
+    }
+
     /// Send a message to the OutputPort. If the port is unconnected, it return a
     /// OutputPortError::NotConnected. If there is an error while the transfer, it return the
     /// corresponding SendError message.
@@ -255,6 +264,7 @@ impl<T> OutputSender<T> {
             else { Err(OutputPortError::CannotSend(res.unwrap_err())) }
         }
     }
+
 }
 
 pub struct CountSender<T> {
@@ -652,6 +662,29 @@ macro_rules! component {
                             let mut down: CountSender<$output_array_type> = component::downcast(_send);
                             down.set_sched(_name, _sched);
                             s.connect(down); 
+                        }
+                    ),*
+                    _ => {},
+                }    
+            }
+
+            fn disconnect(&mut self, port: String) {
+                match &(port[..]) {
+                    $(
+                        stringify!($output_field_name) => { 
+                            self.outputs.$output_field_name.disconnect(); 
+                        }
+                    ),*
+                    _ => {},
+                }    
+            }
+
+            fn disconnect_array(&mut self, port: String, _selection: String){
+                match &(port[..]) {
+                    $(
+                        stringify!($output_array_name) => { 
+                            let mut s = self.outputs_array.$output_array_name.get_mut(&_selection).expect("connect_array : selection not found");
+                            s.disconnect(); 
                         }
                     ),*
                     _ => {},
