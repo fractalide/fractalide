@@ -403,7 +403,7 @@ component! {
     fn run(&mut self) { 
         let a = self.inputs.a.recv().expect("Delay : cannot receive");
         let b = self.inputs.b.recv().expect("Delay : cannot receive");
-        self.outputs.output.send(a+b).ok().expect("Inc: cannot send");
+        let _ = self.outputs.output.send(a+b);
     }
 }
 
@@ -489,7 +489,17 @@ fn update() {
     let res_s = r.recv().expect("scheduler receive");
     assert!(match res_s { CompMsg::Start(n) => { n == "test2".to_string() }, _ => { false }});
 
+
+    sched.disconnect("i".into(), "output".into());
+    thread::sleep_ms(500);
+    port_a.send(111).ok().expect("cannot send a");
+    port_b.send(555).ok().expect("cannot send b");
     sched.join();
+    assert!(i_r.try_recv().is_err());
+    assert!(i_r2.try_recv().is_err());
+    assert!(r.try_recv().is_err());
+
+
 
 
 }
