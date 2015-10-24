@@ -1,2 +1,2 @@
-# fractalide [![Build Status](https://travis-ci.org/fractalide/fractalide.svg?branch=master)](https://travis-ci.org/fractalide/fractalide)
-HyperCard on Flow Based Programming - www.fractalide.org
+# RustFBP [![Build Status](https://travis-ci.org/fractalide/RustFBP.svg?branch=master)](https://travis-ci.org/fractalide/RustFBP)
+Flow-based Programming implemented in Rust - www.fractalide.org
