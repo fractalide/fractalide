@@ -46,13 +46,8 @@ pub type BoxedComp = Box<Component + Send + 'static>;
 pub struct Scheduler {
     /// Will be private, public for debug
     pub components: HashMap<String, Comp>,
+    pub subnets: HashMap<String, SubNet>,
     sender: Sender<CompMsg>,
-    /// Used by the subnets
-    pub subnet_input_names: HashMap<String, (String, String)>,
-    /// Used by the subnets
-    pub subnet_output_names: HashMap<String, (String, String)>,
-    /// Used by the subnets
-    pub subnet_start: HashMap<String, Vec<String>>,
     th: JoinHandle<()>,
 }
 
@@ -93,10 +88,8 @@ impl Scheduler {
             
         Scheduler { 
             components: HashMap::new(), 
+            subnets: HashMap::new(),
             sender: s,
-            subnet_input_names: HashMap::new(),
-            subnet_output_names: HashMap::new(),
-            subnet_start: HashMap::new(),
             th: th,
         }
     }
@@ -114,10 +107,10 @@ impl Scheduler {
     }
 
     pub fn start(&self, name: String) {
-        match self.subnet_start.get(&name) {
+        match self.subnets.get(&name) {
             None => { self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); },
-            Some(vec) => {
-                for n in vec { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to sched state"); }
+            Some(sn) => {
+                for n in &sn.start { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to sched state"); }
             },
         }
     }
@@ -213,10 +206,16 @@ impl Scheduler {
     }
 
     fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
-        let concat = comp.clone() + &port;
+        let option_main = self.subnets.get(&comp);
+        let main = match option_main {
+            None => { 
+                return (comp, port); 
+            },
+            Some(m) => { m },
+        };
         let real_name = match vp_type {
-            VPType::In => { self.subnet_input_names.get(&concat) },
-            VPType::Out => { self.subnet_output_names.get(&concat) },
+            VPType::In => { main.input_names.get(&port) },
+            VPType::Out => { main.output_names.get(&port) },
         };
         if let Some(&(ref c, ref p)) = real_name {
             self.get_subnet_name(c.clone(), p.clone(), vp_type)
