@@ -31,6 +31,8 @@ pub enum CompMsg {
     /// Disconnect
     Disconnect(String, String),
     DisconnectArray(String, String, String),
+    /// Remove
+    Remove(String, Sender<SyncMsg>),
 }
 
 /// Retains each component information for the "exterior scheduler"
@@ -46,13 +48,8 @@ pub type BoxedComp = Box<Component + Send + 'static>;
 pub struct Scheduler {
     /// Will be private, public for debug
     pub components: HashMap<String, Comp>,
+    pub subnets: HashMap<String, SubNet>,
     sender: Sender<CompMsg>,
-    /// Used by the subnets
-    pub subnet_input_names: HashMap<String, (String, String)>,
-    /// Used by the subnets
-    pub subnet_output_names: HashMap<String, (String, String)>,
-    /// Used by the subnets
-    pub subnet_start: HashMap<String, Vec<String>>,
     th: JoinHandle<()>,
 }
 
@@ -87,16 +84,17 @@ impl Scheduler {
                     CompMsg::DisconnectArray(name, port, selection) => {
                         sched_s.edit_component(name, EditCmp::DisconnectArray(port, selection));
                     },
+                    CompMsg::Remove(name, sync_sender) => {
+                        sched_s.remove(name, sync_sender);
+                    }
                 }
             }
         });
             
         Scheduler { 
             components: HashMap::new(), 
+            subnets: HashMap::new(),
             sender: s,
-            subnet_input_names: HashMap::new(),
-            subnet_output_names: HashMap::new(),
-            subnet_start: HashMap::new(),
             th: th,
         }
     }
@@ -114,12 +112,58 @@ impl Scheduler {
     }
 
     pub fn start(&self, name: String) {
-        match self.subnet_start.get(&name) {
+        match self.subnets.get(&name) {
             None => { self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); },
-            Some(vec) => {
-                for n in vec { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to sched state"); }
+            Some(sn) => {
+                for n in &sn.start { self.sender.send(CompMsg::Start(n.clone())).expect("start: unable to send to sched state"); }
             },
         }
+    }
+
+    pub fn remove_component(&mut self, name: String) -> Result<HashMap<String, (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)>, ()>{
+        let (s, r) = channel(); 
+        self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_component: cannot send to the state"); 
+        let response = r.recv().unwrap();//expect("Scheduler remove_component: cannot receive from the state");
+        match response {
+            SyncMsg::Remove(boxed_comp) => {
+                let comp = self.components.remove(&name).expect("Scheduler remove_component: the component doesn't exist");
+                let mut h = HashMap::new();
+                h.insert(name, (boxed_comp, comp.input_senders, comp.input_array_senders));
+                Ok(h)
+            },
+            SyncMsg::CannotRemove => {
+                Err(())
+            },
+        }
+
+    }
+    
+    pub fn remove_subnet(&mut self, name: String) -> Result<HashMap<String, (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)>, ()> {
+        let mut res = HashMap::new();
+        let children = {
+            let sn = self.subnets.get(&name).expect("the component doesnt exist");
+            sn.children.clone()
+        };
+        for name in children {
+            let child = self.remove_component(name.clone());
+            if let Ok(child) = child {
+                for (key, value) in child.into_iter() {
+                    res.insert(key, value);
+                }
+            } else {
+                // TODO Reput already removed component
+                for (k, v) in res.into_iter() {
+                    self.components.insert(k.clone(), Comp {
+                        input_senders: v.1,
+                        input_array_senders: v.2,
+                    });
+                    self.sender.send(CompMsg::NewComponent(k, v.0)).expect("remove_subnet : cannot send to the state");
+                }
+                return Err(());
+            }
+        }
+        self.subnets.remove(&name);
+        Ok(res)
     }
 
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String){
@@ -213,13 +257,19 @@ impl Scheduler {
     }
 
     fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
-        let concat = comp.clone() + &port;
+        let option_main = self.subnets.get(&comp);
+        let main = match option_main {
+            None => { 
+                return (comp, port); 
+            },
+            Some(m) => { m },
+        };
         let real_name = match vp_type {
-            VPType::In => { self.subnet_input_names.get(&concat) },
-            VPType::Out => { self.subnet_output_names.get(&concat) },
+            VPType::In => { main.input_names.get(&port) },
+            VPType::Out => { main.output_names.get(&port) },
         };
         if let Some(&(ref c, ref p)) = real_name {
-            self.get_subnet_name(c.clone(), p.clone(), vp_type)
+            (c.clone(), p.clone())
         } else {
             (comp, port)
         }
@@ -242,6 +292,11 @@ enum EditCmp {
     ConnectOutputArrayPort(String, String, Box<Any + Send + 'static>, String, Sender<CompMsg>),
     Disconnect(String),
     DisconnectArray(String, String),
+}
+
+pub enum SyncMsg {
+    Remove(BoxedComp),
+    CannotRemove,
 }
 
 struct CompState {
@@ -275,8 +330,22 @@ impl SchedState {
         });
     }
 
+    fn remove(&mut self, name: String, sync_sender: Sender<SyncMsg>) {
+        let must_remove = {
+            let mut o_comp = self.components.get_mut(&name).expect("SchedState remove : component doesn't exist");
+            let b_comp = mem::replace(&mut o_comp.comp, None);
+            if let Some(boxed_comp) = b_comp {
+                sync_sender.send(SyncMsg::Remove(boxed_comp)).expect("SchedState remove : cannot send to the channel");
+                true
+            } else {
+                sync_sender.send(SyncMsg::CannotRemove).expect("SchedState remove : cannot send to the channel");
+                false
+            }
+        };
+        if must_remove { self.components.remove(&name); }
+    }
+
     fn start(&mut self, name: String) {
-        // println!("Start {}", name);
         let start = {
             let mut comp = self.components.get_mut(&name).expect("SchedState start : component not found");
             comp.can_run = true;

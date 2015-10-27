@@ -68,26 +68,27 @@ fn many_messages(b: &mut Bencher) {
 
 }
 
-fn create_deep_graph(n: usize) -> COrG {
+fn create_deep_graph(n: usize) -> Graph {
     if n == 0 {
-        COrG::C(Inc::new) 
+        let g = GraphBuilder::new()
+            .add_component("inc".into(), Inc::new)
+            .edges()
+            .add_virtual_input_port("input".into(), "inc".into(), "input".into())
+            .add_virtual_output_port("output".into(), "inc".into(), "output".into());
+        g
     } else {
-        let inc1 = Node{ name: "inc1".to_string(), sort: create_deep_graph(n-1) };
-        let inc_d = Graph {
-            nodes: vec![inc1],
-            edges: vec![],
-            virtual_input_ports: vec![VirtualPort("input".to_string(), "inc1".to_string(), "input".to_string()),], 
-            virtual_output_ports: vec![VirtualPort("output".to_string(), "inc1".to_string(), "output".to_string()),],
-            iips: vec![],
-        };
-
-        COrG::G(inc_d)
+        let g = GraphBuilder::new()
+            .add_subnet("inc".into(), &create_deep_graph(n-1))
+            .edges()
+            .add_virtual_input_port("input".into(), "inc".into(), "input".into())
+            .add_virtual_output_port("output".into(), "inc".into(), "output".into());
+        g
     }
 }
 
 #[bench]
 fn creation_deep_subnet(b: &mut Bencher) {
-    let g = if let COrG::G(g) = create_deep_graph(30){ g } else { unimplemented!() };
+    let g = create_deep_graph(30);
     
     b.iter(|| {
         let mut sched = Scheduler::new();
@@ -102,7 +103,8 @@ fn creation_deep_subnet(b: &mut Bencher) {
 #[bench]
 fn deep_many_messages(b: &mut Bencher) {
     // Execution with many messages
-    let g = if let COrG::G(g) = create_deep_graph(30){ g } else { unimplemented!() };
+    let g = create_deep_graph(30);
+    
     let (s, r) = channel::<CompMsg>();
     let mut sched = Scheduler::new();
     for i in (1..10000) {

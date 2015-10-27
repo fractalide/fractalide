@@ -311,7 +311,7 @@ component! {
     acc(),
     fn run(&mut self) { 
         let msg = self.inputs.input.recv().expect("Inc : cannot receive");
-        self.outputs.output.send(msg+1).ok().expect("Inc: cannot send");
+        let _ = self.outputs.output.send(msg+1);
     }
 }
 
@@ -368,16 +368,13 @@ fn test_sched() {
     let (i_s, i_r) = count_channel::<usize>(16);
     i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
 
-    let inc1 = Node{ name: "inc1".to_string(), sort: COrG::C(Inc::new) };
-    let inc2 = Node{ name: "inc2".to_string(), sort: COrG::C(Inc::new) };
-    let edge1 = Edge::Simple2simple("inc1".to_string(), "output".to_string(), "inc2".to_string(), "input".to_string());
-    let not = Graph {
-        nodes: vec![inc1, inc2],
-        edges: vec![edge1],
-        virtual_input_ports: vec![VirtualPort("input".to_string(), "inc1".to_string(), "input".to_string()),], 
-        virtual_output_ports: vec![VirtualPort("output".to_string(), "inc2".to_string(), "output".to_string()),],
-        iips: vec![],
-    };
+    let not = GraphBuilder::new()
+        .add_component("inc1".into(), Inc::new)
+        .add_component("inc2".into(), Inc::new)
+        .edges()
+        .add_simple2simple("inc1".into(), "output".into(), "inc2".into(), "input".into())
+        .add_virtual_input_port("input".into(), "inc1".into(), "input".into())
+        .add_virtual_output_port("output".into(), "inc2".into(), "output".into());
 
     sched.add_component("i".into(), (i, ii, iia));
     sched.add_subnet("sub".into(), &not);
@@ -502,4 +499,60 @@ fn update() {
 
 
 
+}
+
+
+#[test]
+fn test_remove() {
+    // A running component
+    let mut sched = Scheduler::new();
+    assert!(sched.components.len() == 0);
+    sched.add_component("i".into(), Delay::new());
+    let port_a: CountSender<usize> = sched.get_sender("i".into(), "a".into());
+    let port_b: CountSender<usize> = sched.get_sender("i".into(), "b".into());
+    port_a.send(111).ok().expect("cannot send a");
+    thread::sleep_ms(500);
+    assert!(sched.components.len() == 1);
+    let res = sched.remove_component("i".into());
+    assert!(res.is_err());
+    assert!(sched.components.len() == 1);
+    port_b.send(555).ok().expect("cannot send b");
+    thread::sleep_ms(500);
+    let res = sched.remove_component("i".into());
+    assert!(res.is_ok());
+    assert!(sched.components.len() == 0);
+    sched.join();
+
+    // A subnet
+    let mut sched = Scheduler::new();
+
+    let not = GraphBuilder::new()
+        .add_component("inc1".into(), Delay::new)
+        .add_component("inc2".into(), Inc::new)
+        .edges()
+        .add_simple2simple("inc1".into(), "output".into(), "inc2".into(), "input".into())
+        .add_virtual_input_port("a".into(), "inc1".into(), "a".into())
+        .add_virtual_input_port("b".into(), "inc1".into(), "b".into());
+    assert!(sched.components.len() == 0);
+    assert!(sched.subnets.len() == 0);
+    sched.add_subnet("sub".into(), &not);
+    assert!(sched.components.len() == 2);
+    assert!(sched.subnets.len() == 1);
+    let port_a: CountSender<usize> = sched.get_sender("sub".into(), "a".into());
+    let port_b: CountSender<usize> = sched.get_sender("sub".into(), "b".into());
+    port_a.send(0).ok().unwrap();
+    thread::sleep_ms(500);
+    let res = sched.remove_subnet("sub".into());
+    assert!(res.is_err());
+    assert!(sched.components.len() == 2);
+    assert!(sched.subnets.len() == 1);
+
+    port_b.send(3).ok().unwrap();
+    thread::sleep_ms(500);
+    let res = sched.remove_subnet("sub".into());
+    assert!(res.is_ok());
+    assert!(sched.components.len() == 0);
+    assert!(sched.subnets.len() == 0);
+
+    sched.join();
 }
