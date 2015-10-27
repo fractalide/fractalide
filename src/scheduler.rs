@@ -218,7 +218,7 @@ impl Scheduler {
             VPType::Out => { main.output_names.get(&port) },
         };
         if let Some(&(ref c, ref p)) = real_name {
-            self.get_subnet_name(c.clone(), p.clone(), vp_type)
+            (c.clone(), p.clone())
         } else {
             (comp, port)
         }

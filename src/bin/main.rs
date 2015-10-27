@@ -182,17 +182,14 @@ pub fn main() {
     //println!("");
     //println!("");
 
-    let nand1 = Node{ name: "nand1".to_string(), sort: COrG::C(Nand::new) };
-    let clone = Node{ name: "clone".to_string(), sort: COrG::C(CloneC::new::<bool>) };
-    let edge1 = Edge::Array2simple("clone".to_string(), "output".to_string(), "1".to_string(), "nand1".to_string(), "a".to_string());
-    let edge2 = Edge::Array2simple("clone".to_string(), "output".to_string(), "2".to_string(), "nand1".to_string(), "b".to_string());
-    let not = Graph {
-        nodes: vec![nand1, clone],
-        edges: vec![edge1, edge2],
-        virtual_input_ports: vec![VirtualPort("input".to_string(), "clone".to_string(), "input".to_string()),], 
-        virtual_output_ports: vec![VirtualPort("output".to_string(), "nand1".to_string(), "output".to_string()),],
-        iips: vec![],
-    };
+    let not = GraphBuilder::new()
+        .add_component("nand1".into(), Nand::new)
+        .add_component("clone".into(), CloneC::new::<bool>)
+        .edges()
+        .add_array2simple("clone".into(), "output".into(), "1".into(), "nand1".into(), "a".into())
+        .add_array2simple("clone".into(), "output".into(), "2".into(), "nand1".into(), "b".into())
+        .add_virtual_input_port("input".into(), "clone".into(), "input".into())
+        .add_virtual_output_port("output".into(), "nand1".into(), "output".into());
 
     fvm.add_subnet("firstnot".to_string(), &not);
     fvm.add_component("display_not".to_string(), Display::new::<bool>());
@@ -209,19 +206,15 @@ pub fn main() {
     println!("");
     println!("");
 
-    let nand1 = Node{ name: "nand1".to_string(), sort: COrG::C(Nand::new) };
-    let sn_not = Node{ name: "not".to_string(), sort: COrG::G(not) };
-    let edge3 = Edge::Simple2simple("nand1".to_string(), "output".to_string(), "not".to_string(), "input".to_string());
-    let g = Graph {
-        nodes: vec![nand1, sn_not],
-        edges: vec![edge3],
-        virtual_input_ports: vec![VirtualPort("a".to_string(), "nand1".to_string(), "a".to_string()), 
-                            VirtualPort("b".to_string(), "nand1".to_string(), "b".to_string()),],
-        virtual_output_ports: vec![VirtualPort("output".to_string(), "not".to_string(), "output".to_string()),],
-        iips: vec![],
-    };
-
-    fvm.add_subnet("firstand".to_string(), &g);
+    let and = GraphBuilder::new()
+        .add_component("nand1".into(), Nand::new)
+        .add_subnet("not".into(), &not)
+        .edges()
+        .add_simple2simple("nand1".into(), "output".into(), "not".into(), "input".into())
+        .add_virtual_input_port("a".into(), "nand1".into(), "a".into())
+        .add_virtual_input_port("b".into(), "nand1".into(), "b".into())
+        .add_virtual_output_port("output".into(), "not".into(), "output".into());
+    fvm.add_subnet("firstand".to_string(), &and);
     fvm.add_component("display_and".to_string(), Display::new::<bool>());
     fvm.connect("firstand".to_string(), "output".to_string(), "display_and".to_string(), "input".to_string());
     let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());
