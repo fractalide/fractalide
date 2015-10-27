@@ -311,7 +311,7 @@ component! {
     acc(),
     fn run(&mut self) { 
         let msg = self.inputs.input.recv().expect("Inc : cannot receive");
-        self.outputs.output.send(msg+1).ok().expect("Inc: cannot send");
+        let _ = self.outputs.output.send(msg+1);
     }
 }
 
@@ -499,4 +499,60 @@ fn update() {
 
 
 
+}
+
+
+#[test]
+fn test_remove() {
+    // A running component
+    let mut sched = Scheduler::new();
+    assert!(sched.components.len() == 0);
+    sched.add_component("i".into(), Delay::new());
+    let port_a: CountSender<usize> = sched.get_sender("i".into(), "a".into());
+    let port_b: CountSender<usize> = sched.get_sender("i".into(), "b".into());
+    port_a.send(111).ok().expect("cannot send a");
+    thread::sleep_ms(500);
+    assert!(sched.components.len() == 1);
+    let res = sched.remove_component("i".into());
+    assert!(res.is_err());
+    assert!(sched.components.len() == 1);
+    port_b.send(555).ok().expect("cannot send b");
+    thread::sleep_ms(500);
+    let res = sched.remove_component("i".into());
+    assert!(res.is_ok());
+    assert!(sched.components.len() == 0);
+    sched.join();
+
+    // A subnet
+    let mut sched = Scheduler::new();
+
+    let not = GraphBuilder::new()
+        .add_component("inc1".into(), Delay::new)
+        .add_component("inc2".into(), Inc::new)
+        .edges()
+        .add_simple2simple("inc1".into(), "output".into(), "inc2".into(), "input".into())
+        .add_virtual_input_port("a".into(), "inc1".into(), "a".into())
+        .add_virtual_input_port("b".into(), "inc1".into(), "b".into());
+    assert!(sched.components.len() == 0);
+    assert!(sched.subnets.len() == 0);
+    sched.add_subnet("sub".into(), &not);
+    assert!(sched.components.len() == 2);
+    assert!(sched.subnets.len() == 1);
+    let port_a: CountSender<usize> = sched.get_sender("sub".into(), "a".into());
+    let port_b: CountSender<usize> = sched.get_sender("sub".into(), "b".into());
+    port_a.send(0).ok().unwrap();
+    thread::sleep_ms(500);
+    let res = sched.remove_subnet("sub".into());
+    assert!(res.is_err());
+    assert!(sched.components.len() == 2);
+    assert!(sched.subnets.len() == 1);
+
+    port_b.send(3).ok().unwrap();
+    thread::sleep_ms(500);
+    let res = sched.remove_subnet("sub".into());
+    assert!(res.is_ok());
+    assert!(sched.components.len() == 0);
+    assert!(sched.subnets.len() == 0);
+
+    sched.join();
 }
