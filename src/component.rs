@@ -26,6 +26,7 @@ use std::any::Any;
 use std::marker::Reflect;
 use std::raw::TraitObject;
 use std::mem;
+use std::collections::HashMap;
 
 use scheduler::CompMsg;
 /* 
@@ -177,6 +178,8 @@ pub trait ComponentConnect: Send {
     /// component.add_selection_receiver("numbers", "1", a_receiver);
     /// ```
     fn add_selection_receiver(&mut self, port: String, selection: String, rec: Box<Any + Send + 'static>);
+    fn set_receiver(&mut self, port: String, rec: Box<Any + Send + 'static>);
+    fn get_receiver_outputport(self : Box<Self>) -> (HashMap<String, Box<Any + Send + 'static>>, HashMap<String, HashMap<String, Box<Any + Send + 'static>>>, HashMap<String, Option<Box<Any + Send + 'static>>>, HashMap<String, HashMap<String, Option<Box<Any + Send + 'static>>>>); 
     /// Return true if there is at least one IP in at least one input ports
     fn is_ips(&self) -> bool;
     /// Return true if there is at least one input ports (simple or array)
@@ -242,6 +245,11 @@ impl<T> OutputSender<T> {
     /// Connect the OutputSener structure with the given SyncSender
     pub fn connect(&mut self, send: CountSender<T>){
         self.send = Some(send);
+    }
+
+    /// Remove
+    pub fn remove(self) -> Option<CountSender<T>> {
+        self.send
     }
 
     /// Disconect
@@ -640,6 +648,18 @@ macro_rules! component {
                 self.inputs_array.add_selection_receiver(port, selection, rec);
             }
 
+            fn set_receiver(&mut self, port: String, _rec: Box<Any + Send + 'static>){
+                match &(port[..]) {
+                    $( 
+                        stringify!($input_field_name) => {
+                            let down: CountReceiver<$input_field_type> = component::downcast(_rec);
+                            self.inputs.$input_field_name = down;
+                        }
+                    )*
+                    _ => {},
+                }
+            }
+
             fn add_output_selection(&mut self, port: String, _selection: String){
                 match &(port[..]) {
                     $(
@@ -712,8 +732,47 @@ macro_rules! component {
                 )*
                 false 
             }
+
+            #[allow(unused_mut)]
+            fn get_receiver_outputport(self : Box<Self>) -> (HashMap<String, Box<Any + Send + 'static>>, HashMap<String, HashMap<String, Box<Any + Send + 'static>>>, HashMap<String, Option<Box<Any + Send + 'static>>>, HashMap<String, HashMap<String, Option<Box<Any + Send + 'static>>>>){ 
+                let mut unbox = *self;
+                let mut inputs = HashMap::new();
+                $(
+                    inputs.insert(stringify!($input_field_name).to_string(), Box::new(unbox.inputs.$input_field_name) as Box<Any + Send + 'static>);
+                )*
+                let mut inputs_a = HashMap::new();
+                $(
+                    let mut temp = HashMap::new();
+                    for (k, v) in unbox.inputs_array.$input_array_name {
+                        temp.insert(k, Box::new(v) as Box<Any + Send + 'static>);                        
+                    }
+                    inputs_a.insert(stringify!($input_array_name).to_string(), temp);
+                )*
+                let mut outputs = HashMap::new();
+                $(
+                    let temp = unbox.outputs.$output_field_name.remove();
+                    let temp = if temp.is_some() {
+                        Some(Box::new(temp.unwrap()) as Box<Any + Send + 'static>)
+                    } else { None };
+                    outputs.insert(stringify!($output_field_name).to_string(), temp);
+                )*
+                let mut outputs_a = HashMap::new();
+                $(
+                    let mut temp = HashMap::new();
+                    for (k, v) in unbox.outputs_array.$output_array_name {
+                        let v = v.remove();
+                        let v = if v.is_some() {
+                            Some(Box::new(v.unwrap()) as Box<Any + Send + 'static>)
+                        } else { None };
+                        temp.insert(k, v);                        
+                    }
+                    // TODO
+                    outputs_a.insert(stringify!($output_array_name).to_string(), temp);
+                )*
+                (inputs, inputs_a, outputs, outputs_a)
+            }
+
         }
-        
         /* Global component */
 
         #[allow(dead_code)]

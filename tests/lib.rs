@@ -332,10 +332,13 @@ fn test_sched() {
     let mut sched = Scheduler::new();
     let (s, r) = channel::<CompMsg>();
     let (mut i, ii, iia) = Inc::new();
+    // test set_sender
+    let (mut port, set_r) = count_channel::<usize>(16);
+    i.set_receiver("input".into(), Box::new(set_r)); 
+    port.set_sched("i".into(), sched.sender.clone());
     let (i_s, i_r) = count_channel::<usize>(16);
     i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
     sched.add_component("i".into(), (i, ii, iia));
-    let port: CountSender<usize> = sched.get_sender("i".into(), "input".into());
     port.send(0).ok().unwrap();
     sched.join();
     let res = i_r.try_recv().expect("No result");
@@ -555,4 +558,96 @@ fn test_remove() {
     assert!(sched.subnets.len() == 0);
 
     sched.join();
+}
+
+component! {
+    Add,
+    inputs(a: usize, b: usize),
+    inputs_array(),
+    outputs(output: usize),
+    outputs_array(),
+    option(),
+    acc(),
+    fn run(&mut self) { 
+        let a = self.inputs.a.recv().expect("Add : cannot receive");
+        let b = self.inputs.b.recv().expect("Add : cannot receive");
+        let _ = self.outputs.output.send(a+b);
+    }
+}
+
+component! {
+    Sub,
+    inputs(a: usize, b: usize),
+    inputs_array(),
+    outputs(output: usize),
+    outputs_array(),
+    option(),
+    acc(),
+    fn run(&mut self) { 
+        let a = self.inputs.a.recv().expect("Sub : cannot receive");
+        let b = self.inputs.b.recv().expect("Sub : cannot receive");
+        let _ = self.outputs.output.send(a-b);
+    }
+}
+
+component! {
+    Display, (T: DebugIP),
+    inputs(input: T where T: DebugIP),
+    inputs_array(),
+    outputs(output: T where T: DebugIP),
+    outputs_array(),
+    option(),
+    acc(),
+    fn run(&mut self) { 
+        let msg = self.inputs.input.recv().expect("Debug : cannot receive");
+        // println!("{:?}", msg);
+        let _ = self.outputs.output.send(msg);
+    }
+    use std::fmt::Debug;
+    pub trait DebugIP: Debug + IP {}
+    impl <T> DebugIP for T where T : Debug + IP {}
+}
+
+#[test]
+fn test_replace() {
+    let mut sched = Scheduler::new();
+    let (s, r) = channel();
+    sched.add_component("display_a".into(), Display::new::<usize>());
+    sched.add_component("display_b".into(), Display::new::<usize>());
+    sched.add_component("calc".into(), Add::new());
+
+    let (mut i, ii, iia) = Display::new::<usize>();
+    let (i_s, i_r) = count_channel::<usize>(16);
+    i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
+    sched.add_component("display_r".into(), (i, ii, iia));
+
+    sched.connect("display_a".into(), "output".into(), "calc".into(), "a".into());
+    sched.connect("display_b".into(), "output".into(), "calc".into(), "b".into());
+    sched.connect("calc".into(), "output".into(), "display_r".into(), "input".into());
+
+    let port_a: CountSender<usize> = sched.get_sender("display_a".into(), "input".into());
+    let port_b: CountSender<usize> = sched.get_sender("display_b".into(), "input".into());
+
+    port_a.send(40).unwrap();
+    port_b.send(2).unwrap();
+    assert_eq!(i_r.recv().unwrap(), 42);
+
+    let (boxed, ii, iia) = sched.remove_component("calc".into()).ok().expect("unable to remove add").remove("calc").expect("unable to retrieve add");
+    let (mut inputs, _, mut outputs, _) = Box::new(boxed).get_receiver_outputport();
+    let (mut o, _, _) = Sub::new();
+    o.set_receiver("a".into(), inputs.remove("a".into()).expect("no a in calc"));
+    o.set_receiver("b".into(), inputs.remove("b".into()).expect("no b in calc"));
+    let o_s = outputs.remove("output".into()).expect("no output in add").expect("The output port wasn't connected");
+    o.connect("output".into(), o_s, "display_r".into(), sched.sender.clone());
+    sched.add_component("calc".into(), (o, ii, iia));
+
+    port_a.send(40).unwrap();
+    port_b.send(2).unwrap();
+    assert_eq!(i_r.recv().unwrap(), 38);
+
+
+
+    sched.join();
+
+    
 }

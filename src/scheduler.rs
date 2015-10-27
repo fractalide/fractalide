@@ -49,7 +49,7 @@ pub struct Scheduler {
     /// Will be private, public for debug
     pub components: HashMap<String, Comp>,
     pub subnets: HashMap<String, SubNet>,
-    sender: Sender<CompMsg>,
+    pub sender: Sender<CompMsg>,
     th: JoinHandle<()>,
 }
 
