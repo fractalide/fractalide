@@ -1,6 +1,6 @@
 [package]
 name = "fractalide"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 license = "AGPL-3.0"
 homepage = "http://github.com/fractalide/fractalide"
