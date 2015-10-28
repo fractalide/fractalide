@@ -1,6 +1,7 @@
 use component::{Component, ComponentConnect, InputSenders, InputArraySenders};
 use super::scheduler::{Scheduler};
 use std::collections::HashMap;
+use std::sync::mpsc::SyncSender;
 
 trait Renamer {
     fn rename(&self, a: String, b: String) -> (String, String);
@@ -178,6 +179,12 @@ impl Graph {
         self.virtual_output_ports.push(VirtualPort(n, c, p));
         self.clone()
     }
+
+    pub fn add_iip(&mut self, s: String, c: String, p: String) -> Self {
+        let (c, p) = self.virtual_inputs.rename(c, p);
+        self.iips.push(IIP(s, c, p));
+        self.clone()
+    }
     
 }
 
@@ -206,7 +213,7 @@ pub enum Edge {
 pub struct VirtualPort(pub String, pub String, pub String);
 
 #[derive(Clone, Debug)]
-pub struct IIP(String, pub String, pub String);
+pub struct IIP(pub String, pub String, pub String);
 
 pub struct SubNet{
     pub input_names: HashMap<String, (String, String)>,
@@ -266,10 +273,10 @@ impl SubNet {
 
             }
         }   
-        // for iip in g.iips {
-        //     let sender = sched.get_sender(name.clone() + &iip.1, iip.2);
-        //     sender.send(iip.0).ok().expect("SubNet IIP : unable to send the IIP");
-        // }
+        for iip in &g.iips {
+            let sender: SyncSender<String> = sched.get_option(format!("{}{}", name, iip.1));
+            sender.send(iip.0.clone()).ok().expect("SubNet IIP : unable to send the IIP");
+        }
     }
 }
 

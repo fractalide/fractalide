@@ -208,19 +208,17 @@ pub fn main() {
 
     let and = GraphBuilder::new()
         .add_component("nand1".into(), Nand::new)
+        .add_component("display_and".into(), Display::new::<bool>)
         .add_subnet("not".into(), &not)
         .edges()
         .add_simple2simple("nand1".into(), "output".into(), "not".into(), "input".into())
         .add_virtual_input_port("a".into(), "nand1".into(), "a".into())
         .add_virtual_input_port("b".into(), "nand1".into(), "b".into())
-        .add_virtual_output_port("output".into(), "not".into(), "output".into());
+        .add_simple2simple("not".into(), "output".into(), "display_and".into(), "input".into())
+        .add_iip("And result : ".into(), "display_and".into(), "option".into());
     fvm.add_subnet("firstand".to_string(), &and);
-    fvm.add_component("display_and".to_string(), Display::new::<bool>());
-    fvm.connect("firstand".to_string(), "output".to_string(), "display_and".to_string(), "input".to_string());
     let a: CountSender<bool> = fvm.get_sender("firstand".to_string(), "a".to_string());
     let b: CountSender<bool> = fvm.get_sender("firstand".to_string(), "b".to_string());
-    let o: SyncSender<String> = fvm.get_option("display_and".to_string());
-    o.send("And result : ".to_string()).ok().unwrap();
 
     a.send(true).unwrap();
     b.send(false).unwrap();
