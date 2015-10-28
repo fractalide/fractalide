@@ -1,7 +1,7 @@
    with import <nixpkgs> {};
    {
-     fractalideEnv = myEnvFun {
-       name = "fractalide";
+     rustfbpEnv = myEnvFun {
+       name = "rustfbp";
        buildInputs = [ stdenv rustcMaster cargo];
 
      };

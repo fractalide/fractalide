@@ -1,2 +1,2 @@
-# RustFBP [![Build Status](https://travis-ci.org/fractalide/RustFBP.svg?branch=master)](https://travis-ci.org/fractalide/RustFBP)
-Flow-based Programming implemented in Rust - www.fractalide.org
+# rustfbp [![Build Status](https://travis-ci.org/fractalide/rustfbp.svg?branch=master)](https://travis-ci.org/fractalide/rustfbp)
+Flow-based Programming implemented in Rust
