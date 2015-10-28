@@ -2,15 +2,15 @@
 
 #![feature(braced_empty_structs)]
 #[macro_use]
-extern crate fractalide;
+extern crate rustfbp;
 extern crate test;
 
 use test::Bencher;
 
-use fractalide::component::{CountSender, CountReceiver, downcast};
-use fractalide::component::count_channel;
-use fractalide::scheduler::{CompMsg, Scheduler};
-use fractalide::subnet::*;
+use rustfbp::component::{CountSender, CountReceiver, downcast};
+use rustfbp::component::count_channel;
+use rustfbp::scheduler::{CompMsg, Scheduler};
+use rustfbp::subnet::*;
 use std::sync::mpsc::{Sender};
 use std::sync::mpsc::channel;
 

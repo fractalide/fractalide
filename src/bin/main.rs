@@ -2,11 +2,11 @@
 #![feature(braced_empty_structs)]
 
 #[macro_use]
-extern crate fractalide;
+extern crate rustfbp;
 
-use self::fractalide::scheduler::{Scheduler};
-use self::fractalide::subnet::*;
-use self::fractalide::component::{CountSender};
+use self::rustfbp::scheduler::{Scheduler};
+use self::rustfbp::subnet::*;
+use self::rustfbp::component::{CountSender};
 
 use std::sync::mpsc::SyncSender;
 use std::thread;

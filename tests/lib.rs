@@ -1,11 +1,11 @@
 #![feature(braced_empty_structs)]
 #[macro_use]
-extern crate fractalide;
+extern crate rustfbp;
 
-use fractalide::component::{CountSender, downcast};
-use fractalide::component::count_channel;
-use fractalide::scheduler::{CompMsg, Scheduler};
-use fractalide::subnet::*;
+use rustfbp::component::{CountSender, downcast};
+use rustfbp::component::count_channel;
+use rustfbp::scheduler::{CompMsg, Scheduler};
+use rustfbp::subnet::*;
 use std::sync::mpsc::channel;
 
 use std::thread;

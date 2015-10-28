@@ -1,5 +1,5 @@
 /*
- * The component library for Fractalide
+ * The component library for rustfbp
  *
  * Author : Denis Michiels
  * Copyright (C) 2015 Michiels Denis
@@ -471,9 +471,9 @@ macro_rules! component {
     {
         #[allow(non_snake_case)]
         mod $name {
-        use fractalide::component;
-        use fractalide::component::*;
-        use fractalide::scheduler::{CompMsg};
+        use rustfbp::component;
+        use rustfbp::component::*;
+        use rustfbp::scheduler::{CompMsg};
 
         #[allow(unused_imports)]
         use std::sync::mpsc::{SyncSender, Receiver, Sender};

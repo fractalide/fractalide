@@ -1,8 +1,8 @@
 [package]
-name = "fractalide"
+name = "rustfbp"
 version = "0.2.1"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 license = "AGPL-3.0"
-homepage = "http://github.com/fractalide/fractalide"
-repository = "http://github.com/fractalide/fractalide"
+homepage = "http://github.com/fractalide/rustfbp"
+repository = "http://github.com/fractalide/rustfbp"
 description = "Fractalide, a Flow-based programming environment in Rust"
