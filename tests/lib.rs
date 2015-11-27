@@ -2,425 +2,250 @@
 #[macro_use]
 extern crate rustfbp;
 
-use rustfbp::component::{CountSender, downcast};
-use rustfbp::component::count_channel;
-use rustfbp::scheduler::{CompMsg, Scheduler};
+// TODO : test array2array
+
+extern crate capnp;
+mod number_capnp {
+    include!("./schema/number_capnp.rs");
+}
+use number_capnp::number;
+
+use rustfbp::loader::ComponentBuilder;
+use rustfbp::scheduler::Scheduler;
+use rustfbp::ports::{InputPort, OutputPort};
+
 use rustfbp::subnet::*;
-use std::sync::mpsc::channel;
 
 use std::thread;
 
+// #[test]
+// fn many() {
+//     let inc = ComponentBuilder::new("./tests/libinc.so");
+//     let mut sched = Scheduler::new("test".into());
+// 
+//     for i in 1..128 {
+//         sched.add_component(i.to_string(), &inc); 
+//     }
+// 
+//     sched.join();
+//     
+// }
+
 #[test]
-fn it_works() {
-    assert_eq!(4, 2+2);
-}
-
-component! {
-    TestEmpty,
-    inputs(),
-    inputs_array(),
-    outputs(),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) { 
-        unsafe { test_result = 1; }    
-    }
-    // Only for test, bad!
-    pub static mut test_result: i32 = 0;
-}
-
-component! {
-    TestNotGeneric,
-    inputs(a: bool, b: i32),
-    inputs_array(a: bool, b: i32),
-    outputs(a: bool, b: i32),
-    outputs_array(a: bool, b: i32),
-    option(),
-    acc(),
-    fn run(&mut self) { 
-        let a = self.inputs.a.recv().expect("TestNotGeneric : cannot receive a");
-        let b = self.inputs.b.recv().expect("TestNotGeneric : cannot receive b");
-        self.outputs.a.send(!a).ok().expect("TestNotGeneric : cannot send a");
-        self.outputs.b.send(b * 2).ok().expect("TestNotGeneric : cannot send b");
-
-        for (key, val) in &(self.inputs_array.a) {
-            let msg = val.recv().expect("No in input array");
-            println!("{}", key);
-            let port = self.outputs_array.a.get(key).expect("No output array port");
-            port.send(!msg).ok().expect("No able to send");
-        }
-        for (key, val) in &(self.inputs_array.b) {
-            let msg = val.recv().expect("No in input array");
-            let port = self.outputs_array.b.get(key).expect("No output array port");
-            port.send(msg * 2).ok().expect("No able to send");
-        }
-    }
-}
-
-component! {
-    TestGeneric, (T: DebugIP, U: IP),
-    inputs(a: T, b: U where T: DebugIP, U: IP),
-    inputs_array(a: T, b: U where T: DebugIP, U: IP),
-    outputs(a: T, b: U where T: DebugIP, U: IP),
-    outputs_array(a: T, b: U where T: DebugIP, U: IP),
-    option(i32),
-    acc(String),
-    fn run(&mut self) {
-        let a = self.inputs.a.recv().expect("TestNotGeneric : cannot receive a");
-        let b = self.inputs.b.recv().expect("TestNotGeneric : cannot receive b");
-        self.outputs.a.send(a).ok().expect("TestNotGeneric : cannot send a");
-        self.outputs.b.send(b).ok().expect("TestNotGeneric : cannot send b");
-
-        for (key, val) in &(self.inputs_array.a) {
-            let msg = val.recv().expect("No in input array");
-            println!("{}", key);
-            let port = self.outputs_array.a.get(key).expect("No output array port");
-            port.send(msg).ok().expect("No able to send");
-        }
-        for (key, val) in &(self.inputs_array.b) {
-            let msg = val.recv().expect("No in input array");
-            let port = self.outputs_array.b.get(key).expect("No output array port");
-            port.send(msg).ok().expect("No able to send");
-        }
-    }
-    use std::fmt::Debug;
-    pub trait DebugIP: Debug + IP {}
-    impl <T> DebugIP for T where T : Debug + IP {}
-}
-
-#[test] 
-fn component_empty() {
-    let (mut e, _, _) = TestEmpty::new();
-    assert_eq!(e.is_input_ports(), false);
-    assert_eq!(e.is_ips(), false);
-
-    unsafe {
-        assert_eq!(TestEmpty::test_result, 0);
-        e.run();
-        assert_eq!(TestEmpty::test_result, 1);
+fn simple_port() {
+    let inc = ComponentBuilder::new("./tests/libinc.so");
+    {
+        let comp = inc.build(&"sched".into(), &"name".into());
+        assert!(comp.is_input_ports(), true);
     }
 
+    let mut sched = Scheduler::new("schedsimple".into());
+    sched.add_component("inc".into(), &inc);
 
-}
-#[test]
-fn component_not_generic() {
-    let (mut ng, ngi, mut ngia) = TestNotGeneric::new();
+    let mut s = OutputPort::new().expect("cannot create sender");
+    let mut r = InputPort::new("schedsimple".into(), "recv".into(), "input".into()).expect("cannot create");
 
-    let (s, r) = channel::<CompMsg>();
+    s.connect("schedsimple".into(), "inc".into(), "input".into()).expect("unable to connect");
+    sched.connect("inc".into(), "output".into(), "recv".into(), "input".into());
 
-    assert_eq!(ng.is_input_ports(), true);
-    assert_eq!(ng.is_ips(), false);
-    let (a_s, a_r) = count_channel::<bool>(16);
-    let (b_s, b_r) = count_channel::<i32>(16);
-    ng.connect("a".into(), Box::new(a_s.clone()), "test".into(), s.clone());
-    ng.connect("b".into(), Box::new(b_s.clone()), "test2".into(), s.clone());
-    let port_a = ngi.get_sender("a".into()).expect("no input");
-    let port_a: CountSender<bool> = downcast(port_a);
-    port_a.send(true).ok().expect("cannot send");
-    let port_b = ngi.get_sender("b".into()).expect("no input");
-    let port_b: CountSender<i32> = downcast(port_b);
-    port_b.send(333).ok().expect("cannot send");
+    let mut msg = capnp::message::Builder::new_default();
+    {
+        let mut number = msg.init_root::<number::Builder>();
+        number.set_number(0);
+    }
 
-    assert_eq!(ng.is_ips(), true);
-    ng.run();
-    assert_eq!(ng.is_ips(), false);
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test2".to_string() }, _ => { false }});
+    thread::sleep_ms(1);
+    s.send(&msg).expect("unable to send to comp");
 
-    let msg = a_r.try_recv().expect("a not receive");
-    assert_eq!(msg, false);
-    let msg = b_r.try_recv().expect("b not receive");
-    assert_eq!(msg, 666);
-
-
-    let (a_s1, a_r1) = count_channel::<bool>(16);
-    let (a_s2, a_r2) = count_channel::<bool>(16);
-    let (b_s1, b_r1) = count_channel::<i32>(16);
-    let (b_s2, b_r2) = count_channel::<i32>(16);
-    ng.add_selection_receiver("a".into(), "1".into(), Box::new(a_r1));
-    ng.add_selection_receiver("a".into(), "2".into(), Box::new(a_r2));
-    ng.add_selection_receiver("b".into(), "1".into(), Box::new(b_r1));
-    ng.add_selection_receiver("b".into(), "2".into(), Box::new(b_r2));
-    ng.add_output_selection("a".into(), "1".into());
-    ng.add_output_selection("a".into(), "2".into());
-    ng.add_output_selection("b".into(), "1".into());
-    ng.add_output_selection("b".into(), "2".into());
-
-    let (ar_s1, ar_r1) = count_channel::<bool>(16);
-    let (ar_s2, ar_r2) = count_channel::<bool>(16);
-    let (br_s1, br_r1) = count_channel::<i32>(16);
-    let (br_s2, br_r2) = count_channel::<i32>(16);
-    ng.connect_array("a".into(), "1".into(), Box::new(ar_s1.clone()), "testa".into(), s.clone());
-    ng.connect_array("a".into(), "2".into(), Box::new(ar_s2.clone()), "testa".into(), s.clone());
-    ng.connect_array("b".into(), "1".into(), Box::new(br_s1.clone()), "testb".into(), s.clone());
-    ng.connect_array("b".into(), "2".into(), Box::new(br_s2.clone()), "testb".into(), s.clone());
-
+    sched.start_receive();
+    let m = r.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 1);
+    sched.join();
     
-    ngia.add_selection_sender("a".into(), "1".into(), Box::new(ar_s1));
-    let ar_s1 = ngia.get_selection_sender("a".into(), "1".into()).expect("no selection input port");
-    let _: CountSender<bool> = downcast(ar_s1);
-    a_s1.send(true).ok().expect("cannot send");
-    a_s2.send(false).ok().expect("cannot send");
-    b_s1.send(333).ok().expect("cannot send");
-    b_s2.send(21).ok().expect("cannot send");
-    assert_eq!(ng.is_ips(), true);
-    port_a.send(true).ok().expect("cannot send");
-    port_b.send(333).ok().expect("cannot send");
-    ng.run();
-    assert_eq!(ng.is_ips(), false);
-
-    let msg = a_r.try_recv().expect("a not receive");
-    assert_eq!(msg, false);
-    let msg = b_r.try_recv().expect("b not receive");
-    assert_eq!(msg, 666);
-
-    let msg = ar_r1.try_recv().expect("a not receive");
-    assert_eq!(msg, false);
-    let msg = ar_r2.try_recv().expect("a not receive");
-    assert_eq!(msg, true);
-    let msg = br_r1.try_recv().expect("a not receive");
-    assert_eq!(msg, 666);
-    let msg = br_r2.try_recv().expect("a not receive");
-    assert_eq!(msg, 42);
-    
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test2".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testa".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testa".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testb".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testb".to_string() }, _ => { false }});
 
 }
 
 #[test]
-fn component_generic() {
-    let (mut g, gi, mut gia) = TestGeneric::new::<String, i32>();
-
-    let (s, r) = channel::<CompMsg>();
-
-    assert_eq!(g.is_input_ports(), true);
-    assert_eq!(g.is_ips(), false);
-    let (a_s, a_r) = count_channel::<String>(16);
-    let (b_s, b_r) = count_channel::<i32>(16);
-    g.connect("a".into(), Box::new(a_s.clone()), "test".into(), s.clone());
-    g.connect("b".into(), Box::new(b_s.clone()), "test2".into(), s.clone());
-    let port_a = gi.get_sender("a".into()).expect("no input");
-    let port_a: CountSender<String> = downcast(port_a);
-    port_a.send("a".to_string()).ok().expect("cannot send");
-    let port_b = gi.get_sender("b".into()).expect("no input");
-    let port_b: CountSender<i32> = downcast(port_b);
-    port_b.send(666).ok().expect("cannot send");
-
-    assert_eq!(g.is_ips(), true);
-    g.run();
-    assert_eq!(g.is_ips(), false);
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test2".to_string() }, _ => { false }});
-
-    let msg = a_r.try_recv().expect("a not receive");
-    assert_eq!(msg, "a".to_string());
-    let msg = b_r.try_recv().expect("b not receive");
-    assert_eq!(msg, 666);
-
-
-    let (a_s1, a_r1) = count_channel::<String>(16);
-    let (a_s2, a_r2) = count_channel::<String>(16);
-    let (b_s1, b_r1) = count_channel::<i32>(16);
-    let (b_s2, b_r2) = count_channel::<i32>(16);
-    g.add_selection_receiver("a".into(), "1".into(), Box::new(a_r1));
-    g.add_selection_receiver("a".into(), "2".into(), Box::new(a_r2));
-    g.add_selection_receiver("b".into(), "1".into(), Box::new(b_r1));
-    g.add_selection_receiver("b".into(), "2".into(), Box::new(b_r2));
-    g.add_output_selection("a".into(), "1".into());
-    g.add_output_selection("a".into(), "2".into());
-    g.add_output_selection("b".into(), "1".into());
-    g.add_output_selection("b".into(), "2".into());
-
-    let (ar_s1, ar_r1) = count_channel::<String>(16);
-    let (ar_s2, ar_r2) = count_channel::<String>(16);
-    let (br_s1, br_r1) = count_channel::<i32>(16);
-    let (br_s2, br_r2) = count_channel::<i32>(16);
-    g.connect_array("a".into(), "1".into(), Box::new(ar_s1.clone()), "testa".into(), s.clone());
-    g.connect_array("a".into(), "2".into(), Box::new(ar_s2.clone()), "testa".into(), s.clone());
-    g.connect_array("b".into(), "1".into(), Box::new(br_s1.clone()), "testb".into(), s.clone());
-    g.connect_array("b".into(), "2".into(), Box::new(br_s2.clone()), "testb".into(), s.clone());
-
-    
-    gia.add_selection_sender("a".into(), "1".into(), Box::new(ar_s1));
-    let ar_s1 = gia.get_selection_sender("a".into(), "1".into()).expect("no selection input port");
-    let _: CountSender<String> = downcast(ar_s1);
-    a_s1.send("a".to_string()).ok().expect("cannot send");
-    a_s2.send("b".to_string()).ok().expect("cannot send");
-    b_s1.send(666).ok().expect("cannot send");
-    b_s2.send(42).ok().expect("cannot send");
-    assert_eq!(g.is_ips(), true);
-    port_a.send("a".to_string()).ok().expect("cannot send");
-    port_b.send(666).ok().expect("cannot send");
-    g.run();
-    assert_eq!(g.is_ips(), false);
-
-    let msg = a_r.try_recv().expect("a not receive");
-    assert_eq!(msg, "a".to_string());
-    let msg = b_r.try_recv().expect("b not receive");
-    assert_eq!(msg, 666);
-
-    let msg = ar_r1.try_recv().expect("a not receive");
-    assert_eq!(msg, "a".to_string());
-    let msg = ar_r2.try_recv().expect("a not receive");
-    assert_eq!(msg, "b".to_string());
-    let msg = br_r1.try_recv().expect("a not receive");
-    assert_eq!(msg, 666);
-    let msg = br_r2.try_recv().expect("a not receive");
-    assert_eq!(msg, 42);
-    
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "test2".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testa".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testa".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testb".to_string() }, _ => { false }});
-    let sched = r.try_recv().expect("scheduler receive");
-    assert!(match sched { CompMsg::Start(n) => { n == "testb".to_string() }, _ => { false }});
-
-
-}
-
-
-component! {
-    Inc,
-    inputs(input: usize),
-    inputs_array(),
-    outputs(output: usize),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) { 
-        let msg = self.inputs.input.recv().expect("Inc : cannot receive");
-        let _ = self.outputs.output.send(msg+1);
+fn array_input_port() {
+    let add = ComponentBuilder::new("./tests/libadd.so");
+    {
+        let comp = add.build(&"schedinputarray".into(), &"name".into());
+        assert!(comp.is_input_ports(), true);
     }
+    
+    let mut sched = Scheduler::new("schedinputarray".into());
+    sched.add_component("add".into(), &add);
+
+    sched.add_input_array_selection("add".into(), "numbers".into(), "first".into());
+    sched.add_input_array_selection("add".into(), "numbers".into(), "second".into());
+
+    let mut s1 = OutputPort::new().expect("cannot create sender");
+    let mut s2 = OutputPort::new().expect("cannot create sender");
+    let mut r = InputPort::new("schedinputarray".into(), "recv".into(), "input".into()).expect("cannot create");
+
+    s1.connect("schedinputarray".into(), "add".into(), "numbersfirst".into()).expect("unable to connect");
+    s2.connect("schedinputarray".into(), "add".into(), "numberssecond".into()).expect("unable to connect");
+    sched.connect("add".into(), "output".into(), "recv".into(), "input".into());
+
+    let mut msg = capnp::message::Builder::new_default();
+    {
+        let mut number = msg.init_root::<number::Builder>();
+        number.set_number(1);
+    }
+
+    thread::sleep_ms(1);
+    s1.send(&msg).expect("unable to send to comp");
+    s2.send(&msg).expect("unable to send to comp");
+
+    sched.start_receive();
+    let m = r.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 2);
+
+    sched.join();
 }
 
 #[test]
-fn test_sched() {
+fn array_output_port() {
+    let lb = ComponentBuilder::new("./tests/libload_balancer.so");
+    {
+        let comp = lb.build(&"schedoutputarray".into(), &"name".into());
+        assert!(comp.is_input_ports(), true);
+    }
+    
+    let mut sched = Scheduler::new("schedoutputarray".into());
+    sched.add_component("lb".into(), &lb);
 
-    // empty sched
-    let sched = Scheduler::new();
+    sched.add_output_array_selection("lb".into(), "outputs".into(), "first".into());
+    sched.add_output_array_selection("lb".into(), "outputs".into(), "second".into());
+
+    let mut s = OutputPort::new().expect("cannot create sender");
+    let mut s_acc = OutputPort::new().expect("cannot create sender");
+    let mut r1 = InputPort::new("schedoutputarray".into(), "recv1".into(), "input".into()).expect("cannot create");
+    let mut r2 = InputPort::new("schedoutputarray".into(), "recv2".into(), "input".into()).expect("cannot create");
+
+    s.connect("schedoutputarray".into(), "lb".into(), "input".into()).expect("unable to connect");
+    s_acc.connect("schedoutputarray".into(), "lb".into(), "acc".into()).expect("unable to connect");
+    sched.connect_array("lb".into(), "outputs".into(), "first".into(), "recv1".into(), "input".into());
+    sched.connect_array("lb".into(), "outputs".into(), "second".into(), "recv2".into(), "input".into());
+
+    let mut msg = capnp::message::Builder::new_default();
+    {
+        let mut number = msg.init_root::<number::Builder>();
+        number.set_number(1);
+    }
+
+    thread::sleep_ms(1);
+    s.send(&msg).expect("unable to send to comp");
+    s.send(&msg).expect("unable to send to comp");
+    s.send(&msg).expect("unable to send to comp");
+    s_acc.send_vecu8(&vec![0]);
+
+    sched.start_receive();
+    let m = r1.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 1);
+
+    let m = r2.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 1);
+
+    let m = r1.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 1);
+
     sched.join();
+}
 
-    // A component that never run
-    let mut sched = Scheduler::new();
-    let (i, ii, iia) = Inc::new();
-    sched.add_component("i".into(), (i, ii, iia));
-    sched.join();
+#[test]
+fn subnet() {
+    let inc = ComponentBuilder::new("./tests/libinc.so");
+    let add = ComponentBuilder::new("./tests/libadd.so");
+    let lb = ComponentBuilder::new("./tests/libload_balancer.so");
 
-    // A running component
-    let mut sched = Scheduler::new();
-    let (s, r) = channel::<CompMsg>();
-    let (mut i, ii, iia) = Inc::new();
-    // test set_sender
-    let (mut port, set_r) = count_channel::<usize>(16);
-    i.set_receiver("input".into(), Box::new(set_r)); 
-    port.set_sched("i".into(), sched.sender.clone());
-    let (i_s, i_r) = count_channel::<usize>(16);
-    i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
-    sched.add_component("i".into(), (i, ii, iia));
-    port.send(0).ok().unwrap();
-    sched.join();
-    let res = i_r.try_recv().expect("No result");
-    assert_eq!(res, 1);
-    let res_s = r.try_recv().expect("scheduler receive");
-    assert!(match res_s { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-
-    // Two running component with a connection
-    let mut sched = Scheduler::new();
-    let (s, r) = channel::<CompMsg>();
-    let (mut i, ii, iia) = Inc::new();
-    let (i_s, i_r) = count_channel::<usize>(16);
-    i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
-    sched.add_component("i".into(), Inc::new());
-    sched.add_component("i2".into(), (i, ii, iia));
-    sched.connect("i".into(), "output".into(), "i2".into(), "input".into());
-    let port: CountSender<usize> = sched.get_sender("i".into(), "input".into());
-    port.send(0).ok().unwrap();
-    sched.join();
-    let res = i_r.try_recv().expect("No result");
-    assert_eq!(res, 2);
-    let res_s = r.try_recv().expect("scheduler receive");
-    assert!(match res_s { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-
-    // A subnet
-    let mut sched = Scheduler::new();
-
-    let (s, r) = channel::<CompMsg>();
-    let (mut i, ii, iia) = Inc::new();
-    let (i_s, i_r) = count_channel::<usize>(16);
-    i.connect("output".into(), Box::new(i_s.clone()), "test".into(), s.clone());
-
-    let not = GraphBuilder::new()
-        .add_component("inc1".into(), Inc::new)
-        .add_component("inc2".into(), Inc::new)
+    let sn = GraphBuilder::new()
+        .add_component("inc1".into(), &inc)
+        .add_component("inc2".into(), &inc)
+        .add_component("add".into(), &add)
+        .add_component("lb".into(), &lb)
+        .add_component("res1".into(), &inc)
+        .add_component("res2".into(), &inc)
         .edges()
-        .add_simple2simple("inc1".into(), "output".into(), "inc2".into(), "input".into())
-        .add_virtual_input_port("input".into(), "inc1".into(), "input".into())
-        .add_virtual_output_port("output".into(), "inc2".into(), "output".into());
+        .add_simple2array("inc1".into(), "output".into(), "add".into(), "numbers".into(), "first".into())
+        .add_simple2array("inc2".into(), "output".into(), "add".into(), "numbers".into(), "second".into())
+        .add_simple2simple("add".into(), "output".into(), "lb".into(), "input".into())
+        .add_array2simple("lb".into(), "outputs".into(), "first".into(), "res1".into(), "input".into())
+        .add_array2simple("lb".into(), "outputs".into(), "second".into(), "res2".into(), "input".into())
+        .add_virtual_input_port("a".into(), "inc1".into(), "input".into())
+        .add_virtual_input_port("b".into(), "inc2".into(), "input".into())
+        .add_virtual_input_port("acc".into(), "lb".into(), "acc".into())
+        .add_virtual_output_port("output1".into(), "res1".into(), "output".into())
+        .add_virtual_output_port("output2".into(), "res2".into(), "output".into());
 
-    sched.add_component("i".into(), (i, ii, iia));
-    sched.add_subnet("sub".into(), &not);
-    sched.connect("sub".into(), "output".into(), "i".into(), "input".into());
-    let port: CountSender<usize> = sched.get_sender("sub".into(), "input".into());
-    port.send(0).ok().unwrap();
+    let mut sched = Scheduler::new("schedsubnet".into());
+
+    let mut s1 = OutputPort::new().expect("cannot create sender");
+    let mut s2 = OutputPort::new().expect("cannot create sender");
+    let mut s_acc = OutputPort::new().expect("cannot create sender");
+    let mut r1 = InputPort::new("schedsubnet".into(), "recv1".into(), "input".into()).expect("cannot create");
+    let mut r2 = InputPort::new("schedsubnet".into(), "recv2".into(), "input".into()).expect("cannot create");
+
+
+    sched.add_subnet("sn".into(), &sn);
+
+
+    s1.connect("schedsubnet".into(), "sninc1".into(), "input".into()).expect("unable to connect");
+    s2.connect("schedsubnet".into(), "sninc2".into(), "input".into()).expect("unable to connect");
+    s_acc.connect("schedsubnet".into(), "snlb".into(), "acc".into()).expect("unable to connect");
+    sched.connect("sn".into(), "output1".into(), "recv1".into(), "input".into());
+    sched.connect("sn".into(), "output2".into(), "recv2".into(), "input".into());
+
+    s_acc.send_vecu8(&vec![0]).expect("unable to send acc");
+    let mut msg = capnp::message::Builder::new_default();
+    {
+        let mut number = msg.init_root::<number::Builder>();
+        number.set_number(1);
+    }
+    let mut msg2 = capnp::message::Builder::new_default();
+    {
+        let mut number = msg2.init_root::<number::Builder>();
+        number.set_number(38);
+    }
+
+    thread::sleep_ms(1);
+    s1.send(&msg).expect("unable to send to comp");
+    s2.send(&msg2).expect("unable to send to comp");
+
+    sched.start_receive();
+    let m = r1.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 42);
+
+    let mut msg = capnp::message::Builder::new_default();
+    {
+        let mut number = msg.init_root::<number::Builder>();
+        number.set_number(300);
+    }
+    let mut msg2 = capnp::message::Builder::new_default();
+    {
+        let mut number = msg2.init_root::<number::Builder>();
+        number.set_number(363);
+    }
+
+    thread::sleep_ms(1);
+    s1.send(&msg).expect("unable to send to comp");
+    s2.send(&msg2).expect("unable to send to comp");
+
+    sched.start_receive();
+    let m = r2.recv().expect("cannot receive");
+    let n: number::Reader = m.get_root().expect("not a date reader");
+    assert_eq!(n.get_number(), 666);
+
     sched.join();
-    let res = i_r.try_recv().expect("No result");
-    assert_eq!(res, 3);
-    let res_s = r.try_recv().expect("scheduler receive");
-    assert!(match res_s { CompMsg::Start(n) => { n == "test".to_string() }, _ => { false }});
-    
-}
 
-component! {
-    Delay,
-    inputs(a: usize, b: usize),
-    inputs_array(),
-    outputs(output: usize),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) { 
-        let a = self.inputs.a.recv().expect("Delay : cannot receive");
-        let b = self.inputs.b.recv().expect("Delay : cannot receive");
-        let _ = self.outputs.output.send(a+b);
-    }
 }
-
-component! {
-    Debug, (T: IP),
-    inputs(input: T where T: IP),
-    inputs_array(),
-    outputs(output: T where T: IP),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) {
-        let a = self.inputs.input.recv().expect("Debug : cannot receive");
-        self.outputs.output.send(a).ok().expect("Debug : cannot send");
-    }
-}
-
+/*
 #[test]
 fn update() {
     // A running component
@@ -651,3 +476,4 @@ fn test_replace() {
 
     
 }
+*/
