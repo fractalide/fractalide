@@ -18,7 +18,7 @@
  */
 
 // TODO : manage the number of connection on the array port (on each port on in the scheduler?)
-// TODO : manage thenumber of IPs in the channel (will be done in the scheduler)
+// TODO : option port
 
 extern crate nanomsg;
 extern crate capnp;
@@ -169,10 +169,8 @@ macro_rules! component {
             $( 
                 option: OptionReceiver<$option_type>,
             )*
-            $(
-                acc: Receiver<$acc_type>,
-            )*
             */
+            acc: InputPort,
         }
 
         // array
@@ -206,11 +204,7 @@ macro_rules! component {
             $(
                 $output_field_name: OutputPort,
             )*
-            /*
-            $(
-                acc: SyncSender<$acc_type>,
-            )*
-            */
+            acc: OutputPort,
         }
 
         // array
@@ -328,11 +322,6 @@ macro_rules! component {
                 let options_s = options.0;
                 let options_r = OptionReceiver::new(options.1);
             )*
-            $(
-                let accs = sync_channel::<$acc_type>(1);
-                let accs_s = accs.0;
-                let accs_r = accs.1;
-            )*
             */
             let r = Inputs {
             $(
@@ -342,10 +331,8 @@ macro_rules! component {
             $(
                 option: options_r as OptionReceiver<$option_type>,
             )*
-            $(
-                acc: accs_r as Receiver<$acc_type>,
-            )*
             */
+            acc: try!(InputPort::new(sched.clone(), name.clone(), "acc".into())),
             };
 
             // Creation of the array inputs
@@ -356,15 +343,11 @@ macro_rules! component {
             };
 
             // Creation of the output
-            let out = Outputs {
+            let mut out = Outputs {
                 $(
                     $output_field_name: try!(OutputPort::new()),
                 )*    
-                /*
-                $(
-                    acc: accs_s as SyncSender<$acc_type>,
-                )*
-                */
+                acc: try!(OutputPort::new()),
             };
 
             // Creation of the array output
@@ -373,6 +356,8 @@ macro_rules! component {
                     $output_array_name: HashMap::<String, OutputPort>::new(),
                 )*
             };
+
+            try!(out.acc.connect(sched.clone(), name.clone(), "acc".into()));
 
             // Put it together
             let comp = $name{

@@ -54,39 +54,46 @@ impl OutputPort {
         Ok(mem::replace(&mut self.data, None))
     }
 
-    /// Send a message to the OutputPort. 
-    pub fn send<A: capnp::message::Allocator>(&mut self, mut msg: &capnp::message::Builder<A>) -> Result<()> {
+    pub fn send_vecu8(&mut self, msg: &Vec<u8>) -> Result<()> {
         if self.end_point_comp.is_none() {
             Err(result::Error::OutputPortNotConnected)
         } else {
-            let mut msg_u8: Vec<u8> = vec![];
-            try!(capnp::serialize::write_message(&mut msg_u8, &mut msg));
-            try!(self.send_comp.nb_write(&msg_u8));
+            try!(self.send_comp.nb_write(&msg));
             if let Some(ref t) = self.data {
                 let c = & t.1;
-                try!(self.send_sched.nb_write(&format!("1{}", c.clone()).into_bytes()));
+                if t.2 != "acc".to_string() && t.2 != "option".to_string() {
+                    try!(self.send_sched.nb_write(&format!("1{}", c.clone()).into_bytes()));
+                }
             };
             Ok(()) 
         }
     }
 
+    /// Send a message to the OutputPort. 
+    pub fn send<A: capnp::message::Allocator>(&mut self, mut msg: &capnp::message::Builder<A>) -> Result<()> {
+        let mut msg_u8: Vec<u8> = vec![];
+        try!(capnp::serialize::write_message(&mut msg_u8, &mut msg));
+        self.send_vecu8(&msg_u8)
+    }
 }
 
 pub struct InputPort {
     name: String,
+    port: String,
     recv: Socket,
     end_point: Endpoint,
     sched: Socket,
     end_point_sched: Endpoint,
 }
 impl InputPort {
-    pub fn new(sched: String, comp_out: String, port_out: String) -> Result<Self> {
+    pub fn new(sched: String, comp_in: String, port_in: String) -> Result<Self> {
         let mut socket = try!(Socket::new(Protocol::Pull));
         let mut s_sched = try!(Socket::new(Protocol::Push));
-        let ep = try!(socket.bind(&format!("inproc://{}/{}/{}", sched, comp_out, port_out)));
+        let ep = try!(socket.bind(&format!("inproc://{}/{}/{}", sched, comp_in, port_in)));
         let ep_sched = try!(s_sched.connect(&format!("inproc://{}", sched)));
         Ok(InputPort {
-            name: comp_out,
+            name: comp_in,
+            port: port_in,
             recv: socket,
             end_point: ep,
             sched: s_sched,
@@ -94,27 +101,43 @@ impl InputPort {
         })
     }
 
-    pub fn recv(&mut self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
+    pub fn recv_vecu8(&mut self) -> Result<Vec<u8>> {
         let mut reader = &mut self.recv as &mut ::std::io::Read;
-        let mut msg = Vec::new();
+        let mut msg: Vec<u8> = Vec::new();
         try!(reader.read_to_end(&mut msg));
 
         // for number of IPs
-        try!(self.sched.nb_write(&format!("0{}", self.name.clone()).into_bytes()));
+        if self.port != "acc".to_string() && self.port != "option".to_string() {
+            try!(self.sched.nb_write(&format!("0{}", self.name.clone()).into_bytes()));
+        }
 
+        Ok(msg)
+
+    }
+
+    pub fn recv(&mut self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
+        let mut msg = try!(self.recv_vecu8());
         capnp::serialize::read_message(&mut &msg[..], capnp::message::ReaderOptions::new()).map_err(|e| {
             From::from(e)
         })
 
     }
 
-    pub fn try_recv(&mut self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
+    pub fn try_recvu8(&mut self) -> Result<Vec<u8>> {
         let mut msg = Vec::new();
         try!(self.recv.nb_read_to_end(&mut msg));
 
         // For number of IP
-        try!(self.sched.nb_write(&format!("0{}", self.name.clone()).into_bytes()));
+        if self.port != "acc".to_string() && self.port != "option".to_string() {
+            try!(self.sched.nb_write(&format!("0{}", self.name.clone()).into_bytes()));
+        }
 
+        Ok(msg)
+        
+    }
+
+    pub fn try_recv(&mut self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
+        let mut msg = try!(self.try_recvu8());
         capnp::serialize::read_message(&mut &msg[..], capnp::message::ReaderOptions::new())
                           .map_err(|e| { From::from(e) })
     }

@@ -4,6 +4,8 @@ extern crate libloading;
 
 use libloading::{Library, Symbol};
 
+use std::fmt;
+
 pub struct ComponentBuilder {
     lib: Library,
     new: fn(&String, &String) -> *mut u8,
@@ -83,6 +85,12 @@ impl ComponentBuilder {
             run: self.run,
             destroy: self.destroy,
         }
+    }
+}
+
+impl fmt::Debug for ComponentBuilder {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "ComponentBuilder")
     }
 }
 

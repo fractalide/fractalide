@@ -6,7 +6,7 @@ use loader::{ComponentBuilder, Component};
 use result;
 use result::Result;
 
-//use subnet::{SubNet, Graph};
+use subnet::{SubNet, Graph};
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc::channel;
@@ -34,7 +34,7 @@ pub enum CompMsg {
 /// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
     pub name: String,
-    //pub subnets: HashMap<String, SubNet>,
+    pub subnets: HashMap<String, SubNet>,
     pub sender: Sender<CompMsg>,
     pub error_receiver: Receiver<result::Error>,
     th: JoinHandle<()>,
@@ -85,7 +85,7 @@ impl Scheduler {
             
         Scheduler { 
             name: name,
-            //subnets: HashMap::new(),
+            subnets: HashMap::new(),
             sender: s,
             error_receiver: error_r,
             th: th,
@@ -104,9 +104,9 @@ impl Scheduler {
         self.sender.send(CompMsg::Start).expect("start_receive : unable to send to sched state");
     }
 
-    // pub fn add_subnet(&mut self, name: String, g: &Graph) {
-    //     SubNet::new(g, name, self);
-    // }
+    pub fn add_subnet(&mut self, name: String, g: &Graph) {
+        SubNet::new(g, name, self);
+    }
 
     // pub fn start(&self, name: String) {
     //     match self.subnets.get(&name) {
@@ -164,46 +164,46 @@ impl Scheduler {
     // }
 
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String){
-        // let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-        // let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, self.name.clone(), comp_in, port_in)).ok().expect("Scheduler connect: unable to send to sched state");
     }
 
     pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String){
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-    //     let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, self.name.clone(), comp_in, port_in)).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String){
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-    //     let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, self.name.clone(), comp_in, format!("{}/{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
+        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, self.name.clone(), comp_in, format!("{}{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String){
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-    //     let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, self.name.clone(), comp_in, format!("{}/{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, self.name.clone(), comp_in, format!("{}{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn disconnect(&self, comp_out: String, port_out: String) {
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
     }
 
     pub fn disconnect_array(&self, comp_out: String, port_out: String, selection:String) {
-        // let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, selection)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
     }
 
     pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) {
-    //     let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
         self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
     }
 
     pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) {
-        //let (comp, port) = self.get_subnet_name(comp, port, VPType::Out);
+        let (comp, port) = self.get_subnet_name(comp, port, VPType::Out);
         self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
     }
 
@@ -241,24 +241,24 @@ impl Scheduler {
     //     sender
     // }
 
-    // fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
-    //     let option_main = self.subnets.get(&comp);
-    //     let main = match option_main {
-    //         None => { 
-    //             return (comp, port); 
-    //         },
-    //         Some(m) => { m },
-    //     };
-    //     let real_name = match vp_type {
-    //         VPType::In => { main.input_names.get(&port) },
-    //         VPType::Out => { main.output_names.get(&port) },
-    //     };
-    //     if let Some(&(ref c, ref p)) = real_name {
-    //         (c.clone(), p.clone())
-    //     } else {
-    //         (comp, port)
-    //     }
-    // }
+    fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
+        let option_main = self.subnets.get(&comp);
+        let main = match option_main {
+            None => { 
+                return (comp, port); 
+            },
+            Some(m) => { m },
+        };
+        let real_name = match vp_type {
+            VPType::In => { main.input_names.get(&port) },
+            VPType::Out => { main.output_names.get(&port) },
+        };
+        if let Some(&(ref c, ref p)) = real_name {
+            (c.clone(), p.clone())
+        } else {
+            (comp, port)
+        }
+    }
 
     pub fn join(self) {
         self.sender.send(CompMsg::HaltState).ok().expect("Scheduler join : Cannot send HaltState");
@@ -316,14 +316,13 @@ impl SchedState {
                     {
                         let first = msg.remove(0);
                         let name = String::from_utf8(msg.clone()).expect("cannot move to utf8");
-                        let start = {
-                            let mut actual = self.components.get_mut(&name).expect("comp doesn't exists");
+                        let mut start = false;
+                        if let Some(ref mut actual) = self.components.get_mut(&name) {
                             if first as char == '0' && actual.ips > 0 {
                                 actual.ips -= 1;
-                                false
                             } else {
                                 actual.ips += 1;
-                                if actual.comp.is_some() { true } else { false }
+                                if actual.comp.is_some() { start = true; }
                             }
                         };
                         if start { self.run(name); }
@@ -391,10 +390,10 @@ impl SchedState {
             comp.comp = Some(box_comp);
             must_restart
         };
+        self.connections -= 1;
         if must_restart {
             self.run(name);
         } else {
-            self.connections -= 1;
             if self.connections <= 0 && self.can_halt {
                 self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
             }

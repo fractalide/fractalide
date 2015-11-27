@@ -7,40 +7,25 @@ extern crate test;
 
 use test::Bencher;
 
-use rustfbp::component::{CountSender, CountReceiver, downcast};
-use rustfbp::component::count_channel;
-use rustfbp::scheduler::{CompMsg, Scheduler};
+use rustfbp::scheduler::Scheduler;
 use rustfbp::subnet::*;
-use std::sync::mpsc::{Sender};
-use std::sync::mpsc::channel;
+use rustfbp::loader::ComponentBuilder;
 
-component! {
-    Inc,
-    inputs(input: usize),
-    inputs_array(),
-    outputs(output: usize),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) { 
-        let msg = self.inputs.input.recv().expect("Inc : cannot receive");
-        self.outputs.output.send(msg+1).ok().expect("Inc: cannot send");
-    }
-}
 
 #[bench]
 fn creation(b: &mut Bencher) {
     // creation
+    let builder = ComponentBuilder::new("./tests/libinc.so");
     b.iter(|| {
-        let mut sched = Scheduler::new();
+        let mut sched = Scheduler::new("creation".into());
         for i in (1..10000) {
-            sched.add_component("i".to_string() + &i.to_string(), Inc::new()); 
+            sched.add_component("i".to_string() + &i.to_string(), &builder); 
         }
         sched.join();
     });
 
 }
-
+/*
 #[bench]
 fn many_messages(b: &mut Bencher) {
     // Execution with many messages
@@ -128,3 +113,4 @@ fn deep_many_messages(b: &mut Bencher) {
     sched.join();
 
 }
+*/
