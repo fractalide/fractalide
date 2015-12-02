@@ -21,8 +21,8 @@ pub enum CompMsg {
     /// Add a new component. The String is the name, the BoxedComp is the component itself
     NewComponent(String, Component),
     Start, Halt, HaltState,
-    ConnectOutputPort(String, String, String, String, String),
-    ConnectOutputArrayPort(String, String, String, String, String, String),
+    ConnectOutputPort(String, String, String, String, Option<String>),
+    ConnectOutputArrayPort(String, String, String, String, String, Option<String>),
     Disconnect(String, String),
     DisconnectArray(String, String, String),
     AddInputArraySelection(String, String, String),
@@ -57,17 +57,17 @@ impl Scheduler {
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
-                    CompMsg::AddInputArraySelection(name, port, selection) => { 
+                    CompMsg::AddInputArraySelection(name, port, selection) => {
                         sched_s.edit_component(name, EditCmp::AddInputArraySelection(port, selection))
                     },
-                    CompMsg::AddOutputArraySelection(name, port, selection) => { 
+                    CompMsg::AddOutputArraySelection(name, port, selection) => {
                         sched_s.edit_component(name, EditCmp::AddOutputArraySelection(port, selection))
                     },
-                    CompMsg::ConnectOutputPort(comp_out, port_out, sched, comp_in, port_in) => { 
-                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputPort(port_out, sched, comp_in, port_in)) 
+                    CompMsg::ConnectOutputPort(comp_out, port_out, comp_in, port_in, selection_in) => {
+                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputPort(port_out, comp_in, port_in, selection_in))
                     },
-                    CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sched, comp_in, port_in) => {
-                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, sched, comp_in, port_in))
+                    CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, comp_in, port_in, selection_in) => {
+                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, comp_in, port_in, selection_in))
                     },
                     CompMsg::Disconnect(name, port) => {
                         sched_s.edit_component(name, EditCmp::Disconnect(port))
@@ -82,8 +82,8 @@ impl Scheduler {
                 res.map_err(|e| { error_s.send(e).expect("cannot send the error"); });
             }
         });
-            
-        Scheduler { 
+
+        Scheduler {
             name: name,
             subnets: HashMap::new(),
             sender: s,
@@ -93,11 +93,10 @@ impl Scheduler {
     }
 
     pub fn add_component(&mut self, name: String, c: &ComponentBuilder) -> Result<()>{
-        let comp = c.build(&self.name, &name); 
+        let comp = c.build(&self.name, &name);
         self.sender.send(CompMsg::NewComponent(name, comp))
             .map_err(|_| { result::Error::CannotSendToScheduler })
             .map(|_| { () })
-        
     }
 
     pub fn start_receive(&mut self) {
@@ -166,25 +165,25 @@ impl Scheduler {
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, self.name.clone(), comp_in, port_in)).ok().expect("Scheduler connect: unable to send to sched state");
+        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, comp_in, port_in, None)).ok().expect("Scheduler connect: unable to send to sched state");
     }
 
     pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, self.name.clone(), comp_in, port_in)).ok().expect("Scheduler connect: unable to send to scheduler state");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, comp_in, port_in, None)).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, self.name.clone(), comp_in, format!("{}{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
+        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, comp_in, port_in, Some(selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String){
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, self.name.clone(), comp_in, format!("{}{}", port_in, selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, comp_in, port_in, Some(selection_in))).ok().expect("Scheduler connect: unable to send to scheduler state");
     }
 
     pub fn disconnect(&self, comp_out: String, port_out: String) {
@@ -273,8 +272,8 @@ enum VPType {
 enum EditCmp {
     AddInputArraySelection(String, String),
     AddOutputArraySelection(String, String),
-    ConnectOutputPort(String, String, String, String),
-    ConnectOutputArrayPort(String, String, String, String, String,),
+    ConnectOutputPort(String, String, String, Option<String>),
+    ConnectOutputArrayPort(String, String, String, String, Option<String>),
     Disconnect(String),
     DisconnectArray(String, String),
 }
@@ -312,10 +311,11 @@ impl SchedState {
         let mut msg: Vec<u8> = vec![];
         loop {
             match self.socket.nb_read_to_end(&mut msg) {
-                Ok(_) => { 
+                Ok(_) => {
                     {
                         let first = msg.remove(0);
                         let name = String::from_utf8(msg.clone()).expect("cannot move to utf8");
+                        println!("receive {} for {}", first, name);
                         let mut start = false;
                         if let Some(ref mut actual) = self.components.get_mut(&name) {
                             if first as char == '0' && actual.ips > 0 {
@@ -404,6 +404,7 @@ impl SchedState {
     fn run(&mut self, name: String) {
         let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
         if let Some(b_comp) = mem::replace(&mut o_comp.comp, None) {
+            println!("start {}", name);
             self.connections += 1;
             let sched_s = self.sched_sender.clone();
             thread::spawn(move || {
@@ -432,11 +433,19 @@ impl SchedState {
             EditCmp::AddOutputArraySelection(port, selection) => {
                     c.add_output_selection(&port, &selection);
             },
-            EditCmp::ConnectOutputPort(port_out, sched, comp_in, port_in) => {
-                    c.connect(&port_out, &sched, &comp_in, &port_in);
+            EditCmp::ConnectOutputPort(port_out, comp_in, port_in, selection_in) => {
+                if let Some(ref si) = selection_in {
+                    c.connect_to_array(&port_out, &comp_in, &port_in, si);
+                } else {
+                    c.connect(&port_out, &comp_in, &port_in);
+                }
             },
-            EditCmp::ConnectOutputArrayPort(port_out, selection_out, sched, comp_in, port_in) => {
-                    c.connect_array(&port_out, &selection_out, &sched, &comp_in, &port_in);
+            EditCmp::ConnectOutputArrayPort(port_out, selection_out, comp_in, port_in, selection_in) => {
+                if let Some(ref si) = selection_in {
+                    c.connect_array_to_array(&port_out, &selection_out, &comp_in, &port_in, si);
+                } else {
+                    c.connect_array(&port_out, &selection_out, &comp_in, &port_in);
+                }
             },
             EditCmp::Disconnect(port) => {
                 c.disconnect(&port);

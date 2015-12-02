@@ -31,7 +31,7 @@ use result::Result;
  * There are two main parts for a component : the component itself and the part that manage the
  * connections and the running part. 
  *
- * Each component must implement some trait (InputSenders, InputArraySenders, InputArrayReceivers,
+ * Each
  * ComponentRun and ComponentConnect). These traits give all the information for the connection
  * between several components.
  *
@@ -41,11 +41,6 @@ use result::Result;
  */
  
 
-/// Manage the array input ports of a component.
-pub trait InputArray {
-    /// Allow to add a selection in an input array port.
-    fn add_selection(&mut self, sched: String, comp: String, port: String, selection: String) -> Result<()>;
-}
 
 /// Represent the default options simple input port
 ///
@@ -141,7 +136,7 @@ macro_rules! component {
         outputs_array($($output_array_name:ident),* ),
         fn run(&mut $arg:ident) $fun:block
         $($more:item)*
-    ) 
+    )
         =>
     {
         #[allow(non_snake_case)]
@@ -151,150 +146,30 @@ macro_rules! component {
         use rustfbp::result;
         use rustfbp::result::Result;
 
-        use rustfbp::ports::{InputPort, OutputPort};
+        use rustfbp::ports::Ports;
         #[allow(unused_imports)]
         use std::collections::HashMap;
 
         $($more)*
 
-        /* Input ports part */
-
-        // simple
-        #[allow(dead_code)]
-        struct Inputs {
-            $(
-                $input_field_name: InputPort,
-            )*
-            /*
-            $( 
-                option: OptionReceiver<$option_type>,
-            )*
-            */
-            acc: InputPort,
-        }
-
-        // array
-        #[allow(dead_code)]
-        struct InputsArray {
-            $(
-                $input_array_name: HashMap<String, InputPort>,
-            )*    
-        }
-
-        impl InputArray for InputsArray {
-            fn add_selection(&mut self, _sched: String, _comp: String, port: String, _selection: String) -> Result<()>{
-                match &(port[..]) {
-                    $(
-                        stringify!($input_array_name) => { 
-                            self.$input_array_name.insert(_selection.clone(), try!(InputPort::new(_sched, _comp, format!("{}{}", port, _selection))));
-                            Ok(())
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
-            }
-        }
-
-
-        /* Output ports part */
-
-        // simple
-        #[allow(dead_code)]
-        struct Outputs {
-            $(
-                $output_field_name: OutputPort,
-            )*
-            acc: OutputPort,
-        }
-
-        // array
-        #[allow(dead_code)]
-        struct OutputsArray {
-            $(
-                $output_array_name: HashMap<String, OutputPort>
-            ),*
-        }
-
         // simple and array
         impl $name {
-            pub fn connect(&mut self, port_out: &String, _sched: &String, _comp_in: &String, _port_in: &String) -> Result<()>{
-                match &(port_out[..]) {
-                    $(
-                        stringify!($output_field_name) => { 
-                            self.outputs.$output_field_name.connect(_sched.clone(), _comp_in.clone(), _port_in.clone()) 
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
+            pub fn disconnect(&mut self, port: &String) -> Result<()> {
+                Ok(())
             }
 
-            pub fn connect_array(&mut self, port_out: &String, _selection_out: &String, _sched: &String, _comp_in: &String, _port_in: &String) -> Result<()>{
-                match &(port_out[..]) {
-                    $(
-                        stringify!($output_array_name) => { 
-                            self.outputs_array.$output_array_name.get_mut(_selection_out)
-                                              .ok_or(result::Error::SelectionNotFound)
-                                              .and_then(|s| {
-                                                  s.connect(_sched.clone(), _comp_in.clone(), _port_in.clone()) 
-                                              })
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
+            pub fn disconnect_array(&mut self, port: &String, _selection: &String) -> Result<()> {
+                Ok(())
             }
 
-            pub fn add_input_selection(&mut self, port: &String, selection: &String) -> Result<()> {
-                self.inputs_array.add_selection(self.sched.clone(), self.name.clone(), port.clone(), selection.clone())
-            }
-
-            pub fn add_output_selection(&mut self, port: &String, _selection: &String) -> Result<()> {
-                match &(port[..]) {
-                    $(
-                        stringify!($output_array_name) => { 
-                            if self.outputs_array.$output_array_name.get(_selection).is_none() {
-                                self.outputs_array.$output_array_name.insert(_selection.clone(), try!(OutputPort::new())); 
-                            }
-                            Ok(())
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
-
-            }
-
-
-            pub fn disconnect(&mut self, port: &String) -> Result<Option<(String, String, String)>> {
-                match &(port[..]) {
-                    $(
-                        stringify!($output_field_name) => { 
-                            self.outputs.$output_field_name.disconnect() 
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
-            }
-
-            pub fn disconnect_array(&mut self, port: &String, _selection: &String) -> Result<Option<(String, String, String)>> {
-                match &(port[..]) {
-                    $(
-                        stringify!($output_array_name) => { 
-                            self.outputs_array.$output_array_name.get_mut(_selection)
-                                              .ok_or(result::Error::SelectionNotFound)
-                                              .and_then(|s| { s.disconnect() })
-                        }
-                    ),*
-                    _ => { Err(result::Error::PortNotFound) },
-                }    
-            }
-
-            pub fn is_input_ports(&self) -> bool { 
+            pub fn is_input_ports(&self) -> bool {
                 $(
                     if true || stringify!($input_field_name) == "" { return true; }
                 )*
                 $(
                     if true || stringify!($input_array_name) == "" { return true; }
                 )*
-                false 
+                false
             }
 
             pub fn run(&mut $arg) $fun
@@ -307,10 +182,7 @@ macro_rules! component {
         pub struct $name {
             sched: String,
             name: String,
-            inputs: Inputs,
-            inputs_array:InputsArray,
-            outputs: Outputs,
-            outputs_array: OutputsArray,
+            pub ports: Ports,
         }
 
         #[allow(dead_code)]
@@ -323,50 +195,18 @@ macro_rules! component {
                 let options_r = OptionReceiver::new(options.1);
             )*
             */
-            let r = Inputs {
-            $(
-                $input_field_name: try!(InputPort::new(sched.clone(), name.clone(), stringify!($input_field_name).into())),
-            )*    
-            /*
-            $(
-                option: options_r as OptionReceiver<$option_type>,
-            )*
-            */
-            acc: try!(InputPort::new(sched.clone(), name.clone(), "acc".into())),
-            };
-
-            // Creation of the array inputs
-            let a_r = InputsArray {
-            $(
-                $input_array_name: HashMap::<String, InputPort>::new(),
-            )*
-            };
-
-            // Creation of the output
-            let mut out = Outputs {
-                $(
-                    $output_field_name: try!(OutputPort::new()),
-                )*    
-                acc: try!(OutputPort::new()),
-            };
-
-            // Creation of the array output
-            let out_array = OutputsArray {
-                $(
-                    $output_array_name: HashMap::<String, OutputPort>::new(),
-                )*
-            };
-
-            try!(out.acc.connect(sched.clone(), name.clone(), "acc".into()));
+            let mut ports = try!(Ports::new(sched.clone(), name.clone(),
+                                   vec!["acc".into(), $( stringify!($input_field_name).to_string() ),*],
+                                   vec![$( stringify!($input_array_name).to_string() ),*],
+                                   vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
+                                   vec![$( stringify!($output_array_name).to_string() ),*],));
+            try!(ports.connect("acc".into(), name.clone(), "acc".into(), None));
 
             // Put it together
             let comp = $name{
                 sched: sched.clone(),
                 name: name.clone(),
-                inputs: r, 
-                outputs: out,
-                inputs_array: a_r,
-                outputs_array: out_array,
+                ports: ports,
             };
             Ok(Box::new(comp))
         }
@@ -388,18 +228,36 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn connect(ptr: *mut $name::$name, port_out: &String, sched: &String, comp_in: &String, port_in: &String) -> u32 {
+        pub extern fn connect(ptr: *mut $name::$name, port_out: &String, comp_in: &String, port_in: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.connect(port_out, sched, comp_in, port_in) {
+            match comp.ports.connect(port_out.clone(), comp_in.clone(), port_in.clone(), None) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
         }
 
         #[no_mangle]
-        pub extern fn connect_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, sched: &String, comp_in: &String, port_in: &String) -> u32 {
+        pub extern fn connect_to_array(ptr: *mut $name::$name, port_out: &String, comp_in: &String, port_in: &String, selection_in: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.connect_array(port_out, selection_out, sched, comp_in, port_in) {
+            match comp.ports.connect(port_out.clone(), comp_in.clone(), port_in.clone(), Some(selection_in.clone())) {
+                Ok(_) => 0,
+                Err(_) => 1,
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn connect_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String) -> u32 {
+            let mut comp = unsafe { &mut *ptr };
+            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), comp_in.clone(), port_in.clone(), None) {
+                Ok(_) => 0,
+                Err(_) => 1,
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn connect_array_to_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String, selection_in: &String) -> u32 {
+            let mut comp = unsafe { &mut *ptr };
+            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), comp_in.clone(), port_in.clone(), Some(selection_in.clone())) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
@@ -408,7 +266,7 @@ macro_rules! component {
         #[no_mangle]
         pub extern fn add_output_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.add_output_selection(port, selection) {
+            match comp.ports.add_output_selection(port.clone(), selection.clone()) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
@@ -417,7 +275,7 @@ macro_rules! component {
         #[no_mangle]
         pub extern fn add_input_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.add_input_selection(port, selection) {
+            match comp.ports.add_input_selection(port.clone(), selection.clone()) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }

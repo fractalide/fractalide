@@ -9,8 +9,10 @@ use std::fmt;
 pub struct ComponentBuilder {
     lib: Library,
     new: fn(&String, &String) -> *mut u8,
-    connect: fn(*mut u8, &String, &String, &String, &String) -> u32,
-    connect_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32, 
+    connect: fn(*mut u8, &String, &String, &String) -> u32,
+    connect_to_array: fn(*mut u8, &String, &String, &String, &String) -> u32,
+    connect_array: fn(*mut u8, &String, &String, &String, &String) -> u32,
+    connect_array_to_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32,
     add_output_selection: fn(*mut u8, &String, &String) -> u32,
     add_input_selection: fn(*mut u8, &String, &String) -> u32,
     disconnect: fn(*mut u8, &String) -> u32,
@@ -23,18 +25,24 @@ pub struct ComponentBuilder {
 impl ComponentBuilder {
     pub fn new(path: &'static str) -> Self {
         let comp = libloading::Library::new(path).expect("cannot load");
-        
+
         let new = unsafe {
             *(comp.get(b"create_component\0").expect("cannot find create method"))
         };
         let run: fn(*mut u8) = unsafe {
             *(comp.get(b"run\0").expect("cannot find run method"))
         };
-        let connect: fn(*mut u8, &String, &String, &String, &String) -> u32 = unsafe {
+        let connect: fn(*mut u8, &String, &String, &String) -> u32 = unsafe {
             *(comp.get(b"connect\0").expect("cannot find connect method"))
         };
-        let connect_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32 = unsafe {
+        let connect_to_array: fn(*mut u8, &String, &String, &String, &String) -> u32 = unsafe {
+            *(comp.get(b"connect_to_array\0").expect("cannot find connect_to_array method"))
+        };
+        let connect_array: fn(*mut u8, &String, &String, &String, &String) -> u32 = unsafe {
             *(comp.get(b"connect_array\0").expect("cannot find connect_array method"))
+        };
+        let connect_array_to_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32 = unsafe {
+            *(comp.get(b"connect_array_to_array\0").expect("cannot find connect_array_to_array method"))
         };
         let add_output_selection: fn(*mut u8, &String, &String) -> u32 = unsafe {
             *(comp.get(b"add_output_selection\0").expect("cannot find add_output_selection method"))
@@ -59,7 +67,9 @@ impl ComponentBuilder {
             lib: comp,
             new: new,
             connect: connect,
+            connect_to_array: connect_to_array,
             connect_array: connect_array,
+            connect_array_to_array: connect_array_to_array,
             add_output_selection: add_output_selection,
             add_input_selection: add_input_selection,
             disconnect: disconnect,
@@ -76,7 +86,9 @@ impl ComponentBuilder {
         Component {
             ptr: c,
             connect: self.connect,
+            connect_to_array: self.connect_to_array,
             connect_array: self.connect_array,
+            connect_array_to_array: self.connect_array_to_array,
             add_output_selection: self.add_output_selection,
             add_input_selection: self.add_input_selection,
             disconnect: self.disconnect,
@@ -96,8 +108,10 @@ impl fmt::Debug for ComponentBuilder {
 
 pub struct Component {
     ptr: *mut u8,
-    connect: fn(*mut u8, &String, &String, &String, &String) -> u32,
-    connect_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32, 
+    connect: fn(*mut u8, &String, &String, &String) -> u32,
+    connect_to_array: fn(*mut u8, &String, &String, &String, &String) -> u32,
+    connect_array: fn(*mut u8, &String, &String, &String, &String) -> u32,
+    connect_array_to_array: fn(*mut u8, &String, &String, &String, &String, &String) -> u32,
     add_output_selection: fn(*mut u8, &String, &String) -> u32,
     add_input_selection: fn(*mut u8, &String, &String) -> u32,
     disconnect: fn(*mut u8, &String) -> u32,
@@ -112,12 +126,20 @@ impl Component {
         (self.run)(self.ptr);
     }
 
-    pub fn connect(&self, port_out: &String, sched: &String, comp_in: &String, port_in: &String){
-        (self.connect)(self.ptr, port_out, sched, comp_in, port_in);
+    pub fn connect(&self, port_out: &String, comp_in: &String, port_in: &String){
+        (self.connect)(self.ptr, port_out, comp_in, port_in);
     }
 
-    pub fn connect_array(&self, port_out: &String, selection_out: &String, sched: &String, comp_in: &String, port_in: &String){
-        (self.connect_array)(self.ptr, port_out, selection_out, sched, comp_in, port_in);
+    pub fn connect_to_array(&self, port_out: &String, comp_in: &String, port_in: &String, selection_in: &String){
+        (self.connect_to_array)(self.ptr, port_out, comp_in, port_in, selection_in);
+    }
+
+    pub fn connect_array(&self, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String){
+        (self.connect_array)(self.ptr, port_out, selection_out, comp_in, port_in);
+    }
+
+    pub fn connect_array_to_array(&self, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String, selection_in: &String){
+        (self.connect_array_to_array)(self.ptr, port_out, selection_out, comp_in, port_in, selection_in);
     }
 
     pub fn add_output_selection(&self, port_out: &String, selection_out: &String){
