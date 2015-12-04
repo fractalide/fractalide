@@ -10,5 +10,6 @@ description = "Fractalide, a Flow-based programming environment in Rust"
 [dependencies]
 capnp = "*"
 capnpc = "*"
-nanomsg = "*"
 libloading = "*"
+
+nanomsg = { git = "https://github.com/blabaere/nanomsg.rs" }

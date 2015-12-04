@@ -22,9 +22,9 @@ use std::thread;
 #[test]
 fn many() {
     let inc = ComponentBuilder::new("./tests/libinc.so");
-    let mut sched = Scheduler::new("test".into());
+    let mut sched = Scheduler::new("127.0.0.1".into());
 
-    for i in 1..400 {
+    for i in 1..200 {
         sched.add_component(i.to_string(), &inc);
     }
 
@@ -36,16 +36,17 @@ fn many() {
 fn simple_port() {
     let inc = ComponentBuilder::new("./tests/libinc.so");
     {
-        let comp = inc.build(&"sched".into(), &"name".into());
+        let comp = inc.build(&"127.1.1.1".into(), &"30101".into());
         assert!(comp.is_input_ports(), true);
     }
 
-    let mut sched = Scheduler::new("schedsimple".into());
+    let mut sched = Scheduler::new("127.1.0.1".into());
+    sched.components.insert("res".into(), "29999".into());
     sched.add_component("inc".into(), &inc);
 
-    let mut p = Ports::new("schedsimple".into(), "res".into(), vec!["r".into()], vec![], vec!["s".into()], vec![]).expect("cannot create");
+    let mut p = Ports::new("127.1.0.1".into(), "29999".into(), vec!["r".into()], vec![], vec!["s".into()], vec![]).expect("cannot create");
 
-    p.connect("s".into(), "inc".into(), "input".into(), None).expect("unable to connect");
+    p.connect("s".into(), sched.components.get("inc").unwrap().clone(), "input".into(), None).expect("unable to connect");
     sched.connect("inc".into(), "output".into(), "res".into(), "r".into());
 
     let mut msg = capnp::message::Builder::new_default();
@@ -54,10 +55,10 @@ fn simple_port() {
         number.set_number(0);
     }
 
-    println!("before sending");
-    thread::sleep_ms(100);
+    thread::sleep_ms(1);
     p.send("s".into(), &msg).expect("unable to send to comp");
 
+    thread::sleep_ms(10);
     sched.start_receive();
     let m = p.recv("r".into()).expect("cannot receive");
     let n: number::Reader = m.get_root().expect("not a date reader");
@@ -70,21 +71,25 @@ fn simple_port() {
 fn array_input_port() {
     let add = ComponentBuilder::new("./tests/libadd.so");
     {
-        let comp = add.build(&"schedinputarray".into(), &"name".into());
+        let comp = add.build(&"127.2.0.1".into(), &"30101".into());
         assert!(comp.is_input_ports(), true);
     }
 
-    let mut sched = Scheduler::new("schedinputarray".into());
+    let mut sched = Scheduler::new("127.2.0.1".into());
+    sched.components.insert("recv".into(), "29999".into());
     sched.add_component("add".into(), &add);
 
     sched.add_input_array_selection("add".into(), "numbers".into(), "first".into());
     sched.add_input_array_selection("add".into(), "numbers".into(), "second".into());
 
-    let mut p = Ports::new("schedinputarray".into(), "recv".into(), vec!["input".into()], vec![], vec!["s1".into(), "s2".into()], vec![]).expect("cannot create");
+    let mut p = Ports::new("127.2.0.1".into(), "29999".into(), vec!["input".into()], vec![], vec!["s1".into(), "s2".into()], vec![]).expect("cannot create");
 
-    p.connect("s1".into(), "add".into(), "numbers".into(), Some("first".into())).expect("unable to connect");
-    p.connect("s2".into(), "add".into(), "numbers".into(), Some("second".into())).expect("unable to connect");
-    sched.connect("add".into(), "output".into(), "recv".into(), "input".into());
+    {
+        let add = sched.components.get("add").unwrap();
+        p.connect("s1".into(), add.clone(), "numbers".into(), Some("first".into())).expect("unable to connect");
+        p.connect("s2".into(), add.clone(), "numbers".into(), Some("second".into())).expect("unable to connect");
+        sched.connect("add".into(), "output".into(), "recv".into(), "input".into());
+    }
 
     let mut msg = capnp::message::Builder::new_default();
     {
@@ -96,6 +101,7 @@ fn array_input_port() {
     p.send("s1".into(), &msg).expect("unable to send to comp");
     p.send("s2".into(), &msg).expect("unable to send to comp");
 
+    thread::sleep_ms(1);
     sched.start_receive();
     let m = p.recv("input".into()).expect("cannot receive");
     let n: number::Reader = m.get_root().expect("not a date reader");
@@ -108,24 +114,28 @@ fn array_input_port() {
 fn array_output_port() {
     let lb = ComponentBuilder::new("./tests/libload_balancer.so");
     {
-        let comp = lb.build(&"schedoutputarray".into(), &"name".into());
+        let comp = lb.build(&"127.3.0.1".into(), &"30111".into());
         assert!(comp.is_input_ports(), true);
     }
 
-    let mut sched = Scheduler::new("schedoutputarray".into());
+    let mut sched = Scheduler::new("127.3.0.1".into());
     sched.add_component("lb".into(), &lb);
+    sched.components.insert("recv".into(), "29999".into());
 
     sched.add_output_array_selection("lb".into(), "outputs".into(), "first".into());
     sched.add_output_array_selection("lb".into(), "outputs".into(), "second".into());
 
-    let mut p = Ports::new("schedoutputarray".into(), "recv".into(),
+    let mut p = Ports::new("127.3.0.1".into(), "29999".into(),
                            vec!["recv1".into(), "recv2".into()],
                            vec![],
                            vec!["acc".into(), "s".into()],
                            vec![]).expect("cannot create receiver");
 
-    p.connect("s".into(), "lb".into(), "input".into(), None).expect("unable to connect");
-    p.connect("acc".into(), "lb".into(), "acc".into(), None).expect("unable to connect");
+    {
+        let lb = sched.components.get("lb").unwrap();
+        p.connect("s".into(), lb.clone(), "input".into(), None).expect("unable to connect");
+        p.connect("acc".into(), lb.clone(), "acc".into(), None).expect("unable to connect");
+    }
     sched.connect_array("lb".into(), "outputs".into(), "first".into(), "recv".into(), "recv1".into());
     sched.connect_array("lb".into(), "outputs".into(), "second".into(), "recv".into(), "recv2".into());
 
@@ -141,6 +151,7 @@ fn array_output_port() {
     p.send("s".into(), &msg).expect("unable to send to comp");
     p.send_vecu8("acc".into(), &vec![0]);
 
+    thread::sleep_ms(10);
     sched.start_receive();
     let m = p.recv("recv1".into()).expect("cannot receive");
     let n: number::Reader = m.get_root().expect("not a date reader");
@@ -156,7 +167,6 @@ fn array_output_port() {
 
     sched.join();
 }
-/*
 
 #[test]
 fn subnet() {
@@ -183,29 +193,27 @@ fn subnet() {
         .add_virtual_output_port("output1".into(), "res1".into(), "output".into())
         .add_virtual_output_port("output2".into(), "res2".into(), "output".into());
 
-    let mut sched = Scheduler::new("schedsubnet".into());
+    let mut sched = Scheduler::new("127.4.0.1".into());
 
-    let mut p = Ports::new("schedsubnet".into(), "recv".into(),
+    let mut p = Ports::new("127.4.0.1".into(), "29999".into(),
                            vec!["r1".into(), "r2".into()],
                            vec![],
                            vec!["acc".into(), "s1".into(), "s2".into()],
                            vec![]).expect("cannot create receiver");
 
-    print!("create subnet");
     sched.add_subnet("sn".into(), &sn);
-    println!(" ... done");
+    sched.components.insert("recv".into(), "29999".into());
 
 
-    p.connect("s2".into(), "sninc2".into(), "input".into(), None).expect("unable to connect");
-    p.connect("s1".into(), "sninc1".into(), "input".into(), None).expect("unable to connect");
-    p.connect("acc".into(), "snlb".into(), "acc".into(), None).expect("unable to connect");
+    {
+        p.connect("s2".into(), sched.components.get("sninc2").unwrap().clone(), "input".into(), None).expect("unable to connect");
+        p.connect("s1".into(), sched.components.get("sninc1").unwrap().clone(), "input".into(), None).expect("unable to connect");
+        p.connect("acc".into(), sched.components.get("snlb").unwrap().clone(), "acc".into(), None).expect("unable to connect");
+    }
     sched.connect("sn".into(), "output1".into(), "recv".into(), "r1".into());
     sched.connect("sn".into(), "output2".into(), "recv".into(), "r2".into());
 
-    println!("all is connected");
-
     p.send_vecu8("acc".into(), &vec![0]).expect("unable to send acc");
-    println!("here");
     let mut msg = capnp::message::Builder::new_default();
     {
         let mut number = msg.init_root::<number::Builder>();
@@ -216,18 +224,13 @@ fn subnet() {
         let mut number = msg2.init_root::<number::Builder>();
         number.set_number(38);
     }
-    println!("tehre");
 
-    println!("second");
     p.send("s2".into(), &msg2).expect("unable to send to comp");
     p.send("s1".into(), &msg).expect("unable to send to comp");
-    println!("third");
 
-    sched.start_receive();
-    println!("start receive");
     thread::sleep_ms(100);
+    sched.start_receive();
     let m = p.recv("r1".into()).expect("cannot receive");
-    println!(" ... done");
     let n: number::Reader = m.get_root().expect("not a date reader");
     assert_eq!(n.get_number(), 42);
 
@@ -254,7 +257,7 @@ fn subnet() {
     sched.join();
 
 }
-*/
+
 /*
 #[test]
 fn update() {
