@@ -1,3 +1,3 @@
-fn main() {
+fn print_not() {
     println!("not");
 }
