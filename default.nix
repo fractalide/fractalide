@@ -9,7 +9,7 @@ let
 		buildFractalideComponent = callPackage ./build-support {
 			inherit cargo rustcMaster;
 		};
-		boolean-not = callPackage ./boolean/not {};
+		boolean-not = callPackage ./components/boolean/not {};
 	};
 in components
 
