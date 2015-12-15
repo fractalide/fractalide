@@ -50,7 +50,6 @@ impl Scheduler {
         let th = thread::spawn(move || {
             loop {
                 let msg = r.recv().unwrap();
-                // TODO : rcv the number of IPs
                 sched_s.receive_number_ips();
                 let res: Result<()> = match msg {
                     CompMsg::NewComponent(name, comp) => { sched_s.new_component(name, comp) },

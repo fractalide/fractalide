@@ -22,6 +22,7 @@ pub enum Error {
     PortNotFound,
     SelectionNotFound,
     CannotSendToScheduler,
+    CannotReceive,
     BadMessageInfo,
 }
 
@@ -38,6 +39,7 @@ impl fmt::Display for Error {
             Error::PortNotFound => write!(f, "Component error : Port not found"),
             Error::SelectionNotFound => write!(f, "Component error : Selection not found"),
             Error::CannotSendToScheduler => write!(f, "Scheduler error : Cannot send to scheduler state"),
+            Error::CannotReceive => write!(f, "Ports error: cannot receive"),
             Error::BadMessageInfo => write!(f, "Ports error : Bad message information"),
         }
     }
@@ -56,6 +58,7 @@ impl error::Error for Error {
             Error::PortNotFound => "A port is not found in a component",
             Error::SelectionNotFound => "A selection in a array port is not found in a component",
             Error::CannotSendToScheduler => "Scheduler error : Cannot send to scheduler state",
+            Error::CannotReceive => "Ports error: cannot receive",
             Error::BadMessageInfo => "Ports error : cannot receive the message, wrong bit information",
         }
     }

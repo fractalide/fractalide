@@ -21,3 +21,5 @@ pub mod subnet;
 pub mod loader;
 pub mod ports;
 pub mod result;
+
+pub mod allocator;

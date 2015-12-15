@@ -1,7 +1,5 @@
-extern crate nanomsg;
 extern crate capnp;
 
-use nanomsg::{Socket, Protocol, Endpoint};
 use std::mem;
 
 use result;
@@ -12,67 +10,75 @@ use std::collections::hash_map::Keys;
 
 use std::io::{Write, Read};
 
+use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP};
+
 pub struct Ports {
-    name_sched: String,
-    name_comp: String,
-    sched: Socket,
-    input: Socket,
-    output: Socket,
-    output_endpoint: Option<Endpoint>,
-    output_last: String,
-    buffers: HashMap<String, Vec<Vec<u8>>>,
-    buffers_array: HashMap< String, HashMap<String, Vec<Vec<u8>>>>,
-    connection: HashMap<String, Option<(String, String, Option<String>)>>,
-    connection_array: HashMap<String, HashMap<String, Option<(String, String, Option<String>)>>>,
+    allocator: Allocator,
+    inputs: HashMap<String, IPReceiver>,
+    inputs_array: HashMap< String, HashMap<String, IPReceiver>>,
+    outputs: HashMap<String, Option<IPSender>>,
+    outputs_array: HashMap<String, HashMap<String, Option<IPSender>>>,
 }
 
 impl Ports {
-    pub fn new(name_sched: String, name_comp: String,
+    pub fn new(allocator: &Allocator, senders: *mut HeapSenders,
                n_input: Vec<String>, n_input_array: Vec<String>,
                n_output: Vec<String>, n_output_array: Vec<String>) -> Result<Self> {
-        let mut sched = try!(Socket::new(Protocol::Push));
-        let mut input = try!(Socket::new(Protocol::Pull));
-        let mut output = try!(Socket::new(Protocol::Push));
-        try!(output.set_linger(-1));
-        try!(sched.connect(&format!("tcp://{}:30000", name_sched)));
-        try!(input.bind(&format!("tcp://{}:{}", name_sched, name_comp)));
-        let mut buffers = HashMap::new();
-        for i in n_input { buffers.insert(i, vec![]); }
-        let mut buffers_array = HashMap::new();
-        for i in n_input_array { buffers_array.insert(i, HashMap::new()); }
-        let mut connection = HashMap::new();
-        for i in n_output { connection.insert(i, None); }
-        let mut connection_array = HashMap::new();
-        for i in n_output_array { connection_array.insert(i, HashMap::new()); }
+        let senders = allocator.senders.build(senders);
+        let mut inputs = HashMap::new();
+        for i in n_input {
+            let (s, r) = allocator.channel.build();
+            senders.add_ptr(&i, s);
+            let r = allocator.channel.build_receiver(r);
+            inputs.insert(i, r);
+        }
+        let mut inputs_array = HashMap::new();
+        for i in n_input_array { inputs_array.insert(i, HashMap::new()); }
+        let mut outputs = HashMap::new();
+        for i in n_output { outputs.insert(i, None); }
+        let mut outputs_array = HashMap::new();
+        for i in n_output_array { outputs_array.insert(i, HashMap::new()); }
         Ok(Ports {
-            name_sched: name_sched,
-            name_comp: name_comp,
-            sched: sched,
-            input: input,
-            output: output,
-            output_endpoint: None,
-            output_last: String::new(),
-            buffers: buffers,
-            buffers_array: buffers_array,
-            connection: connection,
-            connection_array: connection_array,
+            allocator: allocator.clone(),
+            inputs: inputs,
+            inputs_array: inputs_array,
+            outputs: outputs,
+            outputs_array: outputs_array,
         })
     }
 
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
-        self.buffers_array.get(port_in).ok_or(result::Error::PortNotFound)
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
             .map(|port| {
                 port.keys().cloned().collect()
             })
     }
 
     pub fn get_output_selections(&self, port_out: &'static str) -> Result<Vec<String>> {
-        self.connection_array.get(port_out).ok_or(result::Error::PortNotFound)
+        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
             .map(|port| {
                 port.keys().cloned().collect()
             })
     }
 
+    pub fn recv(&self, port_in: String) -> Result<IP> {
+        if let Some(ref mut port) = self.inputs.get(&port_in) {
+            let mut ptr = port.recv();
+            Ok(self.allocator.ip.build(ptr))
+        } else {
+            Err(result::Error::PortNotFound)
+        }
+    }
+
+    pub fn try_recv(&self, port_in: String) -> Result<IP> {
+        if let Some(ref mut port) = self.inputs.get(&port_in) {
+            let ip = try!(port.try_recv());
+            Ok(self.allocator.ip.build(ip))
+        } else {
+            Err(result::Error::PortNotFound)
+        }
+    }
+/*
     // Input ports
     pub fn recv_vecu8(&mut self, port_in: String) -> Result<Vec<u8>> {
         if let Some(ref mut port) = self.buffers.get_mut(&port_in) {
@@ -333,38 +339,69 @@ impl Ports {
                 ()
             })
     }
+    */
 }
 
 mod test_port {
     use super::Ports;
-    use nanomsg::{Socket, Protocol};
+    use allocator::*;
+
+    use std::mem::transmute;
+
 
     #[test]
     fn ports() {
-        let mut sched = Socket::new(Protocol::Pull).expect("cannot create sc hed");
-        sched.bind("tcp://127.1.0.1:30000".into()).expect("cannot bind");
+        assert!(1==1);
+        let a = Allocator::new();
+        let senders = (a.senders.create)();
 
-        {
-        let mut p1 = Ports::new("127.1.0.1".into(), "30001".into(), vec!["in".into()], vec![], vec!["out".into(), "o2".into()], vec![]).expect("cannot create");
-        let mut p2 = Ports::new("127.1.0.1".into(), "30002".into(), vec!["a".into(), "b".into()], vec![], vec!["out".into()], vec![]).expect("cannot create");
-        p1.connect("out".into(), "30002".into(), "a".into(), None).expect("cannot connect");
-        p1.connect("o2".into(), "30002".into(), "b".into(), None).expect("cannot connect");
+        let mut p1 = Ports::new(&a, senders, vec!["in".into(), "vec".into()], vec![], vec![], vec![]).expect("cannot create");
 
-        p1.send_vecu8("o2".into(), &vec![3, 4]).expect("cannot send");
-        p1.send_vecu8("out".into(), &vec![1, 2]).expect("cannot send");
-        let msg = p2.recv_vecu8("a".into()).expect("cannot receive");
-        assert!(msg == vec![1, 2]);
-        let msg = p2.recv_vecu8("b".into()).expect("cannot receive");
-        assert!(msg == vec![3, 4]);
-        }
+        let mut senders: Box<HeapSenders> = unsafe { transmute(senders) };
+        let mut senders = senders.senders;
+        assert!(senders.len() == 2);
+        let s_in = senders.remove("in").unwrap();
+        let s_in = a.channel.build_sender(s_in);
 
-        let mut p1 = Ports::new("127.1.0.1".into(), "30001".into(), vec![], vec![], vec![], vec!["num".into()]).expect("cannot create");
-        let mut p2 = Ports::new("127.1.0.1".into(), "30002".into(), vec![], vec!["num".into()], vec![], vec![]).expect("cannot create");
-        p1.add_output_selection("num".into(), "first".into()).expect("cannot add output");
-        p2.add_input_selection("num".into(), "a".into()).expect("cannot add input");
-        p1.connect_array("num".into(), "first".into(), "30002".into(), "num".into(), Some("a".into())).expect("cannot connect");
-        p1.send_array_vecu8("num".into(), "first".into(), &vec![1, 2]).expect("cannot send");
-        let msg = p2.recv_array_vecu8("num".into(), "a".into()).expect("cannot receive");
-        assert!(msg == vec![1, 2]);
+        let mut ip = a.ip.build_empty();
+
+        let wrong = p1.try_recv("in".into());
+        assert!(wrong.is_err());
+
+        s_in.send(ip);
+
+        let ok = p1.try_recv("in".into());
+        assert!(ok.is_ok());
+
+        let mut ip = a.ip.build_empty();
+        s_in.send(ip);
+        let nip = p1.recv("in".into());
+
+
+        // let mut sched = Socket::new(Protocol::Pull).expect("cannot create sc hed");
+        // sched.bind("tcp://127.1.0.1:30000".into()).expect("cannot bind");
+
+        // {
+        // let mut p1 = Ports::new("127.1.0.1".into(), "30001".into(), vec!["in".into()], vec![], vec!["out".into(), "o2".into()], vec![]).expect("cannot create");
+        // let mut p2 = Ports::new("127.1.0.1".into(), "30002".into(), vec!["a".into(), "b".into()], vec![], vec!["out".into()], vec![]).expect("cannot create");
+        // p1.connect("out".into(), "30002".into(), "a".into(), None).expect("cannot connect");
+        // p1.connect("o2".into(), "30002".into(), "b".into(), None).expect("cannot connect");
+
+        // p1.send_vecu8("o2".into(), &vec![3, 4]).expect("cannot send");
+        // p1.send_vecu8("out".into(), &vec![1, 2]).expect("cannot send");
+        // let msg = p2.recv_vecu8("a".into()).expect("cannot receive");
+        // assert!(msg == vec![1, 2]);
+        // let msg = p2.recv_vecu8("b".into()).expect("cannot receive");
+        // assert!(msg == vec![3, 4]);
+        // }
+
+        // let mut p1 = Ports::new("127.1.0.1".into(), "30001".into(), vec![], vec![], vec![], vec!["num".into()]).expect("cannot create");
+        // let mut p2 = Ports::new("127.1.0.1".into(), "30002".into(), vec![], vec!["num".into()], vec![], vec![]).expect("cannot create");
+        // p1.add_output_selection("num".into(), "first".into()).expect("cannot add output");
+        // p2.add_input_selection("num".into(), "a".into()).expect("cannot add input");
+        // p1.connect_array("num".into(), "first".into(), "30002".into(), "num".into(), Some("a".into())).expect("cannot connect");
+        // p1.send_array_vecu8("num".into(), "first".into(), &vec![1, 2]).expect("cannot send");
+        // let msg = p2.recv_array_vecu8("num".into(), "a".into()).expect("cannot receive");
+        // assert!(msg == vec![1, 2]);
     }
 }
