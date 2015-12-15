@@ -63,7 +63,7 @@ impl Ports {
 
     pub fn recv(&self, port_in: String) -> Result<IP> {
         if let Some(ref mut port) = self.inputs.get(&port_in) {
-            let mut ptr = port.recv();
+            let mut ptr = try!(port.recv());
             Ok(self.allocator.ip.build(ptr))
         } else {
             Err(result::Error::PortNotFound)
@@ -376,6 +376,13 @@ mod test_port {
         let mut ip = a.ip.build_empty();
         s_in.send(ip);
         let nip = p1.recv("in".into());
+        assert!(nip.is_ok());
+
+        drop(s_in);
+        let nip = p1.recv("in".into());
+        assert!(nip.is_err());
+
+
 
 
         // let mut sched = Socket::new(Protocol::Pull).expect("cannot create sc hed");
