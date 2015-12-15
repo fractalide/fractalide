@@ -1,4 +1,4 @@
-{ stdenv, cacert, git, cargo, rustRegistry }:
+{ stdenv, cacert, git, cargo, rustcMaster, rustRegistry }:
 { name, depsSha256
 , src ? null
 , srcs ? null
@@ -9,7 +9,7 @@
 
 let
   fetchDeps = import ./fetchcargo.nix {
-    inherit stdenv cacert git cargo rustRegistry;
+    inherit stdenv cacert git cargo rustcMaster rustRegistry;
   };
 
   cargoDeps = fetchDeps {
@@ -22,7 +22,7 @@ in stdenv.mkDerivation (args // {
 
   patchRegistryDeps = ./patch-registry-deps;
 
-  buildInputs = [ git cargo cargo.rustc ] ++ buildInputs;
+  buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
 
   configurePhase = args.configurePhase or "true";
 

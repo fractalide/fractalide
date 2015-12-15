@@ -1,8 +1,8 @@
-{ stdenv, rustUnstable, makeWrapper }:
+{ stdenv, rustUnstable, makeWrapper, buildFractalideComponent }:
 
 with rustUnstable;
 
-buildRustPackage rec {
+buildFractalideComponent rec {
   name = "boolean-not";
   src = ./.;
 
