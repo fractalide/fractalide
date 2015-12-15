@@ -7,3 +7,6 @@ authors = ["test <test@test.com>"]
 name = "boolean_not"
 crate-type = ["dylib"]
 
+[dependencies]
+capnp = "*"
+

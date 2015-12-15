@@ -6,6 +6,6 @@ buildFractalideComponent rec {
   name = "boolean-not";
   src = ./.;
 
-  depsSha256 = "0qs6ilpvcrvcmxg7a94rbg9rql1hxfljy6gxrvpn59dy8hb1qccc";
+  depsSha256 = "0xmwzmvkp5n0c8xrlpqmsl0nwdd9qcw0kj10mb7m1ibi6sdgw2bi";
 }
 
