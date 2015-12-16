@@ -28,6 +28,8 @@ pub enum CompMsg {
     AddInputArraySelection(String, String, String),
     AddOutputArraySelection(String, String, String),
     RunEnd(String, Component),
+    Inc(String),
+    Dec(String),
 }
     // Remove(String, Sender<SyncMsg>),
 
@@ -76,6 +78,8 @@ impl Scheduler {
                     CompMsg::DisconnectArray(name, port, selection) => {
                         sched_s.edit_component(name, EditCmp::DisconnectArray(port, selection))
                     },
+                    CompMsg::Inc(dest) => { Ok(()) },
+                    CompMsg::Dec(dest) => { Ok(()) },
                     // CompMsg::Remove(name, sync_sender) => {
                     //     sched_s.remove(name, sync_sender);
                     // }

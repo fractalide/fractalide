@@ -8,6 +8,7 @@ use std::collections::HashMap;
 use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP, HeapIPSender};
 
 pub struct Ports {
+    name: String,
     allocator: Allocator,
     inputs: HashMap<String, IPReceiver>,
     inputs_array: HashMap< String, HashMap<String, IPReceiver>>,
@@ -16,13 +17,13 @@ pub struct Ports {
 }
 
 impl Ports {
-    pub fn new(allocator: &Allocator, senders: *mut HeapSenders,
+    pub fn new(name: String, allocator: &Allocator, senders: *mut HeapSenders,
                n_input: Vec<String>, n_input_array: Vec<String>,
                n_output: Vec<String>, n_output_array: Vec<String>) -> Result<Self> {
         let senders = allocator.senders.build(senders);
         let mut inputs = HashMap::new();
         for i in n_input {
-            let (s, r) = allocator.channel.build();
+            let (s, r) = allocator.channel.build(&name);
             senders.add_ptr(&i, s);
             let r = allocator.channel.build_receiver(r);
             inputs.insert(i, r);
@@ -34,6 +35,7 @@ impl Ports {
         let mut outputs_array = HashMap::new();
         for i in n_output_array { outputs_array.insert(i, HashMap::new()); }
         Ok(Ports {
+            name: name,
             allocator: allocator.clone(),
             inputs: inputs,
             inputs_array: inputs_array,
@@ -133,7 +135,7 @@ impl Ports {
     }
 
     pub fn add_input_selection(&mut self, port_in: String, selection_in: String) -> Result<*const HeapIPSender> {
-        let (s, r) = self.allocator.channel.build();
+        let (s, r) = self.allocator.channel.build(&self.name);
         let r = self.allocator.channel.build_receiver(r);
         self.inputs_array.get_mut(&port_in)
             .ok_or(result::Error::PortNotFound)
@@ -162,13 +164,18 @@ mod test_port {
     use allocator::*;
     use std::mem::transmute;
 
+    use std::sync::mpsc::channel;
+
+    use scheduler::CompMsg;
+
     #[test]
     fn ports() {
         assert!(1==1);
-        let a = Allocator::new();
+        let (s, r) = channel();
+        let a = Allocator::new(s);
         let senders = (a.senders.create)();
 
-        let mut p1 = Ports::new(&a, senders,
+        let mut p1 = Ports::new("unique".into(), &a, senders,
                                 vec!["in".into(), "vec".into()],
                                 vec!["in_a".into()],
                                 vec!["out".into()],
@@ -211,6 +218,33 @@ mod test_port {
 
         let nip = p1.recv_array("in_a".into(), "1".into());
         assert!(nip.is_ok());
+
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.recv().expect("cannot received the sched");
+        assert!(
+            if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
+            );
+        let i = r.try_recv();
+        assert!(i.is_err());
 
     }
 }
