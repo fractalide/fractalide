@@ -9,6 +9,9 @@ use std::collections::HashMap;
 
 use result;
 use result::Result;
+
+// TODO : send +1 -1 on send/receive 
+
 /*
  *  Memory object
  */
@@ -56,9 +59,12 @@ pub struct HeapIPSender {
     pub sender: Sender<*mut HeapIP>,
 }
 
-pub extern "C" fn send_ip(sender: *const HeapIPSender, mut msg: *mut HeapIP) {
+pub extern "C" fn send_ip(sender: *const HeapIPSender, mut msg: *mut HeapIP) -> i8 {
     unsafe {
-        (*sender).sender.send(msg);
+        match (*sender).sender.send(msg) {
+            Ok(()) => 0,
+            Err(_) => -1,
+        }
     }
 }
 
@@ -271,7 +277,7 @@ pub struct ChannelBuilder {
     create: extern fn() -> *mut HeapChannel,
     get_r: extern fn(*mut HeapChannel) -> *const HeapIPReceiver,
     get_s: extern fn(*mut HeapChannel) -> *const HeapIPSender,
-    send: extern fn(*const HeapIPSender, *mut HeapIP),
+    send: extern fn(*const HeapIPSender, *mut HeapIP) -> i8,
     recv: extern fn(*const HeapIPReceiver) -> *mut HeapIP,
     try_recv: extern fn(*const HeapIPReceiver) -> *mut HeapIP,
     drop_send: extern fn(*const HeapIPSender),
@@ -376,13 +382,20 @@ impl Drop for IP {
 
 pub struct IPSender {
     sender: *const HeapIPSender,
-    send: extern fn(*const HeapIPSender, *mut HeapIP),
+    send: extern fn(*const HeapIPSender, *mut HeapIP) -> i8,
     drop: extern fn(*const HeapIPSender),
 }
 impl IPSender {
-    pub fn send(&self, mut ip: IP){
-        (self.send)(self.sender, ip.unwrap());
-        ip.must_drop = false;
+    pub fn send(&self, mut ip: IP) -> Result<()>{
+        match (self.send)(self.sender, ip.unwrap()) {
+            0 => {
+                ip.must_drop = false;
+                Ok(())
+            },
+            _ => {
+                Err(result::Error::CannotSend)
+            }
+        }
     }
 }
 
@@ -401,7 +414,7 @@ pub struct IPReceiver {
 impl IPReceiver {
     pub fn recv(&self) -> Result<*mut HeapIP> {
         let ip = (self.recv)(self.receiver);
-        if ip as u8 == 0 {
+        if ip as usize == 0 {
             return Err(result::Error::CannotReceive);
         }
         Ok(ip)
@@ -409,7 +422,7 @@ impl IPReceiver {
 
     pub fn try_recv(&self) -> Result<*mut HeapIP> {
         let ip = (self.try_recv)(self.receiver);
-        if ip as u8 == 0 {
+        if ip as usize == 0 {
             return Err(result::Error::CannotReceive);
         }
         Ok(ip)
