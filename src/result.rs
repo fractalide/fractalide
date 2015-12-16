@@ -24,6 +24,8 @@ pub enum Error {
     CannotSendToScheduler,
     CannotReceive,
     CannotSend,
+    CannotWrite,
+    CannotRead,
     BadMessageInfo,
 }
 
@@ -42,6 +44,8 @@ impl fmt::Display for Error {
             Error::CannotSendToScheduler => write!(f, "Scheduler error : Cannot send to scheduler state"),
             Error::CannotReceive => write!(f, "Ports error: cannot receive"),
             Error::CannotSend => write!(f, "Ports error: cannot send"),
+            Error::CannotWrite => write!(f, "IP error: cannot write"),
+            Error::CannotRead => write!(f, "IP error: cannot Read"),
             Error::BadMessageInfo => write!(f, "Ports error : Bad message information"),
         }
     }
@@ -62,6 +66,8 @@ impl error::Error for Error {
             Error::CannotSendToScheduler => "Scheduler error : Cannot send to scheduler state",
             Error::CannotReceive => "Ports error: cannot receive",
             Error::CannotSend => "Ports error: cannot send",
+            Error::CannotWrite => "IP error: cannot write",
+            Error::CannotRead => "IP error: cannot read",
             Error::BadMessageInfo => "Ports error : cannot receive the message, wrong bit information",
         }
     }

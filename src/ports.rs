@@ -183,9 +183,9 @@ mod test_port {
                                 ).expect("cannot create");
 
         let mut senders: Box<HeapSenders> = unsafe { transmute(senders) };
-        let mut senders = senders.senders;
-        assert!(senders.len() == 2);
-        let s_in = senders.remove("in").unwrap();
+        assert!(senders.senders.len() == 2);
+        // let s_in = senders.senders.remove("in").unwrap();
+        let s_in = senders.get_sender("in").unwrap();
 
         p1.connect("out".into(), s_in).expect("cannot connect");
 

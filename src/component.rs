@@ -147,8 +147,13 @@ macro_rules! component {
         use rustfbp::result::Result;
 
         use rustfbp::ports::Ports;
+
+        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender};
         #[allow(unused_imports)]
         use std::collections::HashMap;
+
+        use capnp::serialize;
+        use capnp::message;
 
         $($more)*
 
@@ -180,13 +185,12 @@ macro_rules! component {
 
         #[allow(dead_code)]
         pub struct $name {
-            sched: String,
             name: String,
             pub ports: Ports,
         }
 
         #[allow(dead_code)]
-        pub fn new(sched: &String, name: &String) -> Result<Box<$name>> {
+        pub fn new(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> Result<Box<$name>> {
             // Creation of the inputs
             /*
             $( 
@@ -195,16 +199,16 @@ macro_rules! component {
                 let options_r = OptionReceiver::new(options.1);
             )*
             */
-            let mut ports = try!(Ports::new(sched.clone(), name.clone(),
+            let mut ports = try!(Ports::new(name.clone(), allocator, senders,
                                    vec!["acc".into(), $( stringify!($input_field_name).to_string() ),*],
                                    vec![$( stringify!($input_array_name).to_string() ),*],
                                    vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
                                    vec![$( stringify!($output_array_name).to_string() ),*],));
-            try!(ports.connect("acc".into(), name.clone(), "acc".into(), None));
+            // TODO : connect acc port
+            //try!(ports.connect("acc".into(), name.clone(), "acc".into(), None));
 
             // Put it together
             let comp = $name{
-                sched: sched.clone(),
                 name: name.clone(),
                 ports: ports,
             };
@@ -214,10 +218,11 @@ macro_rules! component {
         }
 
         use std::mem::transmute;
+        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender};
 
         #[no_mangle]
-        pub extern fn create_component(sched: &String, name: &String) -> *mut $name::$name {
-            let comp = $name::new(sched, name).expect("unable to create the comp");
+        pub extern fn create_component(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> *mut $name::$name {
+            let comp = $name::new(name, allocator, senders).expect("unable to create the comp");
             unsafe { transmute(comp) }
         }
 
@@ -228,41 +233,21 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn connect(ptr: *mut $name::$name, port_out: &String, comp_in: &String, port_in: &String) -> u32 {
+        pub extern fn connect(ptr: *mut $name::$name, port_out: &String, send: *const HeapIPSender) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect(port_out.clone(), comp_in.clone(), port_in.clone(), None) {
+            match comp.ports.connect(port_out.clone(), send) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
         }
-
         #[no_mangle]
-        pub extern fn connect_to_array(ptr: *mut $name::$name, port_out: &String, comp_in: &String, port_in: &String, selection_in: &String) -> u32 {
+        pub extern fn connect_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, send: *const HeapIPSender) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect(port_out.clone(), comp_in.clone(), port_in.clone(), Some(selection_in.clone())) {
+            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), send) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
         }
-
-        #[no_mangle]
-        pub extern fn connect_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), comp_in.clone(), port_in.clone(), None) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-
-        #[no_mangle]
-        pub extern fn connect_array_to_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, comp_in: &String, port_in: &String, selection_in: &String) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), comp_in.clone(), port_in.clone(), Some(selection_in.clone())) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-
         #[no_mangle]
         pub extern fn add_output_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
@@ -273,12 +258,9 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn add_input_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
+        pub extern fn add_input_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> *const HeapIPSender {
             let mut comp = unsafe { &mut *ptr };
-            match comp.ports.add_input_selection(port.clone(), selection.clone()) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
+            comp.ports.add_input_selection(port.clone(), selection.clone()).expect("cannot add_input_selection")
         }
 
         #[no_mangle]
@@ -302,7 +284,7 @@ macro_rules! component {
         #[no_mangle]
         pub extern fn is_input_ports(ptr: *mut $name::$name) -> bool {
             let mut comp = unsafe { &mut *ptr };
-            comp.is_input_ports() 
+            comp.is_input_ports()
         }
 
 

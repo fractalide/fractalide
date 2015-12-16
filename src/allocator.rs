@@ -6,6 +6,8 @@ use std::mem::transmute;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Sender, Receiver};
 use std::collections::HashMap;
+use std::io::{Write, Read};
+use std::io;
 
 use result;
 use result::Result;
@@ -22,10 +24,11 @@ use scheduler::CompMsg;
 #[repr(C)]
 pub struct HeapIP {
     pub ip: Vec<u8>,
+    pub last_write: usize,
 }
 
 extern "C" fn create_ip() -> *mut HeapIP {
-    let ip = Box::new(HeapIP { ip: vec![], });
+    let ip = Box::new(HeapIP { ip: vec![], last_write: 0, });
     let ip: *mut HeapIP = unsafe { transmute(ip) };
     ip
 }
@@ -34,9 +37,30 @@ extern "C" fn create_ptr() -> *mut HeapIP {
     0 as *mut HeapIP
 }
 
-extern "C" fn write_msg(ip: *mut HeapIP, msg: &Builder<HeapAllocator>) {
+extern "C" fn write_msg(ip: *mut HeapIP, buf: &[u8]) -> i8 {
     unsafe {
-        capnp::serialize::write_message(&mut (*ip).ip, msg);
+        match (*ip).ip.write(buf) {
+            Ok(num) => {
+                (*ip).last_write = num;
+                0
+            },
+            Err(_) => { -1 }
+        }
+    }
+}
+
+extern "C" fn get_last_write(ip: *mut HeapIP) -> usize {
+    unsafe {
+        (*ip).last_write
+    }
+}
+
+extern "C" fn flush(ip: *mut HeapIP) -> i8 {
+    unsafe {
+        match (*ip).ip.flush() {
+            Ok(_) => 0,
+            Err(_) => -1,
+        }
     }
 }
 
@@ -59,6 +83,16 @@ pub struct HeapIPSender {
     pub sender: Sender<*mut HeapIP>,
     pub sched: Sender<CompMsg>,
     pub dest: String,
+}
+
+impl Clone for HeapIPSender {
+    fn clone(&self) -> Self {
+        HeapIPSender {
+            sender: self.sender.clone(),
+            sched: self.sched.clone(),
+            dest: self.dest.clone(),
+        }
+    }
 }
 
 pub extern "C" fn send_ip(sender: *const HeapIPSender, mut msg: *mut HeapIP) -> i8 {
@@ -86,6 +120,27 @@ HeapSenders
 #[repr(C)]
 pub struct HeapSenders{
     pub senders: HashMap<String, *const HeapIPSender>,
+}
+
+impl HeapSenders {
+    pub fn get_sender(&self, name: &str) -> Result<*const HeapIPSender> {
+        self.senders.get(name).ok_or(result::Error::PortNotFound)
+            .and_then(|n| {
+                let sender: HeapIPSender = unsafe {(**n).clone()};
+                let sender: Box<HeapIPSender> = Box::new(sender);
+                let sender: *const HeapIPSender = unsafe { transmute(sender) };
+                Ok(sender)
+            })
+    }
+}
+
+impl Drop for HeapSenders {
+    fn drop(&mut self) {
+        for &s in self.senders.values() {
+            let _s: Box<HeapIPSender> = unsafe { transmute(s) };
+            println!("Drop unused HeapIPSender");
+        }
+    }
 }
 
 extern "C" fn create_senders() -> *mut HeapSenders {
@@ -244,7 +299,9 @@ impl Clone for SendersBuilder {
 pub struct IPBuilder {
     create: extern fn() -> *mut HeapIP,
     create_ptr: extern fn() -> *mut HeapIP,
-    write_msg: extern fn(*mut HeapIP, &Builder<HeapAllocator>),
+    write_msg: extern fn(*mut HeapIP, &[u8]) -> i8,
+    get_last_write: extern fn(*mut HeapIP) -> usize,
+    flush: extern fn(*mut HeapIP) -> i8,
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
     drop: extern fn(*mut HeapIP),
 }
@@ -255,6 +312,8 @@ impl IPBuilder {
             create: create_ip,
             create_ptr: create_ptr,
             write_msg: write_msg,
+            get_last_write: get_last_write,
+            flush: flush,
             borrow: borrow_ip,
             drop: drop_ip,
         }
@@ -270,6 +329,8 @@ impl IPBuilder {
             ptr: ptr,
             must_drop: true,
             write_msg: self.write_msg,
+            get_last_write: self.get_last_write,
+            flush: self.flush,
             borrow: self.borrow,
             drop: self.drop
         }
@@ -280,6 +341,8 @@ impl IPBuilder {
             ptr: ptr,
             must_drop: true,
             write_msg: self.write_msg,
+            get_last_write: self.get_last_write,
+            flush: self.flush,
             borrow: self.borrow,
             drop: self.drop
         }
@@ -292,6 +355,8 @@ impl Clone for IPBuilder {
             create: self.create,
             create_ptr: self.create_ptr,
             write_msg: self.write_msg,
+            get_last_write: self.get_last_write,
+            flush: self.flush,
             borrow: self.borrow,
             drop: self.drop,
         }
@@ -381,13 +446,15 @@ impl Clone for ChannelBuilder {
 pub struct IP {
     pub ptr: *mut HeapIP,
     pub must_drop: bool,
-    write_msg: extern fn(*mut HeapIP, &Builder<HeapAllocator>),
+    write_msg: extern fn(*mut HeapIP, &[u8]) -> i8,
+    get_last_write: extern fn(*mut HeapIP) -> usize,
+    flush: extern fn(*mut HeapIP) -> i8,
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
     drop: extern fn(*mut HeapIP),
 }
 
 impl IP {
-    pub fn write(&mut self, msg: &Builder<HeapAllocator>) {
+    pub fn write(&mut self, msg: &[u8]) {
         (self.write_msg)(self.ptr, msg);
     }
 
@@ -405,6 +472,35 @@ impl Drop for IP {
         if self.must_drop {
             (self.drop)(self.ptr);
         }
+    }
+}
+
+impl Write for IP {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        let ok = (self.write_msg)(self.ptr, buf);
+        match ok {
+            0 => {
+                Ok((self.get_last_write)(self.ptr))
+            }
+            _ => {
+                Err(io::Error::new(io::ErrorKind::Other, "Cannot write"))
+            }
+        }
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        match (self.flush)(self.ptr) {
+            0 => Ok(()),
+            _ => Err(io::Error::new(io::ErrorKind::Other, "Cannot flush"))
+        }
+    }
+}
+
+impl Read for IP {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        // TODO : check if we can avoid the clone
+        let vec = unsafe { (*(self.borrow)(self.ptr)).clone() };
+        (&vec[..]).read(buf)
     }
 }
 
