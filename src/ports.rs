@@ -5,7 +5,7 @@ use result::Result;
 
 use std::collections::HashMap;
 
-use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP, HeapIPSender};
+use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP, HeapIPSender, HeapIPReceiver};
 
 pub struct Ports {
     name: String,
@@ -23,7 +23,11 @@ impl Ports {
         let senders = allocator.senders.build(senders);
         let mut inputs = HashMap::new();
         for i in n_input {
-            let (s, r) = allocator.channel.build(&name);
+            let (s, r) = if i == "acc" || i == "option" {
+                allocator.channel.build(&"DummyNameComponentThatMustNeverExist123456".into())
+            } else {
+                allocator.channel.build(&name)
+            };
             senders.add_ptr(&i, s);
             let r = allocator.channel.build_receiver(r);
             inputs.insert(i, r);
@@ -61,7 +65,8 @@ impl Ports {
     pub fn recv(&self, port_in: String) -> Result<IP> {
         if let Some(ref mut port) = self.inputs.get(&port_in) {
             let ptr = try!(port.recv());
-            Ok(self.allocator.ip.build(ptr))
+            let ip = self.allocator.ip.build(ptr);
+            Ok(ip)
         } else {
             Err(result::Error::PortNotFound)
         }
@@ -69,8 +74,9 @@ impl Ports {
 
     pub fn try_recv(&self, port_in: String) -> Result<IP> {
         if let Some(ref mut port) = self.inputs.get(&port_in) {
-            let ip = try!(port.try_recv());
-            Ok(self.allocator.ip.build(ip))
+            let ptr = try!(port.try_recv());
+            let ip = self.allocator.ip.build(ptr);
+            Ok(ip)
         } else {
             Err(result::Error::PortNotFound)
         }
@@ -81,8 +87,9 @@ impl Ports {
             .and_then(|port|{
                 port.get(&selection_in).ok_or(result::Error::SelectionNotFound)
                     .and_then(|recv| {
-                        let ip = try!(recv.recv());
-                        Ok(self.allocator.ip.build(ip))
+                        let ptr = try!(recv.recv());
+                        let ip = self.allocator.ip.build(ptr);
+                        Ok(ip)
                     })
             })
     }
@@ -147,6 +154,18 @@ impl Ports {
             })
     }
 
+    pub fn add_input_receiver(&mut self, port_in: String, selection_in: String, r: *const HeapIPReceiver) -> Result<()> {
+        let r = self.allocator.channel.build_receiver(r);
+        self.inputs_array.get_mut(&port_in)
+            .ok_or(result::Error::PortNotFound)
+            .map(|port| {
+                if !port.contains_key(&selection_in) {
+                    port.insert(selection_in, r);
+                }
+                ()
+            })
+    }
+
     pub fn add_output_selection(&mut self, port_out: String, selection_out: String) -> Result<()> {
         self.outputs_array.get_mut(&port_out)
             .ok_or(result::Error::PortNotFound)
@@ -187,7 +206,7 @@ mod test_port {
         // let s_in = senders.senders.remove("in").unwrap();
         let s_in = senders.get_sender("in").unwrap();
 
-        p1.connect("out".into(), s_in).expect("cannot connect");
+        p1.connect("out".into(), s_in.to_raw()).expect("cannot connect");
 
         let mut ip = a.ip.build_empty();
 

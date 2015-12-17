@@ -148,12 +148,14 @@ macro_rules! component {
 
         use rustfbp::ports::Ports;
 
-        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender};
+        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver};
         #[allow(unused_imports)]
         use std::collections::HashMap;
 
         use capnp::serialize;
         use capnp::message;
+
+        use std::io::{Read, Write};
 
         $($more)*
 
@@ -185,6 +187,7 @@ macro_rules! component {
 
         #[allow(dead_code)]
         pub struct $name {
+            allocator: Allocator,
             name: String,
             pub ports: Ports,
         }
@@ -209,6 +212,7 @@ macro_rules! component {
 
             // Put it together
             let comp = $name{
+                allocator: allocator.clone(),
                 name: name.clone(),
                 ports: ports,
             };
@@ -218,7 +222,7 @@ macro_rules! component {
         }
 
         use std::mem::transmute;
-        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender};
+        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver};
 
         #[no_mangle]
         pub extern fn create_component(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> *mut $name::$name {
@@ -261,6 +265,12 @@ macro_rules! component {
         pub extern fn add_input_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> *const HeapIPSender {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.add_input_selection(port.clone(), selection.clone()).expect("cannot add_input_selection")
+        }
+
+        #[no_mangle]
+        pub extern fn add_input_receiver(ptr: *mut $name::$name, port: &String, selection: &String, hir: *const HeapIPReceiver) {
+            let mut comp = unsafe { &mut *ptr };
+            comp.ports.add_input_receiver(port.clone(), selection.clone(), hir).expect("cannot add_input_receiver")
         }
 
         #[no_mangle]

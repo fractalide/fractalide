@@ -30,7 +30,7 @@ pub struct GraphBuilder<'a> {
     virtual_outputs: HashMap<String, (String, String)>,
 }
 
-impl<'a> GraphBuilder<'a> { 
+impl<'a> GraphBuilder<'a> {
     pub fn new() -> Self {
         GraphBuilder {
             nodes: vec![],
@@ -44,7 +44,7 @@ impl<'a> GraphBuilder<'a> {
     }
 
     pub fn add_component(&mut self, name: String, c: &'a ComponentBuilder) -> Self {
-        self.nodes.push(Node { 
+        self.nodes.push(Node {
             name: name,
             sort: COrG::C(c),
         });

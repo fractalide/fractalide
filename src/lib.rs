@@ -2,8 +2,8 @@
 #![feature(reflect_marker)]
 #![feature(concat_idents)]
 
-extern crate nanomsg;
 extern crate libloading;
+extern crate capnp;
 
 pub mod component;
 

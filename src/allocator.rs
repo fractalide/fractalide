@@ -1,7 +1,6 @@
-extern crate capnp;
-
-use self::capnp::message::{HeapAllocator, Builder};
-
+use capnp;
+use capnp::message::{HeapAllocator, Builder, Reader, ReaderOptions};
+use capnp::serialize::{OwnedSegments};
 use std::mem::transmute;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Sender, Receiver};
@@ -64,9 +63,15 @@ extern "C" fn flush(ip: *mut HeapIP) -> i8 {
     }
 }
 
-extern "C" fn borrow_ip<'a>(ip: *mut HeapIP) -> *const Vec<u8> {
+extern "C" fn borrow_ip(ip: *mut HeapIP) -> *const Vec<u8> {
     unsafe {
         & (*ip).ip as *const Vec<u8>
+    }
+}
+
+extern "C" fn clear_ip(ip: *mut HeapIP) {
+    unsafe {
+        (*ip).ip.clear();
     }
 }
 
@@ -83,6 +88,17 @@ pub struct HeapIPSender {
     pub sender: Sender<*mut HeapIP>,
     pub sched: Sender<CompMsg>,
     pub dest: String,
+}
+
+impl HeapIPSender {
+    pub fn from_raw(ptr: *const HeapIPSender) -> Box<HeapIPSender> {
+        unsafe { transmute(ptr) }
+    }
+
+    pub fn to_raw(self: Box<Self>) -> *const HeapIPSender {
+        let s: *const HeapIPSender = unsafe { transmute(self) };
+        s
+    }
 }
 
 impl Clone for HeapIPSender {
@@ -123,12 +139,15 @@ pub struct HeapSenders{
 }
 
 impl HeapSenders {
-    pub fn get_sender(&self, name: &str) -> Result<*const HeapIPSender> {
+    pub fn from_raw(hs: *mut HeapSenders) -> Box<HeapSenders> {
+        unsafe { transmute(hs) }
+    }
+
+    pub fn get_sender(&self, name: &str) -> Result<Box<HeapIPSender>> {
         self.senders.get(name).ok_or(result::Error::PortNotFound)
             .and_then(|n| {
                 let sender: HeapIPSender = unsafe {(**n).clone()};
                 let sender: Box<HeapIPSender> = Box::new(sender);
-                let sender: *const HeapIPSender = unsafe { transmute(sender) };
                 Ok(sender)
             })
     }
@@ -167,6 +186,17 @@ pub struct HeapIPReceiver {
     pub receiver: Receiver<*mut HeapIP>,
     pub sched: Sender<CompMsg>,
     pub dest: String,
+}
+
+impl HeapIPReceiver {
+    pub fn to_raw(self: Box<Self>) -> *const HeapIPReceiver {
+        let s: *const HeapIPReceiver = unsafe { transmute(self) };
+        s
+    }
+
+    pub fn from_raw(hs: *const HeapIPReceiver) -> Box<HeapIPReceiver> {
+        unsafe { transmute(hs) }
+    }
 }
 
 extern "C" fn recv_ip(receiver: *const HeapIPReceiver) -> *mut HeapIP {
@@ -303,6 +333,7 @@ pub struct IPBuilder {
     get_last_write: extern fn(*mut HeapIP) -> usize,
     flush: extern fn(*mut HeapIP) -> i8,
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
+    clear: extern fn(*mut HeapIP),
     drop: extern fn(*mut HeapIP),
 }
 
@@ -315,6 +346,7 @@ impl IPBuilder {
             get_last_write: get_last_write,
             flush: flush,
             borrow: borrow_ip,
+            clear: clear_ip,
             drop: drop_ip,
         }
     }
@@ -332,6 +364,7 @@ impl IPBuilder {
             get_last_write: self.get_last_write,
             flush: self.flush,
             borrow: self.borrow,
+            clear: self.clear,
             drop: self.drop
         }
     }
@@ -344,6 +377,7 @@ impl IPBuilder {
             get_last_write: self.get_last_write,
             flush: self.flush,
             borrow: self.borrow,
+            clear: self.clear,
             drop: self.drop
         }
     }
@@ -358,6 +392,7 @@ impl Clone for IPBuilder {
             get_last_write: self.get_last_write,
             flush: self.flush,
             borrow: self.borrow,
+            clear: self.clear,
             drop: self.drop,
         }
     }
@@ -450,15 +485,24 @@ pub struct IP {
     get_last_write: extern fn(*mut HeapIP) -> usize,
     flush: extern fn(*mut HeapIP) -> i8,
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
+    clear: extern fn(*mut HeapIP),
     drop: extern fn(*mut HeapIP),
 }
 
 impl IP {
-    pub fn write(&mut self, msg: &[u8]) {
-        (self.write_msg)(self.ptr, msg);
+    pub fn get_reader(&mut self) -> Result<Reader<OwnedSegments>> {
+        let mut msg = self.clone();
+        Ok(try!(capnp::serialize::read_message(&mut &msg[..], ReaderOptions::new())))
     }
 
-    pub fn clone(self) -> Vec<u8> {
+    pub fn write_builder<A>(&mut self, builder: &capnp::message::Builder<A>) -> Result<()>
+        where A: capnp::message::Allocator {
+            (self.clear)(self.ptr);
+            let mut s = self;
+            Ok(try!(capnp::serialize::write_message(&mut s, builder)))
+    }
+
+    pub fn clone(&mut self) -> Vec<u8> {
         unsafe { (*(self.borrow)(self.ptr)).clone() }
     }
 
@@ -477,8 +521,7 @@ impl Drop for IP {
 
 impl Write for IP {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        let ok = (self.write_msg)(self.ptr, buf);
-        match ok {
+        match (self.write_msg)(self.ptr, buf) {
             0 => {
                 Ok((self.get_last_write)(self.ptr))
             }
@@ -493,14 +536,6 @@ impl Write for IP {
             0 => Ok(()),
             _ => Err(io::Error::new(io::ErrorKind::Other, "Cannot flush"))
         }
-    }
-}
-
-impl Read for IP {
-    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        // TODO : check if we can avoid the clone
-        let vec = unsafe { (*(self.borrow)(self.ptr)).clone() };
-        (&vec[..]).read(buf)
     }
 }
 
