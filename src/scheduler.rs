@@ -212,19 +212,17 @@ impl Scheduler {
         Ok(())
     }
 
-    // pub fn disconnect(&self, comp_out: String, port_out: String) -> Result<()>{
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-    //     let comp_out = try!(self.components.get(&comp_out).ok_or(result::Error::ComponentNotFound).map(|ad| { ad.clone() }));
-    //     self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
-    //     Ok(())
-    // }
+    pub fn disconnect(&self, comp_out: String, port_out: String) -> Result<()>{
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
+        Ok(())
+    }
 
-    // pub fn disconnect_array(&self, comp_out: String, port_out: String, selection:String) -> Result<()>{
-    //     let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-    //     let comp_out = try!(self.components.get(&comp_out).ok_or(result::Error::ComponentNotFound).map(|ad| { ad.clone() }));
-    //     self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, selection)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
-    //     Ok(())
-    // }
+    pub fn disconnect_array(&self, comp_out: String, port_out: String, selection:String) -> Result<()>{
+        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
+        self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, selection)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
+        Ok(())
+    }
 
     pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()>{
         let (comp, port) = self.get_subnet_name(comp, port, VPType::In);

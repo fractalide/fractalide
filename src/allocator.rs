@@ -1,6 +1,7 @@
 use capnp;
 use capnp::message::{Builder, Reader, ReaderOptions};
 use capnp::serialize::{OwnedSegments};
+use std::mem;
 use std::mem::transmute;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Sender, Receiver};
@@ -51,6 +52,16 @@ extern "C" fn write_msg(ip: *mut HeapIP, buf: &[u8]) -> i8 {
 extern "C" fn get_last_write(ip: *mut HeapIP) -> usize {
     unsafe {
         (*ip).last_write
+    }
+}
+
+extern "C" fn clone_ip(ip: *mut HeapIP) -> *mut HeapIP {
+    unsafe {
+        let ip = Box::new(HeapIP {
+            ip: (*ip).ip.clone(),
+            last_write: 0, });
+        let ip: *mut HeapIP = unsafe { transmute(ip) };
+        ip
     }
 }
 
@@ -335,6 +346,7 @@ pub struct IPBuilder {
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
     clear: extern fn(*mut HeapIP),
     drop: extern fn(*mut HeapIP),
+    clone: extern fn(*mut HeapIP) -> *mut HeapIP,
 }
 
 impl IPBuilder {
@@ -348,6 +360,7 @@ impl IPBuilder {
             borrow: borrow_ip,
             clear: clear_ip,
             drop: drop_ip,
+            clone: clone_ip,
         }
     }
 
@@ -365,7 +378,8 @@ impl IPBuilder {
             flush: self.flush,
             borrow: self.borrow,
             clear: self.clear,
-            drop: self.drop
+            drop: self.drop,
+            clone: self.clone,
         }
     }
 
@@ -378,7 +392,8 @@ impl IPBuilder {
             flush: self.flush,
             borrow: self.borrow,
             clear: self.clear,
-            drop: self.drop
+            drop: self.drop,
+            clone: self.clone,
         }
     }
 }
@@ -394,6 +409,7 @@ impl Clone for IPBuilder {
             borrow: self.borrow,
             clear: self.clear,
             drop: self.drop,
+            clone: self.clone,
         }
     }
 }
@@ -438,7 +454,7 @@ impl ChannelBuilder {
 
     pub fn build_sender(&self, sender: *const HeapIPSender) -> IPSender {
         IPSender {
-            sender: sender,
+            sender: Some(sender),
             send: self.send,
             drop: self.drop_send,
         }
@@ -487,11 +503,12 @@ pub struct IP {
     borrow: extern fn(*mut HeapIP) -> *const Vec<u8>,
     clear: extern fn(*mut HeapIP),
     drop: extern fn(*mut HeapIP),
+    clone: extern fn(*mut HeapIP) -> *mut HeapIP,
 }
 
 impl IP {
     pub fn get_reader(&mut self) -> Result<Reader<OwnedSegments>> {
-        let msg = self.clone();
+        let msg = self.clone_value();
         Ok(try!(capnp::serialize::read_message(&mut &msg[..], ReaderOptions::new())))
     }
 
@@ -502,7 +519,7 @@ impl IP {
             Ok(try!(capnp::serialize::write_message(&mut s, builder)))
     }
 
-    pub fn clone(&mut self) -> Vec<u8> {
+    pub fn clone_value(&mut self) -> Vec<u8> {
         unsafe { (*(self.borrow)(self.ptr)).clone() }
     }
 
@@ -515,6 +532,22 @@ impl Drop for IP {
     fn drop(&mut self) {
         if self.must_drop {
             (self.drop)(self.ptr);
+        }
+    }
+}
+
+impl Clone for IP {
+    fn clone(&self) -> Self {
+        IP {
+            ptr: (self.clone)(self.ptr),
+            must_drop: true,
+            write_msg: self.write_msg,
+            get_last_write: self.get_last_write,
+            flush: self.flush,
+            borrow: self.borrow,
+            clear: self.clear,
+            drop: self.drop,
+            clone: self.clone,
         }
     }
 }
@@ -540,27 +573,38 @@ impl Write for IP {
 }
 
 pub struct IPSender {
-    sender: *const HeapIPSender,
+    sender: Option<*const HeapIPSender>,
     send: extern fn(*const HeapIPSender, *mut HeapIP) -> i8,
     drop: extern fn(*const HeapIPSender),
 }
 impl IPSender {
     pub fn send(&self, mut ip: IP) -> Result<()>{
-        match (self.send)(self.sender, ip.unwrap()) {
-            0 => {
-                ip.must_drop = false;
-                Ok(())
-            },
-            _ => {
-                Err(result::Error::CannotSend)
+        if let Some(sender) = self.sender {
+            match (self.send)(sender, ip.unwrap()) {
+                0 => {
+                    ip.must_drop = false;
+                    Ok(())
+                },
+                _ => {
+                    Err(result::Error::CannotSend)
+                }
             }
+        } else {
+            Err(result::Error::CannotSend)
         }
+    }
+
+    // TODO : change result
+    pub fn to_raw(mut self) -> Result<*const HeapIPSender> {
+        mem::replace(&mut self.sender, None).ok_or(result::Error::CannotSend)
     }
 }
 
 impl Drop for IPSender {
     fn drop(&mut self) {
-        (self.drop)(self.sender);
+        if let Some(ptr) = self.sender {
+            (self.drop)(ptr);
+        }
     }
 }
 

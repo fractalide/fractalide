@@ -7,6 +7,8 @@ use std::collections::HashMap;
 
 use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP, HeapIPSender, HeapIPReceiver};
 
+use std::mem;
+
 pub struct Ports {
     name: String,
     allocator: Allocator,
@@ -138,6 +140,38 @@ impl Ports {
                 }
                 port.insert(selection_out, Some(sender));
                 Ok(())
+            })
+    }
+
+    pub fn disconnect(&mut self, port_out: String) -> Result<Option<*const HeapIPSender>> {
+        if !self.outputs.contains_key(&port_out) {
+            return Err(result::Error::PortNotFound);
+        }
+        let old = self.outputs.insert(port_out, None);
+        match old {
+            Some(Some(his)) => {
+                Ok(Some(try!(his.to_raw())))
+            }
+            _ => { Ok(None) },
+        }
+    }
+
+    pub fn disconnect_array(&mut self, port_out: String, selection_out: String) -> Result<Option<*const HeapIPSender>> {
+        if !self.outputs_array.contains_key(&port_out) {
+            return Err(result::Error::PortNotFound);
+        }
+        self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound)
+            .and_then(|port| {
+                if !port.contains_key(&selection_out) {
+                    return Err(result::Error::SelectionNotFound);
+                }
+                let old = port.insert(port_out, None);
+                match old {
+                    Some(Some(his)) => {
+                        Ok(Some(try!(his.to_raw())))
+                    }
+                    _ => { Ok(None) },
+                }
             })
     }
 

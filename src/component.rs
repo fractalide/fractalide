@@ -10,6 +10,7 @@
  * License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  * You should have received a copy of the GNU Affero General Public License
@@ -17,111 +18,8 @@
  *
  */
 
-// TODO : manage the number of connection on the array port (on each port on in the scheduler?)
-// TODO : option port
-
 extern crate capnp;
 
-/* 
- *
- * There are two main parts for a component : the component itself and the part that manage the
- * connections and the running part. 
- *
- * Each
- * ComponentRun and ComponentConnect). These traits give all the information for the connection
- * between several components.
- *
- * The CompRunner, that manages the connection and the run of the component only interact with the
- * Trait of the component.
- *
- */
- 
-
-
-/// Represent the default options simple input port
-///
-/// It is different from a classical Receiver because it :
-///
-/// * Remember the last message received
-/// 
-/// * If there is more than one message inside the channel, it keeps only the last one.
-///
-/// * If there is no message in the channel, it sends the last one. If it is the first message, it
-/// block until there is a message
-///
-/// # Example
-///
-/// ```ignore
-/// let (s, r) = sync_channel(16);
-/// let or = OptionReceiver::new(r);
-/// s.send(23).unwrap();
-/// assert_eq!(or.recv().unwrap(), 23);
-/// assert_eq!(or.recv().unwrap(), 23);
-/// s.send(42).unwrap();
-/// s.send(666).unwrap();
-/// assert_eq!(or.recv().unwrap(), 666);
-/// ```
-// pub struct OptionReceiver<T> {
-//     opt: Option<T>,
-//     receiver: Receiver<T>,
-// }
-// impl<T: Clone> OptionReceiver<T> {
-//     /// Return a new OptionReceiver for the Receiver "r"
-//     pub fn new(r: Receiver<T>) -> Self {
-//         OptionReceiver{ 
-//             opt: None,
-//             receiver: r,
-//         }
-//     }
-// 
-//     fn recv_last(&mut self, acc: Option<T>) -> T {
-//         let msg = self.receiver.try_recv();
-//         match msg {
-//             Ok(msg) => {
-//                 self.recv_last(Some(msg))
-//             },
-//             _ => {
-//                 if acc.is_some() { acc.unwrap() }
-//                 else { self.receiver.recv().unwrap() }
-//             }
-//         }
-//     }
-// 
-//     /// Return a message.
-//     pub fn recv(&mut self) -> T {
-//         let actual = mem::replace(&mut self.opt, None);
-//         let opt = self.recv_last(actual); 
-//         self.opt = Some(opt.clone());
-//         opt
-//     }
-// 
-//     fn try_recv_last(&mut self, acc: Option<T>) -> Result<T, TryRecvError> {
-//         let msg = self.receiver.try_recv();
-//         match msg {
-//             Ok(msg) => {
-//                 self.try_recv_last(Some(msg))
-//             }
-//             _ => {
-//                 if acc.is_some() { Ok(acc.unwrap()) }
-//                 else { msg }
-//             }
-//         }
-//     }
-// 
-//     /// Return a message or an error 
-//     pub fn try_recv(&mut self) -> Result<T, TryRecvError> {
-//         let actual = mem::replace(&mut self.opt, None);
-//         let opt = self.try_recv_last(actual);
-//         if opt.is_ok() {
-//             self.opt = Some(opt.clone().unwrap());
-//         } 
-//         opt
-//     }
-// }
-
-
-        //option($($option_type:ty)*), 
-        //acc($($acc_type:ty)*),
 #[macro_export]
 macro_rules! component {
     (
@@ -144,7 +42,7 @@ macro_rules! component {
 
         use rustfbp::ports::Ports;
 
-        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver};
+        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver, IP};
         #[allow(unused_imports)]
         use std::collections::HashMap;
 
@@ -157,12 +55,25 @@ macro_rules! component {
 
         // simple and array
         impl $name {
-            pub fn disconnect(&mut self, port: &String) -> Result<()> {
-                Ok(())
+            pub fn recv_option(&mut self) -> IP {
+                self.try_recv_option();
+                if self.option_ip.is_none() {
+                    self.option_ip = self.ports.recv("option".into()).ok();
+                }
+                match self.option_ip {
+                    Some(ref ip) => ip.clone(),
+                    None => unreachable!(),
+                }
             }
 
-            pub fn disconnect_array(&mut self, port: &String, _selection: &String) -> Result<()> {
-                Ok(())
+            pub fn try_recv_option(&mut self) -> Option<IP> {
+                loop {
+                    match self.ports.try_recv("option".into()) {
+                        Err(_) => { break; },
+                        Ok(ip) => { self.option_ip = Some(ip); }
+                    };
+                }
+                self.option_ip.as_ref().map(|ip|{ ip.clone() })
             }
 
             pub fn is_input_ports(&self) -> bool {
@@ -186,31 +97,23 @@ macro_rules! component {
             allocator: Allocator,
             name: String,
             pub ports: Ports,
+            pub option_ip: Option<IP>,
         }
 
         #[allow(dead_code)]
         pub fn new(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> Result<Box<$name>> {
-            // Creation of the inputs
-            /*
-            $( 
-                let options = sync_channel::<$option_type>(16);
-                let options_s = options.0;
-                let options_r = OptionReceiver::new(options.1);
-            )*
-            */
             let mut ports = try!(Ports::new(name.clone(), allocator, senders,
-                                   vec!["acc".into(), $( stringify!($input_field_name).to_string() ),*],
+                                   vec!["option".into(), "acc".into(), $( stringify!($input_field_name).to_string() ),*],
                                    vec![$( stringify!($input_array_name).to_string() ),*],
                                    vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
                                    vec![$( stringify!($output_array_name).to_string() ),*],));
-            // TODO : connect acc port
-            //try!(ports.connect("acc".into(), name.clone(), "acc".into(), None));
 
             // Put it together
             let comp = $name{
                 allocator: allocator.clone(),
                 name: name.clone(),
                 ports: ports,
+                option_ip: None,
             };
             Ok(Box::new(comp))
         }
@@ -272,7 +175,7 @@ macro_rules! component {
         #[no_mangle]
         pub extern fn disconnect(ptr: *mut $name::$name, port: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.disconnect(port) {
+            match comp.ports.disconnect(port.clone()) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
@@ -281,7 +184,7 @@ macro_rules! component {
         #[no_mangle]
         pub extern fn disconnect_array(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
-            match comp.disconnect_array(port, selection) {
+            match comp.ports.disconnect_array(port.clone(), selection.clone()) {
                 Ok(_) => 0,
                 Err(_) => 1,
             }
