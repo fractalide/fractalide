@@ -24,10 +24,12 @@ extern crate capnp;
 macro_rules! component {
     (
        $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
-        inputs($( $input_field_name:ident),* ),
-        inputs_array($( $input_array_name:ident),* ),
-        outputs($( $output_field_name:ident),* ),
-        outputs_array($($output_array_name:ident),* ),
+        inputs($( $input_field_name:ident: $input_contract_name:ident),* ),
+        inputs_array($( $input_array_name:ident: $input_contract_array:ident),* ),
+        outputs($( $output_field_name:ident: $output_contract_name:ident),* ),
+        outputs_array($($output_array_name:ident: $output_contract_array:ident),* ),
+        option($($option_contract: ident),*),
+        acc($($acc_contract: ident),*),
         fn run(&mut $arg:ident) $fun:block
         $($more:item)*
     )
