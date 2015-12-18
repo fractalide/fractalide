@@ -240,39 +240,17 @@ impl Scheduler {
         Ok(())
     }
 
-    // pub fn get_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String) -> CountSender<T> {
-    //     let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
-    //     let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
-    //     let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler connect : The comp_in doesn't have the port_in port");
-    //     let mut sender: CountSender<T> = downcast(sender);
-    //     sender.set_sched(comp, self.sender.clone());
-    //     sender
-    // }
+    pub fn get_sender(&self, comp: String, port: String) -> Result<*const HeapIPSender> {
+        self.inputs.get(&comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                c.get_sender(&port).map(|s| { s.to_raw() })
+            })
+    }
 
-    // pub fn get_option<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
-    //     let (comp, port) = self.get_subnet_name(comp, "option".to_string(), VPType::In);
-    //     let r_comp = self.components.get(&comp).expect("Scheduler get_option : the component doesn't exist");
-    //     let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_option : The comp_in doesn't have the port_in port");
-    //     let s: SyncSender<T> = downcast(sender);
-    //     s
-    // }
-
-    // pub fn get_acc<T: Any + Send + Sized + Reflect>(&self, comp: String) -> SyncSender<T> {
-    //     let (comp, port) = self.get_subnet_name(comp, "acc".to_string(), VPType::In);
-    //     let r_comp = self.components.get(&comp).expect("Scheduler get_acc : the component doesn't exist");
-    //     let sender = r_comp.input_senders.get_sender(port.clone()).expect("Scheduler get_acc : The comp_in doesn't have the port_in port");
-    //     let s: SyncSender<T> = downcast(sender);
-    //     s
-    // }
-
-    // pub fn get_array_sender<T: Any + Send + Sized + Reflect>(&self, comp: String, port: String, selection: String) -> CountSender<T> {
-    //     let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
-    //     let r_comp = self.components.get(&comp).expect("Scheduler get_sender : the component doesn't exist");
-    //     let sender = r_comp.input_array_senders.get_selection_sender(port, selection).expect("Scheduler connect : The comp_in doesn't have the port_in port");
-    //     let mut sender: CountSender<T> = downcast(sender);
-    //     sender.set_sched(comp, self.sender.clone());
-    //     sender
-    // }
+    pub fn get_array_sender(&self, comp: String, port: String, selection: String) -> Result<*const HeapIPSender> {
+        self.inputs_array.get(&format!("{}-{}-{}", comp, port, selection)).ok_or(result::Error::ComponentNotFound)
+            .map(|s| { s.clone().to_raw() })
+    }
 
     fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
         let option_main = self.subnets.get(&comp);

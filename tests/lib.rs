@@ -57,7 +57,7 @@ fn simple_port() {
     let hs = HeapSenders::from_raw(senders);
     sched.inputs.insert("exterior".into(), hs);
 
-    p.connect("s".into(), sched.inputs.get("inc").unwrap().get_sender("input".into()).expect("cannot get sender").to_raw()).expect("unable to connect");
+    p.connect("s".into(), sched.get_sender("inc".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("inc".into(), "output".into(), "exterior".into(), "r".into()).expect("cannot connect");
 
     let mut msg = capnp::message::Builder::new_default();
@@ -104,8 +104,8 @@ fn option_port() {
     let hs = HeapSenders::from_raw(senders);
     sched.inputs.insert("exterior".into(), hs);
 
-    p.connect("s".into(), sched.inputs.get("inc").unwrap().get_sender("input".into()).expect("cannot get sender").to_raw()).expect("unable to connect");
-    p.connect("opt".into(), sched.inputs.get("inc").unwrap().get_sender("option".into()).expect("cannot get sender").to_raw()).expect("unable to connect");
+    p.connect("s".into(), sched.get_sender("inc".into(), "input".into()).unwrap()).expect("unable to connect");
+    p.connect("opt".into(), sched.get_sender("inc".into(), "option".into()).unwrap()).expect("unable to connect");
     sched.connect("inc".into(), "output".into(), "exterior".into(), "r".into()).expect("cannot connect");
 
     let mut msg = capnp::message::Builder::new_default();
@@ -153,10 +153,10 @@ fn array_input_port() {
     sched.inputs.insert("exterior".into(), hs);
 
     {
-        let r1 = sched.inputs_array.get("add-numbers-first").unwrap().clone();
-        let r2 = sched.inputs_array.get("add-numbers-second").unwrap().clone();
-        p.connect("s1".into(), r1.to_raw()).expect("unable to connect");
-        p.connect("s2".into(), r2.to_raw()).expect("unable to connect");
+        let r1 = sched.get_array_sender("add".into(), "numbers".into(), "first".into()).unwrap();
+        let r2 = sched.get_array_sender("add".into(), "numbers".into(), "second".into()).unwrap();
+        p.connect("s1".into(), r1).expect("unable to connect");
+        p.connect("s2".into(), r2).expect("unable to connect");
         sched.connect("add".into(), "output".into(), "exterior".into(), "input".into()).expect("cannot sched connect");
     }
 
@@ -202,10 +202,10 @@ fn array_output_port() {
     sched.inputs.insert("exterior".into(), hs);
 
     {
-        let r1 = sched.inputs.get("lb").unwrap().get_sender("input".into()).expect("cannot get sender");
-        let acc = sched.inputs.get("lb").unwrap().get_sender("acc".into()).expect("cannot get sender");
-        p.connect("s".into(), r1.to_raw()).expect("unable to connect");
-        p.connect("acc".into(), acc.to_raw()).expect("unable to connect");
+        let r1 = sched.get_sender("lb".into(), "input".into()).expect("cannot get sender");
+        let acc = sched.get_sender("lb".into(), "acc".into()).expect("cannot get sender");
+        p.connect("s".into(), r1).expect("unable to connect");
+        p.connect("acc".into(), acc).expect("unable to connect");
         sched.connect_array("lb".into(), "outputs".into(), "first".into(), "exterior".into(), "recv1".into());
         sched.connect_array("lb".into(), "outputs".into(), "second".into(), "exterior".into(), "recv2".into());
     }
@@ -295,9 +295,9 @@ fn subnet() {
 
 
     {
-        p.connect("s1".into(), sched.inputs.get("sninc1").unwrap().get_sender("input".into()).unwrap().to_raw()).expect("unable to connect");
-        p.connect("s2".into(), sched.inputs.get("sninc2").unwrap().get_sender("input".into()).unwrap().to_raw()).expect("unable to connect");
-        p.connect("acc".into(), sched.inputs.get("snlb").unwrap().get_sender("acc".into()).unwrap().to_raw()).expect("unable to connect");
+        p.connect("s1".into(), sched.get_sender("sninc1".into(), "input".into()).unwrap()).expect("unable to connect");
+        p.connect("s2".into(), sched.get_sender("sninc2".into(), "input".into()).unwrap()).expect("unable to connect");
+        p.connect("acc".into(), sched.get_sender("snlb".into(), "acc".into()).unwrap()).expect("unable to connect");
     }
     sched.connect("sn".into(), "output1".into(), "exterior".into(), "r1".into()).expect("cannot connect to exterior");
     sched.connect("sn".into(), "output2".into(), "exterior".into(), "r2".into()).expect("cannot connect to exterior");
@@ -384,7 +384,7 @@ fn update() {
     let hs = HeapSenders::from_raw(senders);
     sched.inputs.insert("exterior".into(), hs);
 
-    p.connect("s".into(), sched.inputs.get("inc").unwrap().get_sender("input".into()).expect("cannot get sender").to_raw()).expect("unable to connect");
+    p.connect("s".into(), sched.get_sender("inc".into(), "input".into()).expect("cannot get sender")).expect("unable to connect");
     sched.connect("inc".into(), "output".into(), "exterior".into(), "r".into()).expect("cannot connect");
 
     let mut the_msg = capnp::message::Builder::new_default();
