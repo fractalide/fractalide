@@ -1,7 +1,3 @@
-#![feature(raw)]
-#![feature(reflect_marker)]
-#![feature(concat_idents)]
-
 extern crate libloading;
 extern crate capnp;
 

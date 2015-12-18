@@ -1,5 +1,3 @@
-extern crate nanomsg;
-
 use loader::{ComponentBuilder, Component};
 
 use result;
@@ -16,13 +14,14 @@ use std::thread;
 use std::thread::JoinHandle;
 
 use std::mem;
-// use std::marker::Reflect;
+
+// TODO : manage "can_run": allow a user to pause a component
 
 /// All the messages that can be send between the "exterior scheduler" and the "interior scheduler". 
 pub enum CompMsg {
     /// Add a new component. The String is the name, the BoxedComp is the component itself
     NewComponent(String, Component),
-    Start, Halt, HaltState,
+    Halt, HaltState,
     ConnectOutputPort(String, String, Box<HeapIPSender>),
     ConnectOutputArrayPort(String, String, String, Box<HeapIPSender>),
     Disconnect(String, String),
@@ -57,7 +56,6 @@ impl Scheduler {
                 let res: Result<()> = match msg {
                     CompMsg::NewComponent(name, comp) => { sched_s.new_component(name, comp) },
                     // CompMsg::Start(name) => { sched_s.start(name); },
-                    CompMsg::Start => { Ok(()) },
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
@@ -85,7 +83,7 @@ impl Scheduler {
                     //     sched_s.remove(name, sync_sender);
                     // }
                 };
-                res.map_err(|e| { error_s.send(e).expect("cannot send the error"); });
+                res.map_err(|e| { error_s.send(e).expect("cannot send the error"); }).ok();
             }
         });
 
@@ -111,12 +109,8 @@ impl Scheduler {
         Ok(())
     }
 
-    pub fn start_receive(&mut self) {
-        self.sender.send(CompMsg::Start).expect("start_receive : unable to send to sched state");
-    }
-
-    pub fn add_subnet(&mut self, name: String, g: &Graph) {
-        SubNet::new(g, name, self);
+    pub fn add_subnet(&mut self, name: String, g: &Graph) -> Result<()> {
+        SubNet::new(g, name, self)
     }
 
     // pub fn start(&self, name: String) {
@@ -285,8 +279,8 @@ impl Scheduler {
     fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
         let option_main = self.subnets.get(&comp);
         let main = match option_main {
-            None => { 
-                return (comp, port); 
+            None => {
+                return (comp, port);
             },
             Some(m) => { m },
         };
@@ -325,7 +319,7 @@ struct CompState {
     // TODO : manage can_run
     can_run: bool,
     edit_msgs: Vec<EditCmp>,
-    ips: usize,
+    ips: isize,
 }
 
 struct SchedState {
@@ -350,7 +344,7 @@ impl SchedState {
         let mut start = false;
         if let Some(ref mut comp) = self.components.get_mut(&name) {
             comp.ips += 1;
-            start = comp.comp.is_some();
+            start = comp.ips > 0 && comp.comp.is_some();
         }
         if start { self.run(name); }
         Ok(())
@@ -365,9 +359,9 @@ impl SchedState {
     }
 
     fn new_component(&mut self, name: String, comp: Component) -> Result<()> {
-        self.components.insert(name, CompState { 
-            comp: Some(comp), 
-            can_run: false, 
+        self.components.insert(name, CompState {
+            comp: Some(comp),
+            can_run: false,
             edit_msgs: vec![],
             ips: 0,
         });
@@ -414,7 +408,7 @@ impl SchedState {
             let mut comp = self.components.get_mut(&name).expect("SchedState RunEnd : component doesn't exist");
             let vec = mem::replace(&mut comp.edit_msgs, vec![]);
             for msg in vec {
-                Self::edit_one_comp(&mut box_comp, msg);
+                try!(Self::edit_one_comp(&mut box_comp, msg));
             }
             let must_restart = comp.ips > 0;
             comp.comp = Some(box_comp);
@@ -447,7 +441,7 @@ impl SchedState {
         let mut comp = self.components.get_mut(&name).expect("SchedState edit_component : component doesn't exist");
         if let Some(ref mut c) = comp.comp {
             let mut c = c;
-            Self::edit_one_comp(&mut c, msg);
+            try!(Self::edit_one_comp(&mut c, msg));
         } else {
             comp.edit_msgs.push(msg);
         }
@@ -462,11 +456,11 @@ impl SchedState {
             EditCmp::AddOutputArraySelection(port, selection) => {
                 c.add_output_selection(&port, &selection);
             },
-            EditCmp::ConnectOutputPort(port_out, heapIPSender) => {
-                c.connect(&port_out, heapIPSender.to_raw());
+            EditCmp::ConnectOutputPort(port_out, his) => {
+                c.connect(&port_out, his.to_raw());
             },
-            EditCmp::ConnectOutputArrayPort(port_out, selection_out, heapIPSender) => {
-                c.connect_array(&port_out, &selection_out, heapIPSender.to_raw());
+            EditCmp::ConnectOutputArrayPort(port_out, selection_out, his) => {
+                c.connect_array(&port_out, &selection_out, his.to_raw());
             },
             EditCmp::Disconnect(port) => {
                 c.disconnect(&port);

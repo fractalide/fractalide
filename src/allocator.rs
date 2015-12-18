@@ -1,11 +1,11 @@
 use capnp;
-use capnp::message::{HeapAllocator, Builder, Reader, ReaderOptions};
+use capnp::message::{Builder, Reader, ReaderOptions};
 use capnp::serialize::{OwnedSegments};
 use std::mem::transmute;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::{Sender, Receiver};
 use std::collections::HashMap;
-use std::io::{Write, Read};
+use std::io::{Write};
 use std::io;
 
 use result;
@@ -77,7 +77,7 @@ extern "C" fn clear_ip(ip: *mut HeapIP) {
 
 extern "C" fn drop_ip(ip: *mut HeapIP) {
     let _ip: Box<HeapIP> = unsafe { transmute(ip) };
-    println!("Drop the HeapIP");
+    // println!("Drop the HeapIP");
 }
 
 /*
@@ -111,7 +111,7 @@ impl Clone for HeapIPSender {
     }
 }
 
-pub extern "C" fn send_ip(sender: *const HeapIPSender, mut msg: *mut HeapIP) -> i8 {
+pub extern "C" fn send_ip(sender: *const HeapIPSender, msg: *mut HeapIP) -> i8 {
     unsafe {
         match (*sender).sender.send(msg) {
             Ok(()) => {
@@ -127,7 +127,7 @@ pub extern "C" fn send_ip(sender: *const HeapIPSender, mut msg: *mut HeapIP) -> 
 
 extern "C" fn drop_sender(sender: *const HeapIPSender) {
     let _ip: Box<HeapIPSender> = unsafe { transmute(sender) };
-    println!("Drop the Sender");
+    // println!("Drop the Sender");
 }
 
 /*
@@ -157,7 +157,7 @@ impl Drop for HeapSenders {
     fn drop(&mut self) {
         for &s in self.senders.values() {
             let _s: Box<HeapIPSender> = unsafe { transmute(s) };
-            println!("Drop unused HeapIPSender");
+            // println!("Drop unused HeapIPSender");
         }
     }
 }
@@ -229,7 +229,7 @@ extern "C" fn try_recv_ip(receiver: *const HeapIPReceiver) -> *mut HeapIP {
 
 extern "C" fn drop_receiver(receiver: *const HeapIPReceiver) {
     let _ip: Box<HeapIPReceiver> = unsafe { transmute(receiver) };
-    println!("Drop the receiver");
+    // println!("Drop the receiver");
 }
 
 #[repr(C)]
@@ -491,7 +491,7 @@ pub struct IP {
 
 impl IP {
     pub fn get_reader(&mut self) -> Result<Reader<OwnedSegments>> {
-        let mut msg = self.clone();
+        let msg = self.clone();
         Ok(try!(capnp::serialize::read_message(&mut &msg[..], ReaderOptions::new())))
     }
 

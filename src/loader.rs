@@ -2,7 +2,7 @@ extern crate libloading;
 
 // TODO : manage the errors
 
-use libloading::{Library, Symbol};
+use libloading::{Library};
 use allocator::{Allocator, HeapIPSender, HeapIPReceiver, HeapSenders};
 
 use std::fmt;

@@ -20,11 +20,7 @@
 // TODO : manage the number of connection on the array port (on each port on in the scheduler?)
 // TODO : option port
 
-extern crate nanomsg;
 extern crate capnp;
-
-use result;
-use result::Result;
 
 /* 
  *
