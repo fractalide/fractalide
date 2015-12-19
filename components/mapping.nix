@@ -1,15 +1,8 @@
 { pkgs, lib, components, wget, firefox, chromium  }:
 let
-
 mapping = pkgs.writeTextFile {
 	name = "mapping.txt";
-	text = lib.concatMapStringsSep "\n" (pkg: "${pkg.name} ${pkg.outPath}") [ wget chromium firefox ];
-# the above works but I need the function to run against all the components like this:
-#	text = lib.concatMapStringsSep "\n" (pkg: "${pkg.name} ${pkg.outPath}") (lib.toList components);
-# the above throws an error:
-# error: attribute ‘name’ missing, at /mapping.nix:8:47
-# --------
-# How does one convert the components into a list?
+	text = lib.concatMapStringsSep "\n" (pkg: "${pkg.name} ${pkg.outPath}") (lib.attrValues components);
 	executable = false;
 };
 in
