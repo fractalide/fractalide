@@ -4,7 +4,8 @@ mapping = pkgs.writeTextFile {
 	name = "mapping.rs";
 	text = ''
 use std::collections::HashMap;
-fn main() {
+#[allow(dead_code)]
+fn components() {
 let mut components = HashMap::with_capacity(${(builtins.toString (builtins.length (lib.attrValues components)))});
 ${lib.concatMapStringsSep "\n" (pkg: "components.insert(\"${pkg.name}\", \"${pkg.outPath}\");")(lib.attrValues components)}
 }
@@ -13,15 +14,14 @@ ${lib.concatMapStringsSep "\n" (pkg: "components.insert(\"${pkg.name}\", \"${pkg
 };
 in
 pkgs.stdenv.mkDerivation rec {
-	name = "mapping-${version}";
+	name = "fractalide-mappings-${version}";
 	version = "2015-12-18";
 	unpackPhase = "true";
 	buildInputs = [ rustcMaster ];
 	installPhase = ''
-	mkdir -p $out/etc
-	mkdir -p $out/bin
-	rustc --crate-type=lib ${mapping} -o $out/bin
+	mkdir -p $out/{etc,lib}
 	cp -r  ${mapping} $out/etc/mapping.rs
+	rustc -C no-stack-check -O --crate-type=rlib $out/etc/mapping.rs --out-dir $out/lib/
 	'';
 }
 
