@@ -13,7 +13,6 @@ pkgs.stdenv.mkDerivation rec {
 	installPhase = ''
 		mkdir -p $out/etc/
 		cp -r  ${mapping} $out/etc/mapping.txt
-		cat $out/etc/mapping.txt
 	'';
 }
 
