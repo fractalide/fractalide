@@ -1,4 +1,4 @@
-{ pkgs, lib, components, wget, firefox, chromium  }:
+{ pkgs, lib, components }:
 let
 mapping = pkgs.writeTextFile {
 	name = "mapping.txt";
