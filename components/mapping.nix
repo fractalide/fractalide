@@ -7,13 +7,16 @@ use std::collections::HashMap;
 
 #[allow(dead_code)]
 fn components() -> HashMap<&'static str, &'static str> {
-let mut map  = HashMap::<&str, &str>::with_capacity(${(builtins.toString (builtins.length (lib.attrValues components)))});
-${lib.concatMapStringsSep "\n" (pkg: "map.insert(\"${pkg.name}\", \"${pkg.outPath}\");")(lib.attrValues components)}
+let mut map  = HashMap::<&str, &str>::with_capacity(${
+    (builtins.toString (builtins.length (lib.attrValues components)))});
+${lib.concatMapStringsSep "\n"
+    (pkg: "map.insert(\"${pkg.name}\", \"${(lib.last (lib.splitString "/" pkg.outPath))}\");")
+    (lib.attrValues components)}
 map
 }
 
 // caller should do this:
-// let immutable_map = components(); // without the mut it is immutable
+// let immutable_components = components(); // without the mut it is immutable
 '';
     executable = false;
 };
