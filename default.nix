@@ -5,10 +5,11 @@ support = {
 	cargo = pkgs.cargo;
 	rustcMaster = pkgs.rustcMaster;
 	rustRegistry = callPackage ./build-support/rust-packages.nix {};
-	buildFractalideComponent = callPackage ./build-support {};
+	buildFractalideComponent = callPackage ./build-support/buildFractalideComponent.nix {};
+	buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};
+	capnpc-rust = callPackage ./build-support/capnpc-rust {};
 };
 components = rec {
-	#---------------> Rust flow-based programming components hereafter
 	boolean-not = callPackage ./components/boolean/not {};
 	boolean-nand = callPackage ./components/boolean/nand {};
 };
