@@ -14,9 +14,6 @@ ${lib.concatMapStringsSep "\n"
     (lib.attrValues components)}
 map
 }
-
-// caller should do this:
-// let immutable_components = components(); // without the mut it is immutable
 '';
     executable = false;
 };
@@ -28,7 +25,7 @@ pkgs.stdenv.mkDerivation rec {
   buildInputs = [ rustcMaster ];
   installPhase = ''
   mkdir -p $out/{src,lib}
-  cp -r  ${mapping} $out/src/mapping.rs
+  cp ${mapping} $out/src/mapping.rs
   rustc -C no-stack-check -O --crate-type=rlib $out/src/mapping.rs --out-dir $out/lib/
   '';
 }
