@@ -1,0 +1,12 @@
+[package]
+name = "add"
+version = "0.1.0"
+authors = ["Denis Michiels <dmichiels@gmail.com>"]
+
+[lib]
+name = "add"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"
