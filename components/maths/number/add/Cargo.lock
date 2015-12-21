@@ -1,5 +1,5 @@
 [root]
-name = "add"
+name = "maths_number_add"
 version = "0.1.0"
 dependencies = [
  "capnp 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
