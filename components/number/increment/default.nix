@@ -3,5 +3,5 @@
 buildFractalideComponent rec {
   name = "number-increment";
   src = ./.;
-  depsSha256 = "0xmwzmvkp5n0c8xrlpqmsl0nwdd9qcw0kj10mb7m1ibi6sdgw2bi";
+  depsSha256 = "1yycmcr1ylzwi7ksim8by0aphkgvpy8vbg86fmrsx6i1fhnqf18k";
 }
