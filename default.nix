@@ -10,9 +10,9 @@ support = {
 	capnpc-rust = callPackage ./build-support/capnpc-rust {};
 };
 components = rec {
-	boolean-not = callPackage ./components/maths/boolean/not {};
-	boolean-nand = callPackage ./components/maths/boolean/nand {};
-	number-add = callPackage ./components/maths/number/add {};
+	maths-boolean-not = callPackage ./components/maths/boolean/not {};
+	maths-boolean-nand = callPackage ./components/maths/boolean/nand {};
+	maths-number-add = callPackage ./components/maths/number/add {};
 };
 in {
 	inherit support components;
