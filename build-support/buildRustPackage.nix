@@ -1,4 +1,4 @@
-{ stdenv, cacert, git, cargo, rustcMaster, rustRegistry }:
+{ stdenv, cacert, git, cargo,rustcMaster, rustRegistry }:
 { name, depsSha256
 , src ? null
 , srcs ? null

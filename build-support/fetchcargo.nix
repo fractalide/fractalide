@@ -9,7 +9,7 @@ stdenv.mkDerivation {
   phases = "unpackPhase installPhase";
 
   installPhase = ''
-    bash ${./fetch-cargo-deps} . "$out"
+  bash ${./fetch-cargo-deps} . "$out"
   '';
 
   outputHashAlgo = "sha256";
