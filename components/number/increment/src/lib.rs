@@ -8,7 +8,7 @@ use rustfbp::component::*;
 
 
 component! {
-    Add,
+    Increment,
     inputs(),
     inputs_array(numbers: number),
     outputs(output: number),

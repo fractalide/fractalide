@@ -1,10 +1,10 @@
 [package]
-name = "add"
+name = "number_increment"
 version = "0.1.0"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 
 [lib]
-name = "add"
+name = "number_increment"
 crate-type = ["dylib"]
 
 [dependencies]

@@ -12,6 +12,7 @@ support = {
 components = rec {
 	boolean-not = callPackage ./components/boolean/not {};
 	boolean-nand = callPackage ./components/boolean/nand {};
+	number-increment = callPackage ./components/number/increment {};
 };
 in {
 	inherit support components;
