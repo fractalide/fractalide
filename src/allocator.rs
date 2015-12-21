@@ -4,7 +4,8 @@ use capnp::serialize::{OwnedSegments};
 use std::mem;
 use std::mem::transmute;
 use std::sync::mpsc::channel;
-use std::sync::mpsc::{Sender, Receiver};
+use std::sync::mpsc::sync_channel;
+use std::sync::mpsc::{SyncSender, Sender, Receiver};
 use std::collections::HashMap;
 use std::io::{Write};
 use std::io;
@@ -96,7 +97,7 @@ extern "C" fn drop_ip(ip: *mut HeapIP) {
 */
 #[repr(C)]
 pub struct HeapIPSender {
-    pub sender: Sender<*mut HeapIP>,
+    pub sender: SyncSender<*mut HeapIP>,
     pub sched: Sender<CompMsg>,
     pub dest: String,
 }
@@ -250,7 +251,7 @@ pub struct HeapChannel {
 }
 
 extern "C" fn create_channel(name: &String, sched: &Sender<CompMsg>) -> *mut HeapChannel {
-    let (s, r): (Sender<*mut HeapIP>, Receiver<*mut HeapIP>) = channel();
+    let (s, r): (SyncSender<*mut HeapIP>, Receiver<*mut HeapIP>) = sync_channel(25);
     let s = Box::new(HeapIPSender {
         sender: s,
         sched: sched.clone(),
