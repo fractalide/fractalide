@@ -1,9 +1,5 @@
-#![feature(raw)]
-#![feature(reflect_marker)]
-#![feature(concat_idents)]
-
-extern crate nanomsg;
 extern crate libloading;
+extern crate capnp;
 
 pub mod component;
 
@@ -21,3 +17,5 @@ pub mod subnet;
 pub mod loader;
 pub mod ports;
 pub mod result;
+
+pub mod allocator;

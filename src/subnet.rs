@@ -1,7 +1,8 @@
 use loader::ComponentBuilder;
 use super::scheduler::{Scheduler};
 use std::collections::HashMap;
-use std::sync::mpsc::SyncSender;
+
+use result::Result;
 
 // TODO : manage IIP
 
@@ -30,7 +31,7 @@ pub struct GraphBuilder<'a> {
     virtual_outputs: HashMap<String, (String, String)>,
 }
 
-impl<'a> GraphBuilder<'a> { 
+impl<'a> GraphBuilder<'a> {
     pub fn new() -> Self {
         GraphBuilder {
             nodes: vec![],
@@ -44,7 +45,7 @@ impl<'a> GraphBuilder<'a> {
     }
 
     pub fn add_component(&mut self, name: String, c: &'a ComponentBuilder) -> Self {
-        self.nodes.push(Node { 
+        self.nodes.push(Node {
             name: name,
             sort: COrG::C(c),
         });
@@ -70,23 +71,23 @@ impl<'a> GraphBuilder<'a> {
         }
         for edge in &g.edges {
             match edge {
-                &Edge::Simple2simple(ref comp_out, ref port_out, ref comp_in, ref port_in) => { 
-                    self.add_simple2simple(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone()); 
+                &Edge::Simple2simple(ref comp_out, ref port_out, ref comp_in, ref port_in) => {
+                    self.add_simple2simple(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone());
                 },
-                &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => { 
-                    self.add_simple2array(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()); 
+                &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => {
+                    self.add_simple2array(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone());
                 },
-                &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => { 
-                    self.add_array2simple(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone()); 
+                &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => {
+                    self.add_array2simple(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone());
                 },
-                &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => { 
-                    self.add_array2array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()); 
+                &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => {
+                    self.add_array2array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone());
                 },
 
             }
-        }   
+        }
         self.clone()
-    
+
     }
 
     fn add_simple2simple(&mut self, c_out: String, p_out: String, c_in: String, p_in: String) -> Self {
@@ -116,7 +117,7 @@ impl<'a> GraphBuilder<'a> {
         self.edges.push(Edge::Array2array(c_out, p_out, s_out, c_in, p_in, s_in));
         self.clone()
     }
-    
+
     pub fn edges(self) -> Graph<'a> {
         Graph {
             nodes: self.nodes,
@@ -169,7 +170,7 @@ impl<'a> Graph<'a> {
         self.edges.push(Edge::Array2array(c_out, p_out, s_out, c_in, p_in, s_in));
         self.clone()
     }
-    
+
     pub fn add_virtual_input_port(&mut self, n: String, c: String, p: String) -> Self {
         let (c, p) = self.virtual_inputs.rename(c, p);
         self.virtual_input_ports.push(VirtualPort(n, c, p));
@@ -187,7 +188,6 @@ impl<'a> Graph<'a> {
         self.iips.push(IIP(s, c, p));
         self.clone()
     }
-    
 }
 
 #[derive(Clone, Debug)]
@@ -224,7 +224,7 @@ pub struct SubNet{
 }
 
 impl SubNet {
-    pub fn new(g: &Graph, name: String, sched: &mut Scheduler) { 
+    pub fn new(g: &Graph, name: String, sched: &mut Scheduler) -> Result<()> {
         let mut sn = SubNet {
             input_names: HashMap::new(),
             output_names: HashMap::new(),
@@ -241,7 +241,7 @@ impl SubNet {
             sn.children.push(format!("{}{}", name, node.name));
             match node.sort {
                 COrG::C(ref builder) => {
-                    sched.add_component(format!("{}{}", name, node.name), builder);
+                    try!(sched.add_component(format!("{}{}", name, node.name), builder));
                 }
                 COrG::G(_) => {
                     panic!("Impossible : the graph must be flat");
@@ -251,29 +251,30 @@ impl SubNet {
         sched.subnets.insert(name.clone(), sn);
         for edge in &g.edges {
             match edge {
-                &Edge::Simple2simple(ref comp_out, ref port_out, ref comp_in, ref port_in) => { 
-                    sched.connect(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone()); 
+                &Edge::Simple2simple(ref comp_out, ref port_out, ref comp_in, ref port_in) => {
+                    try!(sched.connect(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone()));
                 },
-                &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => { 
-                    sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone());
-                    sched.connect_to_array(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()); 
+                &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => {
+                    try!(sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
+                    try!(sched.connect_to_array(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                 },
-                &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => { 
-                    sched.add_output_array_selection(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone());
-                    sched.connect_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone()); 
+                &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => {
+                    try!(sched.add_output_array_selection(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone()));
+                    try!(sched.connect_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone()));
                 },
-                &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => { 
-                    sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone());
-                    sched.add_output_array_selection(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone());
-                    sched.connect_array_to_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()); 
+                &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => {
+                    try!(sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
+                    try!(sched.add_output_array_selection(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone()));
+                    try!(sched.connect_array_to_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                 },
 
             }
-        }   
+        }
         // for iip in &g.iips {
         //     let sender: SyncSender<String> = sched.get_option(format!("{}{}", name, iip.1));
         //     sender.send(iip.0.clone()).ok().expect("SubNet IIP : unable to send the IIP");
         // }
+        Ok(())
     }
 }
 
