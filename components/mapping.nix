@@ -26,6 +26,6 @@ pkgs.stdenv.mkDerivation rec {
   installPhase = ''
   mkdir -p $out/{src,lib}
   cp ${mapping} $out/src/mapping.rs
-  rustc -C no-stack-check -O --crate-type=rlib $out/src/mapping.rs --out-dir $out/lib/
+  rustc -Cno-stack-check -Copt-level=3 --crate-type=dylib $out/src/mapping.rs --out-dir $out/lib/
   '';
 }
