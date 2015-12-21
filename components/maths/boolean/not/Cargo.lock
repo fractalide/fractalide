@@ -1,5 +1,5 @@
 [root]
-name = "boolean_nand"
+name = "maths_boolean_not"
 version = "0.1.0"
 dependencies = [
  "capnp 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",

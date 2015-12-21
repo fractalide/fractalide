@@ -1,10 +1,10 @@
 [package]
-name = "boolean_nand"
+name = "maths_boolean_nand"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "boolean_nand"
+name = "maths_boolean_nand"
 crate-type = ["dylib"]
 
 [dependencies]

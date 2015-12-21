@@ -1,10 +1,10 @@
 [package]
-name = "add"
+name = "maths_number_add"
 version = "0.1.0"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 
 [lib]
-name = "add"
+name = "maths_number_add"
 crate-type = ["dylib"]
 
 [dependencies]
