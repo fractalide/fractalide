@@ -1,4 +1,4 @@
-{ pkgs, lib, components, rustcMaster }:
+{ pkgs, lib, components, buildRustPackage }:
 let
 mapping = pkgs.writeTextFile {
   name = "mapping.rs";
@@ -18,14 +18,12 @@ map
     executable = false;
 };
 in
-pkgs.stdenv.mkDerivation rec {
-  name = "fractalide-mappings-${version}";
-  version = "2015-12-18";
-  unpackPhase = "true";
-  buildInputs = [ rustcMaster ];
-  installPhase = ''
-  mkdir -p $out/{src,lib}
-  cp ${mapping} $out/src/mapping.rs
-  rustc -Cno-stack-check -Copt-level=3 --crate-type=dylib $out/src/mapping.rs --out-dir $out/lib/
-  '';
+buildRustPackage rec {
+  version = "2015-12-22";
+  name = "mapping";
+  src = ./.;
+  depsSha256 = "11d7ld7prr2fjnx47x4dn8p1naryfbbkymx6q001lh811aj752y1";
+  postPatch = ''
+    mkdir -p src $out/{src,lib}
+    echo src/mapping.rs $out/src/mapping.rs | xargs -n 1 cp ${mapping}'';
 }
