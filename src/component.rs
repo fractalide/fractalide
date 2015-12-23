@@ -175,6 +175,24 @@ macro_rules! component {
         }
 
         #[no_mangle]
+        pub extern fn set_receiver(ptr: *mut $name::$name, port: &String, recv: *const HeapIPReceiver) {
+            let mut comp = unsafe { &mut *ptr };
+            comp.ports.set_receiver(port.clone(), recv);
+        }
+
+        #[no_mangle]
+        pub extern fn get_receiver(ptr: *mut $name::$name, port: &String) -> *const HeapIPReceiver {
+            let mut comp = unsafe { &mut *ptr };
+            comp.ports.remove_receiver(port).expect("cannot get receiver")
+        }
+
+        #[no_mangle]
+        pub extern fn get_array_receiver(ptr: *mut $name::$name, port: &String, selection: &String) -> *const HeapIPReceiver {
+            let mut comp = unsafe { &mut *ptr };
+            comp.ports.remove_array_receiver(port, selection).expect("cannot get receiver")
+        }
+
+        #[no_mangle]
         pub extern fn disconnect(ptr: *mut $name::$name, port: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.disconnect(port.clone()) {

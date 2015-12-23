@@ -463,7 +463,7 @@ impl ChannelBuilder {
 
     pub fn build_receiver(&self, receiver: *const HeapIPReceiver) -> IPReceiver {
         IPReceiver {
-            receiver: receiver,
+            receiver: Some(receiver),
             recv: self.recv,
             try_recv: self.try_recv,
             drop: self.drop_recv,
@@ -610,32 +610,46 @@ impl Drop for IPSender {
 }
 
 pub struct IPReceiver {
-    receiver: *const HeapIPReceiver,
+    receiver: Option<*const HeapIPReceiver>,
     recv: extern fn(*const HeapIPReceiver) -> *mut HeapIP,
     try_recv: extern fn(*const HeapIPReceiver) -> *mut HeapIP,
     drop: extern fn(*const HeapIPReceiver),
 }
 impl IPReceiver {
     pub fn recv(&self) -> Result<*mut HeapIP> {
-        let ip = (self.recv)(self.receiver);
-        if ip as usize == 0 {
-            return Err(result::Error::CannotReceive);
+        if let Some(receiver) = (self.receiver) {
+            let ip = (self.recv)(receiver);
+            if ip as usize == 0 {
+                return Err(result::Error::CannotReceive);
+            }
+            Ok(ip)
+        } else {
+            Err(result::Error::CannotReceive)
         }
-        Ok(ip)
     }
 
     pub fn try_recv(&self) -> Result<*mut HeapIP> {
-        let ip = (self.try_recv)(self.receiver);
-        if ip as usize == 0 {
-            return Err(result::Error::CannotReceive);
+        if let Some(receiver) = (self.receiver) {
+            let ip = (self.try_recv)(receiver);
+            if ip as usize == 0 {
+                return Err(result::Error::CannotReceive);
+            }
+            Ok(ip)
+        } else {
+            Err(result::Error::CannotReceive)
         }
-        Ok(ip)
+    }
+
+    pub fn to_raw(mut self) -> Option<*const HeapIPReceiver> {
+        mem::replace(&mut self.receiver, None)
     }
 }
 
 impl Drop for IPReceiver {
     fn drop(&mut self) {
-       (self.drop)(self.receiver);
+        if let Some(ptr) = self.receiver {
+            (self.drop)(ptr);
+        }
     }
 }
 
