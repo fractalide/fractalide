@@ -9,12 +9,17 @@ support = {
   buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};
   capnpc-rust = callPackage ./build-support/capnpc-rust {};
 };
+contracts = rec {
+  number = callPackage ./contracts/maths/number {};
+};
 components = rec {
   not = callPackage ./components/maths/boolean/not {};
   nand = callPackage ./components/maths/boolean/nand {};
   add = callPackage ./components/maths/number/add {};
 };
 in {
-  inherit support components;
-  mapping = callPackage ./mapping { inherit components; };
+  inherit support components contracts;
+  component-name = callPackage ./mappings/component-name.nix { inherit components; };
+  contract-name = callPackage ./mappings/contract-name.nix { inherit contracts; };
+
 }
