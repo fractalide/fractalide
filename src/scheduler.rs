@@ -29,16 +29,17 @@ pub enum CompMsg {
     AddInputArraySelection(String, String, String, Box<HeapIPReceiver>),
     AddOutputArraySelection(String, String, String),
     RunEnd(String, Component),
+    SetReceiver(String, String, Box<HeapIPReceiver>),
     Inc(String),
     Dec(String),
+    Remove(String, Sender<SyncMsg>),
 }
-    // Remove(String, Sender<SyncMsg>),
 
 /// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
     pub allocator: Allocator,
     pub inputs: HashMap<String, Box<HeapSenders>>,
-    pub inputs_array: HashMap<String, Box<HeapIPSender>>,
+    pub inputs_array: HashMap<String, HashMap<String, HashMap<String, Box<HeapIPSender>>>>,
     pub subnets: HashMap<String, SubNet>,
     pub sender: Sender<CompMsg>,
     pub error_receiver: Receiver<result::Error>,
@@ -71,6 +72,9 @@ impl Scheduler {
                     CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sender) => {
                         sched_s.edit_component(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, sender))
                     },
+                    CompMsg::SetReceiver(comp, port, receiver) => {
+                        sched_s.edit_component(comp, EditCmp::SetReceiver(port, receiver))
+                    },
                     CompMsg::Disconnect(name, port) => {
                         sched_s.edit_component(name, EditCmp::Disconnect(port))
                     },
@@ -79,9 +83,9 @@ impl Scheduler {
                     },
                     CompMsg::Inc(dest) => { sched_s.inc(dest) },
                     CompMsg::Dec(dest) => { sched_s.dec(dest) },
-                    // CompMsg::Remove(name, sync_sender) => {
-                    //     sched_s.remove(name, sync_sender);
-                    // }
+                    CompMsg::Remove(name, sync_sender) => {
+                        sched_s.remove(name, sync_sender)
+                    }
                 };
                 res.map_err(|e| { error_s.send(e).expect("cannot send the error"); }).ok();
             }
@@ -104,6 +108,7 @@ impl Scheduler {
         let hs = HeapSenders::from_raw(senders);
         let s_acc = try!(hs.get_sender("acc".into()));
         self.inputs.insert(name.clone(), hs);
+        self.inputs_array.insert(name.clone(), HashMap::new());
         self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
         self.sender.send(CompMsg::ConnectOutputPort(name, "acc".into(), s_acc)).expect("Cannot send to sched state");
         Ok(())
@@ -122,51 +127,45 @@ impl Scheduler {
     //     }
     // }
 
-    // pub fn remove_component(&mut self, name: String) -> Result<HashMap<String, (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)>, ()>{
-    //     let (s, r) = channel(); 
-    //     self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_component: cannot send to the state"); 
-    //     let response = r.recv().unwrap();//expect("Scheduler remove_component: cannot receive from the state");
-    //     match response {
-    //         SyncMsg::Remove(boxed_comp) => {
-    //             let comp = self.components.remove(&name).expect("Scheduler remove_component: the component doesn't exist");
-    //             let mut h = HashMap::new();
-    //             h.insert(name, (boxed_comp, comp.input_senders, comp.input_array_senders));
-    //             Ok(h)
-    //         },
-    //         SyncMsg::CannotRemove => {
-    //             Err(())
-    //         },
-    //     }
+    pub fn remove_component(&mut self, name: String) -> Result<(Component, Box<HeapSenders>, HashMap<String, HashMap<String, Box<HeapIPSender>>>)>{
+        let (s, r) = channel();
+        self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_component: cannot send to the state");
+        let response = try!(r.recv());
+        match response {
+            SyncMsg::Remove(boxed_comp) => {
+                let senders = try!(self.inputs.remove(&name).ok_or(result::Error::ComponentNotFound));
+                let a_senders = try!(self.inputs_array.remove(&name).ok_or(result::Error::ComponentNotFound));
+                Ok((boxed_comp, senders, a_senders))
+            },
+            SyncMsg::CannotRemove => {
+                Err(result::Error::CannotRemove)
+            },
+        }
+    }
 
-    // }
-    // 
-    // pub fn remove_subnet(&mut self, name: String) -> Result<HashMap<String, (BoxedComp, Box<InputSenders>, Box<InputArraySenders>)>, ()> {
-    //     let mut res = HashMap::new();
-    //     let children = {
-    //         let sn = self.subnets.get(&name).expect("the component doesnt exist");
-    //         sn.children.clone()
-    //     };
-    //     for name in children {
-    //         let child = self.remove_component(name.clone());
-    //         if let Ok(child) = child {
-    //             for (key, value) in child.into_iter() {
-    //                 res.insert(key, value);
-    //             }
-    //         } else {
-    //             // TODO Reput already removed component
-    //             for (k, v) in res.into_iter() {
-    //                 self.components.insert(k.clone(), Comp {
-    //                     input_senders: v.1,
-    //                     input_array_senders: v.2,
-    //                 });
-    //                 self.sender.send(CompMsg::NewComponent(k, v.0)).expect("remove_subnet : cannot send to the state");
-    //             }
-    //             return Err(());
-    //         }
-    //     }
-    //     self.subnets.remove(&name);
-    //     Ok(res)
-    // }
+    pub fn remove_subnet(&mut self, name: String) -> Result<HashMap<String, (Component, Box<HeapSenders>, HashMap<String, HashMap<String, Box<HeapIPSender>>>)>> {
+        let mut res = HashMap::new();
+        let children = {
+            let sn = self.subnets.get(&name).expect("the component doesnt exist");
+            sn.children.clone()
+        };
+        for name in children {
+            let child = self.remove_component(name.clone());
+            if let Ok(child) = child {
+                res.insert(name, child);
+            } else {
+                // TODO Reput already removed component
+                for (k, v) in res {
+                    self.inputs.insert(k.clone(), v.1);
+                    self.inputs_array.insert(k.clone(), v.2);
+                    self.sender.send(CompMsg::NewComponent(k, v.0)).expect("remove_subnet : cannot send to the state");
+                }
+                return Err(result::Error::CannotRemove);
+            }
+        }
+        self.subnets.remove(&name);
+        Ok(res)
+    }
 
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String) -> Result<()>{
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
@@ -193,10 +192,7 @@ impl Scheduler {
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        let his = try!(self.inputs_array.get(&format!("{}-{}-{}", comp_in, port_in, selection_in)).ok_or(result::Error::ComponentNotFound)
-            .and_then(|his| {
-                Ok(his.clone())
-            }));
+        let his = try!(self.get_array_heap_sender(comp_in, port_in, selection_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, his)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -204,10 +200,7 @@ impl Scheduler {
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
         let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
-        let his = try!(self.inputs_array.get(&format!("{}-{}-{}", comp_in, port_in, selection_in)).ok_or(result::Error::ComponentNotFound)
-            .and_then(|his| {
-                Ok(his.clone())
-            }));
+        let his = try!(self.get_array_heap_sender(comp_in, port_in, selection_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, his)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -229,14 +222,50 @@ impl Scheduler {
         let (s, r) = self.allocator.channel.build(&comp);
         let r = allocator::HeapIPReceiver::from_raw(r);
         let s = allocator::HeapIPSender::from_raw(s);
-        self.inputs_array.insert(format!("{}-{}-{}", comp, port, selection), s);
+        try!(self.inputs_array.get_mut(&comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|mut comp| {
+                if !comp.contains_key(&port) {
+                    comp.insert(port.clone(), HashMap::new());
+                }
+                comp.get_mut(&port).ok_or(result::Error::SelectionNotFound)
+                    .and_then(|mut port| {
+                        port.insert(selection.clone(), s);
+                        Ok(())
+                    })
+            }));
         self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, r)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
         Ok(())
+    }
+
+    pub fn soft_add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
+        let mut res = true;
+        if let Some(comp) = self.inputs_array.get(&comp) {
+            if let Some(port) = comp.get(&port) {
+                if let Some(_) = port.get(&selection) {
+                    res = true;
+                }
+            }
+        }
+        if res {
+            self.add_input_array_selection(comp, port, selection)
+        } else {
+            Ok(())
+        }
     }
 
     pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) -> Result<()>{
         let (comp, port) = self.get_subnet_name(comp, port, VPType::Out);
         self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
+        Ok(())
+    }
+
+    pub fn set_receiver(&self, comp: String, port: String, receiver: Box<HeapIPReceiver>) -> Result<()> {
+        self.sender.send(CompMsg::SetReceiver(comp, port, receiver)).expect("scheduler cannot send");
+        Ok(())
+    }
+
+    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: Box<HeapIPReceiver>) -> Result<()> {
+        self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -248,8 +277,25 @@ impl Scheduler {
     }
 
     pub fn get_array_sender(&self, comp: String, port: String, selection: String) -> Result<*const HeapIPSender> {
-        self.inputs_array.get(&format!("{}-{}-{}", comp, port, selection)).ok_or(result::Error::ComponentNotFound)
-            .map(|s| { s.clone().to_raw() })
+        self.inputs_array.get(&comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                c.get(&port).ok_or(result::Error::PortNotFound)
+                    .and_then(|p| {
+                        p.get(&selection).ok_or(result::Error::SelectionNotFound)
+                            .map(|s| { s.clone().to_raw() })
+                    })
+            })
+    }
+
+    fn get_array_heap_sender(&self, comp: String, port: String, selection: String) -> Result<Box<HeapIPSender>> {
+        self.inputs_array.get(&comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                c.get(&port).ok_or(result::Error::PortNotFound)
+                    .and_then(|p| {
+                        p.get(&selection).ok_or(result::Error::SelectionNotFound)
+                            .map(|s| { s.clone() })
+                    })
+            })
     }
 
     fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
@@ -286,8 +332,14 @@ enum EditCmp {
     AddOutputArraySelection(String, String),
     ConnectOutputPort(String, Box<HeapIPSender>),
     ConnectOutputArrayPort(String, String, Box<HeapIPSender>),
+    SetReceiver(String, Box<HeapIPReceiver>),
     Disconnect(String),
     DisconnectArray(String, String),
+}
+
+pub enum SyncMsg {
+    Remove(Component),
+    CannotRemove,
 }
 
 struct CompState {
@@ -344,20 +396,21 @@ impl SchedState {
         Ok(())
     }
 
-    //fn remove(&mut self, name: String, sync_sender: Sender<SyncMsg>) {
-    //    let must_remove = {
-    //        let mut o_comp = self.components.get_mut(&name).expect("SchedState remove : component doesn't exist");
-    //        let b_comp = mem::replace(&mut o_comp.comp, None);
-    //        if let Some(boxed_comp) = b_comp {
-    //            sync_sender.send(SyncMsg::Remove(boxed_comp)).expect("SchedState remove : cannot send to the channel");
-    //            true
-    //        } else {
-    //            sync_sender.send(SyncMsg::CannotRemove).expect("SchedState remove : cannot send to the channel");
-    //            false
-    //        }
-    //    };
-    //    if must_remove { self.components.remove(&name); }
-    //}
+    fn remove(&mut self, name: String, sync_sender: Sender<SyncMsg>) -> Result<()>{
+        let must_remove = {
+            let mut o_comp = self.components.get_mut(&name).expect("SchedState remove : component doesn't exist");
+            let b_comp = mem::replace(&mut o_comp.comp, None);
+            if let Some(boxed_comp) = b_comp {
+                sync_sender.send(SyncMsg::Remove(boxed_comp)).expect("SchedState remove : cannot send to the channel");
+                true
+            } else {
+                sync_sender.send(SyncMsg::CannotRemove).expect("SchedState remove : cannot send to the channel");
+                false
+            }
+        };
+        if must_remove { self.components.remove(&name); }
+        Ok(())
+    }
 
     // fn start(&mut self, name: String) {
     //     let start = {
@@ -438,6 +491,9 @@ impl SchedState {
             EditCmp::ConnectOutputArrayPort(port_out, selection_out, his) => {
                 c.connect_array(&port_out, &selection_out, his.to_raw());
             },
+            EditCmp::SetReceiver(port, hir) => {
+                c.set_receiver(&port, hir.to_raw());
+            }
             EditCmp::Disconnect(port) => {
                 c.disconnect(&port);
             },

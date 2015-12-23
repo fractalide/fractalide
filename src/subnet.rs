@@ -255,7 +255,7 @@ impl SubNet {
                     try!(sched.connect(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone()));
                 },
                 &Edge::Simple2array(ref comp_out, ref port_out, ref comp_in, ref port_in, ref selection_in) => {
-                    try!(sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
+                    try!(sched.soft_add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                     try!(sched.connect_to_array(format!("{}{}", name, comp_out), port_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                 },
                 &Edge::Array2simple(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in) => {
@@ -263,7 +263,7 @@ impl SubNet {
                     try!(sched.connect_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone()));
                 },
                 &Edge::Array2array(ref comp_out, ref port_out, ref selection_out, ref comp_in, ref port_in, ref selection_in) => {
-                    try!(sched.add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
+                    try!(sched.soft_add_input_array_selection(format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                     try!(sched.add_output_array_selection(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone()));
                     try!(sched.connect_array_to_array(format!("{}{}", name, comp_out), port_out.clone(), selection_out.clone(), format!("{}{}", name, comp_in), port_in.clone(), selection_in.clone()));
                 },

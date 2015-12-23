@@ -175,15 +175,30 @@ impl Ports {
             })
     }
 
+    pub fn set_receiver(&mut self, port: String, recv: *const HeapIPReceiver) {
+        self.inputs.insert(port, self.allocator.channel.build_receiver(recv));
+    }
+
+    pub fn remove_receiver(&mut self, port: &String) -> Result<*const HeapIPReceiver> {
+        self.inputs.remove(port).ok_or(result::Error::PortNotFound)
+            .map(|hir| { hir.to_raw().unwrap() })
+    }
+
+    pub fn remove_array_receiver(&mut self, port: &String, selection: &String) -> Result<*const HeapIPReceiver> {
+        self.inputs_array.get_mut(port).ok_or(result::Error::PortNotFound)
+            .and_then(|port| {
+                port.remove(selection).ok_or(result::Error::SelectionNotFound)
+                    .map(|hir| { hir.to_raw().unwrap() })
+            })
+    }
+
     pub fn add_input_selection(&mut self, port_in: String, selection_in: String) -> Result<*const HeapIPSender> {
         let (s, r) = self.allocator.channel.build(&self.name);
         let r = self.allocator.channel.build_receiver(r);
         self.inputs_array.get_mut(&port_in)
             .ok_or(result::Error::PortNotFound)
             .map(|port| {
-                if !port.contains_key(&selection_in) {
-                    port.insert(selection_in, r);
-                }
+                port.insert(selection_in, r);
                 s
             })
     }
@@ -193,9 +208,7 @@ impl Ports {
         self.inputs_array.get_mut(&port_in)
             .ok_or(result::Error::PortNotFound)
             .map(|port| {
-                if !port.contains_key(&selection_in) {
-                    port.insert(selection_in, r);
-                }
+                port.insert(selection_in, r);
                 ()
             })
     }

@@ -15,6 +15,9 @@ pub struct ComponentBuilder {
     add_output_selection: fn(*mut u8, &String, &String) -> u32,
     add_input_selection: fn(*mut u8, &String, &String) -> *const HeapIPSender,
     add_input_receiver: fn(*mut u8, &String, &String, *const HeapIPReceiver),
+    get_receiver: fn(*mut u8, &String) -> *const HeapIPReceiver,
+    set_receiver: fn(*mut u8, &String, *const HeapIPReceiver),
+    get_array_receiver: fn(*mut u8, &String, &String) -> *const HeapIPReceiver,
     disconnect: fn(*mut u8, &String) -> u32,
     disconnect_array: fn(*mut u8, &String, &String) -> u32,
     is_input_ports: fn(*mut u8) -> bool,
@@ -47,6 +50,15 @@ impl ComponentBuilder {
         let add_input_receiver = unsafe {
             *(comp.get(b"add_input_receiver\0").expect("cannot find add_input_receiver method"))
         };
+        let get_receiver = unsafe {
+            *(comp.get(b"get_receiver\0").expect("cannot find get_receiver method"))
+        };
+        let set_receiver = unsafe {
+            *(comp.get(b"set_receiver\0").expect("cannot find set_receiver method"))
+        };
+        let get_array_receiver = unsafe {
+            *(comp.get(b"get_array_receiver\0").expect("cannot find get_array_receiver method"))
+        };
         let disconnect = unsafe {
             *(comp.get(b"disconnect\0").expect("cannot find disconnect method"))
         };
@@ -68,6 +80,9 @@ impl ComponentBuilder {
             add_output_selection: add_output_selection,
             add_input_selection: add_input_selection,
             add_input_receiver: add_input_receiver,
+            get_receiver: get_receiver,
+            set_receiver: set_receiver,
+            get_array_receiver: get_array_receiver,
             disconnect: disconnect,
             disconnect_array: disconnect_array,
             is_input_ports: is_input_ports,
@@ -85,6 +100,9 @@ impl ComponentBuilder {
             add_output_selection: self.add_output_selection,
             add_input_selection: self.add_input_selection,
             add_input_receiver: self.add_input_receiver,
+            get_receiver: self.get_receiver,
+            set_receiver: self.set_receiver,
+            get_array_receiver: self.get_array_receiver,
             disconnect: self.disconnect,
             disconnect_array: self.disconnect_array,
             is_input_ports: self.is_input_ports,
@@ -107,6 +125,9 @@ pub struct Component {
     add_input_receiver: fn(*mut u8, &String, &String, *const HeapIPReceiver),
     connect: fn(*mut u8, &String, *const HeapIPSender) -> u32,
     connect_array: fn(*mut u8, &String, &String, *const HeapIPSender) -> u32,
+    get_receiver: fn(*mut u8, &String) -> *const HeapIPReceiver,
+    set_receiver: fn(*mut u8, &String, *const HeapIPReceiver),
+    get_array_receiver: fn(*mut u8, &String, &String) -> *const HeapIPReceiver,
     disconnect: fn(*mut u8, &String) -> u32,
     disconnect_array: fn(*mut u8, &String, &String) -> u32,
     is_input_ports: fn(*mut u8) -> bool,
@@ -137,6 +158,18 @@ impl Component {
 
     pub fn add_input_receiver(&self, port_in: &String, selection_in: &String, recv: *const HeapIPReceiver) {
         (self.add_input_receiver)(self.ptr, port_in, selection_in, recv);
+    }
+
+    pub fn get_receiver(&self, port_in: &String) -> *const HeapIPReceiver {
+        (self.get_receiver)(self.ptr, port_in)
+    }
+
+    pub fn set_receiver(&self, port_in: &String, recv: *const HeapIPReceiver) {
+        (self.set_receiver)(self.ptr, port_in, recv);
+    }
+
+    pub fn get_array_receiver(&self, port_in: &String, selection_in: &String) -> *const HeapIPReceiver {
+        (self.get_array_receiver)(self.ptr, port_in, selection_in)
     }
 
     pub fn disconnect(&self, port: &String){
