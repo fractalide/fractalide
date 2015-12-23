@@ -4,6 +4,7 @@
 , srcs ? null
 , sourceRoot ? null
 , buildInputs ? []
+, contracts ? []
 , cargoUpdateHook ? ""
 , ... } @ args:
 
@@ -18,7 +19,7 @@ let
   };
 
 in stdenv.mkDerivation (args // {
-  inherit cargoDeps rustRegistry;
+  inherit cargoDeps rustRegistry contracts;
 
   patchRegistryDeps = ./patch-registry-deps;
 

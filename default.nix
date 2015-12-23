@@ -1,13 +1,15 @@
-{ pkgs ? import <nixpkgs> {}}:
+{ pkgs ? import <nixpkgs> {},
+lib ? pkgs.lib}:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // support // components);
-support = {
+callPackage = lib.callPackageWith (pkgs // support // components // contracts);
+support = rec {
   cargo = pkgs.cargo;
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./build-support/rust-packages.nix {};
   buildFractalideComponent = callPackage ./build-support/buildFractalideComponent.nix {};
   buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};
   capnpc-rust = callPackage ./build-support/capnpc-rust {};
+  filterContracts = List: map (name: (lib.filterAttrs (n: v: n == name) contracts)) List;
 };
 contracts = rec {
   number = callPackage ./contracts/maths/number {};
@@ -18,7 +20,7 @@ components = rec {
   add = callPackage ./components/maths/number/add {};
 };
 in {
-  inherit support components contracts;
+  inherit components contracts;
   component-name = callPackage ./mappings/component-name.nix { inherit components; };
   contract-name = callPackage ./mappings/contract-name.nix { inherit contracts; };
 
