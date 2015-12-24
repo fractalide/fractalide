@@ -1,5 +1,5 @@
-@0xbde554c96bf60f25;
+@0xbde554c96bf60f36;
 
-struct Number {
-        number @0 :Int64;
+struct Number2 {
+        number2 @0 :Int64;
 }
