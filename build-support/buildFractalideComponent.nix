@@ -1,9 +1,10 @@
-{ stdenv, cacert, git, cargo, rustcMaster, rustRegistry }:
+{ stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry }:
 { name, depsSha256
 , src ? null
 , srcs ? null
 , sourceRoot ? null
 , buildInputs ? []
+, contracts ? []
 , cargoUpdateHook ? ""
 , ... } @ args:
 
@@ -18,7 +19,7 @@ let
   };
 
 in stdenv.mkDerivation (args // {
-  inherit cargoDeps rustRegistry;
+  inherit cargoDeps rustRegistry capnproto capnpc-rust;
 
   patchRegistryDeps = ./patch-registry-deps;
 
@@ -87,6 +88,11 @@ in stdenv.mkDerivation (args // {
   '' + (args.prePatch or "");
 
   buildPhase = args.buildPhase or ''
+    ${stdenv.lib.concatMapStringsSep "\n"
+    (pkg: "
+      cp ${pkg.outPath}/src/*.capnp src/${pkg.name}.capnp;
+      ${capnproto}/bin/capnp compile -o${capnpc-rust}/lib/capnpc-rust:src/  src/*.capnp")
+    (stdenv.lib.flatten contracts)}
     echo "Running cargo build --release"
     cargo build --release
   '';
