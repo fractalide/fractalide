@@ -19,7 +19,7 @@ let
   };
 
 in stdenv.mkDerivation (args // {
-  inherit cargoDeps rustRegistry contracts;
+  inherit cargoDeps rustRegistry;
 
   patchRegistryDeps = ./patch-registry-deps;
 
