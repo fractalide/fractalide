@@ -40,10 +40,5 @@ component! {
     mod number_capnp {
         include!("number_capnp.rs");
     }
-    mod number2_capnp {
-        include!("number2_capnp.rs");
-    }
     use self::number_capnp::number;
-    use self::number2_capnp::number2;
-
 }

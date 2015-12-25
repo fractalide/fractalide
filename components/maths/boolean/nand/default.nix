@@ -1,7 +1,8 @@
-{ buildFractalideComponent }:
+{ buildFractalideComponent, filterContracts }:
 
 buildFractalideComponent rec {
-  name = "nand";
-  src = ./.;
-  depsSha256 = "0sb756918s25vrs3p2l1sijkb9yv2bs972wk0kgrn2rx6q35j8as";
+    name = (baseNameOf ./.);
+    src = ./.;
+    contracts = filterContracts ["boolean"];
+    depsSha256 = "0xia9d6iz8vymlljryk3f9q0pypb1jj1c8n37qwbzhsdrdzhd6g4";
 }

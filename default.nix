@@ -13,7 +13,7 @@ support = rec {
 };
 contracts = rec {
   number = callPackage ./contracts/maths/number {};
-  number2 = callPackage ./contracts/maths/number2 {};
+  boolean = callPackage ./contracts/maths/boolean {};
 };
 components = rec {
   not = callPackage ./components/maths/boolean/not {};
