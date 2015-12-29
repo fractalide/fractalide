@@ -1,6 +1,6 @@
 { buildFractalideContract, genName }:
 
 buildFractalideContract rec {
-    name = genName ./.;
-    text = ./contract.capnp;
+  name = genName ./.;
+  text = ./contract.capnp;
 }
