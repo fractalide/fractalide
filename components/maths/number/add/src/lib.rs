@@ -34,8 +34,8 @@ component! {
     self.ports.send("output".into(), ip).expect("cannot send date");
   }
 
-  mod number_capnp {
+  mod maths_number {
     include!("maths_number_capnp.rs");
   }
-  use self::number_capnp::number;
+  use self::maths_number::number;
 }

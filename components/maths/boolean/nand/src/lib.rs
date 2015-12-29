@@ -33,8 +33,8 @@ component! {
     self.ports.send("output".into(), ip_a).expect("cannot send date");
   }
 
-  mod boolean_capnp {
+  mod maths_boolean {
     include!("maths_boolean_capnp.rs");
   }
-  use self::boolean_capnp::boolean;
+  use self::maths_boolean::boolean;
 }
