@@ -33,7 +33,7 @@ component! {
     }
 
     mod boolean_capnp {
-        include!("boolean_capnp.rs");
+        include!("maths_boolean_capnp.rs");
     }
     use self::boolean_capnp::boolean;
 }

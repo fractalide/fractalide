@@ -1,0 +1,2 @@
+in => a nand(maths-boolean-nand) out => out
+in => b nand()

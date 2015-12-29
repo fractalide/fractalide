@@ -7,7 +7,10 @@ support = rec {
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./build-support/rust-packages.nix {};
   buildFractalideComponent = callPackage ./build-support/buildFractalideComponent.nix {};
+  buildFractalideContract = callPackage ./build-support/buildFractalideContract.nix {};
+  buildFractalideSubnet = callPackage ./build-support/buildFractalideSubnet.nix {};
   buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};
+  genName = callPackage ./build-support/genName.nix {};
   capnpc-rust = callPackage ./build-support/capnpc-rust {};
   filterContracts = List:  map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))) List;
 };
