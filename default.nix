@@ -15,13 +15,13 @@ support = rec {
   filterContracts = List:  map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))) List;
 };
 contracts = rec {
-  number = callPackage ./contracts/maths/number {};
-  boolean = callPackage ./contracts/maths/boolean {};
+  maths-number = callPackage ./contracts/maths/number {};
+  maths-boolean = callPackage ./contracts/maths/boolean {};
 };
 components = rec {
-  not = callPackage ./components/maths/boolean/not {};
-  nand = callPackage ./components/maths/boolean/nand {};
-  add = callPackage ./components/maths/number/add {};
+  maths-boolean-not = callPackage ./components/maths/boolean/not {};
+  maths-boolean-nand = callPackage ./components/maths/boolean/nand {};
+  maths-boolean-add = callPackage ./components/maths/number/add {};
 };
 in {
   inherit components contracts support;
