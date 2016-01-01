@@ -25,7 +25,7 @@ components = rec {
 };
 in {
   inherit components contracts support;
-  component-name = callPackage ./mappings/component-name.nix { inherit components; };
-  contract-name = callPackage ./mappings/contract-name.nix { inherit contracts; };
+  rust-component-lookup = callPackage ./mappings/rust-component-lookup.nix { inherit components; };
+  #rust-contract-lookup = callPackage ./mappings/rust-contract-lookup.nix { inherit contracts; };
 
 }
