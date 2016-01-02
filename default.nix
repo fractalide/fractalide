@@ -23,9 +23,27 @@ components = rec {
   maths-boolean-nand = callPackage ./components/maths/boolean/nand {};
   maths-boolean-add = callPackage ./components/maths/number/add {};
 };
-in {
+mappings = rec {
   inherit components contracts support;
   rust-component-lookup = callPackage ./mappings/rust-component-lookup.nix { inherit components; };
-  #rust-contract-lookup = callPackage ./mappings/rust-contract-lookup.nix { inherit contracts; };
-
+  rust-contract-lookup = callPackage ./mappings/rust-contract-lookup.nix { inherit contracts; };
+};
+mapping-toml = pkgs.writeTextFile {
+  name = "mappings.toml";
+  text = ''
+[mappings]
+rust-component-lookup = ${mappings.rust-component-lookup}
+rust-contract-lookup = ${mappings.rust-contract-lookup}
+'';
+  executable = false;
+};
+in
+pkgs.stdenv.mkDerivation {
+  name = "fractalide.toml";
+  unpackPhase = "true";
+  installPhase = ''
+  mkdir -p $out/fractalide
+  cp ${mapping-toml} $out/fractalide/fractalide.toml'';
 }
+
+
