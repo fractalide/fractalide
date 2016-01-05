@@ -74,7 +74,7 @@ in
         environment = env;
         preStart = ''
           mkdir -p ${cfg.baseDir}
-          chown fractalide.fractalide ${cfg.baseDir}
+          chown fractalide.users ${cfg.baseDir}
           chmod 0750 ${cfg.baseDir}
 
           ln -sf ${fractalideConf} ${cfg.baseDir}/fractalide.toml
