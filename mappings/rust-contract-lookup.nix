@@ -1,4 +1,4 @@
-{ pkgs, lib, components, rustcMaster }:
+{ pkgs, lib, contracts, rustcMaster }:
 let
 mapping = pkgs.writeTextFile {
   name = "mapping.rs";
@@ -14,10 +14,10 @@ pub struct Map {
 #[no_mangle]
 pub extern "C" fn create() -> *const Map {
     let mut map  = HashMap::<&str, &str>::with_capacity(${
-      (builtins.toString (builtins.length (lib.attrValues components)))});
+      (builtins.toString (builtins.length (lib.attrValues contracts)))});
 ${lib.concatMapStringsSep "\n"
     (pkg: "map.insert(\"${pkg.name}\", \"${(lib.last (lib.splitString "/" pkg.outPath))}\");")
-    (lib.attrValues components)}
+    (lib.attrValues contracts)}
     let b = Box::new(Map{ map: map, });
     unsafe { transmute(b) }
 }
@@ -40,13 +40,13 @@ pub extern "C" fn drop(ptr: *const Map) {
 };
 in
 pkgs.stdenv.mkDerivation rec {
-  name = "component-name-${version}";
+  name = "rust-contract-lookup";
   version = "2015-12-22";
   unpackPhase = "true";
   buildInputs = [ rustcMaster ];
   installPhase = ''
   mkdir -p $out/{src,lib}
-  cp ${mapping} $out/src/component-name.rs
-  rustc -Cno-stack-check -Copt-level=3 --crate-type=dylib $out/src/component-name.rs --out-dir $out/lib/
+  cp ${mapping} $out/src/rust-contract-lookup.rs
+  rustc -Cno-stack-check -Copt-level=3 --crate-type=dylib $out/src/rust-contract-lookup.rs --out-dir $out/lib/
   '';
 }
