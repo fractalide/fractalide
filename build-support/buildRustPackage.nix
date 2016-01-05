@@ -99,9 +99,9 @@ in stdenv.mkDerivation (args // {
   doCheck = args.doCheck or true;
 
   installPhase = args.installPhase or ''
-    mkdir -p $out/lib
+    mkdir -p $out/bin
     for f in $(find target/release -maxdepth 1 -type f); do
-      cp $f $out/lib
+      cp $f $out/bin
     done;
   '';
 })
