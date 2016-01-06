@@ -6,7 +6,7 @@ let
   fractalideConf = pkgs.writeText "fractalide.toml"
   ''
   [mappings]
-  rust-component-lookup =  ${mappings.rust-component-lookup}/lib/librust_component_lookup.so
+  rust-component-lookup = ${mappings.rust-component-lookup}/lib/librust_component_lookup.so
   rust-contract-lookup = ${mappings.rust-contract-lookup}/lib/librust_contract_lookup.so
   '';
   fractalideEnv =
@@ -70,6 +70,7 @@ in
     environment.variables = fractalideEnv;
     systemd.services.fractalide-init =
       { wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
         environment = env;
         preStart = ''
           mkdir -p ${cfg.baseDir}
