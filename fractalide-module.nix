@@ -61,8 +61,7 @@ in
       { description = "Fractalide";
         group = "fractalide";
         createHome = false;
-        home = cfg.baseDir;
-        useDefaultShell = true;
+        useDefaultShell = false;
       };
     nix.trustedUsers = [ "users" ];
     services.fractalide.package = mkDefault ((import ./release.nix {}).build.x86_64-linux);
