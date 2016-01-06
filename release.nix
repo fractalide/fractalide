@@ -29,7 +29,7 @@ rec {
     in
     buildRustPackage rec {
       name = "fractalide";
-      src = ./.;
+      src = ./fractalide;
       depsSha256 = "1lnd16n238v9kr54l1bsmrnp7qqaf9nk607vmd6s26vadipxd8g1";
       meta = with stdenv.lib; {
         description = "Fractalide Virtual Machine";
