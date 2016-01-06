@@ -45,7 +45,7 @@ rec {
       machine = fractalideServer build.${system};
       testScript =
         ''
-          $machine->waitForJob("fractalide-init");
+          $machine->waitForJob("fractalide");
         '';
     });
 }

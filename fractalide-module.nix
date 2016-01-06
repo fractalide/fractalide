@@ -68,7 +68,7 @@ in
     services.fractalide.extraConfig = '''';
     environment.systemPackages = [ cfg.package ];
     environment.variables = fractalideEnv;
-    systemd.services.fractalide-init =
+    systemd.services.fractalide =
       { wantedBy = [ "multi-user.target" ];
         after = [ "network.target" ];
         environment = env;
