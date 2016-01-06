@@ -22,14 +22,14 @@ rec {
   build = genAttrs' (system:
     with import <nixpkgs> { inherit system; };
     let
-    rustRegistry = import ../fractalide/build-support/rust-packages.nix
+    rustRegistry = import ./build-support/rust-packages.nix
     {inherit runCommand fetchFromGitHub git;};
-    buildRustPackage = import ../fractalide/build-support/buildRustPackage.nix
+    buildRustPackage = import ./build-support/buildRustPackage.nix
     {inherit stdenv cacert git cargo rustcMaster rustRegistry;};
     in
     buildRustPackage rec {
       name = "fractalide";
-      src = ./.;
+      src = ./fractalide;
       depsSha256 = "1lnd16n238v9kr54l1bsmrnp7qqaf9nk607vmd6s26vadipxd8g1";
       meta = with stdenv.lib; {
         description = "Fractalide Virtual Machine";

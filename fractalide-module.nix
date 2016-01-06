@@ -2,18 +2,17 @@
 with lib;
 let
   cfg = config.services.fractalide;
-  baseDir = "/var/fractalide";
   mappings = import ./default.nix {};
   fractalideConf = pkgs.writeText "fractalide.toml"
   ''
   [mappings]
-  rust-component-lookup =  ${mappings.rust-component-lookup}/lib/librust_component_lookup.so
+  rust-component-lookup = ${mappings.rust-component-lookup}/lib/librust_component_lookup.so
   rust-contract-lookup = ${mappings.rust-contract-lookup}/lib/librust_contract_lookup.so
   '';
   fractalideEnv =
     {
-      FRACTALIDE_CONFIG = "${baseDir}/fractalide.toml";
-      FRACTALID_DATA = "${baseDir}";
+      FRACTALIDE_CONFIG = "${cfg.baseDir}/fractalide.toml";
+      FRACTALIDE_DATA = "${cfg.baseDir}";
     };
   env =
     { FRACTALIDE_REMOTE = "daemon";}
@@ -39,6 +38,13 @@ in
         type = types.lines;
         description = "Extra lines for the Fractalide configuration.";
       };
+      baseDir = mkOption {
+        type = types.path;
+        default = "/var/fractalide";
+        description = ''
+          Working directory for Fractalide.
+        '';
+      };
       extraEnv = mkOption {
         type = types.attrsOf types.str;
         default = {};
@@ -55,8 +61,7 @@ in
       { description = "Fractalide";
         group = "fractalide";
         createHome = false;
-        home = baseDir;
-        useDefaultShell = true;
+        useDefaultShell = false;
       };
     nix.trustedUsers = [ "users" ];
     services.fractalide.package = mkDefault ((import ./release.nix {}).build.x86_64-linux);
@@ -65,13 +70,14 @@ in
     environment.variables = fractalideEnv;
     systemd.services.fractalide-init =
       { wantedBy = [ "multi-user.target" ];
+        after = [ "network.target" ];
         environment = env;
         preStart = ''
-          mkdir -p ${baseDir}
-          chown fractalide.fractalide ${baseDir}
-          chmod 0750 ${baseDir}
+          mkdir -p ${cfg.baseDir}
+          chown fractalide.users ${cfg.baseDir}
+          chmod 0750 ${cfg.baseDir}
 
-          ln -sf ${fractalideConf} ${baseDir}/fractalide.toml
+          ln -sf ${fractalideConf} ${cfg.baseDir}/fractalide.toml
           '';
         serviceConfig.ExecStart = "${cfg.package}/bin/fractalide";
         serviceConfig.PermissionsStartOnly = true;
