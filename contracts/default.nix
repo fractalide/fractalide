@@ -6,5 +6,6 @@ in
 rec {
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
+  file = callPackage ./file {};
 }
 
