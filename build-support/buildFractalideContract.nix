@@ -1,4 +1,4 @@
-{ stdenv, writeTextFile}:
+{ stdenv, writeTextFile, capnproto, capnpc-rust }:
 { name, text ? null, ... } @ args:
 let
 contract = writeTextFile {
@@ -12,5 +12,7 @@ stdenv.mkDerivation (args // {
   unpackPhase = "true";
   installPhase = ''
   mkdir -p $out/src
-  cp ${contract} $out/src/contract.capnp'';
+  cp ${contract} $out/src/contract.capnp
+  ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp
+  '';
 })
