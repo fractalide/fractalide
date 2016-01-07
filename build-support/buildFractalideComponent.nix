@@ -90,8 +90,7 @@ in stdenv.mkDerivation (args // {
   buildPhase = args.buildPhase or ''
     ${stdenv.lib.concatMapStringsSep "\n"
     (pkg: "
-      cp ${pkg.outPath}/src/*.capnp src/${pkg.name}.capnp;
-      ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:src/  src/*.capnp")
+      cp ${pkg.outPath}/src/*.rs src/${pkg.name}.rs;")
     (stdenv.lib.flatten contracts)}
     echo "Running cargo build --release"
     cargo build --release
