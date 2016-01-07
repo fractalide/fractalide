@@ -88,6 +88,7 @@ in stdenv.mkDerivation (args // {
   '' + (args.prePatch or "");
 
   buildPhase = args.buildPhase or ''
+    sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
     ${stdenv.lib.concatMapStringsSep "\n"
     (pkg: "
       cp ${pkg.outPath}/src/*.rs src/${pkg.name}.rs;")
