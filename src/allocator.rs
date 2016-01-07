@@ -2,7 +2,6 @@ use capnp;
 use capnp::message::{Builder, Reader, ReaderOptions};
 use capnp::serialize::{OwnedSegments};
 use std::mem;
-use std::mem::transmute;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::sync_channel;
 use std::sync::mpsc::{SyncSender, Sender, Receiver};
@@ -30,7 +29,7 @@ pub struct HeapIP {
 
 extern "C" fn create_ip() -> *mut HeapIP {
     let ip = Box::new(HeapIP { ip: vec![], last_write: 0, });
-    let ip: *mut HeapIP = unsafe { transmute(ip) };
+    let ip: *mut HeapIP = Box::into_raw(ip);
     ip
 }
 
@@ -61,7 +60,7 @@ extern "C" fn clone_ip(ip: *mut HeapIP) -> *mut HeapIP {
         let ip = Box::new(HeapIP {
             ip: (*ip).ip.clone(),
             last_write: 0, });
-        let ip: *mut HeapIP = unsafe { transmute(ip) };
+        let ip: *mut HeapIP = Box::into_raw(ip);
         ip
     }
 }
@@ -88,7 +87,7 @@ extern "C" fn clear_ip(ip: *mut HeapIP) {
 }
 
 extern "C" fn drop_ip(ip: *mut HeapIP) {
-    let _ip: Box<HeapIP> = unsafe { transmute(ip) };
+    let _ip: Box<HeapIP> = unsafe { Box::from_raw(ip) };
     // println!("Drop the HeapIP");
 }
 
@@ -104,11 +103,11 @@ pub struct HeapIPSender {
 
 impl HeapIPSender {
     pub fn from_raw(ptr: *const HeapIPSender) -> Box<HeapIPSender> {
-        unsafe { transmute(ptr) }
+        unsafe { Box::from_raw(ptr as *mut HeapIPSender) }
     }
 
     pub fn to_raw(self: Box<Self>) -> *const HeapIPSender {
-        let s: *const HeapIPSender = unsafe { transmute(self) };
+        let s: *const HeapIPSender = Box::into_raw(self);
         s
     }
 }
@@ -138,7 +137,7 @@ pub extern "C" fn send_ip(sender: *const HeapIPSender, msg: *mut HeapIP) -> i8 {
 }
 
 extern "C" fn drop_sender(sender: *const HeapIPSender) {
-    let _ip: Box<HeapIPSender> = unsafe { transmute(sender) };
+    let _ip: Box<HeapIPSender> = unsafe { Box::from_raw(sender as *mut HeapIPSender) };
     // println!("Drop the Sender");
 }
 
@@ -152,7 +151,7 @@ pub struct HeapSenders{
 
 impl HeapSenders {
     pub fn from_raw(hs: *mut HeapSenders) -> Box<HeapSenders> {
-        unsafe { transmute(hs) }
+        unsafe { Box::from_raw(hs) }
     }
 
     pub fn get_sender(&self, name: &str) -> Result<Box<HeapIPSender>> {
@@ -168,7 +167,7 @@ impl HeapSenders {
 impl Drop for HeapSenders {
     fn drop(&mut self) {
         for &s in self.senders.values() {
-            let _s: Box<HeapIPSender> = unsafe { transmute(s) };
+            let _s: Box<HeapIPSender> = unsafe { Box::from_raw(s as *mut HeapIPSender) };
             // println!("Drop unused HeapIPSender");
         }
     }
@@ -176,7 +175,7 @@ impl Drop for HeapSenders {
 
 extern "C" fn create_senders() -> *mut HeapSenders {
     let senders = Box::new(HeapSenders { senders: HashMap::new(), });
-    let senders: *mut HeapSenders = unsafe { transmute(senders) };
+    let senders: *mut HeapSenders = Box::into_raw(senders);
     senders
 }
 
@@ -187,7 +186,7 @@ pub extern fn add_ptr(sender: *mut HeapSenders, name: &String, msg: *const HeapI
 }
 
 extern "C" fn drop_senders(sender: *mut HeapSenders) {
-    let _sched: Box<HeapSenders> = unsafe { transmute(sender) };
+    let _sched: Box<HeapSenders> = unsafe { Box::from_raw(sender) };
 }
 
 /*
@@ -202,12 +201,12 @@ pub struct HeapIPReceiver {
 
 impl HeapIPReceiver {
     pub fn to_raw(self: Box<Self>) -> *const HeapIPReceiver {
-        let s: *const HeapIPReceiver = unsafe { transmute(self) };
+        let s: *const HeapIPReceiver = Box::into_raw(self);
         s
     }
 
     pub fn from_raw(hs: *const HeapIPReceiver) -> Box<HeapIPReceiver> {
-        unsafe { transmute(hs) }
+        unsafe { Box::from_raw(hs as *mut HeapIPReceiver) }
     }
 }
 
@@ -240,7 +239,7 @@ extern "C" fn try_recv_ip(receiver: *const HeapIPReceiver) -> *mut HeapIP {
 }
 
 extern "C" fn drop_receiver(receiver: *const HeapIPReceiver) {
-    let _ip: Box<HeapIPReceiver> = unsafe { transmute(receiver) };
+    let _ip: Box<HeapIPReceiver> = unsafe { Box::from_raw(receiver as *mut HeapIPReceiver) };
     // println!("Drop the receiver");
 }
 
@@ -262,14 +261,14 @@ extern "C" fn create_channel(name: &String, sched: &Sender<CompMsg>) -> *mut Hea
         sched: sched.clone(),
         dest: name.clone(),
     });
-    let s: *const HeapIPSender = unsafe { transmute(s) };
-    let r: *const HeapIPReceiver = unsafe { transmute(r) };
+    let s: *const HeapIPSender = Box::into_raw(s);
+    let r: *const HeapIPReceiver = Box::into_raw(r);
 
     let channel = HeapChannel {
         sender: s,
         receiver: r,
     };
-    unsafe { transmute(Box::new(channel))}
+    Box::into_raw(Box::new(channel))
 }
 
 extern "C" fn get_receiver(ptr: *mut HeapChannel) -> *const HeapIPReceiver {
@@ -617,7 +616,7 @@ pub struct IPReceiver {
 }
 impl IPReceiver {
     pub fn recv(&self) -> Result<*mut HeapIP> {
-        if let Some(receiver) = (self.receiver) {
+        if let Some(receiver) = self.receiver {
             let ip = (self.recv)(receiver);
             if ip as usize == 0 {
                 return Err(result::Error::CannotReceive);
@@ -629,7 +628,7 @@ impl IPReceiver {
     }
 
     pub fn try_recv(&self) -> Result<*mut HeapIP> {
-        if let Some(receiver) = (self.receiver) {
+        if let Some(receiver) = self.receiver {
             let ip = (self.try_recv)(receiver);
             if ip as usize == 0 {
                 return Err(result::Error::CannotReceive);
