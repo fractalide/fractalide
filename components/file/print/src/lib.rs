@@ -32,7 +32,7 @@ component! {
     }
 
     mod contracts {
-        include!("file_print.rs");
+        include!("file_capnp.rs");
     }
 
     use self::contracts::file;

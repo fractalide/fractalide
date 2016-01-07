@@ -8,4 +8,5 @@ rec {
   maths_boolean_not = callPackage ./maths/boolean/not {};
   maths_number_add = callPackage ./maths/number/add {};
   file_print = callPackage ./file/print {};
+  file_open = callPackage ./file/open {};
 }
