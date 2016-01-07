@@ -34,7 +34,7 @@ component! {
   }
 
   mod maths_boolean {
-    include!("maths_boolean_capnp.rs");
+    include!("maths-boolean.rs");
   }
   use self::maths_boolean::boolean;
 }

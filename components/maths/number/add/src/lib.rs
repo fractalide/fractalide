@@ -35,7 +35,7 @@ component! {
   }
 
   mod maths_number {
-    include!("maths_number_capnp.rs");
+    include!("maths-number.rs");
   }
   use self::maths_number::number;
 }
