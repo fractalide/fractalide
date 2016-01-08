@@ -4,5 +4,5 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = filterContracts ["maths-boolean"];
-  depsSha256 = "0xia9d6iz8vymlljryk3f9q0pypb1jj1c8n37qwbzhsdrdzhd6g4";
+  depsSha256 = "0vzyz3ph1q19sphxrpji4sz05fd8856ilz0swy2580hirl3a5qs9";
 }

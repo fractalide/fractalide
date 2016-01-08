@@ -3,7 +3,7 @@ name = "maths_boolean_nand"
 version = "0.1.0"
 dependencies = [
  "capnp 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -43,7 +43,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libloading"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "kernel32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -53,12 +53,12 @@ dependencies = [
 
 [[package]]
 name = "rustfbp"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "capnp 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnpc 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "libloading 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libloading 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
