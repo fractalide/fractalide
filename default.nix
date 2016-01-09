@@ -1,12 +1,14 @@
-{ pkgs ? import <nixpkgs> {},
-lib ? pkgs.lib, ...}:
+{ pkgs ? import <nixpkgs> {}
+, lib ? pkgs.lib
+, buildType ? "--release"
+, ...}:
 let
 callPackage = lib.callPackageWith (pkgs // support // components // contracts);
 support = rec {
   cargo = pkgs.cargo;
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./build-support/rust-packages.nix {};
-  buildFractalideComponent = callPackage ./build-support/buildFractalideComponent.nix {};
+  buildFractalideComponent = callPackage ./build-support/buildFractalideComponent.nix {inherit buildType;};
   buildFractalideContract = callPackage ./build-support/buildFractalideContract.nix {};
   buildFractalideSubnet = callPackage ./build-support/buildFractalideSubnet.nix {};
   buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};

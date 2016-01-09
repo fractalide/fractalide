@@ -59,15 +59,25 @@ see [example](https://github.com/sjmackenzie/nixos-infrastructure/blob/master/ma
 
 `$ ./dev-shell`
 
-## Build only components
+## Build components only
+
+### Debug build
+
+`$ nix-build --argstr buildType debug`
+
+### Release build
 
 `$ nix-build`
 
 ## Build service and components
 
+### Release build
+
 `$ nix-build -A build release.nix`
 
 ## Test service deployment in a VM.
+
+### Release build
 
 `$ nix-build -A tests.install release.nix`
 
