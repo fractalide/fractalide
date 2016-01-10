@@ -14,7 +14,7 @@ support = rec {
   buildRustPackage = callPackage ./build-support/buildRustPackage.nix {};
   genName = callPackage ./build-support/genName.nix {};
   capnpc-rust = callPackage ./build-support/capnpc-rust {};
-  filterContracts = List: map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))) List;
+  filterContracts = List: map (name: (builtins.head (builtins.head (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))))) List;
 };
 contracts = import ./contracts {inherit pkgs support;};
 components = import ./components {inherit pkgs support;};

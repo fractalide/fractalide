@@ -1,4 +1,4 @@
-{ buildFractalideComponent, genName, filterContracts }:
+{ buildFractalideComponent, filterContracts, genName }:
 
 buildFractalideComponent rec {
   name = genName ./.;

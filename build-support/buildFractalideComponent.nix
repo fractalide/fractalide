@@ -92,8 +92,7 @@ in stdenv.mkDerivation (args // {
   buildPhase = args.buildPhase or ''
     sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
     ${stdenv.lib.concatMapStringsSep "\n"
-    (pkg: "
-      cp ${pkg.outPath}/src/*.rs src/${pkg.name}.rs;")
+    (contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
     (stdenv.lib.flatten contracts)}
     echo "Running cargo build ${type}"
     cargo build ${type}
