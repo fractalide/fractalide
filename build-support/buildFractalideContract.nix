@@ -1,6 +1,8 @@
-{ stdenv, writeTextFile, capnproto, capnpc-rust }:
-{ name, text ? null, ... } @ args:
+{ stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
+{ src, ... } @ args:
 let
+name = genName src;
+text = src + "/contract.capnp";
 contractText = writeTextFile {
   name = name;
   text = builtins.readFile text;

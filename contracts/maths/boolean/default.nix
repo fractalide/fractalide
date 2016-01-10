@@ -1,7 +1,5 @@
-{ buildFractalideContract, genName }:
+{ buildFractalideContract}:
 
 buildFractalideContract rec {
-  name = genName ./.;
-  text = ./contract.capnp;
+  src = ./.;
 }
-
