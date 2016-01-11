@@ -60,8 +60,8 @@ component! {
     }
 
     mod contracts {
-        include!("path_capnp.rs");
-        include!("file_capnp.rs");
+        include!("path.rs");
+        include!("file.rs");
     }
 
     use self::contracts::file;

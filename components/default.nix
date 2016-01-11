@@ -9,4 +9,5 @@ rec {
   maths_number_add = callPackage ./maths/number/add {};
   file_print = callPackage ./file/print {};
   file_open = callPackage ./file/open {};
+  development_parser_fbp_lexical = callPacakge ./development/parser/fbp/lexical {};
 }

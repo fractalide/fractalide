@@ -8,5 +8,6 @@ rec {
   maths_number = callPackage ./maths/number {};
   file = callPackage ./file {};
   path = callPackage ./path {};
+  fbp-lexical = callPackage ./fbp/lexical {};
 }
 
