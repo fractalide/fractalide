@@ -3,7 +3,7 @@ let
 callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
 rec {
-  maths-number = callPackage ./maths/number {};
-  maths-boolean = callPackage ./maths/boolean {};
+  maths_number = callPackage ./maths/number {};
+  maths_boolean = callPackage ./maths/boolean {};
 }
 
