@@ -1,6 +1,5 @@
-{ buildFractalideSubnet, genName, ...}:
+{ buildFractalideSubnet}:
 
 buildFractalideSubnet rec {
-  name = genName ./.;
-  text = ./lib.subnet;
+  src = ./.;
 }

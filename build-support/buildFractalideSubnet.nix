@@ -1,7 +1,9 @@
-{ stdenv, writeTextFile #, fvm
+{ stdenv, genName, writeTextFile #, fvm
   }:
-{ name, text ? null, ... } @ args:
+{ src, ... } @ args:
 let
+name = genName src;
+text = src + "/lib.subnet";
 subnet = writeTextFile {
   name = name;
   text = builtins.readFile text;

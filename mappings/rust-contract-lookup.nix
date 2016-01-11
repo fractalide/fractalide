@@ -14,10 +14,10 @@ pub struct Map {
 #[no_mangle]
 pub extern "C" fn create() -> *const Map {
     let mut map  = HashMap::<&str, &str>::with_capacity(${
-      (builtins.toString (builtins.length (lib.attrValues contracts)))});
+      (builtins.toString (builtins.mul 2 (builtins.length (lib.attrValues contracts))))});
 ${lib.concatMapStringsSep "\n"
     (pkg: "map.insert(\"${pkg.name}\", \"${(lib.last (lib.splitString "/" pkg.outPath))}\");")
-    (lib.attrValues contracts)}
+    (lib.flatten (lib.attrValues contracts))}
     let b = Box::new(Map{ map: map, });
     unsafe { transmute(b) }
 }
@@ -41,7 +41,6 @@ pub extern "C" fn drop(ptr: *const Map) {
 in
 pkgs.stdenv.mkDerivation rec {
   name = "rust-contract-lookup";
-  version = "2015-12-22";
   unpackPhase = "true";
   buildInputs = [ rustcMaster ];
   installPhase = ''

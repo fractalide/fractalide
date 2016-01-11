@@ -1,4 +1,4 @@
-{ stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry }:
+{ stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry, buildType ? "--release" }:
 { name, depsSha256
 , src ? null
 , srcs ? null
@@ -17,6 +17,8 @@ let
     inherit name src srcs sourceRoot cargoUpdateHook;
     sha256 = depsSha256;
   };
+
+type = if buildType == "debug" then "" else "--release";
 
 in stdenv.mkDerivation (args // {
   inherit cargoDeps rustRegistry capnproto capnpc-rust;
@@ -90,11 +92,10 @@ in stdenv.mkDerivation (args // {
   buildPhase = args.buildPhase or ''
     sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
     ${stdenv.lib.concatMapStringsSep "\n"
-    (pkg: "
-      cp ${pkg.outPath}/src/*.rs src/${pkg.name}.rs;")
+    (contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
     (stdenv.lib.flatten contracts)}
-    echo "Running cargo build --release"
-    cargo build --release
+    echo "Running cargo build ${type}"
+    cargo build ${type}
   '';
 
   checkPhase = args.checkPhase or ''

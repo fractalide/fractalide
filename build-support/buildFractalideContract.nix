@@ -1,18 +1,34 @@
-{ stdenv, writeTextFile, capnproto, capnpc-rust }:
-{ name, text ? null, ... } @ args:
+{ stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
+{ src, ... } @ args:
 let
-contract = writeTextFile {
+name = genName src;
+text = src + "/contract.capnp";
+contractText = writeTextFile {
   name = name;
   text = builtins.readFile text;
   executable = false;
 };
-in
-stdenv.mkDerivation (args // {
+
+contract = stdenv.mkDerivation (args // {
   name = name;
   unpackPhase = "true";
   installPhase = ''
   mkdir -p $out/src
-  cp ${contract} $out/src/contract.capnp
+  cp ${contractText} $out/src/contract.capnp
   ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp
   '';
-})
+});
+
+iip = stdenv.mkDerivation (args // {
+  name = name + "-from-iip";
+  unpackPhase = "true";
+  installPhase = ''
+  mkdir -p $out/src
+  cp ${contractText} $out/src/contract.capnp
+  '';
+});
+
+in
+[contract iip]
+
+
