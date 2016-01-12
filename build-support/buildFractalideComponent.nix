@@ -1,14 +1,19 @@
-{ stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry, buildType ? "--release" }:
-{ name, depsSha256
-, src ? null
-, srcs ? null
-, sourceRoot ? null
-, buildInputs ? []
-, contracts ? []
-, cargoUpdateHook ? ""
-, ... } @ args:
+{lib, stdenv, cacert, git, cargo, capnproto, capnpc-rust
+  , rustcMaster, rustRegistry, buildType, rustfbpPath}:
+  { name, depsSha256
+    , src ? null
+    , srcs ? null
+    , sourceRoot ? null
+    , buildInputs ? []
+    , contracts ? []
+    , cargoUpdateHook ? ""
+    , ... } @ args:
 
 let
+  rustfbp = if rustfbpPath != "false" then
+    import ./rustfbp {inherit lib stdenv rustfbpPath;}
+    else "";
+
   fetchDeps = import ./fetchcargo.nix {
     inherit stdenv cacert git cargo rustcMaster rustRegistry;
   };
@@ -18,17 +23,13 @@ let
     sha256 = depsSha256;
   };
 
-type = if buildType == "debug" then "" else "--release";
+  type = if buildType == "debug" then "" else "--release";
 
 in stdenv.mkDerivation (args // {
   inherit cargoDeps rustRegistry capnproto capnpc-rust;
-
   patchRegistryDeps = ./patch-registry-deps;
-
   buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
-
   configurePhase = args.configurePhase or "true";
-
   postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
 
@@ -54,7 +55,7 @@ in stdenv.mkDerivation (args // {
     echo "Using indexHash '$indexHash'"
 
     rm -rf -- "registry/cache/$indexHash" \
-              "registry/index/$indexHash"
+      "registry/index/$indexHash"
 
     mv registry/cache/HASH "registry/cache/$indexHash"
 
@@ -64,36 +65,35 @@ in stdenv.mkDerivation (args // {
     # Retrieved the Cargo.lock file which we saved during the fetch
     cd ..
     mv deps/Cargo.lock $sourceRoot/
-
     (
-        cd $sourceRoot
-
-        cargo fetch
-        cargo clean
+      cd $sourceRoot
+      cargo fetch
+      cargo clean
     )
   '' + (args.postUnpack or "");
 
   prePatch = ''
     # Patch registry dependencies, using the scripts in $patchRegistryDeps
     (
-        set -euo pipefail
+      set -euo pipefail
+      cd ../deps/registry/src/*
 
-        cd ../deps/registry/src/*
+      for script in $patchRegistryDeps/*; do
+      # Run in a subshell so that directory changes and shell options don't
+      # affect any following commands
 
-        for script in $patchRegistryDeps/*; do
-          # Run in a subshell so that directory changes and shell options don't
-          # affect any following commands
-
-          ( . $script)
-        done
+      ( . $script)
+      done
     )
   '' + (args.prePatch or "");
 
   buildPhase = args.buildPhase or ''
     sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
+    ${if rustfbpPath != "false" then
+      ''sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml'' else ""}
     ${stdenv.lib.concatMapStringsSep "\n"
-    (contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
-    (stdenv.lib.flatten contracts)}
+      (contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
+      (stdenv.lib.flatten contracts)}
     echo "Running cargo build ${type}"
     cargo build ${type}
   '';

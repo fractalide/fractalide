@@ -69,6 +69,20 @@ see [example](https://github.com/sjmackenzie/nixos-infrastructure/blob/master/ma
 
 `$ nix-build`
 
+## Build components only using a local `rustfbp` clone
+
+### Debug build
+
+`$ nix-build --argstr buildType debug --argstr rustfbpPath /path/to/rustfbp-clone`
+
+to build a single component using a local `rustfbp`
+
+`$ nix-build -A components.maths_boolean_nand --argstr buildType debug --argstr rustfbpPath /home/stewart/dev/fractalide/rustfbp/`
+
+### Release build
+
+`$ nix-build --argstr rustfbpPath /path/to/rustfbp-clone`
+
 ## Build service and components
 
 ### Release build
