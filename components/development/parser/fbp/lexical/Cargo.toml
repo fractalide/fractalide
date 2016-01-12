@@ -9,4 +9,5 @@ crate-type = ["dylib"]
 
 [dependencies]
 capnp = "*"
-rustfbp = { path = "/home/denis/fractalide/rustfbp/" } 
+rustfbp = "*"
+nom = "*"

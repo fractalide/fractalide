@@ -24,7 +24,7 @@ component! {
     let b_reader: boolean::Reader = b_reader.get_root().expect("not a boolean reader");
     let a = a_reader.get_boolean();
     let b = b_reader.get_boolean();
-    let mut new_out = super::capnp::message::Builder::new_default();
+    let mut new_out = capnp::message::Builder::new_default();
     {
       let mut boolean = new_out.init_root::<boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});

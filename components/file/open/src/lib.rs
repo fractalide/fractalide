@@ -22,7 +22,7 @@ component! {
         let path = path.get_path().expect("file_open: cannot get the name");
 
         // Send start
-        let mut new_ip = super::capnp::message::Builder::new_default();
+        let mut new_ip = capnp::message::Builder::new_default();
         {
             let mut ip = new_ip.init_root::<file::Builder>();
             ip.set_start(&path);
@@ -36,7 +36,7 @@ component! {
         let file = BufReader::new(&file);
         for line in file.lines() {
             let l = line.expect("cannot get a line");
-            let mut new_ip = super::capnp::message::Builder::new_default();
+            let mut new_ip = capnp::message::Builder::new_default();
             {
                 let mut ip = new_ip.init_root::<file::Builder>();
                 ip.set_text(&l);
@@ -47,7 +47,7 @@ component! {
         }
 
         // Send stop
-        let mut new_ip = super::capnp::message::Builder::new_default();
+        let mut new_ip = capnp::message::Builder::new_default();
         {
             let mut ip = new_ip.init_root::<file::Builder>();
             ip.set_end(&path);
