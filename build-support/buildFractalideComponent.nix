@@ -11,7 +11,7 @@
 
 let
   rustfbp = if rustfbpPath != "false" then
-    import ./rustfbp {inherit lib stdenv rustfbpPath;}
+    import ./rustfbp.nix {inherit lib stdenv rustfbpPath;}
     else "";
 
   fetchDeps = import ./fetchcargo.nix {
@@ -99,7 +99,8 @@ in stdenv.mkDerivation (args // {
     cargo build ${type}
   '';
 
-  checkPhase = args.checkPhase or ''
+  checkPhase = if buildType == "debug" then "echo skipping tests in debug mode"
+   else args.checkPhase or ''
     echo "Running cargo test"
     cargo test
   '';
