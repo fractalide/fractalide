@@ -24,6 +24,7 @@ let
   };
 
   type = if buildType == "debug" then "" else "--release";
+  directory = if buildType == "debug" then "debug" else "release";
 
 in stdenv.mkDerivation (args // {
   inherit cargoDeps rustRegistry capnproto capnpc-rust;
@@ -107,7 +108,7 @@ in stdenv.mkDerivation (args // {
 
   installPhase = args.installPhase or ''
     mkdir -p $out/lib
-    for f in $(find target/release -maxdepth 1 -type f); do
+    for f in $(find target/${directory} -maxdepth 1 -type f); do
       cp $f $out/lib
     done;
   '';
