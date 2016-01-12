@@ -97,7 +97,7 @@ named!(line<&[u8], Vec<Literal> >, many0!(literal));
 
 
 component! {
-    file_open,
+    fbp_lexical,
     inputs(input: file),
     inputs_array(),
     outputs(output: fbp_lexical),
@@ -107,29 +107,79 @@ component! {
     fn run(&mut self) {
         println!("hello fbp-lexical");
         loop {
-         // Get one IP
-         let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
-         let file = ip.get_reader().expect("file_open: cannot get the reader");
-         let file: file::Reader = file.get_root().expect("file_open: not a file_name reader");
-         // print it
-         match file.which().expect("cannot which") {
-          file::Start(path) => { println!("Start : {} ", path.unwrap()); },
-             file::Text(text) => {
-                 let mut text = text.unwrap().as_bytes();
-                 loop {
-                     match literal(text) {
-                         IResult::Done(rest, lit) => {
-                             text = rest;
-                             println!("{:?}", lit);
-                         },
-                         _ => { break;}
-                     }
-                 }
-             },
-          file::End(path) => { println!("End : {} ", path.unwrap()); break; },
-         }
-         // Send outside (don't care about loss)
-         let _ = self.ports.send("output".into(), ip);
+            // Get one IP
+            let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
+            let file = ip.get_reader().expect("fbp_lexical: cannot get the reader");
+            let file: file::Reader = file.get_root().expect("fbp_lexical: not a file_name reader");
+
+            // print it
+            match file.which().expect("cannot which") {
+                file::Start(path) => {
+                    let path = path.unwrap();
+                    println!("Start : {} ", path);
+                    let mut new_ip = capnp::message::Builder::new_default();
+                    {
+                        let mut ip = new_ip.init_root::<lexical::Builder>();
+                        ip.set_start(&path);
+                    }
+                    let mut send_ip = self.allocator.ip.build_empty();
+                    send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                    let _ = self.ports.send("output".into(), send_ip);
+                },
+                file::Text(text) => {
+                    let mut new_ip = capnp::message::Builder::new_default();
+                    let mut text = text.unwrap().as_bytes();
+                    loop {
+                        match literal(text) {
+                            IResult::Done(rest, lit) => {
+                                println!("{:?}", lit);
+                                {
+                                    let mut ip = new_ip.init_root::<lexical::Builder>();
+                                    match lit {
+                                        Literal::Bind => { ip.set_bind(()); },
+                                        Literal::External => {ip.set_external(()); },
+                                        Literal::Port(name, selection) => {
+                                            let mut port = ip.init_port();
+                                            port.set_name(&name);
+                                            if let Some(s) = selection {
+                                                port.set_selection(&s);
+                                            } else {
+                                                port.set_selection("");
+                                            }
+                                        },
+                                        Literal::Comp(name, sort) => {
+                                            let mut comp = ip.init_comp();
+                                            comp.set_name(&name);
+                                            comp.set_sort(&sort);
+                                        },
+                                        Literal::IIP(iip) => {
+                                            ip.set_iip(&iip);
+                                        }
+                                    }
+                                }
+                                text = rest;
+                                let mut send_ip = self.allocator.ip.build_empty();
+                                send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                                let _ = self.ports.send("output".into(), send_ip);
+                            },
+                            _ => { break;}
+                        }
+                    }
+                },
+                file::End(path) => {
+                    let path = path.unwrap();
+                    println!("End : {} ", path);
+                    let mut new_ip = capnp::message::Builder::new_default();
+                    {
+                        let mut ip = new_ip.init_root::<lexical::Builder>();
+                        ip.set_start(&path);
+                    }
+                    let mut send_ip = self.allocator.ip.build_empty();
+                    send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                    let _ = self.ports.send("output".into(), send_ip);
+                    break;
+                },
+            }
         }
 
     }
