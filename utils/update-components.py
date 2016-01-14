@@ -72,12 +72,10 @@ cmd =  "nix-build --argstr buildType debug -A support.rustRegistry"
 args = shlex.split(cmd)
 output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 if error:
-  wrong_length = re.search('.*has wrong length for hash type.*', error)
-  if wrong_length:
+  if re.search('.*has wrong length for hash type.*', error):
     print error
     exit()
-  invalid_base32 = re.search('.*invalid base-32 hash.*', error)
-  if invalid_base32:
+  if re.search('.*invalid base-32 hash.*', error):
     print error
     exit()
   m = re.search('.*instead has \xe2(.*)\xe2', error)
@@ -105,16 +103,13 @@ for root, dirs, files in os.walk("../components"):
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
     if error:
-      not_found = re.search('.*not found', error)
-      if not_found:
+      if re.search('.*not found', error):
         print error + "\nerror: folder hierarchy != attribute name in components/default.nix. Please fix it, commit it, then run again."
         exit()
-      wrong_length = re.search('.*has wrong length for hash type.*', error)
-      if wrong_length:
+      if re.search('.*has wrong length for hash type.*', error):
         print error
         exit()
-      invalid_base32 = re.search('.*invalid base-32 hash.*', error)
-      if invalid_base32:
+      if re.search('.*invalid base-32 hash.*', error):
         print error
         exit()
       m = re.search('.*instead has \xe2(.*)\xe2', error)
