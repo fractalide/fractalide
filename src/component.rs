@@ -35,8 +35,6 @@ macro_rules! component {
     )
         =>
     {
-        #[allow(non_snake_case)]
-        mod $name {
         use rustfbp::component::*;
 
         use rustfbp::result;
@@ -120,25 +118,20 @@ macro_rules! component {
             Ok(Box::new(comp))
         }
 
-        }
-
-        use std::mem::transmute;
-        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver};
-
         #[no_mangle]
-        pub extern fn create_component(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> *mut $name::$name {
-            let comp = $name::new(name, allocator, senders).expect("unable to create the comp");
-            unsafe { transmute(comp) }
+        pub extern fn create_component(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> *mut $name {
+            let comp = new(name, allocator, senders).expect("unable to create the comp");
+            Box::into_raw(comp)
         }
 
         #[no_mangle]
-        pub extern fn run(ptr: *mut $name::$name) {
+        pub extern fn run(ptr: *mut $name) {
             let mut comp = unsafe { &mut *ptr };
             comp.run();
         }
 
         #[no_mangle]
-        pub extern fn connect(ptr: *mut $name::$name, port_out: &String, send: *const HeapIPSender) -> u32 {
+        pub extern fn connect(ptr: *mut $name, port_out: &String, send: *const HeapIPSender) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.connect(port_out.clone(), send) {
                 Ok(_) => 0,
@@ -146,7 +139,7 @@ macro_rules! component {
             }
         }
         #[no_mangle]
-        pub extern fn connect_array(ptr: *mut $name::$name, port_out: &String, selection_out: &String, send: *const HeapIPSender) -> u32 {
+        pub extern fn connect_array(ptr: *mut $name, port_out: &String, selection_out: &String, send: *const HeapIPSender) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.connect_array(port_out.clone(), selection_out.clone(), send) {
                 Ok(_) => 0,
@@ -154,7 +147,7 @@ macro_rules! component {
             }
         }
         #[no_mangle]
-        pub extern fn add_output_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
+        pub extern fn add_output_selection(ptr: *mut $name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.add_output_selection(port.clone(), selection.clone()) {
                 Ok(_) => 0,
@@ -163,37 +156,37 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn add_input_selection(ptr: *mut $name::$name, port: &String, selection: &String) -> *const HeapIPSender {
+        pub extern fn add_input_selection(ptr: *mut $name, port: &String, selection: &String) -> *const HeapIPSender {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.add_input_selection(port.clone(), selection.clone()).expect("cannot add_input_selection")
         }
 
         #[no_mangle]
-        pub extern fn add_input_receiver(ptr: *mut $name::$name, port: &String, selection: &String, hir: *const HeapIPReceiver) {
+        pub extern fn add_input_receiver(ptr: *mut $name, port: &String, selection: &String, hir: *const HeapIPReceiver) {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.add_input_receiver(port.clone(), selection.clone(), hir).expect("cannot add_input_receiver")
         }
 
         #[no_mangle]
-        pub extern fn set_receiver(ptr: *mut $name::$name, port: &String, recv: *const HeapIPReceiver) {
+        pub extern fn set_receiver(ptr: *mut $name, port: &String, recv: *const HeapIPReceiver) {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.set_receiver(port.clone(), recv);
         }
 
         #[no_mangle]
-        pub extern fn get_receiver(ptr: *mut $name::$name, port: &String) -> *const HeapIPReceiver {
+        pub extern fn get_receiver(ptr: *mut $name, port: &String) -> *const HeapIPReceiver {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.remove_receiver(port).expect("cannot get receiver")
         }
 
         #[no_mangle]
-        pub extern fn get_array_receiver(ptr: *mut $name::$name, port: &String, selection: &String) -> *const HeapIPReceiver {
+        pub extern fn get_array_receiver(ptr: *mut $name, port: &String, selection: &String) -> *const HeapIPReceiver {
             let mut comp = unsafe { &mut *ptr };
             comp.ports.remove_array_receiver(port, selection).expect("cannot get receiver")
         }
 
         #[no_mangle]
-        pub extern fn disconnect(ptr: *mut $name::$name, port: &String) -> u32 {
+        pub extern fn disconnect(ptr: *mut $name, port: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.disconnect(port.clone()) {
                 Ok(_) => 0,
@@ -202,7 +195,7 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn disconnect_array(ptr: *mut $name::$name, port: &String, selection: &String) -> u32 {
+        pub extern fn disconnect_array(ptr: *mut $name, port: &String, selection: &String) -> u32 {
             let mut comp = unsafe { &mut *ptr };
             match comp.ports.disconnect_array(port.clone(), selection.clone()) {
                 Ok(_) => 0,
@@ -211,15 +204,15 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn is_input_ports(ptr: *mut $name::$name) -> bool {
+        pub extern fn is_input_ports(ptr: *mut $name) -> bool {
             let mut comp = unsafe { &mut *ptr };
             comp.is_input_ports()
         }
 
 
         #[no_mangle]
-        pub extern fn destroy_component(ptr: *mut $name::$name) {
-            let _comp: Box<$name::$name> = unsafe { transmute(ptr) };
+        pub extern fn destroy_component(ptr: *mut $name) {
+            let _comp: Box<$name> = unsafe { Box::from_raw(ptr) };
         }
     }
 }
