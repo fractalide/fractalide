@@ -63,11 +63,19 @@ replace = "rev = \"%s\";" % head_rev
 subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
 
 # build rustRegistry to get the sha256, then build it again...
-print "[*] Obtaining latest rustRegistry sha256"
+print "[*] Checking for new rustRegistry sha256"
 cmd =  "nix-build --argstr buildType debug -A support.rustRegistry"
 args = shlex.split(cmd)
 output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 if error:
+  wrong_length = re.search('.*has wrong length for hash type.*', error)
+  if wrong_length:
+    print error
+    exit()
+  invalid_base32 = re.search('.*invalid base-32 hash.*', error)
+  if invalid_base32:
+    print error
+    exit()
   m = re.search('.*instead has \xe2(.*)\xe2', error)
   if m:
     found = m.group(1)
@@ -99,6 +107,10 @@ for root, dirs, files in os.walk("../components"):
         exit()
       wrong_length = re.search('.*has wrong length for hash type.*', error)
       if wrong_length:
+        print error
+        exit()
+      invalid_base32 = re.search('.*invalid base-32 hash.*', error)
+      if invalid_base32:
         print error
         exit()
       m = re.search('.*instead has \xe2(.*)\xe2', error)
