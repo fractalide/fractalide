@@ -10,8 +10,9 @@ struct Lexical {
              selection @4 :Text;
         }
         iip @5 :Text;
-        start @6 :Text;
-        end @7 :Text;
+        break @6 :Void;
+        start @7 :Text;
+        end @8 :Text;
   }
 }
 

@@ -16,6 +16,7 @@ use contract_capnp::lexical;
 
 #[derive(Debug)]
 enum Literal {
+    Comment,
     Bind,
     External,
     Comp(String, String),
@@ -29,6 +30,12 @@ use nom::multispace;
 fn ret_bind(i: &[u8]) -> Literal { Literal::Bind }
 fn ret_external(i: &[u8]) -> Literal { Literal::External }
 
+named!(comment<&[u8], Literal>, chain!(
+    multispace? ~
+        tag!(b"//") ~
+        is_not!(&[b'\n']),
+    || { Literal::Comment }
+    ));
 named!(bind<&[u8], Literal>, chain!(
     multispace? ~
         bind: map!(tag!(b"->"), ret_bind) ~
@@ -90,11 +97,7 @@ named!(comp_or_port<&[u8], Literal>, chain!(
     }
     ));
 
-named!(literal<&[u8], Literal>, alt!(iip | bind | external | comp_or_port));
-
-named!(line<&[u8], Vec<Literal> >, many0!(literal));
-
-
+named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_port));
 
 component! {
     fbp_lexical,
@@ -105,7 +108,6 @@ component! {
     option(),
     acc(),
     fn run(&mut self) {
-        println!("hello fbp-lexical");
         loop {
             // Get one IP
             let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
@@ -116,7 +118,6 @@ component! {
             match file.which().expect("cannot which") {
                 file::Start(path) => {
                     let path = path.unwrap();
-                    println!("Start : {} ", path);
                     let mut new_ip = capnp::message::Builder::new_default();
                     {
                         let mut ip = new_ip.init_root::<lexical::Builder>();
@@ -132,7 +133,6 @@ component! {
                     loop {
                         match literal(text) {
                             IResult::Done(rest, lit) => {
-                                println!("{:?}", lit);
                                 {
                                     let mut ip = new_ip.init_root::<lexical::Builder>();
                                     match lit {
@@ -155,6 +155,7 @@ component! {
                                         Literal::IIP(iip) => {
                                             ip.set_iip(&iip);
                                         }
+                                        Literal::Comment => { break; }
                                     }
                                 }
                                 text = rest;
@@ -165,14 +166,20 @@ component! {
                             _ => { break;}
                         }
                     }
+                    {
+                        let mut ip = new_ip.init_root::<lexical::Builder>();
+                        ip.set_break(());
+                    }
+                    let mut send_ip = self.allocator.ip.build_empty();
+                    send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                    let _ = self.ports.send("output".into(), send_ip);
                 },
                 file::End(path) => {
                     let path = path.unwrap();
-                    println!("End : {} ", path);
                     let mut new_ip = capnp::message::Builder::new_default();
                     {
                         let mut ip = new_ip.init_root::<lexical::Builder>();
-                        ip.set_start(&path);
+                        ip.set_end(&path);
                     }
                     let mut send_ip = self.allocator.ip.build_empty();
                     send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");

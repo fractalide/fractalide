@@ -9,5 +9,6 @@ rec {
   file = callPackage ./file {};
   path = callPackage ./path {};
   fbp_lexical = callPackage ./fbp/lexical {};
+  fbp_graph = callPackage ./fbp/graph{};
 }
 

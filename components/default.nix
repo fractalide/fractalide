@@ -10,4 +10,6 @@ rec {
   file_print = callPackage ./file/print {};
   file_open = callPackage ./file/open {};
   development_parser_fbp_lexical = callPackage ./development/parser/fbp/lexical {};
+  development_parser_fbp_semantic = callPackage ./development/parser/fbp/semantic {};
+  development_parser_fbp_print_graph = callPackage ./development/parser/fbp/print_graph {};
 }
