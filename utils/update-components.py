@@ -6,6 +6,7 @@ import subprocess
 import shlex
 import sys
 import re
+import time
 
 def query_yes_no(question, default="no"):
     valid = {"yes": True, "y": True, "ye": True,
@@ -60,6 +61,9 @@ print "[*] Inserting new crates.io HEAD revision into rustRegistry"
 rustRegistry = "../build-support/rust-packages.nix"
 find = r"^.*rev = .*$";
 replace = "rev = \"%s\";" % head_rev
+subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
+find = r"^.*version = .*$";
+replace = "version = \"%s\";" % time.strftime('%Y-%m-%d')
 subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
 
 # build rustRegistry to get the sha256, then build it again...

@@ -7,7 +7,7 @@
 { runCommand, fetchFromGitHub, git }:
 
 let
-version = "2016-01-12";
+version = "2016-01-15";
 rev = "2d7296cec87cdce060233dcb54508c5b4f35f17c";
 
 src = fetchFromGitHub {
