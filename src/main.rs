@@ -25,11 +25,12 @@ pub fn main() {
     println!("location of config = {}", config);
 
 
-    let file = ComponentBuilder::new("/nix/store/f5s69qwlf8jysgcwlrpj7g4wgih8l09l-file_open/lib/libcomponent.so");
-    let print = ComponentBuilder::new("/nix/store/gy89qycq12r4j370q9cggj70yd5zhb3y-file_print/lib/libcomponent.so");
-    let lex = ComponentBuilder::new("/nix/store/7m5rf0m88mxqshbf8rvgpakvhdm64s7f-development_parser_fbp_lexical/lib/libcomponent.so");
-    let semantic = ComponentBuilder::new("/nix/store/a4y0fbx4asq1pnzg4w2miw31d90lgys2-development_parser_fbp_semantic/lib/libcomponent.so");
-    let graph_print = ComponentBuilder::new("/nix/store/ln3pahm77pqfj85md1z7454qsnzmh37j-development_parser_fbp_print_graph/lib/libcomponent.so");
+    let file = ComponentBuilder::new("/nix/store/lm3ifc11q1klhmjynsr2ydpv7h1i71dg-file_open/lib/libcomponent.so");
+    let print = ComponentBuilder::new("/nix/store/qni6z9axvi03x0sb4bsmfbzk8r8zvqva-file_print/lib/libcomponent.so");
+    let lex = ComponentBuilder::new("/nix/store/9jrnlc77jr3q7l8yd270viax0f0v4j1y-development_parser_fbp_lexical/lib/libcomponent.so");
+    let semantic = ComponentBuilder::new("/nix/store/ga08s5fkzm4fwbbjjgwwv4617c6mbz24-development_parser_fbp_semantic/lib/libcomponent.so");
+    let graph_print = ComponentBuilder::new("/nix/store/viswq7bqqg6i5vh1y5p2178zdjpw7b1i-development_parser_fbp_print_graph/lib/libcomponent.so");
+    let fvm = ComponentBuilder::new("/nix/store/5ln6671q25hz4lsqgj3p20330i689sk0-development_fvm/lib/libcomponent.so");
 
     let mut sched = Scheduler::new();
     sched.add_component("open".into(), &file);
@@ -37,6 +38,7 @@ pub fn main() {
     sched.add_component("lex".into(), &lex);
     sched.add_component("sem".into(), &semantic);
     sched.add_component("graph_print".into(), &graph_print);
+    sched.add_component("fvm".into(), &fvm);
 
     let senders = (sched.allocator.senders.create)();
     let mut p = Ports::new("exterior".into(), &sched.allocator, senders,
@@ -53,10 +55,13 @@ pub fn main() {
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
     sched.connect("sem".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
 
+    sched.connect("open".into(), "error".into(), "fvm".into(), "file_error".into());
+    sched.connect("sem".into(), "error".into(), "fvm".into(), "semantic_error".into());
+
     let mut msg = capnp::message::Builder::new_default();
     {
         let mut number = msg.init_root::<path::Builder>();
-        number.set_path("/home/denis/test.fbp");
+        number.set_path("/home/denis/tst.fbp");
     }
 
     let mut ip = sched.allocator.ip.build_empty();
