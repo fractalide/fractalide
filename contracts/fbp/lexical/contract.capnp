@@ -2,21 +2,22 @@
 
 struct Lexical {
   union {
-        bind @0 :Void;
-        external @1 :Void;
-        comp @2 :Comp;
-        port :group {
-             name @3 :Text;
-             selection @4 :Text;
-        }
-        iip @5 :Text;
-        break @6 :Void;
-        start @7 :Text;
-        end @8 :Text;
+    start @0 :Text;
+    end @1 :Text;
+    notFound @2 :Text;
+    token :union {
+      bind @3 :Void;
+      external @4 :Void;
+      comp :group {
+        name @5 :Text;
+        sort @6 :Text;
+      }
+      port :group {
+        name @7 :Text;
+        selection @8 :Text;
+      }
+      iip @9 :Text;
+      break @10 :Void;
+    }
   }
-}
-
-struct Comp {
-       name @0 :Text;
-       sort @1 :Text;
 }

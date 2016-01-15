@@ -5,5 +5,6 @@ struct File {
           start @0 :Text;
           text @1 :Text;
           end @2 :Text;
+          notFound @3 :Text;
     }
 }
