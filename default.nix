@@ -19,10 +19,10 @@ support = rec {
 };
 contracts = import ./contracts {inherit pkgs support;};
 components = import ./components {inherit pkgs support;};
+rust-component-lookup = callPackage ./mappings/rust-component-lookup.nix { inherit components; };
+rust-contract-lookup = callPackage ./mappings/rust-contract-lookup.nix { inherit contracts; };
 in {
-  inherit components contracts support;
-  rust-component-lookup = callPackage ./mappings/rust-component-lookup.nix { inherit components; };
-  rust-contract-lookup = callPackage ./mappings/rust-contract-lookup.nix { inherit contracts; };
+  fractalide-toml = import ./mappings/fractalide-toml.nix{inherit pkgs rust-component-lookup rust-contract-lookup;};
 }
 
 
