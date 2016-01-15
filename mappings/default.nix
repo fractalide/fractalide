@@ -1,5 +1,8 @@
-{ pkgs, rust-component-lookup, rust-contract-lookup}:
+{ pkgs, components, contracts }:
 let
+callPackage = pkgs.lib.callPackageWith (pkgs);
+rust-component-lookup = callPackage ./rust-component-lookup.nix { inherit components; };
+rust-contract-lookup = callPackage ./rust-contract-lookup.nix { inherit contracts; };
 fractalide-toml-txt = pkgs.writeTextFile {
   name = "fractalide.toml";
   text =
