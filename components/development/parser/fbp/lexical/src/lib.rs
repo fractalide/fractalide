@@ -115,17 +115,6 @@ component! {
 
         // print it
         match file.which().expect("cannot which") {
-            file::NotFound(path) => {
-                let path = path.unwrap();
-                let mut new_ip = capnp::message::Builder::new_default();
-                {
-                    let mut ip = new_ip.init_root::<lexical::Builder>();
-                    ip.set_not_found(&path);
-                }
-                let mut send_ip = self.allocator.ip.build_empty();
-                send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
-                let _ = self.ports.send("output".into(), send_ip);
-            }
             file::Start(path) => {
                 let path = path.unwrap();
                 let mut new_ip = capnp::message::Builder::new_default();

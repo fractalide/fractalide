@@ -1,19 +1,12 @@
 @0x84c8e268d3236b4f;
 
 struct Graph {
-  union {
-    errors :union {
-      parsing @0 :List(Text);
-      notFound @1 :Text;
-    }
-    graph :group {
-      nodes @2 :List(Node);
-      edges @3 :List(Edge);
-      iips @4 :List(Iip);
-      externalInputs @5 :List(Ext);
-      externalOutputs @6 :List(Ext);
-    }
-  }
+  path @0 :Text;
+  nodes @1 :List(Node);
+  edges @2 :List(Edge);
+  iips @3 :List(Iip);
+  externalInputs @4 :List(Ext);
+  externalOutputs @5 :List(Ext);
 }
 
 struct Node {

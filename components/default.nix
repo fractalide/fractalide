@@ -12,4 +12,5 @@ rec {
   development_parser_fbp_lexical = callPackage ./development/parser/fbp/lexical {};
   development_parser_fbp_semantic = callPackage ./development/parser/fbp/semantic {};
   development_parser_fbp_print_graph = callPackage ./development/parser/fbp/print_graph {};
+  development_fvm = callPackage ./development/fvm {};
 }

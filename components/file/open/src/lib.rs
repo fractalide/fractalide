@@ -7,9 +7,11 @@ use rustfbp::component::*;
 mod contracts {
     include!("path.rs");
     include!("file.rs");
+    include!("file_error.rs");
 }
 
 use self::contracts::file;
+use self::contracts::file_error;
 use self::contracts::path;
 
 use std::fs::File;
@@ -20,7 +22,7 @@ component! {
     file_open,
     inputs(input: path),
     inputs_array(),
-    outputs(output: file),
+    outputs(output: file, error: file_error),
     outputs_array(),
     option(),
     acc(),
@@ -41,11 +43,11 @@ component! {
                 let mut send_ip = self.allocator.ip.build_empty();
 
                 {
-                    let mut ip = new_ip.init_root::<file::Builder>();
+                    let mut ip = new_ip.init_root::<file_error::Builder>();
                     ip.set_not_found(&path);
                 }
                 send_ip.write_builder(&new_ip).expect("file_open: cannot write");
-                self.ports.send("output".into(), send_ip).expect("file_open: cannot send start");
+                let _ = self.ports.send("error".into(), send_ip);
                 return;
             }
         };

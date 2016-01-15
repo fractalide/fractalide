@@ -7,9 +7,11 @@ extern crate capnp;
 mod contract_capnp {
     include!("fbp_graph.rs");
     include!("fbp_lexical.rs");
+    include!("fbp_semantic_error.rs");
 }
 use contract_capnp::graph;
 use contract_capnp::lexical;
+use contract_capnp::semantic_error;
 
 #[derive(Debug)]
 struct Graph {
@@ -43,7 +45,7 @@ component! {
     fbp_semantic,
     inputs(input: fbp_lexical),
     inputs_array(),
-    outputs(output: fbp_graph),
+    outputs(output: fbp_graph, error: fbp_semantic_error),
     outputs_array(),
     option(),
     acc(),
@@ -56,39 +58,26 @@ component! {
         match literal {
             lexical::Start(path) => {
                 match handle_stream(&self) {
-                    Ok(graph) => { send_graph(&self, &graph) },
+                    Ok(graph) => { send_graph(&self, path.expect("not a path"), &graph) },
                     Err(errors) => {
                         let mut new_ip = capnp::message::Builder::new_default();
                         {
-                            let mut ip = new_ip.init_root::<graph::Builder>();
+                            let mut ip = new_ip.init_root::<semantic_error::Builder>();
+                            ip.set_path(path.unwrap());
                             {
-                                let mut ip = ip.init_errors();
-                                {
-                                    let mut nodes = ip.borrow().init_parsing(errors.len() as u32);
-                                    let mut i = 0;
-                                    for n in &errors {
-                                        nodes.borrow().set(i, &n[..]);
-                                        i += 1;
-                                    }
+                                let mut nodes = ip.init_parsing(errors.len() as u32);
+                                let mut i = 0;
+                                for n in &errors {
+                                    nodes.borrow().set(i, &n[..]);
+                                    i += 1;
                                 }
                             }
                         }
                         let mut send_ip = self.allocator.ip.build_empty();
                         send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
-                        let _ = self.ports.send("output".into(), send_ip);
+                        let _ = self.ports.send("error".into(), send_ip);
                     },
                 }
-            }
-            lexical::NotFound(path) => {
-                // send notFound oustise
-                let mut new_ip = capnp::message::Builder::new_default();
-                let mut send_ip = self.allocator.ip.build_empty();
-                {
-                    let mut ip = new_ip.init_root::<graph::Builder>();
-                    ip.init_errors().set_not_found(path.expect("not a path"));
-                }
-                send_ip.write_builder(&new_ip).expect("file_open: cannot write");
-                self.ports.send("output".into(), send_ip).expect("file_open: cannot send start");
             }
             _ => { panic!("bad stream") },
         }
@@ -282,66 +271,64 @@ fn get_expected(state: &State) -> String {
     }
 }
 
-fn send_graph(comp: &fbp_semantic, graph: &Graph) {
+fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) {
     let mut new_ip = capnp::message::Builder::new_default();
     {
         let mut ip = new_ip.init_root::<graph::Builder>();
+        ip.set_path(path);
         {
-            let mut ip = ip.init_graph();
-            {
-                let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);
-                let mut i = 0;
-                for n in &graph.nodes {
-                    nodes.borrow().get(i).set_name(&n.0[..]);
-                    nodes.borrow().get(i).set_sort(&n.1[..]);
-                    i += 1;
-                }
+            let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);
+            let mut i = 0;
+            for n in &graph.nodes {
+                nodes.borrow().get(i).set_name(&n.0[..]);
+                nodes.borrow().get(i).set_sort(&n.1[..]);
+                i += 1;
             }
-            {
-                let mut edges = ip.borrow().init_edges(graph.edges.len() as u32);
-                let mut i = 0;
-                for e in &graph.edges {
-                    edges.borrow().get(i).set_o_name(&e.0[..]);
-                    edges.borrow().get(i).set_o_port(&e.1[..]);
-                    edges.borrow().get(i).set_o_selection(&e.2[..]);
-                    edges.borrow().get(i).set_i_port(&e.3[..]);
-                    edges.borrow().get(i).set_i_selection(&e.4[..]);
-                    edges.borrow().get(i).set_i_name(&e.5[..]);
-                    i += 1;
-                }
+        }
+        {
+            let mut edges = ip.borrow().init_edges(graph.edges.len() as u32);
+            let mut i = 0;
+            for e in &graph.edges {
+                edges.borrow().get(i).set_o_name(&e.0[..]);
+                edges.borrow().get(i).set_o_port(&e.1[..]);
+                edges.borrow().get(i).set_o_selection(&e.2[..]);
+                edges.borrow().get(i).set_i_port(&e.3[..]);
+                edges.borrow().get(i).set_i_selection(&e.4[..]);
+                edges.borrow().get(i).set_i_name(&e.5[..]);
+                i += 1;
             }
-            {
-                let mut iips = ip.borrow().init_iips(graph.iips.len() as u32);
-                let mut i = 0;
-                for iip in &graph.iips {
-                    iips.borrow().get(i).set_iip(&iip.0[..]);
-                    iips.borrow().get(i).set_port(&iip.1[..]);
-                    iips.borrow().get(i).set_selection(&iip.2[..]);
-                    iips.borrow().get(i).set_comp(&iip.3[..]);
-                    i += 1;
-                }
+        }
+        {
+            let mut iips = ip.borrow().init_iips(graph.iips.len() as u32);
+            let mut i = 0;
+            for iip in &graph.iips {
+                iips.borrow().get(i).set_iip(&iip.0[..]);
+                iips.borrow().get(i).set_port(&iip.1[..]);
+                iips.borrow().get(i).set_selection(&iip.2[..]);
+                iips.borrow().get(i).set_comp(&iip.3[..]);
+                i += 1;
             }
-            {
-                let mut ext = ip.borrow().init_external_inputs(graph.ext_in.len() as u32);
-                let mut i = 0;
-                for e in &graph.ext_in {
-                    ext.borrow().get(i).set_name(&e.0[..]);
-                    ext.borrow().get(i).set_port(&e.1[..]);
-                    ext.borrow().get(i).set_selection(&e.2[..]);
-                    ext.borrow().get(i).set_comp(&e.3[..]);
-                    i += 1;
-                }
+        }
+        {
+            let mut ext = ip.borrow().init_external_inputs(graph.ext_in.len() as u32);
+            let mut i = 0;
+            for e in &graph.ext_in {
+                ext.borrow().get(i).set_name(&e.0[..]);
+                ext.borrow().get(i).set_port(&e.1[..]);
+                ext.borrow().get(i).set_selection(&e.2[..]);
+                ext.borrow().get(i).set_comp(&e.3[..]);
+                i += 1;
             }
-            {
-                let mut ext = ip.borrow().init_external_outputs(graph.ext_out.len() as u32);
-                let mut i = 0;
-                for e in &graph.ext_out {
-                    ext.borrow().get(i).set_comp(&e.0[..]);
-                    ext.borrow().get(i).set_port(&e.1[..]);
-                    ext.borrow().get(i).set_selection(&e.2[..]);
-                    ext.borrow().get(i).set_name(&e.3[..]);
-                    i += 1;
-                }
+        }
+        {
+            let mut ext = ip.borrow().init_external_outputs(graph.ext_out.len() as u32);
+            let mut i = 0;
+            for e in &graph.ext_out {
+                ext.borrow().get(i).set_comp(&e.0[..]);
+                ext.borrow().get(i).set_port(&e.1[..]);
+                ext.borrow().get(i).set_selection(&e.2[..]);
+                ext.borrow().get(i).set_name(&e.3[..]);
+                i += 1;
             }
         }
     }

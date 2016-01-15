@@ -28,7 +28,6 @@ component! {
         let _ = self.ports.send("output".into(), ip);
         // print it
         match file.which().expect("cannot which") {
-            file::NotFound(path) => { println!("File not found : {}", path.unwrap()); },
             file::Start(path) => {
                 println!("Start : {} ", path.unwrap());
                 loop {
