@@ -1,13 +1,15 @@
-{ stdenv, cacert, git, cargo,rustcMaster, rustRegistry }:
+{ lib, stdenv, cacert, git, cargo,rustcMaster, rustRegistry, buildType }:
 { name, depsSha256
-, src ? null
-, srcs ? null
-, sourceRoot ? null
-, buildInputs ? []
-, cargoUpdateHook ? ""
-, ... } @ args:
+  , src ? null
+  , srcs ? null
+  , sourceRoot ? null
+  , buildInputs ? []
+  , cargoUpdateHook ? ""
+  , ... } @ args:
 
-let
+  let
+  rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
+
   fetchDeps = import ./fetchcargo.nix {
     inherit stdenv cacert git cargo rustcMaster rustRegistry;
   };
@@ -17,16 +19,19 @@ let
     sha256 = depsSha256;
   };
 
-in stdenv.mkDerivation (args // {
-  inherit cargoDeps rustRegistry;
+  type = if buildType == "debug" then "" else "--release";
+  directory = if buildType == "debug" then "debug" else "release";
 
-  patchRegistryDeps = ./patch-registry-deps;
+  in stdenv.mkDerivation (args // {
+    inherit cargoDeps rustRegistry;
 
-  buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
+    patchRegistryDeps = ./patch-registry-deps;
 
-  configurePhase = args.configurePhase or "true";
+    buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
 
-  postUnpack = ''
+    configurePhase = args.configurePhase or "true";
+
+    postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
 
     cp -r "$cargoDeps" deps
@@ -51,7 +56,7 @@ in stdenv.mkDerivation (args // {
     echo "Using indexHash '$indexHash'"
 
     rm -rf -- "registry/cache/$indexHash" \
-              "registry/index/$indexHash"
+    "registry/index/$indexHash"
 
     mv registry/cache/HASH "registry/cache/$indexHash"
 
@@ -63,45 +68,47 @@ in stdenv.mkDerivation (args // {
     mv deps/Cargo.lock $sourceRoot/
 
     (
-        cd $sourceRoot
+      cd $sourceRoot
 
-        cargo fetch
-        cargo clean
-    )
-  '' + (args.postUnpack or "");
+      cargo fetch
+      cargo clean
+      )
+'' + (args.postUnpack or "");
 
-  prePatch = ''
-    # Patch registry dependencies, using the scripts in $patchRegistryDeps
-    (
-        set -euo pipefail
+prePatch = ''
+# Patch registry dependencies, using the scripts in $patchRegistryDeps
+(
+  set -euo pipefail
 
-        cd ../deps/registry/src/*
+  cd ../deps/registry/src/*
 
-        for script in $patchRegistryDeps/*; do
-          # Run in a subshell so that directory changes and shell options don't
-          # affect any following commands
+  for script in $patchRegistryDeps/*; do
+  # Run in a subshell so that directory changes and shell options don't
+  # affect any following commands
 
-          ( . $script)
-        done
-    )
-  '' + (args.prePatch or "");
+  ( . $script)
+  done
+  )
+'' + (args.prePatch or "");
 
-  buildPhase = args.buildPhase or ''
-    echo "Running cargo build --release"
-    cargo build --release
-  '';
+buildPhase = args.buildPhase or ''
+sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
+echo "Running cargo build ${type}"
+cargo build ${type}
+'';
 
-  checkPhase = args.checkPhase or ''
-    echo "Running cargo test"
-    cargo test
-  '';
+checkPhase = if buildType == "debug" then "echo skipping tests in debug mode"
+else args.checkPhase or ''
+echo "Running cargo test"
+cargo test
+'';
 
-  doCheck = args.doCheck or true;
+doCheck = args.doCheck or true;
 
-  installPhase = args.installPhase or ''
-    mkdir -p $out/bin
-    for f in $(find target/release -maxdepth 1 -type f); do
-      cp $f $out/bin
-    done;
-  '';
+installPhase = args.installPhase or ''
+mkdir -p $out/bin
+for f in $(find target/${directory} -maxdepth 1 -type f); do
+cp $f $out/bin
+done;
+'';
 })

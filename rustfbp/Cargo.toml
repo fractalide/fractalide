@@ -1,0 +1,13 @@
+[package]
+name = "rustfbp"
+version = "0.3.4"
+authors = ["Denis Michiels <dmichiels@gmail.com>"]
+license = "AGPL-3.0"
+homepage = "http://github.com/fractalide/rustfbp"
+repository = "http://github.com/fractalide/rustfbp"
+description = "Fractalide, a Flow-based programming environment in Rust"
+
+[dependencies]
+capnp = "*"
+capnpc = "*"
+libloading = "*"

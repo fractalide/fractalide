@@ -17,7 +17,7 @@ contract = stdenv.mkDerivation (args // {
   cp ${contractText} $out/src/contract.capnp
   ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp
   '';
-});
+  });
 
 iip = stdenv.mkDerivation (args // {
   name = name + "-from-iip";
@@ -26,7 +26,7 @@ iip = stdenv.mkDerivation (args // {
   mkdir -p $out/src
   cp ${contractText} $out/src/contract.capnp
   '';
-});
+  });
 
 in
 [contract iip]

@@ -1,8 +1,8 @@
-{lib, stdenv, rustfbpPath}:
+{lib, stdenv}:
 
 stdenv.mkDerivation {
   name = "rustfbp";
-  src = lib.cleanSource rustfbpPath;
+  src = lib.cleanSource ../rustfbp;
 
   buildPhase = ''
   mkdir -p $out/src
@@ -13,7 +13,6 @@ stdenv.mkDerivation {
   rm -fr $out/src/.git
   rm -fr $out/src/tests
   rm -fr $out/src/benches
-  rm $out/src/default.nix
   '';
 }
 
