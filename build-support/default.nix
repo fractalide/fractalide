@@ -1,4 +1,4 @@
-{ pkgs, lib ? pkgs.lib, buildType, rustfbpPath, contracts}:
+{ pkgs, lib ? pkgs.lib, buildType, contracts}:
 let
 callPackage = pkgs.lib.callPackageWith (pkgs);
 in
@@ -6,7 +6,7 @@ rec {
   cargo = pkgs.cargo;
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./rust-packages.nix {};
-  buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit lib buildType rustfbpPath capnpc-rust rustRegistry;};
+  buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit lib buildType capnpc-rust rustRegistry;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit rustRegistry;};

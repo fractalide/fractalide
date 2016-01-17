@@ -1,5 +1,5 @@
 {lib, stdenv, cacert, git, cargo, capnproto, capnpc-rust
-  , rustcMaster, rustRegistry, buildType, rustfbpPath}:
+  , rustcMaster, rustRegistry, buildType}:
   { name, depsSha256
     , src ? null
     , srcs ? null
@@ -10,9 +10,7 @@
     , ... } @ args:
 
 let
-  rustfbp = if rustfbpPath != "false" then
-    import ./rustfbp.nix {inherit lib stdenv rustfbpPath;}
-    else "";
+  rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
 
   fetchDeps = import ./fetchcargo.nix {
     inherit stdenv cacert git cargo rustcMaster rustRegistry;
@@ -90,8 +88,7 @@ in stdenv.mkDerivation (args // {
 
   buildPhase = args.buildPhase or ''
     sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
-    ${if rustfbpPath != "false" then
-      ''sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml'' else ""}
+    sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
     ${stdenv.lib.concatMapStringsSep "\n"
       (contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
       (stdenv.lib.flatten contracts)}
