@@ -1,4 +1,0 @@
-#! /usr/bin/env bash
-s=$(type -p nix-shell)
-exec $s release.nix -A build.x86_64-linux "
-    exec $s release.nix -A build" "$@"

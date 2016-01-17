@@ -1,0 +1,13 @@
+[package]
+name = "fbp_lexical"
+version = "0.1.0"
+authors = ["test <test@test.com>"]
+
+[lib]
+name = "fbp_lexical"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"
+nom = "*"

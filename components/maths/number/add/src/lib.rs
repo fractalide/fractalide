@@ -24,7 +24,7 @@ component! {
       let n = m.get_number();
       acc += n;
     }
-    let mut new_m = super::capnp::message::Builder::new_default();
+    let mut new_m = capnp::message::Builder::new_default();
     {
       let mut number = new_m.init_root::<number::Builder>();
       number.set_number(acc);
