@@ -11,26 +11,20 @@ use self::rustfbp::allocator::{Allocator, HeapSenders, HeapIP, HeapIPReceiver};
 use std::thread;
 use std::env;
 
-
-
 mod contracts {
-    include!("/nix/store/df7r145xfifhvaxh3j52izpqmqqk4kby-path/src/contract_capnp.rs");
+    include!("path_capnp.rs");
 }
 use contracts::path;
 
 pub fn main() {
     println!("Hello, fractalide!");
 
-    let config = env::var("FRACTALIDE_CONFIG").expect("cannot read FRACTALIDE_CONFIG");
-    println!("location of config = {}", config);
-
-
-    let file = ComponentBuilder::new("/nix/store/lm3ifc11q1klhmjynsr2ydpv7h1i71dg-file_open/lib/libcomponent.so");
-    let print = ComponentBuilder::new("/nix/store/qni6z9axvi03x0sb4bsmfbzk8r8zvqva-file_print/lib/libcomponent.so");
-    let lex = ComponentBuilder::new("/nix/store/9jrnlc77jr3q7l8yd270viax0f0v4j1y-development_parser_fbp_lexical/lib/libcomponent.so");
-    let semantic = ComponentBuilder::new("/nix/store/ga08s5fkzm4fwbbjjgwwv4617c6mbz24-development_parser_fbp_semantic/lib/libcomponent.so");
-    let graph_print = ComponentBuilder::new("/nix/store/viswq7bqqg6i5vh1y5p2178zdjpw7b1i-development_parser_fbp_print_graph/lib/libcomponent.so");
-    let fvm = ComponentBuilder::new("/nix/store/5ln6671q25hz4lsqgj3p20330i689sk0-development_fvm/lib/libcomponent.so");
+    let file = ComponentBuilder::new("file_open.so");
+    let print = ComponentBuilder::new("file_print.so");
+    let lex = ComponentBuilder::new("development_parser_fbp_lexical.so");
+    let semantic = ComponentBuilder::new("development_parser_fbp_semantic.so");
+    let graph_print = ComponentBuilder::new("development_parser_fbp_print_graph.so");
+    let fvm = ComponentBuilder::new("development_fvm.so");
 
     let mut sched = Scheduler::new();
     sched.add_component("open".into(), &file);
@@ -42,10 +36,10 @@ pub fn main() {
 
     let senders = (sched.allocator.senders.create)();
     let mut p = Ports::new("exterior".into(), &sched.allocator, senders,
-                           vec!["r".into()],
-                           vec![],
-                           vec!["s".into()],
-                           vec![]).expect("cannot create");
+     vec!["r".into()],
+     vec![],
+     vec!["s".into()],
+     vec![]).expect("cannot create");
     let hs = HeapSenders::from_raw(senders);
     sched.inputs.insert("exterior".into(), hs);
 
@@ -61,7 +55,7 @@ pub fn main() {
     let mut msg = capnp::message::Builder::new_default();
     {
         let mut number = msg.init_root::<path::Builder>();
-        number.set_path("/home/denis/tst.fbp");
+        number.set_path("/home/stewart/dev/fractalide/test.fbp");
     }
 
     let mut ip = sched.allocator.ip.build_empty();
