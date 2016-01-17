@@ -4,5 +4,5 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = filterContracts ["fbp_graph" "file_error" "fbp_semantic_error"];
-  depsSha256 = "0wdvwxbky4jxddjykr0z25jmvrk1b7hsvphy5icvchnyhzq98ydy";
+  depsSha256 = "0w8b6mldsxqn807sb232m2xb7d9vzlyh5f8rqm6vf5555by3fzw7";
 }

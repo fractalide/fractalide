@@ -1,5 +1,5 @@
 [root]
-name = "fbp_semantic"
+name = "print_graph"
 version = "0.1.0"
 dependencies = [
  "capnp 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
