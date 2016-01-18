@@ -9,7 +9,7 @@ contractText = writeTextFile {
   executable = false;
 };
 
-contract = stdenv.mkDerivation (args // {
+contract = stdenv.mkDerivation {
   name = name;
   unpackPhase = "true";
   installPhase = ''
@@ -17,18 +17,9 @@ contract = stdenv.mkDerivation (args // {
   cp ${contractText} $out/src/contract.capnp
   ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp
   '';
-  });
-
-iip = stdenv.mkDerivation (args // {
-  name = name + "-from-iip";
-  unpackPhase = "true";
-  installPhase = ''
-  mkdir -p $out/src
-  cp ${contractText} $out/src/contract.capnp
-  '';
-  });
+  };
 
 in
-[contract iip]
+contract
 
 
