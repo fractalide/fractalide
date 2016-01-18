@@ -3,7 +3,7 @@
   , rustUnstable ? support.rustUnstable
   , rustRegistry ? support.rustRegistry
   , buildRustPackage ? support.buildRustPackage
-  , support, mappings, components, contracts }:
+  , support, components, contracts }:
 
   with rustUnstable rustRegistry;
 
