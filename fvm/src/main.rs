@@ -52,10 +52,11 @@ pub fn main() {
     sched.connect("open".into(), "error".into(), "fvm".into(), "file_error".into());
     sched.connect("sem".into(), "error".into(), "fvm".into(), "semantic_error".into());
 
+    let args: Vec<String> = env::args().collect();
     let mut msg = capnp::message::Builder::new_default();
     {
         let mut number = msg.init_root::<path::Builder>();
-        number.set_path("/home/stewart/dev/fractalide/test.fbp");
+        number.set_path(&args[1][..]);
     }
 
     let mut ip = sched.allocator.ip.build_empty();
