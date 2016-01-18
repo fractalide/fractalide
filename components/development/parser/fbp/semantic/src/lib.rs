@@ -109,19 +109,11 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
             },
             lexical::Token(t) => {
                 let token = t.which().expect("cannot which token");
-                if state == Error {
-                    if let lexical::token::Break(()) = token {
-                        if state != CompPortBind && state != IIPBind { state = Break; }
-                    }
-                    else if let lexical::token::Comp(_) = token {
-                        state = Break;
-                    }
-                    else { continue; }
-                }
                 match token {
                     lexical::token::Bind(_) => {
                         state = match state {
                             CompPort => { CompPortBind },
+                            Error => { Error },
                             IIP => { IIPBind },
                             _ => {
                                 errors.push(format!("line {} : -> found, one of {} expected", line, get_expected(&state)));
@@ -133,6 +125,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                         state = match state {
                             CompPort => { CompPortExternal },
                             Port => { PortExternal },
+                            Error => { Error },
                             _ => {
                                 errors.push(format!("line {} : => found, one of {} expected", line, get_expected(&state)));
                                 Error
@@ -157,6 +150,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                                 CompPortExternalPort },
                             Break => { Port },
                             PortExternal => { PortExternalPort },
+                            Error => { Error },
                             IIPBind => { IIPBindPort },
                             _ => {
                                 errors.push(format!("line {} : Port {}[{}] found, one of {} expected", line, port.get_name().unwrap(), port.get_selection().unwrap(), get_expected(&state)));
@@ -212,6 +206,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                                 Comp
                             }
                             Break => { Comp },
+                            Error => { stack = vec![stack.pop().unwrap()]; Comp },
                             _ => {
                                 errors.push(format!("line {} : Comp {}({}) found, one of {} expected", line, comp.get_name().unwrap(), comp.get_sort().unwrap(), get_expected(&state)));
                                 Error
@@ -222,6 +217,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                         let iip = iip.expect("no iip");
                         stack.push(Literal::IIP(iip.to_string()));
                         state = match state {
+                            Error => { IIP },
                             Break => { IIP },
                             _ => {
                                 errors.push(format!("line {} : IIP '{}' found, one of {} expected", line, iip, get_expected(&state)));
@@ -234,9 +230,13 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                         state = match state {
                             CompPortBind => { state },
                             IIPBind => { state },
+                            Comp => { stack.clear(); Break },
+                            CompPortExternalPort => { stack.clear(); Break },
+                            Break => { Break },
+                            Error => { Error },
                             _ => {
-                                stack.clear();
-                                Break
+                                errors.push(format!("line {} : NewLine found, one of {} expected", line, get_expected(&state)));
+                                Error
                             },
                         };
                     }
