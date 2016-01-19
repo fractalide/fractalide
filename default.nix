@@ -1,9 +1,9 @@
 { pkgs ? import <nixpkgs> {}
 , lib ? pkgs.lib
-, buildType ? "--release"
+, debug ? "--release"
 , ...}:
 let
-support = import ./build-support {inherit pkgs buildType contracts components;};
+support = import ./build-support {inherit pkgs debug contracts components;};
 contracts = import ./contracts {inherit pkgs support;};
 components = import ./components {inherit pkgs support;};
 in
