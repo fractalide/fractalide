@@ -1,4 +1,4 @@
-{ pkgs, support }:
+{ pkgs, support, ... }:
 let
 callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
