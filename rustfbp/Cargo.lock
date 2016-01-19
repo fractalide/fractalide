@@ -2,30 +2,30 @@
 name = "rustfbp"
 version = "0.3.4"
 dependencies = [
- "capnp 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "capnpc 0.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "libloading 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "capnp 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "capnpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libloading 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "byteorder"
-version = "0.3.13"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "capnp"
-version = "0.5.2"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "byteorder 0.3.13 (registry+https://github.com/rust-lang/crates.io-index)",
+ "byteorder 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "capnpc"
-version = "0.5.1"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "capnp 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "capnp 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -44,7 +44,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "libloading"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "kernel32-sys 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
