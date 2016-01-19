@@ -1,4 +1,4 @@
-{ lib, stdenv, cacert, git, cargo,rustcMaster, rustRegistry, buildType }:
+{ lib, stdenv, cacert, git, cargo,rustcMaster, rustRegistry, debug }:
 { name, depsSha256
   , src ? null
   , srcs ? null
@@ -19,8 +19,8 @@
     sha256 = depsSha256;
   };
 
-  type = if buildType == "debug" then "" else "--release";
-  directory = if buildType == "debug" then "debug" else "release";
+  type = if debug == "true" then "" else "--release";
+  directory = if debug == "true" then "debug" else "release";
 
   in stdenv.mkDerivation (args // {
     inherit cargoDeps rustRegistry;
@@ -97,7 +97,7 @@ echo "Running cargo build ${type}"
 cargo build ${type}
 '';
 
-checkPhase = if buildType == "debug" then "echo skipping tests in debug mode"
+checkPhase = if debug == "true" then "echo skipping tests in debug mode"
 else args.checkPhase or ''
 echo "Running cargo test"
 cargo test

@@ -8,10 +8,10 @@ Fractalide is a collection of subnets (aka apps) built using Flow-based Programm
 
 Subnets are meant to be executed by the [Fractalide Virtual Machine](https://github.com/fractalide/fractalide/tree/master/fvm).
 
-The repository consists of `components`, `contracts`, `subnets`, `build support` and a Fractalide CI service which serves components and subnets.
+The repository consists of `rustfbp`, `components`, `contracts`, `subnets`, `build support`, `Fractalide Virtual Machine` and a Fractalide CI service which serves components and subnets.
 
 ### Components
-Implemented in [Rust](https://www.rust-lang.org/) components have [capnproto](https://capnproto.org/) `contracts` for each input and output. Components do one thing, do it well, and are highly reusable.
+Implemented in [Rust](https://www.rust-lang.org/) components have [capnproto](https://capnproto.org/) `contracts` for each input and output. Components do one thing, do it well, and are highly reusable. All components are licensed as MPLv2.
 
 Things to be aware of when implementing components:
 * Your component will be named according to the file hierarchy it sits in by [genName](https://github.com/fractalide/fractalide/blob/master/components/development/parser/fbp/lexical/default.nix#L4).
@@ -20,7 +20,7 @@ Things to be aware of when implementing components:
 * Ensure your contracts exists. Nix compiles the contracts during the buildPhase and copies the generated capnproto source code into a `/tmp/build-folder/` for later component compilation.
 
 ### Contracts
-`capnproto` [contracts](https://github.com/fractalide/fractalide/blob/master/contracts/fbp/lexical/contract.capnp) clearly define the boundaries of each component. We subscribe to [langsec](http://langsec.org/) and strictly define what is allowed into a component.
+`capnproto` [contracts](https://github.com/fractalide/fractalide/blob/master/contracts/fbp/lexical/contract.capnp) clearly define the boundaries of each component. We subscribe to [langsec](http://langsec.org/) and strictly define what is allowed into a component. All contracts are licensed as MPLv2.
 
 Things to be aware of when implementing contracts:
 * Copy and paste a contract's `default.nix` into your new contract directory [i.e.](https://github.com/fractalide/fractalide/blob/master/contracts/fbp/lexical/default.nix) (They are generic).
@@ -30,7 +30,7 @@ Things to be aware of when implementing contracts:
 
 ### Subnets
 
-Subnets allow for generalization. This is a graph coordination language layer that represents the business logic of an application. The interface of a subnet is the same as a component but the implementation is quite different, notice the `default.nix` is slightly [different](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/not/default.nix) from a [Rust component](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/nand/default.nix).
+Subnets allow for generalization. This is a graph coordination language layer that represents the business logic of an application. The interface of a subnet is the same as a component but the implementation is quite different, notice the `default.nix` is slightly [different](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/not/default.nix) from a [Rust component](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/nand/default.nix). All subnets are licensed as MPLv2.
 
 Things to be aware of when implementing subnets:
 * Ensure you follow [this](https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/not) file structure.
@@ -38,21 +38,18 @@ Things to be aware of when implementing subnets:
 * Subnets do not have contracts.
 * Again, don't forget to add the subnet to the `components/default.nix`, following a sane file hierarchy naming scheme (which determines the name of your subnet).
 
-Develop your `components`, `contracts` and `subnets` in such that they may be reused and have sensible descriptive names. All contributions will be licensed as MPLv2.
+### Build-support
 
-Run `$ nix-build` in the root directory to build the components.
+A bunch of nix scripts needed to tie this code base together. (Thanks nixos.org community!)
 
-## Hydra Service
+### Rustfbp
 
-Hydra is NixOS own Continuous Integration server. We use it to serve freshly built components (before we move onto the Named Data Networking phase.)
+This is the domain of fractalide hackers, most people shouldn't need to interact with this codebase. Everything revolves around this bit of code. If you make a pull request here you'll need to sign a Contributors License Agreement, the license of this code is AGPL-v3-or-later.
 
-```
-{
-  require = [ "/path/to/fractalide-git-clone/utils/hydra-service.nix" ];
-...
-}
+### FVM
 
-```
+The Fractalide Virtual Machine which is the sole build artifact and executable needed for running subnets.
+
 
 ## Building the `FVM` and components.
 
@@ -60,13 +57,17 @@ First and foremost, you will need to be running [NixOS](http://nixos.org/). This
 
 ## Debug build
 
-`$ nix-build --argstr buildType debug`
+`$ nix-build --argstr debug true`
 
 build a single component:
 
-`$ nix-build --argstr buildType debug -A components.maths_boolean_nand`
+`$ nix-build --argstr debug true -A components.maths_boolean_nand`
 
 ## Release build
+
+`$ nix-build`
+
+build a single component:
 
 `$ nix-build -A components.maths_boolean_nand`
 
@@ -78,5 +79,14 @@ build a single component:
 
 `$ nix-env -i fvm -f default.nix`
 
-## TODO
-Named Data Network to serve NDN Interests for components.
+## Hydra Service
+
+Hydra is NixOS own Continuous Integration server. We use it to serve freshly built components (before we move onto the Named Data Networking phase.).
+
+```
+{
+  require = [ "/path/to/fractalide-git-clone/utils/hydra-service.nix" ];
+...
+}
+
+```
