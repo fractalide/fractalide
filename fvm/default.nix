@@ -3,7 +3,9 @@
   , rustUnstable ? support.rustUnstable
   , rustRegistry ? support.rustRegistry
   , buildRustPackage ? support.buildRustPackage
-  , support, components, contracts }:
+  , upkeepers ? support.upkeepers
+  , support, components, contracts,
+  }:
 
   with rustUnstable rustRegistry;
 
@@ -27,7 +29,7 @@
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
       license = with licenses; [ agpl3Plus ];
-      maintainers = [ maintainers.sjmackenzie ];
+      maintainers = with upkeepers; [ dmichiels sjmackenzie ];
     };
   }
 
