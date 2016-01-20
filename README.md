@@ -4,7 +4,7 @@ Canonical repository for all Fractalide applications and the Fractalide Virtual 
 
 Fractalide is a collection of subnets (aka apps) built using Flow-based Programming components.
 
-"Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented."
+"Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
 
 Subnets are meant to be executed by the [Fractalide Virtual Machine](https://github.com/fractalide/fractalide/tree/master/fvm).
 
@@ -88,5 +88,4 @@ Hydra is NixOS own Continuous Integration server. We use it to serve freshly bui
   require = [ "/path/to/fractalide-git-clone/utils/hydra-service.nix" ];
 ...
 }
-
 ```

@@ -1,75 +1,74 @@
-{lib, stdenv, cacert, git, cargo, capnproto, capnpc-rust
-  , rustcMaster, rustRegistry, debug}:
-  { name, depsSha256
-    , src ? null
-    , srcs ? null
-    , sourceRoot ? null
-    , buildInputs ? []
-    , contracts ? []
-    , cargoUpdateHook ? ""
-    , ... } @ args:
+{lib, stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry, debug}:
 
-    let
-    rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
+{ name, depsSha256
+  , src ? null
+  , srcs ? null
+  , sourceRoot ? null
+  , buildInputs ? []
+  , contracts ? []
+  , cargoUpdateHook ? ""
+  , ... } @ args:
 
-    fetchDeps = import ./fetchcargo.nix {
-      inherit stdenv cacert git cargo rustcMaster rustRegistry;
-    };
+  let
+  rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
 
-    cargoDeps = fetchDeps {
-      inherit name src srcs sourceRoot cargoUpdateHook;
-      sha256 = depsSha256;
-    };
+  fetchDeps = import ./fetchcargo.nix {
+    inherit stdenv cacert git cargo rustcMaster rustRegistry;
+  };
 
-    type = if debug == "true" then "" else "--release";
-    directory = if debug == "true" then "debug" else "release";
+  cargoDeps = fetchDeps {
+    inherit name src srcs sourceRoot cargoUpdateHook;
+    sha256 = depsSha256;
+  };
 
-    in stdenv.mkDerivation (args // {
-      inherit cargoDeps rustRegistry capnproto capnpc-rust;
-      patchRegistryDeps = ./patch-registry-deps;
-      buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
-      configurePhase = args.configurePhase or "true";
-      postUnpack = ''
-      echo "Using cargo deps from $cargoDeps"
+  type = if debug == "true" then "" else "--release";
+  directory = if debug == "true" then "debug" else "release";
 
-      cp -r "$cargoDeps" deps
-      chmod +w deps -R
+  in stdenv.mkDerivation (args // {
+    inherit cargoDeps rustRegistry capnproto capnpc-rust;
+    patchRegistryDeps = ./patch-registry-deps;
+    buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
+    configurePhase = args.configurePhase or "true";
+    postUnpack = ''
+    echo "Using cargo deps from $cargoDeps"
 
-      # It's OK to use /dev/null as the URL because by the time we do this, cargo
-      # won't attempt to update the registry anymore, so the URL is more or less
-      # irrelevant
+    cp -r "$cargoDeps" deps
+    chmod +w deps -R
 
-      cat <<EOF > deps/config
-      [registry]
-      index = "file:///dev/null"
-      EOF
+    # It's OK to use /dev/null as the URL because by the time we do this, cargo
+    # won't attempt to update the registry anymore, so the URL is more or less
+    # irrelevant
 
-      export CARGO_HOME="$(realpath deps)"
+    cat <<EOF > deps/config
+    [registry]
+    index = "file:///dev/null"
+    EOF
 
-      # Let's find out which $indexHash cargo uses for file:///dev/null
-      (cd $sourceRoot && cargo fetch &>/dev/null) || true
-      cd deps
-      indexHash="$(basename $(echo registry/index/*))"
+    export CARGO_HOME="$(realpath deps)"
 
-      echo "Using indexHash '$indexHash'"
+    # Let's find out which $indexHash cargo uses for file:///dev/null
+    (cd $sourceRoot && cargo fetch &>/dev/null) || true
+    cd deps
+    indexHash="$(basename $(echo registry/index/*))"
 
-      rm -rf -- "registry/cache/$indexHash" \
-      "registry/index/$indexHash"
+    echo "Using indexHash '$indexHash'"
 
-      mv registry/cache/HASH "registry/cache/$indexHash"
+    rm -rf -- "registry/cache/$indexHash" \
+    "registry/index/$indexHash"
 
-      echo "Using rust registry from $rustRegistry"
-      ln -s "$rustRegistry" "registry/index/$indexHash"
+    mv registry/cache/HASH "registry/cache/$indexHash"
 
-      # Retrieved the Cargo.lock file which we saved during the fetch
-      cd ..
-      mv deps/Cargo.lock $sourceRoot/
-      (
-        cd $sourceRoot
-        cargo fetch
-        cargo clean
-        )
-'' + (args.postUnpack or "");
+    echo "Using rust registry from $rustRegistry"
+    ln -s "$rustRegistry" "registry/index/$indexHash"
+
+    # Retrieved the Cargo.lock file which we saved during the fetch
+    cd ..
+    mv deps/Cargo.lock $sourceRoot/
+    (
+      cd $sourceRoot
+      cargo fetch
+      cargo clean
+      ) '' + (args.postUnpack or "");
 
 prePatch = ''
 # Patch registry dependencies, using the scripts in $patchRegistryDeps

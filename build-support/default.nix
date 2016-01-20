@@ -1,12 +1,14 @@
 { pkgs, lib ? pkgs.lib, debug, contracts, components}:
 let
+upkeepers = import ./upkeepers.nix;
 callPackage = pkgs.lib.callPackageWith (pkgs);
 in
 rec {
+  inherit upkeepers;
   cargo = pkgs.cargo;
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./rust-packages.nix {};
-  buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit lib debug capnpc-rust rustRegistry;};
+  buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug capnpc-rust rustRegistry;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit lib debug rustRegistry;};

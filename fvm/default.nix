@@ -26,7 +26,7 @@
     meta = with stdenv.lib; {
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
-      license = with licenses; [ mit ];
+      license = with licenses; [ agpl3Plus ];
       maintainers = [ maintainers.sjmackenzie ];
     };
   }
