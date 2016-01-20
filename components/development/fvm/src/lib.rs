@@ -5,10 +5,12 @@ extern crate capnp;
 
 mod contract_capnp {
     include!("path.rs");
+    include!("option_path.rs");
     include!("fbp_graph.rs");
     include!("fbp_fvm_option.rs");
 }
 use contract_capnp::path;
+use contract_capnp::option_path;
 use contract_capnp::graph;
 use contract_capnp::option;
 
@@ -23,9 +25,9 @@ struct Graph {
 
 component! {
     fvm,
-    inputs(input: graph, error: any),
+    inputs(input: graph, new_path: option_path, error: any),
     inputs_array(),
-    outputs(ask_graph: text, give_graph: graph),
+    outputs(ask_graph: text, give_graph: graph, ask_path: path),
     outputs_array(),
     option(fbp_option),
     acc(),
@@ -40,7 +42,6 @@ component! {
         let opt = ip.get_reader().expect("fvm: cannot get reader");
         let opt: option::Reader = opt.get_root().expect("fvm: not an option");
         println!("{}\n{}", opt.get_component().unwrap(), opt.get_subnet().unwrap());
-
 
         // retrieve the asked graph
         let mut ip = self.ports.recv("input".into()).expect("cannot receive");
@@ -97,29 +98,49 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
     for n in new_graph.borrow().get_nodes().unwrap().iter() {
         let c_sort = n.get_sort().unwrap();
         let c_name = n.get_name().unwrap();
-        if c_sort == "not"  || c_sort == "not2" {
-            // TODO : get the graph of not
-            let mut msg = capnp::message::Builder::new_default();
-            {
-                let mut number = msg.init_root::<path::Builder>();
-                if c_sort == "not" { number.set_path("/home/denis/test2.fbp"); }
-                else { number.set_path("/home/denis/test3.fbp"); }
+
+        // get new path
+        let mut msg = capnp::message::Builder::new_default();
+        {
+            let mut path = msg.init_root::<path::Builder>();
+            path.set_path(c_name);
+        }
+        let mut ip = component.allocator.ip.build_empty();
+        ip.write_builder(&mut msg);
+        component.ports.send("ask_path".into(), ip).expect("unable to ask graph");
+
+        // retrieve the asked graph
+        let mut ip = component.ports.recv("new_path".into()).expect("cannot receive");
+        let i_graph = ip.get_reader().expect("fvm: cannot get reader");
+        let i_graph: option_path::Reader = i_graph.get_root().expect("fvm: not a graph");
+
+        let new_path: Option<String> = match i_graph.which().unwrap() {
+            option_path::Path(p) => { Some(p.unwrap().into()) },
+            option_path::None(()) => { None }
+        };
+
+        match new_path {
+            Some(new_graph) => {
+                let mut msg = capnp::message::Builder::new_default();
+                {
+                    let mut number = msg.init_root::<path::Builder>();
+                    number.set_path(&new_graph);
+                }
+                let mut ip = component.allocator.ip.build_empty();
+                ip.write_builder(&mut msg);
+
+                component.ports.send("ask_graph".into(), ip).expect("unable to ask graph");
+
+                // retrieve the asked graph
+                let mut ip = component.ports.recv("input".into()).expect("cannot receive");
+                let i_graph = ip.get_reader().expect("fvm: cannot get reader");
+                let i_graph: graph::Reader = i_graph.get_root().expect("fvm: not a graph");
+
+                add_graph(component, &mut graph, i_graph, &format!("{}-{}", name, c_name));
+            },
+            None => {
+                graph.nodes.push((format!("{}-{}", name, c_name).into(), c_sort.into()));
             }
-            let mut ip = component.allocator.ip.build_empty();
-            ip.write_builder(&mut msg);
-
-            component.ports.send("ask_graph".into(), ip).expect("unable to ask graph");
-
-            // retrieve the asked graph
-            let mut ip = component.ports.recv("input".into()).expect("cannot receive");
-            let i_graph = ip.get_reader().expect("fvm: cannot get reader");
-            let i_graph: graph::Reader = i_graph.get_root().expect("fvm: not a graph");
-
-            add_graph(component, &mut graph, i_graph, &format!("{}-{}", name, c_name));
-
-        } else {
-            // TODO : it's a component, replace the path
-            graph.nodes.push((format!("{}-{}", name, c_name).into(), c_sort.into()));
         }
     }
 }
