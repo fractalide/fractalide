@@ -17,6 +17,7 @@
     configurePhase = ''
     substituteInPlace src/main.rs \
     --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs" \
+    --replace "fbp_fvm_option.rs" "${contracts.fbp_fvm_option}/src/contract_capnp.rs" \
     --replace "file_open.so" "${components.file_open}/lib/libcomponent.so" \
     --replace "file_print.so" "${components.file_print}/lib/libcomponent.so" \
     --replace "development_parser_fbp_lexical.so" "${components.development_parser_fbp_lexical}/lib/libcomponent.so" \
