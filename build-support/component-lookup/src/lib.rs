@@ -14,8 +14,7 @@ use self::contracts::option_path;
 
 fn get(name: &str) -> Option<&str> {
     match name {
-        "not" => { Some("/home/denis/test2.fbp") },
-        "not2" => { Some("/home/denis/test3.fbp") },
+        nix-replace-me
         _ => None,
     }
 }

@@ -4,7 +4,6 @@ callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
-  component_lookup = callPackage ./component_lookup {};
   development_fvm = callPackage ./development/fvm {};
   development_parser_fbp_lexical = callPackage ./development/parser/fbp/lexical {};
   development_parser_fbp_print_graph = callPackage ./development/parser/fbp/print_graph {};

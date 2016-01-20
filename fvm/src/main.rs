@@ -27,7 +27,9 @@ pub fn main() {
     let semantic = ComponentBuilder::new("development_parser_fbp_semantic.so");
     let graph_print = ComponentBuilder::new("development_parser_fbp_print_graph.so");
     let fvm = ComponentBuilder::new("development_fvm.so");
-    let lookup = ComponentBuilder::new("lookup.so");
+    let component_lookup = ComponentBuilder::new("component_lookup.so");
+    let contract_lookup = ComponentBuilder::new("contract_lookup.so");
+
 
     let mut sched = Scheduler::new();
     sched.add_component("open".into(), &file);
@@ -36,14 +38,16 @@ pub fn main() {
     sched.add_component("sem".into(), &semantic);
     sched.add_component("graph_print".into(), &graph_print);
     sched.add_component("fvm".into(), &fvm);
-    sched.add_component("lookup".into(), &lookup);
+    sched.add_component("component_lookup".into(), &component_lookup);
+    sched.add_component("contract_lookup".into(), &contract_lookup);
+
 
     let senders = (sched.allocator.senders.create)();
     let mut p = Ports::new("exterior".into(), &sched.allocator, senders,
-     vec!["r".into()],
-     vec![],
-     vec!["s".into(), "opt".into()],
-     vec![]).expect("cannot create");
+       vec!["r".into()],
+       vec![],
+       vec!["s".into(), "opt".into()],
+       vec![]).expect("cannot create");
     let hs = HeapSenders::from_raw(senders);
     sched.inputs.insert("exterior".into(), hs);
 
@@ -60,8 +64,8 @@ pub fn main() {
 
     // reccursive part
     sched.connect("fvm".into(), "ask_graph".into(), "open".into(), "input".into());
-    sched.connect("fvm".into(), "ask_path".into(), "lookup".into(), "input".into());
-    sched.connect("lookup".into(), "output".into(), "fvm".into(), "new_path".into());
+    sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into());
+    sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into());
 
     let args: Vec<String> = env::args().collect();
     let mut msg = capnp::message::Builder::new_default();
