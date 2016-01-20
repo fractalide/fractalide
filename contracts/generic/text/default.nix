@@ -1,0 +1,5 @@
+{ buildFractalideContract}:
+
+buildFractalideContract rec {
+  src = ./.;
+}
