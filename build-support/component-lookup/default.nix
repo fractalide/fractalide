@@ -1,4 +1,4 @@
-{ stdenv, buildFractalideComponent, filterContracts, upkeepers, components, ...}:
+{ stdenv, buildFractalideComponent, filterContracts, upkeepers, components, contract_lookup, ...}:
 
 buildFractalideComponent rec {
   name = "component_lookup";
@@ -8,7 +8,11 @@ buildFractalideComponent rec {
   configurePhase = ''
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"
 (pkg: ''\"${pkg.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" pkg.outPath))}\")},'')
-(stdenv.lib.attrValues components)}"
+(stdenv.lib.attrValues components)}
+\"${name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" (builtins.toPath "$out")))}\")},
+\"${contract_lookup.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" contract_lookup.outPath))}\")}, "
+
+cat src/lib.rs
   '';
   meta = with stdenv.lib; {
     description = "Component: Looks up the versioned name, after given the common component name";
