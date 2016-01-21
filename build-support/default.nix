@@ -15,6 +15,6 @@ rec {
   genName = callPackage ./genName.nix {};
   capnpc-rust = callPackage ./capnpc-rust.nix {inherit rustRegistry buildRustPackage;};
   filterContracts = List: map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))) List;
-  rust-component-lookup = callPackage ./rust-component-lookup.nix { inherit components; };
-  rust-contract-lookup = callPackage ./rust-contract-lookup.nix { inherit contracts; };
+  component_lookup = callPackage ./component-lookup { inherit components buildFractalideComponent filterContracts contract_lookup upkeepers; };
+  contract_lookup = callPackage ./contract-lookup { inherit contracts buildFractalideComponent filterContracts upkeepers; };
 }
