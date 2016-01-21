@@ -44,7 +44,7 @@ if result == False:
 
 # update all the components via cargo
 print "[*] Updating components via cargo"
-paths = ('../components', '../fvm', '../rustfbp')
+paths = ('../components', '../fvm', '../rustfbp', '../build-support')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
   cmd = "cargo generate-lockfile --manifest-path " + root + "/Cargo.toml"
   args = shlex.split(cmd)
@@ -123,23 +123,35 @@ for root, dirs, files in os.walk("../components"):
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
-print "[*] Checking FVM for new depsSha256"
-cmd =  "nix-build --argstr debug true -A fvm"
-args = shlex.split(cmd)
-output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
-if error:
-    if re.search('.*has wrong length for hash type.*', error):
-      print error
-      exit()
-    if re.search('.*invalid base-32 hash.*', error):
-      print error
-      exit()
-    m = re.search('.*instead has \xe2(.*)\xe2', error)
-    if m:
-      print "[*] -- found new depsSha256... building "
-      fvm = "../fvm/default.nix"
-      found = m.group(1)
-      find = r"^.*depsSha256 = .*$";
-      replace = "    depsSha256 = \"%s\";" % found[2:]
-      subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",fvm])
+print "[*] Checking lookups and fvm for a new depsSha256"
+paths = ('../build-support/contract_lookup', '../build-support/component_lookup', '../fvm')
+for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
+    if "Cargo.toml" in files:
+      name = os.path.basename(root)
+      if name == "fvm":
+        cmd = "nix-build --argstr debug true -A fvm"
+      else:
+        cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root)
+      print "[*] - " + name
+      args = shlex.split(cmd)
       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+      if error:
+        if re.search('.*has wrong length for hash type.*', error):
+          print error
+          exit()
+        if re.search('.*invalid base-32 hash.*', error):
+          print error
+          exit()
+        m = re.search('.*instead has \xe2(.*)\xe2', error)
+        if m:
+          print "[*] -- found new depsSha256... building "
+          found = m.group(1)
+          find = r"^.*depsSha256 = .*$";
+          if name == "fvm":
+            space = "    "
+          else:
+            space = "  "
+          replace = space + "depsSha256 = \"%s\";" % found[2:]
+          subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
+          output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+

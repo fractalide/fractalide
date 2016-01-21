@@ -1,4 +1,5 @@
-{ pkgs, stdenv ? pkgs.stdenv
+{
+  pkgs, stdenv ? pkgs.stdenv
   , fetchFromGitHub ? support.fetchFromGitHub
   , rustUnstable ? support.rustUnstable
   , rustRegistry ? support.rustRegistry
