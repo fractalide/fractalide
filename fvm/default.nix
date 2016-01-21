@@ -10,7 +10,8 @@
   with rustUnstable rustRegistry;
 
   buildRustPackage rec {
-    name = "fvm";
+    version = "0.1.0";
+    name = "fvm-${version}";
     src = ./.;
     depsSha256 = "0w8b6mldsxqn807sb232m2xb7d9vzlyh5f8rqm6vf5555by3fzw7";
 
