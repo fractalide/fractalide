@@ -42,13 +42,18 @@ Proceed?")
 if result == False:
   exit()
 
+def generate_component_name( path ):
+  name_list = path[14:].split("/")
+  return '_'.join(map(str, name_list))
+
 # update all the components via cargo
-print "[*] Updating components via cargo"
+print "\n[*] Updating every Cargo.toml via cargo"
 paths = ('../components', '../fvm', '../rustfbp', '../build-support')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
   cmd = "cargo generate-lockfile --manifest-path " + root + "/Cargo.toml"
   args = shlex.split(cmd)
   if "Cargo.toml" in files:
+    print "[ ] - " + root+"/Cargo.toml"
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
 
 # get crates.io head rev
@@ -92,16 +97,13 @@ if error:
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
-def generate_component_name( path ):
-  name_list = path[14:].split("/")
-  return '_'.join(map(str, name_list))
 
 print "[*] Checking Rust components for new depsSha256"
 for root, dirs, files in os.walk("../components"):
   if "Cargo.toml" in files:
     name = generate_component_name(root)
     cmd =  "nix-build --argstr debug true -A components." + name
-    print "[*] - " + name
+    print "[ ] - " + name
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
     if error:
@@ -116,14 +118,13 @@ for root, dirs, files in os.walk("../components"):
         exit()
       m = re.search('.*instead has \xe2(.*)\xe2', error)
       if m:
-        print "[*] -- found new depsSha256... building "
+        print "[!] -- found new depsSha256... building "
         found = m.group(1)
         find = r"^.*depsSha256 = .*$";
         replace = "  depsSha256 = \"%s\";" % found[2:]
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
-print "[*] Checking lookups and fvm for a new depsSha256"
 paths = ('../build-support/contract_lookup', '../build-support/component_lookup', '../fvm')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
@@ -132,7 +133,7 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
         cmd = "nix-build --argstr debug true -A fvm"
       else:
         cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root)
-      print "[*] - " + name
+      print "[ ] - " + name
       args = shlex.split(cmd)
       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
       if error:
@@ -144,7 +145,7 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
           exit()
         m = re.search('.*instead has \xe2(.*)\xe2', error)
         if m:
-          print "[*] -- found new depsSha256... building "
+          print "[!] -- found new depsSha256... building "
           found = m.group(1)
           find = r"^.*depsSha256 = .*$";
           if name == "fvm":
@@ -155,3 +156,4 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
           subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
           output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
+print "[*] Done"
