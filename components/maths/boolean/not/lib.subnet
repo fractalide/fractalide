@@ -1,2 +1,2 @@
-in => a nand(maths-boolean-nand) out => out
+in => a nand(maths_boolean_nand) out => out
 in => b nand()
