@@ -2,7 +2,6 @@
 
 buildFractalideSubnet rec {
   src = ./.;
-  subnetDeps = filterDeps ["maths_boolean_nand" "maths_boolean_not"];
 
   meta = with stdenv.lib; {
     description = "Subnet: AND logic gate";

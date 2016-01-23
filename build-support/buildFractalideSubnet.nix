@@ -1,7 +1,6 @@
-{ stdenv, genName, writeTextFile #, fvm
+{ stdenv, genName, writeTextFile, filterDeps, extractDepsFromSubnet #, fvm
   }:
   { src
-    , subnetDeps
     , ... } @ args:
   let
   name = genName src;
@@ -11,6 +10,7 @@
     text = builtins.readFile text;
     executable = false;
   };
+  subnetDeps = filterDeps (extractDepsFromSubnet text);
   in stdenv.mkDerivation  (args // {
     name = name;
     unpackPhase = "true";
