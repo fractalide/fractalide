@@ -1,0 +1,2 @@
+a => a nand(maths_boolean_nand) out -> in not(maths_boolean_not) out => out
+b => b nand()

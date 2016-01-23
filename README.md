@@ -75,6 +75,29 @@ build a single component:
 
 `./result/bin/fvm </path/to/a/filename.subnet>`
 
+### Pro tip
+
+
+`$ nix-shell --argstr debug true -A components.maths_boolean_nand`
+
+`$ cd components/maths/boolean/nand`
+
+`$ eval "$buildPhase"`
+
+`$ cargo build`
+
+repeat till component is done
+
+`$ git checkout Cargo.*`
+
+`$ rm src/maths_boolean.rs` (or any other `capnp` generated file copied into the `src` folder)
+
+`<ctrl-d>`
+
+ensure you delete any nix generated files/changes before committing!
+
+This approach allows you to keep around your `target` folder so you don't have to build from scratch each time via `$nix-build --argstr debug true -A components.maths_boolean_nand`.
+
 ## Installing the `fvm` into your `nix` environment
 
 `$ nix-env -i fvm -f default.nix`
