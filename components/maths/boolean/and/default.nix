@@ -1,4 +1,4 @@
-{ stdenv, buildFractalideSubnet, filterDeps, upkeepers, ...}:
+{ stdenv, buildFractalideSubnet, upkeepers, ...}:
 
 buildFractalideSubnet rec {
   src = ./.;
