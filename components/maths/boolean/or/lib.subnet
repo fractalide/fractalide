@@ -1,4 +1,2 @@
-a => a not2(maths_boolean_not) ->
-      b and(maths_boolean_and)
-b => a not1(maths_boolean_not) out ->
-      a and() out -> in not3(maths_boolean_not) out => out
+a => a not2(maths_boolean_not) out -> a and(maths_boolean_and)
+b => a not1(maths_boolean_not) out -> b and() out -> in not3(maths_boolean_not) out => out
