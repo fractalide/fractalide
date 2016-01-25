@@ -1,0 +1,11 @@
+<chapter xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xml:id="chap-introduction">
+
+<title>Introduction</title>
+
+<para>This manual tells you how to write components and contracts for the Fractalide component
+collection.  Thus it’s for packagers and developers who want
+to add packages to Fractalide.</para>
+
+</chapter>
