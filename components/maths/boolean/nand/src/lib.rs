@@ -7,6 +7,11 @@ extern crate rustfbp;
 
 use rustfbp::component::*;
 
+mod maths_boolean {
+    include!("maths_boolean.rs");
+}
+use self::maths_boolean::boolean;
+
 component! {
   Nand,
   inputs(a: boolean, b: boolean),
@@ -32,9 +37,4 @@ component! {
     ip_a.write_builder(&new_out);
     self.ports.send("output".into(), ip_a).expect("cannot send date");
   }
-
-  mod maths_boolean {
-    include!("maths_boolean.rs");
-  }
-  use self::maths_boolean::boolean;
 }

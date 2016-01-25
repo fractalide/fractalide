@@ -5,6 +5,8 @@ use std::mem;
 use std::sync::mpsc::channel;
 use std::sync::mpsc::sync_channel;
 use std::sync::mpsc::{SyncSender, Sender, Receiver};
+
+use std::sync::{Arc, Mutex};
 use std::collections::HashMap;
 use std::io::{Write};
 use std::io;
@@ -13,6 +15,8 @@ use result;
 use result::Result;
 
 use scheduler::CompMsg;
+
+pub type IncDec = Arc<Mutex<Box<Fn(&str) -> i8>>>;
 
 /*
  *  Memory object
@@ -97,7 +101,7 @@ extern "C" fn drop_ip(ip: *mut HeapIP) {
 #[repr(C)]
 pub struct HeapIPSender {
     pub sender: SyncSender<*mut HeapIP>,
-    pub sched: Sender<CompMsg>,
+    pub sched: IncDec,
     pub dest: String,
 }
 
@@ -126,10 +130,8 @@ pub extern "C" fn send_ip(sender: *const HeapIPSender, msg: *mut HeapIP) -> i8 {
     unsafe {
         match (*sender).sender.send(msg) {
             Ok(()) => {
-                match (*sender).sched.send(CompMsg::Inc((*sender).dest.clone())) {
-                    Ok(()) => 0,
-                    Err(_) => -1,
-                }
+                let closure = (*sender).sched.lock().expect("cannot lock");
+                closure(&(*sender).dest)
             },
             Err(_) => -1,
         }
@@ -195,7 +197,7 @@ extern "C" fn drop_senders(sender: *mut HeapSenders) {
 #[repr(C)]
 pub struct HeapIPReceiver {
     pub receiver: Receiver<*mut HeapIP>,
-    pub sched: Sender<CompMsg>,
+    pub sched: IncDec,
     pub dest: String,
 }
 
@@ -214,9 +216,10 @@ extern "C" fn recv_ip(receiver: *const HeapIPReceiver) -> *mut HeapIP {
     unsafe {
         match (*receiver).receiver.recv() {
             Ok(ip) => {
-                match (*receiver).sched.send(CompMsg::Dec((*receiver).dest.clone())){
-                    Ok(()) => { ip },
-                    Err(_) => { 0 as *mut HeapIP },
+                let closure = (*receiver).sched.lock().expect("cannot lock");
+                match closure(&(*receiver).dest.clone()) {
+                    0 => { ip },
+                    _ => { 0 as *mut HeapIP },
                 }
             },
             Err(_) => { 0 as *mut HeapIP },
@@ -228,9 +231,10 @@ extern "C" fn try_recv_ip(receiver: *const HeapIPReceiver) -> *mut HeapIP {
     unsafe {
         match (*receiver).receiver.try_recv() {
             Ok(ip) => {
-                match (*receiver).sched.send(CompMsg::Dec((*receiver).dest.clone())){
-                    Ok(()) => { ip },
-                    Err(_) => { 0 as *mut HeapIP },
+                let closure = (*receiver).sched.lock().expect("cannot lock");
+                match closure(&(*receiver).dest){
+                    0 => { ip },
+                    _ => { 0 as *mut HeapIP },
                 }
             },
             Err(_) => { 0 as *mut HeapIP },
@@ -249,16 +253,16 @@ pub struct HeapChannel {
     pub receiver: *const HeapIPReceiver,
 }
 
-extern "C" fn create_channel(name: &String, sched: &Sender<CompMsg>) -> *mut HeapChannel {
+extern "C" fn create_channel(name: &String, inc: IncDec, dec: IncDec) -> *mut HeapChannel {
     let (s, r): (SyncSender<*mut HeapIP>, Receiver<*mut HeapIP>) = sync_channel(25);
     let s = Box::new(HeapIPSender {
         sender: s,
-        sched: sched.clone(),
+        sched: inc,
         dest: name.clone(),
     });
     let r = Box::new(HeapIPReceiver {
         receiver: r,
-        sched: sched.clone(),
+        sched: dec,
         dest: name.clone(),
     });
     let s: *const HeapIPSender = Box::into_raw(s);
@@ -295,10 +299,10 @@ pub struct Allocator {
 }
 
 impl Allocator {
-    pub fn new(sched: Sender<CompMsg>) -> Self {
+    pub fn new(inc: IncDec, dec: IncDec) -> Self {
         Allocator {
             ip: IPBuilder::new(),
-            channel: ChannelBuilder::new(sched),
+            channel: ChannelBuilder::new(inc, dec),
             senders: SendersBuilder::new(),
         }
     }
@@ -415,8 +419,8 @@ impl Clone for IPBuilder {
 }
 
 pub struct ChannelBuilder {
-    sched: Sender<CompMsg>,
-    create: extern fn(name: &String, sched: &Sender<CompMsg>) -> *mut HeapChannel,
+    inc: IncDec, dec: IncDec,
+    create: extern fn(name: &String, inc: IncDec, dec: IncDec) -> *mut HeapChannel,
     get_r: extern fn(*mut HeapChannel) -> *const HeapIPReceiver,
     get_s: extern fn(*mut HeapChannel) -> *const HeapIPSender,
     send: extern fn(*const HeapIPSender, *mut HeapIP) -> i8,
@@ -427,9 +431,9 @@ pub struct ChannelBuilder {
 }
 
 impl ChannelBuilder {
-    pub fn new(sched: Sender<CompMsg>) -> Self {
+    pub fn new(inc: IncDec, dec: IncDec) -> Self {
         ChannelBuilder {
-            sched: sched,
+            inc: inc, dec: dec,
             create: create_channel,
             get_r: get_receiver,
             get_s: get_sender,
@@ -442,11 +446,11 @@ impl ChannelBuilder {
     }
 
     pub fn build_raw(&self, name: &String) -> *mut HeapChannel {
-        (self.create)(name, &self.sched)
+        (self.create)(name, self.inc.clone(), self.dec.clone())
     }
 
     pub fn build(&self, name: &String) -> (*const HeapIPSender, *const HeapIPReceiver) {
-        let chan = (self.create)(name, &self.sched);
+        let chan = (self.create)(name, self.inc.clone(), self.dec.clone());
         let s = (self.get_s)(chan);
         let r = (self.get_r)(chan);
         (s, r)
@@ -481,7 +485,8 @@ impl ChannelBuilder {
 impl Clone for ChannelBuilder {
     fn clone(&self) -> Self {
         ChannelBuilder {
-            sched: self.sched.clone(),
+            inc: self.inc.clone(),
+            dec: self.dec.clone(),
             create: self.create,
             get_r: self.get_r,
             get_s: self.get_s,

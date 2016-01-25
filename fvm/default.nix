@@ -28,6 +28,7 @@
     --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so" \
     --replace "development_fbp_parser_semantic.so" "${components.development_fbp_parser_semantic}/lib/libcomponent.so" \
     --replace "development_fbp_parser_print_graph.so" "${components.development_fbp_parser_print_graph}/lib/libcomponent.so" \
+    --replace "development_fbp_scheduler.so" "${components.development_fbp_scheduler}/lib/libcomponent.so" \
     '';
 
     meta = with stdenv.lib; {

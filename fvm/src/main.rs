@@ -26,6 +26,7 @@ pub fn main() {
     let graph_print = ComponentBuilder::new("development_fbp_parser_print_graph.so");
     let fvm = ComponentBuilder::new("development_fbp_fvm.so");
     let errors = ComponentBuilder::new("development_fbp_errors.so");
+    let sched_comp = ComponentBuilder::new("development_fbp_scheduler.so");
     let component_lookup = ComponentBuilder::new("component_lookup.so");
     let contract_lookup = ComponentBuilder::new("contract_lookup.so");
 
@@ -37,6 +38,7 @@ pub fn main() {
     sched.add_component("fvm".into(), &fvm);
     sched.add_component("errors".into(), &errors);
     sched.add_component("graph_print".into(), &graph_print);
+    sched.add_component("sched".into(), &sched_comp);
     sched.add_component("component_lookup".into(), &component_lookup);
     sched.add_component("contract_lookup".into(), &contract_lookup);
 
@@ -65,6 +67,7 @@ pub fn main() {
     sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into());
 
     sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into());
+    sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into());
 
     let args: Vec<String> = env::args().collect();
     let mut msg = capnp::message::Builder::new_default();
@@ -78,5 +81,4 @@ pub fn main() {
     p.send("s".into(), ip).expect("unable to send to comp");
 
     sched.join();
-
 }

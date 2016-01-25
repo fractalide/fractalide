@@ -26,7 +26,7 @@ pub struct ComponentBuilder {
 }
 
 impl ComponentBuilder {
-    pub fn new(path: &'static str) -> Self {
+    pub fn new(path: &str) -> Self {
         let comp = libloading::Library::new(path).expect("cannot load");
 
         let new = unsafe {
