@@ -14,5 +14,6 @@ rec {
   maths_boolean_nand = callPackage ./maths/boolean/nand {};
   maths_boolean_not = callPackage ./maths/boolean/not {};
   maths_boolean_or = callPackage ./maths/boolean/or {};
+  maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
 }
