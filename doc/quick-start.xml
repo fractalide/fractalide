@@ -1,0 +1,321 @@
+<chapter xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xml:id="chap-quick-start">
+
+<title>Quick Start to Building an NOT logic gate.</title>
+
+<para>To add a contract, Rust or Subnet component to Fractalide:
+
+<orderedlist>
+
+  <listitem>
+    <para>Checkout the Fractalide source tree:
+      <screen>
+$ git clone git://github.com/fractalide/fractalide.git
+$ cd fractalide</screen>
+    </para>
+  </listitem>
+
+<listitem>
+  <para>
+Insert your name and email address into <filename>build-support/upkeepers.nix</filename>:
+<screen>
+{
+/* Add your name and email address here.
+   Keep the list alphabetically sorted.
+   Prefer the same attrname as your github username, please,
+   so it's easy to ping a package @maintainer.
+   */
+
+   dmichiels = "Denis Michiels &lt;dmichiels@mailoo.org>";
+   sjmackenzie = "Stewart Mackenzie &lt;setori88@gmail.com>";
+   githubname = "Your Name &lt;email@email.com>";
+}</screen>
+</para>
+</listitem>
+
+  <listitem>
+    <para>Find a good place to in the Fractalide <filename>contracts</filename> directory to add your contract and Nix expression. For instance a simple boolean contract might go into <filename>contracts/maths/<replaceable>boolean</replaceable></filename>.
+
+The folder will have two files:
+<filename>contract.capnp</filename>
+<screen>
+@0xbde554c96bf60f36;
+
+struct Boolean {
+  boolean @0 :Bool;
+}</screen>
+and <filename>default.nix</filename>
+<screen>
+{stdenv, buildFractalideContract, upkeepers, ...}:
+
+buildFractalideContract rec {
+  src = ./.;
+
+  meta = with stdenv.lib; {
+    description = "Contract: Describes a simple boolean data type";
+    homepage = https://github.com/fractalide/fractalide/tree/master/contracts/maths/boolean;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname ];
+  };
+}
+</screen>
+Your github name inserted in <filename>build-support/upkeepers.nix</filename> is used on this line: <screen>maintainers = with upkeepers; [ githubname ];</screen>
+Example: <link xlink:href="https://github.com/fractalide/fractalide/tree/master/contracts/maths/boolean"><filename>contracts/maths/misc/boolean</filename></link>.
+    </para>
+  </listitem>
+
+<listitem>
+  <para>
+We need to make your new contract seen by the system! Insert your newly created contract into <filename>contracts/default.nix</filename>.
+<screen>
+  { pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support);
+in
+# insert in alphabetical order to reduce conflicts
+rec {
+  ...
+  generic_text = callPackage ./generic/text {};
+  maths_boolean = callPackage ./maths/boolean {};
+  maths_number = callPackage ./maths/number {};
+  ...
+}
+  </screen>
+  You can do a test compilation of your component with this command:
+<screen>$ nix-build --argstr debug true -A contracts.maths_boolean</screen>
+If you see something like the below, then it worked.
+<screen>/nix/store/jy9yjnnmlpc7bzaq5ihjqwiywrx59fw4-maths_boolean</screen>
+Example: <link xlink:href="https://github.com/fractalide/fractalide/blob/master/contracts/default.nix#L15"><filename>contracts/default.nix</filename></link>.
+</para>
+</listitem>
+
+  <listitem>
+    <para>The next step is to build our NAND gate. Find a good place to put our NAND gate such as <filename>components/maths/boolean/<replaceable>nand</replaceable></filename>. See <xref linkend="sec-organisation" /> for some hints on the tree
+    organisation.
+<screen>
+$ mkdir -p components/maths/boolean/
+$ cd components/maths/boolean
+$ cargo new nand</screen>
+Edit your <filename>components/maths/boolean/nand/Cargo.toml</filename> to make it look like this:
+<screen>
+[package]
+name = "maths_boolean_nand"
+version = "0.1.0"
+authors = ["test &lt;test@test.com>"]
+
+[lib]
+name = "maths_boolean_nand"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"
+</screen>
+Ensure you have have <filename>capnp = "*" and rustfbp = "*"</filename> in your <filename>dependencies</filename>
+Run <screen>cargo generate-lockfile</screen> in the <filename>components/maths/boolean/nand</filename> to generate the <filename>Cargo.lock</filename>, which must be committed into the repository.
+    </para>
+  </listitem>
+
+<listitem>
+  <para>
+Insert a the below into your <filename>components/maths/boolean/nand/src/lib.rs</filename>:
+<screen>
+#![feature(braced_empty_structs)]
+extern crate capnp;
+
+#[macro_use]
+extern crate rustfbp;
+
+use rustfbp::component::*;
+
+component! {
+  Nand,
+  inputs(a: boolean, b: boolean),
+  inputs_array(),
+  outputs(output: boolean),
+  outputs_array(),
+  option(),
+  acc(),
+  fn run(&amp;mut self) {
+    let mut ip_a = self.ports.recv("a".into()).expect("cannot receive");
+    let mut ip_b = self.ports.recv("b".into()).expect("cannot receive");
+    let a_reader = ip_a.get_reader().expect("cannot get reader");
+    let b_reader = ip_b.get_reader().expect("cannot get reader");
+    let a_reader: boolean::Reader = a_reader.get_root().expect("not a boolean reader");
+    let b_reader: boolean::Reader = b_reader.get_root().expect("not a boolean reader");
+    let a = a_reader.get_boolean();
+    let b = b_reader.get_boolean();
+    let mut new_out = capnp::message::Builder::new_default();
+    {
+      let mut boolean = new_out.init_root::&lt;boolean::Builder>();
+      boolean.set_boolean(if a == true &amp;&amp; b == true {false} else {true});
+    }
+    ip_a.write_builder(&amp;new_out);
+    self.ports.send("output".into(), ip_a).expect("cannot send date");
+  }
+
+  mod maths_boolean {
+    include!("maths_boolean.rs");
+  }
+  use self::maths_boolean::boolean;
+}
+</screen>
+Notice this <filename>mod maths_boolean</filename> section:
+<screen>
+  mod maths_boolean {
+    include!("maths_boolean.rs");
+  }
+</screen>
+This is where we reference our contracts we made earlier. But we still have not tied the contract with this <filename>NAND</filename> implemenation. This is done in the next section.
+</para>
+</listitem>
+
+  <listitem>
+    <para>
+Next you will need to add a <filename>default.nix</filename> to your new <filename>NAND</filename> component.
+<screen>
+touch components/maths/boolean/nand/default.nix
+</screen>
+Then insert this into the <filename>default.nix</filename>
+<screen>
+{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+
+buildFractalideComponent rec {
+  name = genName ./.;
+  src = ./.;
+  filteredContracts = filterContracts ["maths_boolean"];
+  depsSha256 = "132bjwq6x1g3llvlsb0sg34mryry4my5d79qqmkh0cazmb23w4gm";
+
+  meta = with stdenv.lib; {
+    description = "Component: NAND logic gate";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname ];
+  };
+}
+</screen>
+Notice <filename>filteredContracts = filterContracts ["maths_boolean"];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
+</para>
+  </listitem>
+
+<listitem>
+  <para>
+We need to make our <filename>NAND</filename> seen by the system by adding it to <filename>components/default.nix</filename>
+<screen>
+{ pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support);
+in
+# insert in alphabetical order to reduce conflicts
+rec {
+  ...
+  maths_boolean_nand = callPackage ./maths/boolean/nand {};
+  ...
+}
+</screen>
+</para>
+</listitem>
+
+<listitem>
+  <para>
+Let us compile the <filename>NAND</filename> gate:
+<screen>
+$ cd path/to/fractalide
+$ nix-build --argstr debug true -A components.maths_boolean_nand
+</screen>
+  </para>
+</listitem>
+
+<listitem>
+  <para>
+    Congratulations, you've created your first Fractalide contract and Rust component! Now we will move on to creating a subnet and our final step... the NOT gate!
+<screen>
+mkdir -p fractalide/components/maths/boolean/not
+cd fractalide/components/maths/boolean/not
+touch lib.subnet
+touch default.nix
+</screen>
+Then insert the below into <filename>default.nix</filename>:
+<screen>
+{ stdenv, buildFractalideSubnet, upkeepers, ...}:
+
+buildFractalideSubnet rec {
+  src = ./.;
+
+  meta = with stdenv.lib; {
+    description = "Subnet: NOT logic gate";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/not;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname];
+  };
+}
+</screen>
+Then insert the below into <filename>lib.subnet</filename>:
+<screen>
+in => a nand(maths_boolean_nand) output => out
+in => b nand()
+</screen>
+  </para>
+</listitem>
+
+<listitem>
+<para> Add your new subnet to the <filename>components/default.nix</filename>
+<screen>
+{ pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support);
+in
+# insert in alphabetical order to reduce conflicts
+rec {
+  ...
+  maths_boolean_nand = callPackage ./maths/boolean/nand {};
+  maths_boolean_not = callPackage ./maths/boolean/not {};
+  ...
+}
+</screen>
+</para>
+</listitem>
+
+<listitem>
+<para>Let's compile our newly created subnet:
+<screen>
+$ nix-build --argstr debug true -A components.maths_boolean_not
+/nix/store/xdp2l67gdmxi7fagxnbanavcxd93mlr0-maths_boolean_not
+</screen>
+</para>
+</listitem>
+
+<listitem>
+<para>Let us actually run our new <filename>NOT</filename> component.
+Firstly, lets create this file:
+<screen>
+touch ~/test.subnet
+</screen>
+Then insert the below into it:
+<screen>
+'true' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
+</screen>
+
+Next, you'll need to compile the <filename>fvm</filename>:
+<screen>
+$ nix-build --argstr debug true -A fvm
+/nix/store/arjm3i4w577l6j7pjcn122d2z6ddxz50-fvm-0.1.0
+</screen>
+
+<screen>
+$ ./result/bin/fvm ~/test.subnet
+</screen>
+</para>
+</listitem>
+
+  <listitem>
+    <para>Optionally commit the new package and open a pull request</para>
+  </listitem>
+
+
+</orderedlist>
+
+</para>
+
+</chapter>

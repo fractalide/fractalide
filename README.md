@@ -51,9 +51,20 @@ This is the domain of fractalide hackers, most people shouldn't need to interact
 The Fractalide Virtual Machine which is the sole build artifact and executable needed for running subnets.
 
 
-## Building the `FVM` and components.
+## Setup
 
-First and foremost, you will need to be running [NixOS](http://nixos.org/). This is the only sane approach to managing the fast moving dependencies of Rust, and all the components + contracts.
+### Install Nix build tool (replaces `make`)
+Run this command as a user other than root (you will need `sudo`). To uninstall simply `rm -fr /nix`. See this [blog post](https://www.domenkozar.com/2014/01/02/getting-started-with-nix-package-manager/) for more detailed information.
+
+`$ curl https://nixos.org/nix/install | sh`
+
+`$ source ~/.nix-profile/etc/profile.d/nix.sh`
+
+`$ git clone git://github.com/fractalide/fractalide`
+
+`$ cd fractalide`
+
+`$ nix-build`
 
 ## Debug build
 
@@ -71,12 +82,11 @@ build a single component:
 
 `$ nix-build -A components.maths_boolean_nand`
 
-## Running the `fvm` when developing:
+## Running `fvm` when developing:
 
 `./result/bin/fvm </path/to/a/filename.subnet>`
 
-### Pro tip
-
+### Speedy pro tip
 
 `$ nix-shell --argstr debug true -A components.maths_boolean_nand`
 
@@ -98,7 +108,7 @@ ensure you delete any nix generated files/changes before committing!
 
 This approach allows you to keep around your `target` folder so you don't have to build from scratch each time via `$nix-build --argstr debug true -A components.maths_boolean_nand`.
 
-## Installing the `fvm` into your `nix` environment
+## Installing `fvm` into your `nix` environment
 
 `$ nix-env -i fvm -f default.nix`
 

@@ -1,0 +1,14 @@
+<book xmlns="http://docbook.org/ns/docbook"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <info>
+
+    <title>Fractalide Contributors Guide</title>
+
+  </info>
+
+  <xi:include href="introduction.xml" />
+  <xi:include href="quick-start.xml" />
+  <xi:include href="coding-conventions.xml" />
+
+</book>
