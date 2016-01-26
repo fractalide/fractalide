@@ -11,13 +11,15 @@ component! {
     outputs_array(clone: any),
     option(),
     acc(),
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<()> {
 
         // Get the path
-        let mut ip = self.ports.recv("input".into()).expect("file_open : unable to receive from input");
+        let mut ip = try!(self.ports.recv("input".into()));
 
-        for p in self.ports.get_output_selections("clone").expect("no clone output") {
-            self.ports.send_array("clone".into(), p, ip.clone()).expect("clone : cannot send ");
+        for p in try!(self.ports.get_output_selections("clone")) {
+            try!(self.ports.send_array("clone".into(), p, ip.clone()));
         }
+
+        Ok(())
     }
 }

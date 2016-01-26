@@ -29,7 +29,7 @@ enum State {
     CompPortExternal, CompPortExternalPort,
     PortExternal, PortExternalPort,
     IIPBind, IIPBindPort,
-    Error
+    ErrorS
 }
 use State::*;
 
@@ -49,21 +49,21 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
-        let mut ip = self.ports.recv("input".into()).expect("fbp_semantic : unable to receive");
-        let literal = ip.get_reader().expect("fbp_semantic : cannot get reader");
-        let literal: lexical::Reader = literal.get_root().expect("fbp_semantic : not a literal");
-        let literal = literal.which().expect("fbp_semantic : cannot which");
+    fn run(&mut self) -> Result<()> {
+        let mut ip = try!(self.ports.recv("input".into()));
+        let literal = try!(ip.get_reader());
+        let literal: lexical::Reader = try!(literal.get_root());
+        let literal = try!(literal.which());
 
         match literal {
             lexical::Start(path) => {
                 match handle_stream(&self) {
-                    Ok(graph) => { send_graph(&self, path.expect("not a path"), &graph) },
+                    Ok(graph) => { try!(send_graph(&self, try!(path), &graph)) },
                     Err(errors) => {
                         let mut new_ip = capnp::message::Builder::new_default();
                         {
                             let mut ip = new_ip.init_root::<semantic_error::Builder>();
-                            ip.set_path(path.unwrap());
+                            ip.set_path(try!(path));
                             {
                                 let mut nodes = ip.init_parsing(errors.len() as u32);
                                 let mut i = 0;
@@ -74,13 +74,14 @@ component! {
                             }
                         }
                         let mut send_ip = self.allocator.ip.build_empty();
-                        send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                        try!(send_ip.write_builder(&new_ip));
                         let _ = self.ports.send("error".into(), send_ip);
                     },
                 }
             }
-            _ => { panic!("bad stream") },
+            _ => { return Err(result::Error::Misc("bad stream".to_string())); },
         }
+        Ok(())
     }
 }
 
@@ -113,11 +114,11 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                     lexical::token::Bind(_) => {
                         state = match state {
                             CompPort => { CompPortBind },
-                            Error => { Error },
+                            ErrorS => { ErrorS },
                             IIP => { IIPBind },
                             _ => {
                                 errors.push(format!("line {} : -> found, one of {} expected", line, get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         };
                     },
@@ -125,10 +126,10 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                         state = match state {
                             CompPort => { CompPortExternal },
                             Port => { PortExternal },
-                            Error => { Error },
+                            ErrorS => { ErrorS },
                             _ => {
                                 errors.push(format!("line {} : => found, one of {} expected", line, get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         };
                     },
@@ -150,11 +151,11 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                                 CompPortExternalPort },
                             Break => { Port },
                             PortExternal => { PortExternalPort },
-                            Error => { Error },
+                            ErrorS => { ErrorS },
                             IIPBind => { IIPBindPort },
                             _ => {
                                 errors.push(format!("line {} : Port {}[{}] found, one of {} expected", line, port.get_name().unwrap(), port.get_selection().unwrap(), get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         };
                     },
@@ -206,10 +207,10 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                                 Comp
                             }
                             Break => { Comp },
-                            Error => { stack = vec![stack.pop().unwrap()]; Comp },
+                            ErrorS => { stack = vec![stack.pop().unwrap()]; Comp },
                             _ => {
                                 errors.push(format!("line {} : Comp {}({}) found, one of {} expected", line, comp.get_name().unwrap(), comp.get_sort().unwrap(), get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         }
                     },
@@ -217,11 +218,11 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                         let iip = iip.expect("no iip");
                         stack.push(Literal::IIP(iip.to_string()));
                         state = match state {
-                            Error => { IIP },
+                            ErrorS => { IIP },
                             Break => { IIP },
                             _ => {
                                 errors.push(format!("line {} : IIP '{}' found, one of {} expected", line, iip, get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         };
                     },
@@ -233,10 +234,10 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             Comp => { stack.clear(); Break },
                             CompPortExternalPort => { stack.clear(); Break },
                             Break => { Break },
-                            Error => { Error },
+                            ErrorS => { ErrorS },
                             _ => {
                                 errors.push(format!("line {} : NewLine found, one of {} expected", line, get_expected(&state)));
-                                Error
+                                ErrorS
                             },
                         };
                     }
@@ -267,11 +268,11 @@ fn get_expected(state: &State) -> String {
         PortExternalPort => { "[Component]".into() },
         IIPBind => { "[Port]".into() },
         IIPBindPort => { "[Component]".into() },
-        Error => { unreachable!() }
+        ErrorS => { unreachable!() }
     }
 }
 
-fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) {
+fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
     let mut new_ip = capnp::message::Builder::new_default();
     {
         let mut ip = new_ip.init_root::<graph::Builder>();
@@ -333,6 +334,7 @@ fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) {
         }
     }
     let mut send_ip = comp.allocator.ip.build_empty();
-    send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+    try!(send_ip.write_builder(&new_ip));
     let _ = comp.ports.send("output".into(), send_ip);
+    Ok(())
 }

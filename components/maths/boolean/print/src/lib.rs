@@ -20,15 +20,17 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
-        let mut ip_a = self.ports.recv("input".into()).expect("cannot receive");
+    fn run(&mut self) -> Result<()> {
+        let mut ip_a = try!(self.ports.recv("input".into()));
 
-        let a_reader = ip_a.get_reader().expect("cannot get reader");
-        let a_reader: boolean::Reader = a_reader.get_root().expect("not a boolean reader");
+        let a_reader = try!(ip_a.get_reader());
+        let a_reader: boolean::Reader = try!(a_reader.get_root());
         let a = a_reader.get_boolean();
 
         println!("boolean : {:?}", a);
 
         let _ = self.ports.send("output".into(), ip_a);
+
+        Ok(())
     }
 }

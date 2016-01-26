@@ -26,12 +26,12 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
-        let mut ip = self.ports.recv("input".into()).expect("lookup: unable to receive");
-        let name = ip.get_reader().expect("lookup: cannot get reader");
-        let name: path::Reader = name.get_root().expect("fbp_print_graph : not a literal");
+    fn run(&mut self) -> Result<()> {
+        let mut ip = try!(self.ports.recv("input".into()));
+        let name = try!(ip.get_reader());
+        let name: path::Reader = try!(name.get_root());
 
-        let new_path = get(name.get_path().unwrap());
+        let new_path = get(try!(name.get_path()));
 
         let mut new_ip = capnp::message::Builder::new_default();
         {
@@ -42,9 +42,9 @@ component! {
             };
         }
         let mut send_ip = self.allocator.ip.build_empty();
-        send_ip.write_builder(&new_ip).expect("file_open: cannot write");
+        try!(send_ip.write_builder(&new_ip));
         let _ = self.ports.send("output".into(), send_ip);
-
+        Ok(())
     }
 
 }

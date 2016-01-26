@@ -32,72 +32,72 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<()>{
         let mut graph = Graph { errors: false,
             nodes: vec![], edges: vec![], iips: vec![],
             ext_in: vec![], ext_out: vec![],
         };
 
         // retrieve the asked graph
-        let mut ip = self.ports.recv("input".into()).expect("cannot receive");
-        let i_graph = ip.get_reader().expect("fvm: cannot get reader");
-        let i_graph: graph::Reader = i_graph.get_root().expect("fvm: not a graph");
+        let mut ip = try!(self.ports.recv("input".into()));
+        let i_graph = try!(ip.get_reader());
+        let i_graph: graph::Reader = try!(i_graph.get_root());
 
-        add_graph(self, &mut graph, i_graph, "");
+        try!(add_graph(self, &mut graph, i_graph, ""));
 
         if !graph.errors {
-            send_graph(&self, &graph);
+            try!(send_graph(&self, &graph))
         }
-
+        Ok(())
     }
 }
 
-fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, name: &str) {
+fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, name: &str) -> Result<()> {
 
-    if new_graph.get_path().unwrap() == "error" { graph.errors = true; }
+    if try!(new_graph.get_path()) == "error" { graph.errors = true; }
 
-    for n in new_graph.borrow().get_edges().unwrap().iter() {
-        graph.edges.push((format!("{}-{}", name, n.get_o_name().unwrap()),
-                          n.get_o_port().unwrap().into(), n.get_o_selection().unwrap().into(),
-                          n.get_i_port().unwrap().into(), n.get_i_selection().unwrap().into(),
-                          format!("{}-{}", name, n.get_i_name().unwrap())));
+    for n in try!(new_graph.borrow().get_edges()).iter() {
+        graph.edges.push((format!("{}-{}", name, try!(n.get_o_name())),
+                          try!(n.get_o_port()).into(), try!(n.get_o_selection()).into(),
+                          try!(n.get_i_port()).into(), try!(n.get_i_selection()).into(),
+                          format!("{}-{}", name, try!(n.get_i_name()))));
     }
-    for n in new_graph.borrow().get_iips().unwrap().iter() {
-        graph.iips.push((n.get_iip().unwrap().into(),
-                         n.get_port().unwrap().into(), n.get_selection().unwrap().into(),
-                         format!("{}-{}", name, n.get_comp().unwrap()) ));
+    for n in try!(new_graph.borrow().get_iips()).iter() {
+        graph.iips.push((try!(n.get_iip()).into(),
+                         try!(n.get_port()).into(), try!(n.get_selection()).into(),
+                         format!("{}-{}", name, try!(n.get_comp())) ));
     }
-    for n in new_graph.borrow().get_external_inputs().unwrap().iter() {
+    for n in try!(new_graph.borrow().get_external_inputs()).iter() {
         // TODO : replace existing links
         for edge in &mut graph.edges {
-            if edge.5 == name && edge.3 == n.get_name().unwrap() {
-                edge.5 = format!("{}-{}", name, n.get_comp().unwrap());
-                edge.3 = n.get_port().unwrap().into();
-                edge.4 = n.get_selection().unwrap().into();
+            if edge.5 == name && edge.3 == try!(n.get_name()) {
+                edge.5 = format!("{}-{}", name, try!(n.get_comp()));
+                edge.3 = try!(n.get_port()).into();
+                edge.4 = try!(n.get_selection()).into();
             }
         }
 
         for iip in &mut graph.iips {
-            if iip.3 == name && iip.1 == n.get_name().unwrap() {
-                iip.3 = format!("{}-{}", name, n.get_comp().unwrap());
-                iip.1 = n.get_port().unwrap().into();
-                iip.2 = n.get_selection().unwrap().into();
+            if iip.3 == name && iip.1 == try!(n.get_name()) {
+                iip.3 = format!("{}-{}", name, try!(n.get_comp()));
+                iip.1 = try!(n.get_port()).into();
+                iip.2 = try!(n.get_selection()).into();
             }
         }
     }
-    for n in new_graph.borrow().get_external_outputs().unwrap().iter() {
+    for n in try!(new_graph.borrow().get_external_outputs()).iter() {
         for edge in &mut graph.edges {
-            if edge.0 == name && edge.1 == n.get_name().unwrap() {
-                edge.0 = format!("{}-{}", name, n.get_comp().unwrap());
-                edge.1 = n.get_port().unwrap().into();
-                edge.2 = n.get_selection().unwrap().into();
+            if edge.0 == name && edge.1 == try!(n.get_name()) {
+                edge.0 = format!("{}-{}", name, try!(n.get_comp()));
+                edge.1 = try!(n.get_port()).into();
+                edge.2 = try!(n.get_selection()).into();
             }
         }
     }
 
-    for n in new_graph.borrow().get_nodes().unwrap().iter() {
-        let c_sort = n.get_sort().unwrap();
-        let c_name = n.get_name().unwrap();
+    for n in try!(new_graph.borrow().get_nodes()).iter() {
+        let c_sort = try!(n.get_sort());
+        let c_name = try!(n.get_name());
 
         // get new path
         let mut msg = capnp::message::Builder::new_default();
@@ -107,15 +107,15 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
         }
         let mut ip = component.allocator.ip.build_empty();
         ip.write_builder(&mut msg);
-        component.ports.send("ask_path".into(), ip).expect("unable to ask graph");
+        try!(component.ports.send("ask_path".into(), ip));
 
         // retrieve the asked graph
-        let mut ip = component.ports.recv("new_path".into()).expect("cannot receive");
-        let i_graph = ip.get_reader().expect("fvm: cannot get reader");
-        let i_graph: option_path::Reader = i_graph.get_root().expect("fvm: not a graph");
+        let mut ip = try!(component.ports.recv("new_path".into()));
+        let i_graph = try!(ip.get_reader());
+        let i_graph: option_path::Reader = try!(i_graph.get_root());
 
-        let new_path: Option<String> = match i_graph.which().unwrap() {
-            option_path::Path(p) => { Some(p.unwrap().into()) },
+        let new_path: Option<String> = match try!(i_graph.which()) {
+            option_path::Path(p) => { Some(try!(p).into()) },
             option_path::None(()) => { None }
         };
 
@@ -132,7 +132,7 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
 
             },
             None => {
-                println!("Error in {} : ", new_graph.get_path().unwrap());
+                println!("Error in {} : ", try!(new_graph.get_path()));
                 println!("component {}({}) doesn't exist", c_name, c_sort);
                 graph.errors = true;
                 continue;
@@ -148,21 +148,22 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
             let mut ip = component.allocator.ip.build_empty();
             ip.write_builder(&mut msg);
 
-            component.ports.send("ask_graph".into(), ip).expect("unable to ask graph");
+            try!(component.ports.send("ask_graph".into(), ip));
 
             // retrieve the asked graph
-            let mut ip = component.ports.recv("input".into()).expect("cannot receive");
-            let i_graph = ip.get_reader().expect("fvm: cannot get reader");
-            let i_graph: graph::Reader = i_graph.get_root().expect("fvm: not a graph");
+            let mut ip = try!(component.ports.recv("input".into()));
+            let i_graph = try!(ip.get_reader());
+            let i_graph: graph::Reader = try!(i_graph.get_root());
 
             add_graph(component, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {
             graph.nodes.push((format!("{}-{}", name, c_name).into(), path.into()));
         }
     }
+    Ok(())
 }
 
-fn send_graph(comp: &fvm, graph: &Graph) {
+fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
     let mut new_ip = capnp::message::Builder::new_default();
     {
         let mut ip = new_ip.init_root::<graph::Builder>();
@@ -224,6 +225,7 @@ fn send_graph(comp: &fvm, graph: &Graph) {
         }
     }
     let mut send_ip = comp.allocator.ip.build_empty();
-    send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+    try!(send_ip.write_builder(&new_ip));
     let _ = comp.ports.send("output".into(), send_ip);
+    Ok(())
 }

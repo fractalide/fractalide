@@ -22,17 +22,17 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<()>{
 
         match self.ports.try_recv("semantic_error".into()) {
             Ok(mut ip) => {
-                let error = ip.get_reader().expect("fbp_print_graph : cannot get reader");
-                let error: semantic_error::Reader = error.get_root().expect("fbp_print_graph : not a literal");
+                let error = try!(ip.get_reader());
+                let error: semantic_error::Reader = try!(error.get_root());
 
-                println!("Graph at : {}", error.get_path().unwrap());
-                let parsing = error.get_parsing().unwrap();
+                println!("Graph at : {}", try!(error.get_path()));
+                let parsing = try!(error.get_parsing());
                 for i in 0..parsing.len() {
-                    println!("  {}", parsing.get(i).unwrap());
+                    println!("  {}", try!(parsing.get(i)));
                 }
                 println!("");
             }
@@ -41,9 +41,9 @@ component! {
 
         match self.ports.try_recv("file_error".into()) {
             Ok(mut ip) => {
-                let error = ip.get_reader().expect("fbp_print_graph : cannot get reader");
-                let error: file_error::Reader = error.get_root().expect("fbp_print_graph : not a literal");
-                println!("Subnet not exist at : {}\n", error.get_not_found().unwrap());
+                let error = try!(ip.get_reader());
+                let error: file_error::Reader = try!(error.get_root());
+                println!("Subnet not exist at : {}\n", try!(error.get_not_found()));
             }
             _ => {}
         };
@@ -55,7 +55,8 @@ component! {
             ip.set_path("error");
         }
         let mut send_ip = self.allocator.ip.build_empty();
-        send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+        try!(send_ip.write_builder(&new_ip));
         let _ = self.ports.send("output".into(), send_ip);
+        Ok(())
     }
 }

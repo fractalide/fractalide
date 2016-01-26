@@ -17,39 +17,39 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
-        let mut ip = self.ports.recv("input".into()).expect("fbp_print_graph : unable to receive");
-        let graph = ip.get_reader().expect("fbp_print_graph : cannot get reader");
-        let graph: graph::Reader = graph.get_root().expect("fbp_print_graph : not a literal");
+    fn run(&mut self) -> Result<()> {
+        let mut ip = try!(self.ports.recv("input".into()));
+        let graph = try!(ip.get_reader());
+        let graph: graph::Reader = try!(graph.get_root());
 
-        println!("Graph at : {}", graph.get_path().unwrap());
+        println!("Graph at : {}", try!(graph.get_path()));
         println!("nodes :");
-        for n in graph.borrow().get_nodes().unwrap().iter() {
-            println!("  {}({})", n.get_name().unwrap(), n.get_sort().unwrap());
+        for n in try!(graph.borrow().get_nodes()).iter() {
+            println!("  {}({})", try!(n.get_name()), n.get_sort().unwrap());
         }
         println!("\nedges :");
-        for n in graph.borrow().get_edges().unwrap().iter() {
-            println!("  {}() {}[{}] -> {}[{}] {}()", n.get_o_name().unwrap(), n.get_o_port().unwrap(),
-                     n.get_o_selection().unwrap(), n.get_i_port().unwrap(),
-                     n.get_i_selection().unwrap(), n.get_i_name().unwrap());
+        for n in try!(graph.borrow().get_edges()).iter() {
+            println!("  {}() {}[{}] -> {}[{}] {}()", try!(n.get_o_name()), try!(n.get_o_port()),
+                     try!(n.get_o_selection()), try!(n.get_i_port()),
+                     try!(n.get_i_selection()), try!(n.get_i_name()));
         }
         println!("\niips :");
-        for n in graph.borrow().get_iips().unwrap().iter() {
-            println!("  '{}' -> {}[{}] {}()", n.get_iip().unwrap(), n.get_comp().unwrap(),
-                     n.get_port().unwrap(), n.get_selection().unwrap());
+        for n in try!(graph.borrow().get_iips()).iter() {
+            println!("  '{}' -> {}[{}] {}()", try!(n.get_iip()), try!(n.get_comp()),
+                     try!(n.get_port()), try!(n.get_selection()));
         }
         println!("\nexternal inputs :");
-        for n in graph.borrow().get_external_inputs().unwrap().iter() {
-            println!("  {} => {}[{}] {}()", n.get_name().unwrap(), n.get_port().unwrap(),
-                     n.get_selection().unwrap(), n.get_comp().unwrap());
+        for n in try!(graph.borrow().get_external_inputs()).iter() {
+            println!("  {} => {}[{}] {}()", try!(n.get_name()), try!(n.get_port()),
+                     try!(n.get_selection()), try!(n.get_comp()));
         }
         println!("\nexternal outputs :");
-        for n in graph.borrow().get_external_outputs().unwrap().iter() {
-            println!("  {}() {}[{}] => {}", n.get_comp().unwrap(), n.get_port().unwrap(),
-                     n.get_selection().unwrap(), n.get_name().unwrap());
+        for n in try!(graph.borrow().get_external_outputs()).iter() {
+            println!("  {}() {}[{}] => {}", try!(n.get_comp()), try!(n.get_port()),
+                     try!(n.get_selection()), try!(n.get_name()));
         }
 
-
         let _ = self.ports.send("output".into(), ip);
+        Ok(())
     }
 }

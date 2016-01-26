@@ -30,7 +30,7 @@ macro_rules! component {
         outputs_array($($output_array_name:ident: $output_contract_array:ident),* ),
         option($($option_contract: ident),*),
         acc($($acc_contract: ident),*),
-        fn run(&mut $arg:ident) $fun:block
+        fn run(&mut $arg:ident) -> Result<()> $fun:block
         $($more:item)*
     )
         =>
@@ -39,6 +39,7 @@ macro_rules! component {
 
         use rustfbp::result;
         use rustfbp::result::Result;
+        use std::error::Error;
 
         use rustfbp::ports::Ports;
 
@@ -86,7 +87,7 @@ macro_rules! component {
                 false
             }
 
-            pub fn run(&mut $arg) $fun
+            pub fn run(&mut $arg) -> Result<()> $fun
 
         }
 
@@ -125,9 +126,12 @@ macro_rules! component {
         }
 
         #[no_mangle]
-        pub extern fn run(ptr: *mut $name) {
+        pub extern fn run<'a>(ptr: *mut $name) {
             let mut comp = unsafe { &mut *ptr };
-            comp.run();
+            match comp.run() {
+                Ok(()) => { },
+                Err(e) => { println!("{} fails : {}", comp.name, e.description()) },
+            }
         }
 
         #[no_mangle]
