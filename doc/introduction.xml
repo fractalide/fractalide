@@ -4,8 +4,7 @@
 
 <title>Introduction</title>
 
-<para>This manual tells you how to write components and contracts for the Fractalide component
-collection.  Thus it’s for packagers and developers who want
-to add packages to Fractalide.</para>
+<para>This manual tells you how to write subnets, components and contracts for the Fractalide component / contract
+collection.</para>
 
 </chapter>
