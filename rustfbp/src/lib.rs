@@ -12,7 +12,6 @@ pub mod component;
 /// The interior scheduler is the actual state of the scheduler. It is edited by sending messages. 
 /// The messages are send by the exterior scheduler and the components of the Graph.
 pub mod scheduler;
-pub mod subnet;
 
 pub mod loader;
 pub mod ports;

@@ -6,7 +6,6 @@ use result::Result;
 use allocator;
 use allocator::{Allocator, HeapIPSender, HeapIPReceiver, HeapSenders};
 
-use subnet::{SubNet, Graph};
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc::channel;
@@ -44,7 +43,6 @@ pub struct Scheduler {
     pub allocator: Allocator,
     pub inputs: HashMap<String, Box<HeapSenders>>,
     pub inputs_array: HashMap<String, HashMap<String, HashMap<String, Box<HeapIPSender>>>>,
-    pub subnets: HashMap<String, SubNet>,
     pub sender: Sender<CompMsg>,
     pub error_receiver: Receiver<result::Error>,
     th: JoinHandle<()>,
@@ -116,7 +114,6 @@ impl Scheduler {
             inputs: HashMap::new(),
             inputs_array: HashMap::new(),
             allocator: Allocator::new(inc, dec),
-            subnets: HashMap::new(),
             sender: s,
             error_receiver: error_r,
             th: th,
@@ -151,10 +148,6 @@ impl Scheduler {
         Ok(())
     }
 
-    pub fn add_subnet(&mut self, name: String, g: &Graph) -> Result<()> {
-        SubNet::new(g, name, self)
-    }
-
     pub fn start(&self, name: String) {
         self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); 
     }
@@ -175,33 +168,7 @@ impl Scheduler {
         }
     }
 
-    pub fn remove_subnet(&mut self, name: String) -> Result<HashMap<String, (Component, Box<HeapSenders>, HashMap<String, HashMap<String, Box<HeapIPSender>>>)>> {
-        let mut res = HashMap::new();
-        let children = {
-            let sn = self.subnets.get(&name).expect("the component doesnt exist");
-            sn.children.clone()
-        };
-        for name in children {
-            let child = self.remove_component(name.clone());
-            if let Ok(child) = child {
-                res.insert(name, child);
-            } else {
-                // TODO Reput already removed component
-                for (k, v) in res {
-                    self.inputs.insert(k.clone(), v.1);
-                    self.inputs_array.insert(k.clone(), v.2);
-                    self.sender.send(CompMsg::NewComponent(k, v.0)).expect("remove_subnet : cannot send to the state");
-                }
-                return Err(result::Error::CannotRemove);
-            }
-        }
-        self.subnets.remove(&name);
-        Ok(res)
-    }
-
     pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String) -> Result<()>{
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let his = try!(self.inputs.get(&comp_in).ok_or(result::Error::ComponentNotFound)
             .and_then(|comp| {
                 comp.get_sender(&port_in)
@@ -211,8 +178,6 @@ impl Scheduler {
     }
 
     pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String) -> Result<()> {
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let his = try!(self.inputs.get(&comp_in).ok_or(result::Error::ComponentNotFound)
             .and_then(|comp| {
                 comp.get_sender(&port_in)
@@ -222,35 +187,28 @@ impl Scheduler {
     }
 
     pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let his = try!(self.get_array_heap_sender(comp_in, port_in, selection_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, his)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
     pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
-        let (comp_in, port_in) = self.get_subnet_name(comp_in, port_in, VPType::In);
         let his = try!(self.get_array_heap_sender(comp_in, port_in, selection_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, his)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
     pub fn disconnect(&self, comp_out: String, port_out: String) -> Result<()>{
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
         Ok(())
     }
 
     pub fn disconnect_array(&self, comp_out: String, port_out: String, selection:String) -> Result<()>{
-        let (comp_out, port_out) = self.get_subnet_name(comp_out, port_out, VPType::Out);
         self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, selection)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
         Ok(())
     }
 
     pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()>{
-        let (comp, port) = self.get_subnet_name(comp, port, VPType::In);
         let (s, r) = self.allocator.channel.build(&comp);
         let r = allocator::HeapIPReceiver::from_raw(r);
         let s = allocator::HeapIPSender::from_raw(s);
@@ -286,7 +244,6 @@ impl Scheduler {
     }
 
     pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) -> Result<()>{
-        let (comp, port) = self.get_subnet_name(comp, port, VPType::Out);
         self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
         Ok(())
     }
@@ -328,25 +285,6 @@ impl Scheduler {
                             .map(|s| { s.clone() })
                     })
             })
-    }
-
-    fn get_subnet_name(&self, comp: String, port: String, vp_type: VPType) -> (String, String) {
-        let option_main = self.subnets.get(&comp);
-        let main = match option_main {
-            None => {
-                return (comp, port);
-            },
-            Some(m) => { m },
-        };
-        let real_name = match vp_type {
-            VPType::In => { main.input_names.get(&port) },
-            VPType::Out => { main.output_names.get(&port) },
-        };
-        if let Some(&(ref c, ref p)) = real_name {
-            (c.clone(), p.clone())
-        } else {
-            (comp, port)
-        }
     }
 
     pub fn join(self) {
