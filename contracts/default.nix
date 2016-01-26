@@ -4,7 +4,6 @@ callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
-  fbp_fvm_option = callPackage ./fbp/fvm_option {};
   fbp_graph = callPackage ./fbp/graph {};
   fbp_lexical = callPackage ./fbp/lexical {};
   fbp_semantic_error = callPackage ./fbp/semantic_error {};

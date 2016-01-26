@@ -6,6 +6,10 @@ extern crate rustfbp;
 
 use rustfbp::component::*;
 
+mod maths_number {
+    include!("maths_number.rs");
+}
+use self::maths_number::number;
 
 component! {
   Add,
@@ -15,12 +19,12 @@ component! {
   outputs_array(),
   option(),
   acc(),
-  fn run(&mut self) {
+  fn run(&mut self) -> Result<()> {
     let mut acc = 0;
-    for ins in self.ports.get_input_selections("numbers").expect("numbers input port doesn't exist") {
-      let mut ip = self.ports.recv_array("numbers".into(), ins).expect("cannot receive");
-      let mut m = ip.get_reader().expect("cannot get reader");
-      let m: number::Reader = m.get_root().expect("not a date reader");
+    for ins in try!(self.ports.get_input_selections("numbers")) {
+      let mut ip = try!(self.ports.recv_array("numbers".into(), ins));
+      let mut m = try!(ip.get_reader());
+      let m: number::Reader = try!(m.get_root());
       let n = m.get_number();
       acc += n;
     }
@@ -30,12 +34,9 @@ component! {
       number.set_number(acc);
     }
     let mut ip = self.allocator.ip.build_empty();
-    ip.write_builder(&new_m).expect("cannot write");
-    self.ports.send("output".into(), ip).expect("cannot send date");
-  }
+    try!(ip.write_builder(&new_m));
+    try!(self.ports.send("output".into(), ip));
 
-  mod maths_number {
-    include!("maths_number.rs");
+    Ok(())
   }
-  use self::maths_number::number;
 }

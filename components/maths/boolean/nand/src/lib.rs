@@ -7,6 +7,11 @@ extern crate rustfbp;
 
 use rustfbp::component::*;
 
+mod maths_boolean {
+    include!("maths_boolean.rs");
+}
+use self::maths_boolean::boolean;
+
 component! {
   Nand,
   inputs(a: boolean, b: boolean),
@@ -15,13 +20,13 @@ component! {
   outputs_array(),
   option(),
   acc(),
-  fn run(&mut self) {
-    let mut ip_a = self.ports.recv("a".into()).expect("cannot receive");
-    let mut ip_b = self.ports.recv("b".into()).expect("cannot receive");
-    let a_reader = ip_a.get_reader().expect("cannot get reader");
-    let b_reader = ip_b.get_reader().expect("cannot get reader");
-    let a_reader: boolean::Reader = a_reader.get_root().expect("not a boolean reader");
-    let b_reader: boolean::Reader = b_reader.get_root().expect("not a boolean reader");
+  fn run(&mut self) -> Result<()> {
+    let mut ip_a = try!(self.ports.recv("a".into()));
+    let mut ip_b = try!(self.ports.recv("b".into()));
+    let a_reader = try!(ip_a.get_reader());
+    let b_reader = try!(ip_b.get_reader());
+    let a_reader: boolean::Reader = try!(a_reader.get_root());
+    let b_reader: boolean::Reader = try!(b_reader.get_root());
     let a = a_reader.get_boolean();
     let b = b_reader.get_boolean();
     let mut new_out = capnp::message::Builder::new_default();
@@ -30,11 +35,7 @@ component! {
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
     ip_a.write_builder(&new_out);
-    self.ports.send("output".into(), ip_a).expect("cannot send date");
+    try!(self.ports.send("output".into(), ip_a));
+    Ok(())
   }
-
-  mod maths_boolean {
-    include!("maths_boolean.rs");
-  }
-  use self::maths_boolean::boolean;
 }

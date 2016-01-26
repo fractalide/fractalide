@@ -18,35 +18,35 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<()> {
 
         // Get one IP
-        let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
-        let file = ip.get_reader().expect("file_open: cannot get the reader");
-        let file: file::Reader = file.get_root().expect("file_open: not a file_name reader");
+        let mut ip = try!(self.ports.recv("input".into()));
+        let file = try!(ip.get_reader());
+        let file: file::Reader = try!(file.get_root());
         // Send outside (don't care about loss)
         let _ = self.ports.send("output".into(), ip);
         // print it
-        match file.which().expect("cannot which") {
+        match try!(file.which()) {
             file::Start(path) => {
-                println!("Start : {} ", path.unwrap());
+                println!("Start : {} ", try!(path));
                 loop {
                     // Get one IP
-                    let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
-                    let file = ip.get_reader().expect("file_open: cannot get the reader");
-                    let file: file::Reader = file.get_root().expect("file_open: not a file_name reader");
+                    let mut ip = try!(self.ports.recv("input".into()));
+                    let file = try!(ip.get_reader());
+                    let file: file::Reader = try!(file.get_root());
                     // Send outside (don't care about loss)
                     let _ = self.ports.send("output".into(), ip);
 
-                    match file.which().expect("cannot which") {
-                      file::Text(text) => { println!("Text : {} ", text.unwrap()); },
-                      file::End(path) => { println!("End : {} ", path.unwrap()); break; },
-                        _ => { panic!("bad stream"); },
+                    match try!(file.which()) {
+                      file::Text(text) => { println!("Text : {} ", try!(text)); },
+                      file::End(path) => { println!("End : {} ", try!(path)); break; },
+                      _ => { return Err(result::Error::Misc("bad stream".to_string())); },
                     }
                 }
             },
-            _ => { panic!("bad stream") }
+            _ => { return Err(result::Error::Misc("bad stream".to_string())); },
         }
-
+        Ok(())
     }
 }

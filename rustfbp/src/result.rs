@@ -13,9 +13,11 @@ pub type Result<T> = result::Result<T, Error>;
 #[derive(Debug)]
 pub enum Error {
     Capnp(capnp::Error),
+    CapnpNIS(capnp::NotInSchema),
     IO(io::Error),
     FromUtf8(string::FromUtf8Error),
     Mpsc(mpsc::RecvError),
+    Misc(String),
     OutputPortNotConnected,
     NanomsgCannotShutdown,
     ComponentNotFound,
@@ -34,9 +36,11 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Capnp(ref err) => write!(f, "Cap'n Proto error: {}", err),
+            Error::CapnpNIS(ref err) => write!(f, "Cap'n Proto error: {}", err),
             Error::IO(ref err) => write!(f, "IO error : {}", err),
             Error::FromUtf8(ref err) => write!(f, "From Utf8 error : {}", err),
             Error::Mpsc(ref err) => write!(f, "Mpsc error : {}", err),
+            Error::Misc(ref err) => write!(f, "Misc error : {}", err),
             Error::NanomsgCannotShutdown => write!(f, "Nanomsg error : cannot shutdown"),
             Error::OutputPortNotConnected => write!(f, "OutputSender : Port not connected"),
             Error::ComponentNotFound => write!(f, "Scheduler error : Component not found"),
@@ -57,9 +61,11 @@ impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
             Error::Capnp(ref err) => err.description(),
+            Error::CapnpNIS(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
             Error::FromUtf8(ref err) => err.description(),
             Error::Mpsc(ref err) => err.description(),
+            Error::Misc(ref err) => &err,
             Error::OutputPortNotConnected => "The Output port is not connected",
             Error::NanomsgCannotShutdown => "Nanomsg cannot shutdown a socket",
             Error::ComponentNotFound => "A Component is not found in a scheduler",
@@ -78,6 +84,7 @@ impl error::Error for Error {
     fn cause(&self) -> Option<&error::Error> {
         match *self {
             Error::Capnp(ref err) => Some(err),
+            Error::CapnpNIS(ref err) => Some(err),
             Error::IO(ref err) => Some(err),
             Error::FromUtf8(ref err) => Some(err),
             Error::Mpsc(ref err) => Some(err),
@@ -89,6 +96,18 @@ impl error::Error for Error {
 impl From<capnp::Error> for Error {
     fn from(err: capnp::Error) -> Error {
         Error::Capnp(err)
+    }
+}
+
+impl From<capnp::NotInSchema> for Error {
+    fn from(err: capnp::NotInSchema) -> Error {
+        Error::CapnpNIS(err)
+    }
+}
+
+impl From<String> for Error {
+    fn from(err: String) -> Error {
+        Error::Misc(err)
     }
 }
 

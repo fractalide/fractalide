@@ -107,43 +107,45 @@ component! {
     outputs_array(),
     option(),
     acc(),
-    fn run(&mut self) {
+    fn run(&mut self) -> Result<()>{
         // Get one IP
-        let mut ip = self.ports.recv("input".into()).expect("file_print : unable to receive from input");
-        let file = ip.get_reader().expect("fbp_lexical: cannot get the reader");
-        let file: file::Reader = file.get_root().expect("fbp_lexical: not a file_name reader");
+        let mut ip = try!(self.ports.recv("input".into()));
+        let file = try!(ip.get_reader());
+        let file: file::Reader = try!(file.get_root());
 
         // print it
-        match file.which().expect("cannot which") {
+        match try!(file.which()) {
             file::Start(path) => {
-                let path = path.unwrap();
+                let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
                     let mut ip = new_ip.init_root::<lexical::Builder>();
                     ip.set_start(&path);
                 }
                 let mut send_ip = self.allocator.ip.build_empty();
-                send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                try!(send_ip.write_builder(&new_ip));
                 let _ = self.ports.send("output".into(), send_ip);
-                handle_stream(&self);
+                try!(handle_stream(&self));
             },
-            _ => { panic!("bad stream"); }
+            _ => { return Err(result::Error::Misc("bad stream".to_string())) }
         }
+
+        Ok(())
     }
 }
 
-fn handle_stream(comp: &fbp_lexical) {
+fn handle_stream(comp: &fbp_lexical) -> Result<()> {
     loop {
         // Get one IP
-        let mut ip = comp.ports.recv("input".into()).expect("file_print : unable to receive from input");
-        let file = ip.get_reader().expect("fbp_lexical: cannot get the reader");
-        let file: file::Reader = file.get_root().expect("fbp_lexical: not a file_name reader");
+        let mut ip = try!(comp.ports.recv("input".into()));
+        let file = try!(ip.get_reader());
+        let file: file::Reader = try!(file.get_root());
 
         // print it
-        match file.which().expect("cannot which") {
+        match try!(file.which()) {
             file::Text(text) => {
                 let mut new_ip = capnp::message::Builder::new_default();
-                let mut text = text.unwrap().as_bytes();
+                let mut text = try!(text).as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
@@ -174,7 +176,7 @@ fn handle_stream(comp: &fbp_lexical) {
                             }
                             text = rest;
                             let mut send_ip = comp.allocator.ip.build_empty();
-                            send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                            try!(send_ip.write_builder(&new_ip));
                             let _ = comp.ports.send("output".into(), send_ip);
                         },
                         _ => { break;}
@@ -185,22 +187,23 @@ fn handle_stream(comp: &fbp_lexical) {
                     ip.init_token().set_break(());
                 }
                 let mut send_ip = comp.allocator.ip.build_empty();
-                send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                try!(send_ip.write_builder(&new_ip));
                 let _ = comp.ports.send("output".into(), send_ip);
             },
             file::End(path) => {
-                let path = path.unwrap();
+                let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
                     let mut ip = new_ip.init_root::<lexical::Builder>();
                     ip.set_end(&path);
                 }
                 let mut send_ip = comp.allocator.ip.build_empty();
-                send_ip.write_builder(&new_ip).expect("fbp_lexical: cannot write");
+                try!(send_ip.write_builder(&new_ip));
                 let _ = comp.ports.send("output".into(), send_ip);
                 break;
             },
-            _ => { panic!("bad stream"); }
+            _ => { return Err(result::Error::Misc("Bad stream".to_string())); }
         }
     }
+    Ok(())
 }
