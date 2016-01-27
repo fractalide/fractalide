@@ -16,7 +16,8 @@ mod contract_capnp {
 }
 use contract_capnp::path;
 
-pub fn main() {
+#[no_mangle]
+pub extern "C" fn run(path_fbp: &str) {
     println!("Hello, fractalide!");
 
     let file = ComponentBuilder::new("file_open.so");
@@ -73,7 +74,7 @@ pub fn main() {
     let mut msg = capnp::message::Builder::new_default();
     {
         let mut number = msg.init_root::<path::Builder>();
-        number.set_path(&args[1][..]);
+        number.set_path(&path_fbp);
     }
 
     let mut ip = sched.allocator.ip.build_empty();

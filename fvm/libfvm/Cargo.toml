@@ -1,11 +1,16 @@
 [package]
-name = "fvm"
+name = "libfvm"
 version = "0.1.0"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 license = "AGPL-3.0"
 homepage = "http://github.com/fractalide/fvm"
 repository = "http://github.com/fractalide/fvm"
 description = "FVM, the Fractalide virtual machine"
+
+[lib]
+name = "fvm"
+path = "./src/lib.rs"
+crate-type = ["dylib"]
 
 [dependencies]
 capnp = "*"

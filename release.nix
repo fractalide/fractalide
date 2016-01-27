@@ -8,5 +8,6 @@ in
 ; contracts = f.contracts
 ; contract_lookup = f.support.contract_lookup
 ; component_lookup = f.support.component_lookup
+; libfvm = f.libfvm
 ; fvm = f.fvm;
 }
