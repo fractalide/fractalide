@@ -1,6 +1,5 @@
-{
-  pkgs, stdenv ? pkgs.stdenv
-  , fetchFromGitHub ? support.fetchFromGitHub
+{pkgs
+  , stdenv ? pkgs.stdenv
   , rustUnstable ? support.rustUnstable
   , rustRegistry ? support.rustRegistry
   , buildRustPackage ? support.buildRustPackage
@@ -11,13 +10,12 @@
   with rustUnstable rustRegistry;
 
   buildRustPackage rec {
-    version = "0.1.0";
-    name = "fvm-${version}";
+    name = "libfvm";
     src = ./.;
-    depsSha256 = "0w8b6mldsxqn807sb232m2xb7d9vzlyh5f8rqm6vf5555by3fzw7";
+    depsSha256 = "0l86c8nvscg71i3s6agq3g66h0r40ybfw0p2c3plglb3ikzgavxl";
 
     configurePhase = ''
-    substituteInPlace src/main.rs \
+    substituteInPlace src/lib.rs \
     --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs" \
     --replace "component_lookup.so" "${support.component_lookup}/lib/libcomponent.so" \
     --replace "contract_lookup.so" "${support.contract_lookup}/lib/libcomponent.so" \

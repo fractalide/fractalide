@@ -84,9 +84,18 @@ build a single component:
 
 ## Running `fvm` when developing:
 
-`./result/bin/fvm </path/to/a/filename.subnet>`
+`$ cd result/bin`
+`$ ./fvm ~/path/to/test.subnet`
 
-### Speedy pro tip
+here is an example for you to run:
+
+test.subnet
+```
+'false' -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
+'false' -> b xor()
+```
+
+### Pro tip
 
 `$ nix-shell --argstr debug true -A components.maths_boolean_nand`
 
