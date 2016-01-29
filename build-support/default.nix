@@ -8,6 +8,7 @@ rec {
   cargo = pkgs.cargo;
   rustcMaster = pkgs.rustcMaster;
   rustRegistry = callPackage ./rust-packages.nix {};
+  apk-builder = callPackage ./apk-builder.nix{inherit rustRegistry buildRustPackage;};
   buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug capnpc-rust rustRegistry;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName filterDeps extractDepsFromSubnet;};
