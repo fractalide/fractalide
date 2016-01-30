@@ -1,0 +1,21 @@
+[package]
+name = "fvm-android"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+license = "AGPL-3.0"
+homepage = "http://github.com/fractalide/fvm-android"
+repository = "http://github.com/fractalide/fvm-android"
+description = "FVM, the Fractalide Virtual Machine"
+
+[lib]
+name = "fvm"
+path = "../fvm/src/lib.rs"
+crate-type = ["rlib", "dylib"]
+
+[dependencies]
+android_glue = "*"
+capnp = "*"
+rustfbp = "*"
+
+[target.arm-linux-androideabi]
+linker = "${apk-builder}"
