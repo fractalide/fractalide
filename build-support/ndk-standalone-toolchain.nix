@@ -7,7 +7,10 @@
     src = androidndk;
     buildInputs = [ pkgs.file ];
     installPhase = ''
-    ${androidndk}/libexec/android-ndk-r10e/build/tools/make-standalone-toolchain.sh --verbose --platform=android-21 --toolchain=arm-linux-androideabi-4.8 --install-dir=$out
+    ${androidndk}/libexec/android-ndk-r10e/build/tools/make-standalone-toolchain.sh \
+        --platform=android-21 \
+        --toolchain=arm-linux-androideabi-4.8 \
+        --install-dir=$out
     '';
 
     meta = with stdenv.lib; {
