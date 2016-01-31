@@ -66,6 +66,12 @@ Run this command as a user other than root (you will need `sudo`). To uninstall 
 
 `$ nix-build`
 
+## Quick Start docs
+
+`$ nix-build release.nix -A doc`
+
+`$ firefox result/share/doc/fractalide/manual.html`
+
 ## Debug build
 
 `$ nix-build --argstr debug true`
