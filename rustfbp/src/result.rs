@@ -8,6 +8,9 @@ use std::io;
 use std::string;
 use std::sync::mpsc;
 
+use ports::IP;
+use scheduler::CompMsg;
+
 pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug)]
@@ -17,7 +20,9 @@ pub enum Error {
     IO(io::Error),
     FromUtf8(string::FromUtf8Error),
     Mpsc(mpsc::RecvError),
+    MpscTryRecv(mpsc::TryRecvError),
     Misc(String),
+    MpscSend,
     OutputPortNotConnected,
     NanomsgCannotShutdown,
     ComponentNotFound,
@@ -40,7 +45,9 @@ impl fmt::Display for Error {
             Error::IO(ref err) => write!(f, "IO error : {}", err),
             Error::FromUtf8(ref err) => write!(f, "From Utf8 error : {}", err),
             Error::Mpsc(ref err) => write!(f, "Mpsc error : {}", err),
+            Error::MpscTryRecv(ref err) => write!(f, "Mpsc error : {}", err),
             Error::Misc(ref err) => write!(f, "Misc error : {}", err),
+            Error::MpscSend => write!(f, "Mpsc error : cannot send"),
             Error::NanomsgCannotShutdown => write!(f, "Nanomsg error : cannot shutdown"),
             Error::OutputPortNotConnected => write!(f, "OutputSender : Port not connected"),
             Error::ComponentNotFound => write!(f, "Scheduler error : Component not found"),
@@ -65,7 +72,9 @@ impl error::Error for Error {
             Error::IO(ref err) => err.description(),
             Error::FromUtf8(ref err) => err.description(),
             Error::Mpsc(ref err) => err.description(),
+            Error::MpscTryRecv(ref err) => err.description(),
             Error::Misc(ref err) => &err,
+            Error::MpscSend => "Mpsc : cannot send",
             Error::OutputPortNotConnected => "The Output port is not connected",
             Error::NanomsgCannotShutdown => "Nanomsg cannot shutdown a socket",
             Error::ComponentNotFound => "A Component is not found in a scheduler",
@@ -88,6 +97,7 @@ impl error::Error for Error {
             Error::IO(ref err) => Some(err),
             Error::FromUtf8(ref err) => Some(err),
             Error::Mpsc(ref err) => Some(err),
+            Error::MpscTryRecv(ref err) => Some(err),
             _ => None
         }
     }
@@ -126,5 +136,23 @@ impl From<string::FromUtf8Error> for Error {
 impl From<mpsc::RecvError> for Error {
     fn from(err: mpsc::RecvError) -> Error {
         Error::Mpsc(err)
+    }
+}
+
+impl From<mpsc::TryRecvError> for Error {
+    fn from(err: mpsc::TryRecvError) -> Error {
+        Error::MpscTryRecv(err)
+    }
+}
+
+impl From<mpsc::SendError<CompMsg>> for Error {
+    fn from(_: mpsc::SendError<CompMsg>) -> Error {
+        Error::MpscSend
+    }
+}
+
+impl From<mpsc::SendError<IP>> for Error {
+    fn from(_: mpsc::SendError<IP>) -> Error {
+        Error::MpscSend
     }
 }

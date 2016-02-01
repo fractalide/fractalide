@@ -1,3 +1,7 @@
+#![feature(alloc_system)]
+
+extern crate alloc_system;
+
 extern crate libloading;
 extern crate capnp;
 
@@ -13,8 +17,5 @@ pub mod component;
 /// The messages are send by the exterior scheduler and the components of the Graph.
 pub mod scheduler;
 
-pub mod loader;
 pub mod ports;
 pub mod result;
-
-pub mod allocator;

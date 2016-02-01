@@ -19,6 +19,15 @@
  */
 
 extern crate capnp;
+use ports::Ports;
+use result::Result;
+
+pub trait Component {
+    fn get_ports(&mut self) -> &mut Ports;
+    fn is_input_ports(&self) -> bool;
+    fn run(&mut self) -> Result<()>;
+}
+
 
 #[macro_export]
 macro_rules! component {
@@ -35,15 +44,18 @@ macro_rules! component {
     )
         =>
     {
-        use rustfbp::component::*;
+        use rustfbp::component::Component;
 
         use rustfbp::result;
         use rustfbp::result::Result;
+        use rustfbp::ports::IPSender;
+        use rustfbp::scheduler::CompMsg;
         use std::error::Error;
 
-        use rustfbp::ports::Ports;
+        use std::sync::mpsc::Sender;
 
-        use rustfbp::allocator::{Allocator, HeapSenders, HeapIPSender, HeapIPReceiver, IP};
+        use rustfbp::ports::{IP, Ports};
+
         #[allow(unused_imports)]
         use std::collections::HashMap;
 
@@ -54,12 +66,11 @@ macro_rules! component {
 
         $($more)*
 
-        // simple and array
         impl $name {
             pub fn recv_option(&mut self) -> IP {
                 self.try_recv_option();
                 if self.option_ip.is_none() {
-                    self.option_ip = self.ports.recv("option".into()).ok();
+                    self.option_ip = self.ports.recv("option").ok();
                 }
                 match self.option_ip {
                     Some(ref ip) => ip.clone(),
@@ -69,15 +80,23 @@ macro_rules! component {
 
             pub fn try_recv_option(&mut self) -> Option<IP> {
                 loop {
-                    match self.ports.try_recv("option".into()) {
+                    match self.ports.try_recv("option") {
                         Err(_) => { break; },
                         Ok(ip) => { self.option_ip = Some(ip); }
                     };
                 }
                 self.option_ip.as_ref().map(|ip|{ ip.clone() })
             }
+        }
 
-            pub fn is_input_ports(&self) -> bool {
+        // simple and array
+        impl Component for $name {
+
+            fn get_ports(&mut self) -> &mut Ports {
+                &mut self.ports
+            }
+
+            fn is_input_ports(&self) -> bool {
                 $(
                     if true || stringify!($input_field_name) == "" { return true; }
                 )*
@@ -87,7 +106,7 @@ macro_rules! component {
                 false
             }
 
-            pub fn run(&mut $arg) -> Result<()> $fun
+            fn run(&mut $arg) -> Result<()> $fun
 
         }
 
@@ -95,15 +114,14 @@ macro_rules! component {
 
         #[allow(dead_code)]
         pub struct $name {
-            allocator: Allocator,
             name: String,
             pub ports: Ports,
             pub option_ip: Option<IP>,
         }
 
         #[allow(dead_code)]
-        pub fn new(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> Result<Box<$name>> {
-            let mut ports = try!(Ports::new(name.clone(), allocator, senders,
+        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> {
+            let (ports, senders) = try!(Ports::new(name.clone(), sched,
                                    vec!["option".into(), "acc".into(), $( stringify!($input_field_name).to_string() ),*],
                                    vec![$( stringify!($input_array_name).to_string() ),*],
                                    vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
@@ -111,112 +129,16 @@ macro_rules! component {
 
             // Put it together
             let comp = $name{
-                allocator: allocator.clone(),
-                name: name.clone(),
+                name: name,
                 ports: ports,
                 option_ip: None,
             };
-            Ok(Box::new(comp))
+            Ok((Box::new(comp) as Box<Component + Send>, senders))
         }
 
         #[no_mangle]
-        pub extern fn create_component(name: &String, allocator: &Allocator, senders: *mut HeapSenders) -> *mut $name {
-            let comp = new(name, allocator, senders).expect("unable to create the comp");
-            Box::into_raw(comp)
-        }
-
-        #[no_mangle]
-        pub extern fn run<'a>(ptr: *mut $name) {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.run() {
-                Ok(()) => { },
-                Err(e) => { println!("{} fails : {}", comp.name, e.description()) },
-            }
-        }
-
-        #[no_mangle]
-        pub extern fn connect(ptr: *mut $name, port_out: &String, send: *const HeapIPSender) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect(port_out.clone(), send) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-        #[no_mangle]
-        pub extern fn connect_array(ptr: *mut $name, port_out: &String, selection_out: &String, send: *const HeapIPSender) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.connect_array(port_out.clone(), selection_out.clone(), send) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-        #[no_mangle]
-        pub extern fn add_output_selection(ptr: *mut $name, port: &String, selection: &String) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.add_output_selection(port.clone(), selection.clone()) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-
-        #[no_mangle]
-        pub extern fn add_input_selection(ptr: *mut $name, port: &String, selection: &String) -> *const HeapIPSender {
-            let mut comp = unsafe { &mut *ptr };
-            comp.ports.add_input_selection(port.clone(), selection.clone()).expect("cannot add_input_selection")
-        }
-
-        #[no_mangle]
-        pub extern fn add_input_receiver(ptr: *mut $name, port: &String, selection: &String, hir: *const HeapIPReceiver) {
-            let mut comp = unsafe { &mut *ptr };
-            comp.ports.add_input_receiver(port.clone(), selection.clone(), hir).expect("cannot add_input_receiver")
-        }
-
-        #[no_mangle]
-        pub extern fn set_receiver(ptr: *mut $name, port: &String, recv: *const HeapIPReceiver) {
-            let mut comp = unsafe { &mut *ptr };
-            comp.ports.set_receiver(port.clone(), recv);
-        }
-
-        #[no_mangle]
-        pub extern fn get_receiver(ptr: *mut $name, port: &String) -> *const HeapIPReceiver {
-            let mut comp = unsafe { &mut *ptr };
-            comp.ports.remove_receiver(port).expect("cannot get receiver")
-        }
-
-        #[no_mangle]
-        pub extern fn get_array_receiver(ptr: *mut $name, port: &String, selection: &String) -> *const HeapIPReceiver {
-            let mut comp = unsafe { &mut *ptr };
-            comp.ports.remove_array_receiver(port, selection).expect("cannot get receiver")
-        }
-
-        #[no_mangle]
-        pub extern fn disconnect(ptr: *mut $name, port: &String) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.disconnect(port.clone()) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-
-        #[no_mangle]
-        pub extern fn disconnect_array(ptr: *mut $name, port: &String, selection: &String) -> u32 {
-            let mut comp = unsafe { &mut *ptr };
-            match comp.ports.disconnect_array(port.clone(), selection.clone()) {
-                Ok(_) => 0,
-                Err(_) => 1,
-            }
-        }
-
-        #[no_mangle]
-        pub extern fn is_input_ports(ptr: *mut $name) -> bool {
-            let mut comp = unsafe { &mut *ptr };
-            comp.is_input_ports()
-        }
-
-
-        #[no_mangle]
-        pub extern fn destroy_component(ptr: *mut $name) {
-            let _comp: Box<$name> = unsafe { Box::from_raw(ptr) };
+        pub extern fn create_component(name: String, sched: Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> {
+            new(name, sched)
         }
     }
 }
