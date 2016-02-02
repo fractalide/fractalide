@@ -2,7 +2,6 @@ extern crate capnp;
 
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 mod contracts {
     include!("file.rs");
@@ -21,22 +20,22 @@ component! {
     fn run(&mut self) -> Result<()> {
 
         // Get one IP
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let file = try!(ip.get_reader());
         let file: file::Reader = try!(file.get_root());
         // Send outside (don't care about loss)
-        let _ = self.ports.send("output".into(), ip);
+        let _ = self.ports.send("output", ip);
         // print it
         match try!(file.which()) {
             file::Start(path) => {
                 println!("Start : {} ", try!(path));
                 loop {
                     // Get one IP
-                    let mut ip = try!(self.ports.recv("input".into()));
+                    let mut ip = try!(self.ports.recv("input"));
                     let file = try!(ip.get_reader());
                     let file: file::Reader = try!(file.get_root());
                     // Send outside (don't care about loss)
-                    let _ = self.ports.send("output".into(), ip);
+                    let _ = self.ports.send("output", ip);
 
                     match try!(file.which()) {
                       file::Text(text) => { println!("Text : {} ", try!(text)); },

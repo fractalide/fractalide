@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 extern crate capnp;
 
@@ -18,7 +17,7 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let graph = try!(ip.get_reader());
         let graph: graph::Reader = try!(graph.get_root());
 
@@ -49,7 +48,7 @@ component! {
                      try!(n.get_selection()), try!(n.get_name()));
         }
 
-        let _ = self.ports.send("output".into(), ip);
+        let _ = self.ports.send("output", ip);
         Ok(())
     }
 }

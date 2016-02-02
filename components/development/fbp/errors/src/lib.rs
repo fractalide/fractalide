@@ -24,7 +24,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()>{
 
-        match self.ports.try_recv("semantic_error".into()) {
+        match self.ports.try_recv("semantic_error") {
             Ok(mut ip) => {
                 let error = try!(ip.get_reader());
                 let error: semantic_error::Reader = try!(error.get_root());
@@ -39,7 +39,7 @@ component! {
             _ => {}
         };
 
-        match self.ports.try_recv("file_error".into()) {
+        match self.ports.try_recv("file_error") {
             Ok(mut ip) => {
                 let error = try!(ip.get_reader());
                 let error: file_error::Reader = try!(error.get_root());
@@ -54,9 +54,9 @@ component! {
             let mut ip = new_ip.init_root::<graph::Builder>();
             ip.set_path("error");
         }
-        let mut send_ip = self.allocator.ip.build_empty();
+        let mut send_ip = IP::new();
         try!(send_ip.write_builder(&new_ip));
-        let _ = self.ports.send("output".into(), send_ip);
+        let _ = self.ports.send("output", send_ip);
         Ok(())
     }
 }

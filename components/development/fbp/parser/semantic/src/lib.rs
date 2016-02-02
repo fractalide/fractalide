@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 extern crate capnp;
 
@@ -50,7 +49,7 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let literal = try!(ip.get_reader());
         let literal: lexical::Reader = try!(literal.get_root());
         let literal = try!(literal.which());
@@ -73,9 +72,9 @@ component! {
                                 }
                             }
                         }
-                        let mut send_ip = self.allocator.ip.build_empty();
+                        let mut send_ip = IP::new();
                         try!(send_ip.write_builder(&new_ip));
-                        let _ = self.ports.send("error".into(), send_ip);
+                        let _ = self.ports.send("error", send_ip);
                     },
                 }
             }
@@ -100,7 +99,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
 
     loop {
 
-        let mut ip = comp.ports.recv("input".into()).expect("fbp_semantic : unable to receive");
+        let mut ip = comp.ports.recv("input").expect("fbp_semantic : unable to receive");
         let literal = ip.get_reader().expect("fbp_semantic : cannot get reader");
         let literal: lexical::Reader = literal.get_root().expect("fbp_semantic : not a literal");
         let literal = literal.which().expect("fbp_semantic : cannot which");
@@ -333,8 +332,8 @@ fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
             }
         }
     }
-    let mut send_ip = comp.allocator.ip.build_empty();
+    let mut send_ip = IP::new();
     try!(send_ip.write_builder(&new_ip));
-    let _ = comp.ports.send("output".into(), send_ip);
+    let _ = comp.ports.send("output", send_ip);
     Ok(())
 }

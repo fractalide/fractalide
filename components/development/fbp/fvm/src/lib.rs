@@ -39,7 +39,7 @@ component! {
         };
 
         // retrieve the asked graph
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let i_graph = try!(ip.get_reader());
         let i_graph: graph::Reader = try!(i_graph.get_root());
 
@@ -105,12 +105,12 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
             let mut path = msg.init_root::<path::Builder>();
             path.set_path(c_sort);
         }
-        let mut ip = component.allocator.ip.build_empty();
+        let mut ip = IP::new();
         ip.write_builder(&mut msg);
-        try!(component.ports.send("ask_path".into(), ip));
+        try!(component.ports.send("ask_path", ip));
 
         // retrieve the asked graph
-        let mut ip = try!(component.ports.recv("new_path".into()));
+        let mut ip = try!(component.ports.recv("new_path"));
         let i_graph = try!(ip.get_reader());
         let i_graph: option_path::Reader = try!(i_graph.get_root());
 
@@ -145,13 +145,13 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
                 let mut number = msg.init_root::<path::Builder>();
                 number.set_path(&path);
             }
-            let mut ip = component.allocator.ip.build_empty();
+            let mut ip = IP::new();
             ip.write_builder(&mut msg);
 
-            try!(component.ports.send("ask_graph".into(), ip));
+            try!(component.ports.send("ask_graph", ip));
 
             // retrieve the asked graph
-            let mut ip = try!(component.ports.recv("input".into()));
+            let mut ip = try!(component.ports.recv("input"));
             let i_graph = try!(ip.get_reader());
             let i_graph: graph::Reader = try!(i_graph.get_root());
 
@@ -224,8 +224,8 @@ fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
             }
         }
     }
-    let mut send_ip = comp.allocator.ip.build_empty();
+    let mut send_ip = IP::new();
     try!(send_ip.write_builder(&new_ip));
-    let _ = comp.ports.send("output".into(), send_ip);
+    let _ = comp.ports.send("output", send_ip);
     Ok(())
 }
