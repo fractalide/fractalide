@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate rustfbp;
 use rustfbp::scheduler::{Scheduler};
-use rustfbp::loader::{ComponentBuilder};
 
 extern crate capnp;
 
@@ -25,12 +24,12 @@ component! {
         let mut sched = Scheduler::new();
 
         // retrieve the asked graph
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let i_graph = try!(ip.get_reader());
         let i_graph: graph::Reader = try!(i_graph.get_root());
 
         for n in try!(i_graph.borrow().get_nodes()).iter() {
-            sched.add_component_from_sort(try!(n.get_name()), try!(n.get_sort()));
+            sched.add_component(try!(n.get_name()), try!(n.get_sort()));
         }
 
         for e in try!(i_graph.borrow().get_edges()).iter() {
@@ -61,14 +60,12 @@ component! {
             }
         }
 
-        let senders = (sched.allocator.senders.create)();
-        let mut p = try!(Ports::new("exterior".into(), &sched.allocator, senders,
+        let (mut p, senders) = try!(Ports::new("exterior".into(), sched.sender.clone(),
                                vec![],
                                vec![],
                                vec!["s".into()],
                                vec![]));
-        let hs = HeapSenders::from_raw(senders);
-        sched.inputs.insert("exterior".into(), hs);
+        sched.inputs.insert("exterior".into(), senders);
 
         for iip in try!(i_graph.borrow().get_iips()).iter() {
 
@@ -84,9 +81,9 @@ component! {
                 try!(p.connect("s".into(), try!(sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
             }
 
-            let mut ip = sched.allocator.ip.build_empty();
+            let mut ip = IP::new();
             ip.write_builder(&mut new_out);
-            try!(p.send("s".into(), ip));
+            try!(p.send("s", ip));
         }
         sched.join();
         Ok(())

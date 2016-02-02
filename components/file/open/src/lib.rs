@@ -2,7 +2,6 @@ extern crate capnp;
 
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 mod contracts {
     include!("path.rs");
@@ -29,7 +28,7 @@ component! {
     fn run(&mut self) -> Result<()> {
 
         // Get the path
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let path = try!(ip.get_reader());
         let path: path::Reader = try!(path.get_root());
 
@@ -40,14 +39,14 @@ component! {
             Err(_) => {
                 // Prepare the output ip
                 let mut new_ip = capnp::message::Builder::new_default();
-                let mut send_ip = self.allocator.ip.build_empty();
+                let mut send_ip = IP::new();
 
                 {
                     let mut ip = new_ip.init_root::<file_error::Builder>();
                     ip.set_not_found(&path);
                 }
                 try!(send_ip.write_builder(&new_ip));
-                let _ = self.ports.send("error".into(), send_ip);
+                let _ = self.ports.send("error", send_ip);
                 return Ok(());
             }
         };
@@ -59,9 +58,9 @@ component! {
             let mut ip = new_ip.init_root::<file::Builder>();
             ip.set_start(&path);
         }
-        let mut send_ip = self.allocator.ip.build_empty();
+        let mut send_ip = IP::new();
         try!(send_ip.write_builder(&new_ip));
-        try!(self.ports.send("output".into(), send_ip));
+        try!(self.ports.send("output", send_ip));
 
         // Send lines
         let file = BufReader::new(&file);
@@ -72,20 +71,20 @@ component! {
                 let mut ip = new_ip.init_root::<file::Builder>();
                 ip.set_text(&l);
             }
-            let mut send_ip = self.allocator.ip.build_empty();
+            let mut send_ip = IP::new();
             try!(send_ip.write_builder(&new_ip));
-            try!(self.ports.send("output".into(), send_ip));
+            try!(self.ports.send("output", send_ip));
         }
 
         // Send stop
         let mut new_ip = capnp::message::Builder::new_default();
-        let mut send_ip = self.allocator.ip.build_empty();
+        let mut send_ip = IP::new();
         {
             let mut ip = new_ip.init_root::<file::Builder>();
             ip.set_end(&path);
         }
         try!(send_ip.write_builder(&new_ip));
-        try!(self.ports.send("output".into(), send_ip));
+        try!(self.ports.send("output", send_ip));
 
         Ok(())
 

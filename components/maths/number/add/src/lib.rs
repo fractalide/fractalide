@@ -1,10 +1,7 @@
-#![feature(braced_empty_structs)]
 extern crate capnp;
 
 #[macro_use]
 extern crate rustfbp;
-
-use rustfbp::component::*;
 
 mod maths_number {
     include!("maths_number.rs");
@@ -22,7 +19,7 @@ component! {
   fn run(&mut self) -> Result<()> {
     let mut acc = 0;
     for ins in try!(self.ports.get_input_selections("numbers")) {
-      let mut ip = try!(self.ports.recv_array("numbers".into(), ins));
+      let mut ip = try!(self.ports.recv_array("numbers", &ins));
       let mut m = try!(ip.get_reader());
       let m: number::Reader = try!(m.get_root());
       let n = m.get_number();
@@ -33,9 +30,9 @@ component! {
       let mut number = new_m.init_root::<number::Builder>();
       number.set_number(acc);
     }
-    let mut ip = self.allocator.ip.build_empty();
+    let mut ip = IP::new();
     try!(ip.write_builder(&new_m));
-    try!(self.ports.send("output".into(), ip));
+    try!(self.ports.send("output", ip));
 
     Ok(())
   }

@@ -1,37 +1,65 @@
 extern crate capnp;
+use std::io::Read;
 
 use result;
 use result::Result;
 
 use std::collections::HashMap;
 
-use allocator::{Allocator, HeapSenders, IPSender, IPReceiver, IP, HeapIPSender, HeapIPReceiver};
+use std::sync::mpsc::{Sender, Receiver, SyncSender};
+use std::sync::mpsc::sync_channel;
 
-use std::mem;
+use scheduler::CompMsg;
+
+#[derive(Clone)]
+pub struct IP {
+    vec: Vec<u8>,
+}
+
+impl IP {
+    pub fn new() -> Self {
+        IP { vec: vec![] }
+    }
+
+    pub fn get_reader(&self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
+        Ok(try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new())))
+    }
+
+    pub fn write_builder<A: capnp::message::Allocator>(&mut self, builder: &capnp::message::Builder<A>) -> Result<()> {
+        Ok(try!(capnp::serialize::write_message(&mut self.vec, builder)))
+    }
+}
+
+#[derive(Clone)]
+pub struct IPSender {
+    pub sender: SyncSender<IP>,
+    pub dest: String,
+    pub sched: Sender<CompMsg>,
+}
 
 pub struct Ports {
     name: String,
-    allocator: Allocator,
-    inputs: HashMap<String, IPReceiver>,
-    inputs_array: HashMap< String, HashMap<String, IPReceiver>>,
+    sched: Sender<CompMsg>,
+    inputs: HashMap<String, Receiver<IP>>,
+    inputs_array: HashMap< String, HashMap<String, Receiver<IP>>>,
     outputs: HashMap<String, Option<IPSender>>,
     outputs_array: HashMap<String, HashMap<String, Option<IPSender>>>,
 }
 
 impl Ports {
-    pub fn new(name: String, allocator: &Allocator, senders: *mut HeapSenders,
+    pub fn new(name: String, sched: Sender<CompMsg>,
                n_input: Vec<String>, n_input_array: Vec<String>,
-               n_output: Vec<String>, n_output_array: Vec<String>) -> Result<Self> {
-        let senders = allocator.senders.build(senders);
+               n_output: Vec<String>, n_output_array: Vec<String>) -> Result<(Self, HashMap<String, IPSender>)> {
+        let mut senders: HashMap<String, IPSender> = HashMap::new();
         let mut inputs = HashMap::new();
         for i in n_input {
-            let (s, r) = if i == "acc" || i == "option" {
-                allocator.channel.build(&"DummyNameComponentThatMustNeverExist123456".into())
-            } else {
-                allocator.channel.build(&name)
+            let (s, r) = sync_channel(25);
+            let s = IPSender {
+                sender: s,
+                dest: if i != "acc" && i != "option" { name.clone() } else { "".into() },
+                sched: sched.clone(),
             };
-            senders.add_ptr(&i, s);
-            let r = allocator.channel.build_receiver(r);
+            senders.insert(i.clone(), s);
             inputs.insert(i, r);
         }
         let mut inputs_array = HashMap::new();
@@ -40,14 +68,16 @@ impl Ports {
         for i in n_output { outputs.insert(i, None); }
         let mut outputs_array = HashMap::new();
         for i in n_output_array { outputs_array.insert(i, HashMap::new()); }
-        Ok(Ports {
+        let ports = Ports {
             name: name,
-            allocator: allocator.clone(),
+            sched: sched,
             inputs: inputs,
             inputs_array: inputs_array,
             outputs: outputs,
             outputs_array: outputs_array,
-        })
+        };
+
+        Ok((ports, senders))
     }
 
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
@@ -64,75 +94,86 @@ impl Ports {
             })
     }
 
-    pub fn recv(&self, port_in: String) -> Result<IP> {
-        if let Some(ref mut port) = self.inputs.get(&port_in) {
-            let ptr = try!(port.recv());
-            let ip = self.allocator.ip.build(ptr);
+    pub fn recv(&self, port_in: &str) -> Result<IP> {
+        if let Some(ref mut port) = self.inputs.get(port_in) {
+            // Received the IP
+            let ip = try!(port.recv());
+            if port_in != "acc" && port_in != "option" {
+                try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+            }
             Ok(ip)
         } else {
             Err(result::Error::PortNotFound)
         }
     }
 
-    pub fn try_recv(&self, port_in: String) -> Result<IP> {
-        if let Some(ref mut port) = self.inputs.get(&port_in) {
-            let ptr = try!(port.try_recv());
-            let ip = self.allocator.ip.build(ptr);
+    pub fn try_recv(&self, port_in: &str) -> Result<IP> {
+        if let Some(ref mut port) = self.inputs.get(port_in) {
+            let ip = try!(port.try_recv());
+            if port_in != "acc" && port_in != "option" {
+                try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+            }
             Ok(ip)
         } else {
             Err(result::Error::PortNotFound)
         }
     }
 
-    pub fn recv_array(&self, port_in: String, selection_in: String) -> Result<IP> {
-        self.inputs_array.get(&port_in).ok_or(result::Error::PortNotFound)
+    pub fn recv_array(&self, port_in: &str, selection_in: &str) -> Result<IP> {
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
-                port.get(&selection_in).ok_or(result::Error::SelectionNotFound)
+                port.get(selection_in).ok_or(result::Error::SelectionNotFound)
                     .and_then(|recv| {
-                        let ptr = try!(recv.recv());
-                        let ip = self.allocator.ip.build(ptr);
+                        let ip = try!(recv.recv());
+                        if port_in != "acc" && port_in != "option" {
+                            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+                        }
                         Ok(ip)
                     })
             })
     }
 
-    pub fn send(&self, port_out: String, ip: IP) -> Result<()> {
-        self.outputs.get(&port_out).ok_or(result::Error::PortNotFound)
+    pub fn send(&self, port_out: &str, ip: IP) -> Result<()> {
+        self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
                     .and_then(|sender| {
-                        sender.send(ip)
+                        try!(sender.sender.send(ip));
+                        if sender.dest != "" {
+                            try!(sender.sched.send(CompMsg::Inc(sender.dest.clone())));
+                        }
+                        Ok(())
                     })
             })
     }
 
-    pub fn send_array(&self, port_out: String, selection_out: String, ip: IP) -> Result<()> {
-        self.outputs_array.get(&port_out).ok_or(result::Error::PortNotFound)
+    pub fn send_array(&self, port_out: &str, selection_out: &str, ip: IP) -> Result<()> {
+        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port| {
-                port.get(&selection_out).ok_or(result::Error::SelectionNotFound)
+                port.get(selection_out).ok_or(result::Error::SelectionNotFound)
                     .and_then(|sender| {
                         sender.as_ref().ok_or(result::Error::OutputPortNotConnected)
                             .and_then(|sender| {
-                                sender.send(ip)
+                                try!(sender.sender.send(ip));
+                                try!(self.sched.send(CompMsg::Inc(sender.dest.clone())));
+                                Ok(())
                             })
                     })
             })
     }
 
-    pub fn connect(&mut self, port_out: String, sender: *const HeapIPSender) -> Result<()> {
+    pub fn connect(&mut self, port_out: String, sender: IPSender) -> Result<()> {
         if !self.outputs.contains_key(&port_out) {
             return Err(result::Error::PortNotFound);
         }
-        let sender = self.allocator.channel.build_sender(sender);
         self.outputs.insert(port_out, Some(sender));
         Ok(())
     }
 
-    pub fn connect_array(&mut self, port_out: String, selection_out: String, sender: *const HeapIPSender) -> Result<()> {
+    pub fn connect_array(&mut self, port_out: String, selection_out: String, sender: IPSender) -> Result<()> {
         if !self.outputs_array.contains_key(&port_out) {
             return Err(result::Error::PortNotFound);
         }
-        let sender = self.allocator.channel.build_sender(sender);
         self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port| {
                 if !port.contains_key(&selection_out) {
@@ -143,20 +184,20 @@ impl Ports {
             })
     }
 
-    pub fn disconnect(&mut self, port_out: String) -> Result<Option<*const HeapIPSender>> {
+    pub fn disconnect(&mut self, port_out: String) -> Result<Option<IPSender>> {
         if !self.outputs.contains_key(&port_out) {
             return Err(result::Error::PortNotFound);
         }
         let old = self.outputs.insert(port_out, None);
         match old {
-            Some(Some(his)) => {
-                Ok(Some(try!(his.to_raw())))
+            Some(Some(ip_sender)) => {
+                Ok(Some(ip_sender))
             }
             _ => { Ok(None) },
         }
     }
 
-    pub fn disconnect_array(&mut self, port_out: String, selection_out: String) -> Result<Option<*const HeapIPSender>> {
+    pub fn disconnect_array(&mut self, port_out: String, selection_out: String) -> Result<Option<IPSender>> {
         if !self.outputs_array.contains_key(&port_out) {
             return Err(result::Error::PortNotFound);
         }
@@ -167,35 +208,39 @@ impl Ports {
                 }
                 let old = port.insert(port_out, None);
                 match old {
-                    Some(Some(his)) => {
-                        Ok(Some(try!(his.to_raw())))
+                    Some(Some(ip_sender)) => {
+                        Ok(Some(ip_sender))
                     }
                     _ => { Ok(None) },
                 }
             })
     }
 
-    pub fn set_receiver(&mut self, port: String, recv: *const HeapIPReceiver) {
-        self.inputs.insert(port, self.allocator.channel.build_receiver(recv));
+    pub fn set_receiver(&mut self, port: String, recv: Receiver<IP>) {
+        self.inputs.insert(port, recv);
     }
 
-    pub fn remove_receiver(&mut self, port: &String) -> Result<*const HeapIPReceiver> {
+    pub fn remove_receiver(&mut self, port: &str) -> Result<Receiver<IP>> {
         self.inputs.remove(port).ok_or(result::Error::PortNotFound)
-            .map(|hir| { hir.to_raw().unwrap() })
+            .map(|recv| { recv })
     }
 
-    pub fn remove_array_receiver(&mut self, port: &String, selection: &String) -> Result<*const HeapIPReceiver> {
+    pub fn remove_array_receiver(&mut self, port: &str, selection: &str) -> Result<Receiver<IP>> {
         self.inputs_array.get_mut(port).ok_or(result::Error::PortNotFound)
             .and_then(|port| {
                 port.remove(selection).ok_or(result::Error::SelectionNotFound)
-                    .map(|hir| { hir.to_raw().unwrap() })
+                    .map(|recv| { recv })
             })
     }
 
-    pub fn add_input_selection(&mut self, port_in: String, selection_in: String) -> Result<*const HeapIPSender> {
-        let (s, r) = self.allocator.channel.build(&self.name);
-        let r = self.allocator.channel.build_receiver(r);
-        self.inputs_array.get_mut(&port_in)
+    pub fn add_input_selection(&mut self, port_in: &str, selection_in: String) -> Result<IPSender> {
+        let (s, r) = sync_channel(25);
+        let s = IPSender {
+            sender: s,
+            dest: self.name.clone(),
+            sched: self.sched.clone(),
+        };
+        self.inputs_array.get_mut(port_in)
             .ok_or(result::Error::PortNotFound)
             .map(|port| {
                 port.insert(selection_in, r);
@@ -203,9 +248,8 @@ impl Ports {
             })
     }
 
-    pub fn add_input_receiver(&mut self, port_in: String, selection_in: String, r: *const HeapIPReceiver) -> Result<()> {
-        let r = self.allocator.channel.build_receiver(r);
-        self.inputs_array.get_mut(&port_in)
+    pub fn add_input_receiver(&mut self, port_in: &str, selection_in: String, r: Receiver<IP>) -> Result<()> {
+        self.inputs_array.get_mut(port_in)
             .ok_or(result::Error::PortNotFound)
             .map(|port| {
                 port.insert(selection_in, r);
@@ -213,8 +257,8 @@ impl Ports {
             })
     }
 
-    pub fn add_output_selection(&mut self, port_out: String, selection_out: String) -> Result<()> {
-        self.outputs_array.get_mut(&port_out)
+    pub fn add_output_selection(&mut self, port_out: &str, selection_out: String) -> Result<()> {
+        self.outputs_array.get_mut(port_out)
             .ok_or(result::Error::PortNotFound)
             .map(|port| {
                 if !port.contains_key(&selection_out) {
@@ -227,62 +271,54 @@ impl Ports {
 
 mod test_port {
     use super::Ports;
-    use allocator::*;
-    use std::mem::transmute;
-
-    use std::sync::mpsc::channel;
 
     use scheduler::CompMsg;
 
+    use std::sync::mpsc::channel;
     #[test]
     fn ports() {
         assert!(1==1);
         let (s, r) = channel();
-        let a = Allocator::new(s);
-        let senders = (a.senders.create)();
 
-        let mut p1 = Ports::new("unique".into(), &a, senders,
-                                vec!["in".into(), "vec".into()],
-                                vec!["in_a".into()],
-                                vec!["out".into()],
-                                vec!["out_a".into()]
-                                ).expect("cannot create");
 
-        let mut senders: Box<HeapSenders> = unsafe { transmute(senders) };
-        assert!(senders.senders.len() == 2);
-        // let s_in = senders.senders.remove("in").unwrap();
-        let s_in = senders.get_sender("in").unwrap();
+        let (mut p1, mut senders) = Ports::new("unique".into(), s,
+                                               vec!["in".into(), "vec".into()],
+                                               vec!["in_a".into()],
+                                               vec!["out".into()],
+                                               vec!["out_a".into()]
+                                               ).expect("cannot create");
+        assert!(senders.len() == 2);
 
-        p1.connect("out".into(), s_in.to_raw()).expect("cannot connect");
+        let s_in = senders.get("in").unwrap();
 
-        let mut ip = a.ip.build_empty();
+        p1.connect("out".into(), s_in.clone()).expect("cannot connect");
 
-        let wrong = p1.try_recv("in".into());
+        let wrong = p1.try_recv("in");
         assert!(wrong.is_err());
 
-        p1.send("out".into(), ip).expect("cannot send");
+        let ip = super::IP{ vec: vec![] };
 
-        let ok = p1.try_recv("in".into());
+        p1.send("out", ip).expect("cannot send");
+
+        let ok = p1.try_recv("in");
         assert!(ok.is_ok());
 
-        let mut ip = a.ip.build_empty();
-        p1.send("out".into(), ip).expect("cannot send second times");
+        let ip = super::IP{ vec: vec![] };
+        p1.send("out", ip).expect("cannot send second times");
 
-        let nip = p1.recv("in".into());
+        let nip = p1.recv("in");
         assert!(nip.is_ok());
-
-
         // test array ports
 
-        let s_in = p1.add_input_selection("in_a".into(), "1".into()).expect("cannot add input selection");
+        let s_in = p1.add_input_selection("in_a", "1".into()).expect("cannot add input selection");
 
         p1.add_output_selection("out_a".into(), "a".into());
         p1.connect_array("out_a".into(), "a".into(), s_in).expect("cannot connect array");
 
-        let mut ip = a.ip.build_empty();
-        p1.send_array("out_a".into(), "a".into(), ip).expect("cannot send array");
+        let ip = super::IP{ vec: vec![] };
+        p1.send_array("out_a", "a", ip).expect("cannot send array");
 
-        let nip = p1.recv_array("in_a".into(), "1".into());
+        let nip = p1.recv_array("in_a", "1");
         assert!(nip.is_ok());
 
         let i = r.recv().expect("cannot received the sched");
@@ -311,6 +347,5 @@ mod test_port {
             );
         let i = r.try_recv();
         assert!(i.is_err());
-
     }
 }

@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 #[macro_use]
 extern crate nom;
@@ -109,7 +108,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()>{
         // Get one IP
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let file = try!(ip.get_reader());
         let file: file::Reader = try!(file.get_root());
 
@@ -122,9 +121,9 @@ component! {
                     let mut ip = new_ip.init_root::<lexical::Builder>();
                     ip.set_start(&path);
                 }
-                let mut send_ip = self.allocator.ip.build_empty();
+                let mut send_ip = IP::new();
                 try!(send_ip.write_builder(&new_ip));
-                let _ = self.ports.send("output".into(), send_ip);
+                let _ = self.ports.send("output", send_ip);
                 try!(handle_stream(&self));
             },
             _ => { return Err(result::Error::Misc("bad stream".to_string())) }
@@ -137,7 +136,7 @@ component! {
 fn handle_stream(comp: &fbp_lexical) -> Result<()> {
     loop {
         // Get one IP
-        let mut ip = try!(comp.ports.recv("input".into()));
+        let mut ip = try!(comp.ports.recv("input"));
         let file = try!(ip.get_reader());
         let file: file::Reader = try!(file.get_root());
 
@@ -175,9 +174,9 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                                 }
                             }
                             text = rest;
-                            let mut send_ip = comp.allocator.ip.build_empty();
+                            let mut send_ip = IP::new();
                             try!(send_ip.write_builder(&new_ip));
-                            let _ = comp.ports.send("output".into(), send_ip);
+                            let _ = comp.ports.send("output", send_ip);
                         },
                         _ => { break;}
                     }
@@ -186,9 +185,9 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                     let mut ip = new_ip.init_root::<lexical::Builder>();
                     ip.init_token().set_break(());
                 }
-                let mut send_ip = comp.allocator.ip.build_empty();
+                let mut send_ip = IP::new();
                 try!(send_ip.write_builder(&new_ip));
-                let _ = comp.ports.send("output".into(), send_ip);
+                let _ = comp.ports.send("output", send_ip);
             },
             file::End(path) => {
                 let path = try!(path);
@@ -197,9 +196,9 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                     let mut ip = new_ip.init_root::<lexical::Builder>();
                     ip.set_end(&path);
                 }
-                let mut send_ip = comp.allocator.ip.build_empty();
+                let mut send_ip = IP::new();
                 try!(send_ip.write_builder(&new_ip));
-                let _ = comp.ports.send("output".into(), send_ip);
+                let _ = comp.ports.send("output", send_ip);
                 break;
             },
             _ => { return Err(result::Error::Misc("Bad stream".to_string())); }

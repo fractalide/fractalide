@@ -1,12 +1,13 @@
+#![feature(alloc_system)]
+
+extern crate alloc_system;
+
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
 
 use self::rustfbp::scheduler::{Scheduler};
-use self::rustfbp::loader::{ComponentBuilder};
-use self::rustfbp::ports::Ports;
-
-use self::rustfbp::allocator::{Allocator, HeapSenders, HeapIP, HeapIPReceiver};
+use self::rustfbp::ports::{IP, Ports};
 
 use std::thread;
 use std::env;
@@ -17,57 +18,33 @@ mod contract_capnp {
 }
 use contract_capnp::path;
 
-fn build_path(path: &'static str) -> Option<String> {
+fn build_path(path: &'static str) -> String {
     let pstr = env::current_exe().unwrap();
     let parent_dir = Path::new(&pstr).parent();
-    parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../bootstrap/{}", s, path)})
+    parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../bootstrap/{}", s, path)}).expect("not a file name")
 }
 
 #[no_mangle]
 pub extern "C" fn run(path_fbp: &str) {
-    println!("Hello, fractalide!");
-
-    let file = ComponentBuilder::new(
-        &build_path("file_open.so").expect("not a file name"));
-    let print = ComponentBuilder::new(
-        &build_path("file_print.so").expect("not a file name"));
-    let lex = ComponentBuilder::new(
-        &build_path("development_fbp_parser_lexical.so").expect("not a file name"));
-    let semantic = ComponentBuilder::new(
-        &build_path("development_fbp_parser_semantic.so").expect("not a file name"));
-    let graph_print = ComponentBuilder::new(
-        &build_path("development_fbp_parser_print_graph.so").expect("not a file name"));
-    let fvm = ComponentBuilder::new(
-        &build_path("development_fbp_fvm.so").expect("not a file name"));
-    let errors = ComponentBuilder::new(
-        &build_path("development_fbp_errors.so").expect("not a file name"));
-    let sched_comp = ComponentBuilder::new(
-        &build_path("development_fbp_scheduler.so").expect("not a file name"));
-    let component_lookup = ComponentBuilder::new(
-        &build_path("component_lookup.so").expect("not a file name"));
-    let contract_lookup = ComponentBuilder::new(
-        &build_path("contract_lookup.so").expect("not a file name"));
 
     let mut sched = Scheduler::new();
-    sched.add_component("open".into(), &file);
-    sched.add_component("lex".into(), &lex);
-    sched.add_component("sem".into(), &semantic);
-    sched.add_component("fvm".into(), &fvm);
-    sched.add_component("errors".into(), &errors);
-    sched.add_component("graph_print".into(), &graph_print);
-    sched.add_component("sched".into(), &sched_comp);
-    sched.add_component("component_lookup".into(), &component_lookup);
-    sched.add_component("contract_lookup".into(), &contract_lookup);
+    sched.add_component("open", &build_path("file_open.so"));
+    sched.add_component("lex", &build_path("development_fbp_parser_lexical.so"));
+    sched.add_component("sem", &build_path("development_fbp_parser_semantic.so"));
+    sched.add_component("fvm", &build_path("development_fbp_fvm.so"));
+    sched.add_component("errors", &build_path("development_fbp_errors.so"));
+    sched.add_component("graph_print", &build_path("development_fbp_parser_print_graph.so"));
+    sched.add_component("sched", &build_path("development_fbp_scheduler.so"));
+    sched.add_component("component_lookup", &build_path("component_lookup.so"));
+    sched.add_component("contract_lookup", &build_path("contract_lookup.so"));
 
 
-    let senders = (sched.allocator.senders.create)();
-    let mut p = Ports::new("exterior".into(), &sched.allocator, senders,
-       vec!["r".into()],
-       vec![],
-       vec!["s".into(), "opt".into()],
-       vec![]).expect("cannot create");
-    let hs = HeapSenders::from_raw(senders);
-    sched.inputs.insert("exterior".into(), hs);
+    let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
+                                      vec!["r".into()],
+                                      vec![],
+                                      vec!["s".into(), "opt".into()],
+                                      vec![]).expect("cannot create");
+    sched.inputs.insert("exterior".into(), senders);
 
     p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
@@ -93,7 +70,7 @@ pub extern "C" fn run(path_fbp: &str) {
         number.set_path(&path_fbp);
     }
 
-    let mut ip = sched.allocator.ip.build_empty();
+    let mut ip = IP::new();
     ip.write_builder(&mut msg);
     p.send("s".into(), ip).expect("unable to send to comp");
 

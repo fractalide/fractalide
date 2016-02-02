@@ -2,7 +2,6 @@ extern crate capnp;
 
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::component::*;
 
 mod contracts {
     include!("path.rs");
@@ -27,7 +26,7 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input".into()));
+        let mut ip = try!(self.ports.recv("input"));
         let name = try!(ip.get_reader());
         let name: path::Reader = try!(name.get_root());
 
@@ -41,9 +40,9 @@ component! {
                 Some(p) => { ip.set_path(p) }
             };
         }
-        let mut send_ip = self.allocator.ip.build_empty();
+        let mut send_ip = IP::new();
         try!(send_ip.write_builder(&new_ip));
-        let _ = self.ports.send("output".into(), send_ip);
+        let _ = self.ports.send("output", send_ip);
         Ok(())
     }
 

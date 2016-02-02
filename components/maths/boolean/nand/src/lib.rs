@@ -1,11 +1,8 @@
 
-#![feature(braced_empty_structs)]
 extern crate capnp;
 
 #[macro_use]
 extern crate rustfbp;
-
-use rustfbp::component::*;
 
 mod maths_boolean {
     include!("maths_boolean.rs");
@@ -21,8 +18,8 @@ component! {
   option(),
   acc(),
   fn run(&mut self) -> Result<()> {
-    let mut ip_a = try!(self.ports.recv("a".into()));
-    let mut ip_b = try!(self.ports.recv("b".into()));
+    let mut ip_a = try!(self.ports.recv("a"));
+    let mut ip_b = try!(self.ports.recv("b"));
     let a_reader = try!(ip_a.get_reader());
     let b_reader = try!(ip_b.get_reader());
     let a_reader: boolean::Reader = try!(a_reader.get_root());
@@ -35,7 +32,7 @@ component! {
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
     ip_a.write_builder(&new_out);
-    try!(self.ports.send("output".into(), ip_a));
+    try!(self.ports.send("output", ip_a));
     Ok(())
   }
 }
