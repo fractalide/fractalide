@@ -10,27 +10,43 @@ use self::rustfbp::allocator::{Allocator, HeapSenders, HeapIP, HeapIPReceiver};
 
 use std::thread;
 use std::env;
+use std::path::Path;
 
 mod contract_capnp {
     include!("path_capnp.rs");
 }
 use contract_capnp::path;
 
+fn build_path(path: &'static str) -> Option<String> {
+    let pstr = env::current_exe().unwrap();
+    let parent_dir = Path::new(&pstr).parent();
+    parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../bootstrap/{}", s, path)})
+}
+
 #[no_mangle]
 pub extern "C" fn run(path_fbp: &str) {
     println!("Hello, fractalide!");
 
-    let file = ComponentBuilder::new("file_open.so");
-    let print = ComponentBuilder::new("file_print.so");
-    let lex = ComponentBuilder::new("development_fbp_parser_lexical.so");
-    let semantic = ComponentBuilder::new("development_fbp_parser_semantic.so");
-    let graph_print = ComponentBuilder::new("development_fbp_parser_print_graph.so");
-    let fvm = ComponentBuilder::new("development_fbp_fvm.so");
-    let errors = ComponentBuilder::new("development_fbp_errors.so");
-    let sched_comp = ComponentBuilder::new("development_fbp_scheduler.so");
-    let component_lookup = ComponentBuilder::new("component_lookup.so");
-    let contract_lookup = ComponentBuilder::new("contract_lookup.so");
-
+    let file = ComponentBuilder::new(
+        &build_path("file_open.so").expect("not a file name"));
+    let print = ComponentBuilder::new(
+        &build_path("file_print.so").expect("not a file name"));
+    let lex = ComponentBuilder::new(
+        &build_path("development_fbp_parser_lexical.so").expect("not a file name"));
+    let semantic = ComponentBuilder::new(
+        &build_path("development_fbp_parser_semantic.so").expect("not a file name"));
+    let graph_print = ComponentBuilder::new(
+        &build_path("development_fbp_parser_print_graph.so").expect("not a file name"));
+    let fvm = ComponentBuilder::new(
+        &build_path("development_fbp_fvm.so").expect("not a file name"));
+    let errors = ComponentBuilder::new(
+        &build_path("development_fbp_errors.so").expect("not a file name"));
+    let sched_comp = ComponentBuilder::new(
+        &build_path("development_fbp_scheduler.so").expect("not a file name"));
+    let component_lookup = ComponentBuilder::new(
+        &build_path("component_lookup.so").expect("not a file name"));
+    let contract_lookup = ComponentBuilder::new(
+        &build_path("contract_lookup.so").expect("not a file name"));
 
     let mut sched = Scheduler::new();
     sched.add_component("open".into(), &file);

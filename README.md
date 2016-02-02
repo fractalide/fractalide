@@ -66,6 +66,12 @@ Run this command as a user other than root (you will need `sudo`). To uninstall 
 
 `$ nix-build`
 
+## Quick Start docs
+
+`$ nix-build release.nix -A doc`
+
+`$ firefox result/share/doc/fractalide/manual.html`
+
 ## Debug build
 
 `$ nix-build --argstr debug true`
@@ -84,12 +90,11 @@ build a single component:
 
 ## Running `fvm` when developing:
 
-`$ cd result/bin`
-`$ ./fvm ~/path/to/test.subnet`
+`$ ./result/bin/fvm ~/path/to/test.subnet`
 
-here is an example for you to run:
+Here is an example for you to run:
 
-test.subnet
+`test.subnet`
 ```
 'false' -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
 'false' -> b xor()
