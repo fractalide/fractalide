@@ -18,7 +18,7 @@ mod contract_capnp {
 }
 use contract_capnp::path;
 
-fn build_path(path: &'static str) -> Option<String> {
+fn build_path(path: &'static str) -> String {
     let pstr = env::current_exe().unwrap();
     let parent_dir = Path::new(&pstr).parent();
     parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../bootstrap/{}", s, path)}).expect("not a file name")
