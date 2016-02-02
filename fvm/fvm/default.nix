@@ -16,7 +16,7 @@
 
     configurePhase = ''
     mkdir -p $out/bootstrap
-    mkdir -p bootstrapt
+    mkdir -p bootstrap
 
     cp ${components.file_open}/lib/libcomponent.so $out/bootstrap/${components.file_open.name}.so
     ln -s ${components.file_open}/lib/libcomponent.so bootstrap/${components.file_open.name}.so
