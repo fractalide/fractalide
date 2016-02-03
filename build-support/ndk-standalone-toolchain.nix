@@ -7,9 +7,11 @@
     src = androidndk;
     buildInputs = [ pkgs.file ];
     installPhase = ''
+    mkdir -p $out/ndk-dir
     ${androidndk}/libexec/android-ndk-r10e/build/tools/make-standalone-toolchain.sh \
         --platform=android-21 \
         --toolchain=arm-linux-androideabi-4.8 \
+        --ndk-dir=${androidndk}/libexec/android-ndk-r10e \
         --install-dir=$out
     '';
 
