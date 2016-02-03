@@ -1,6 +1,6 @@
 {pkgs
   , stdenv ? pkgs.stdenv
-  , rustUnstable ? support.rustUnstable
+  , rustUnstable ? pkgs.rustUnstable
   , rustRegistry ? support.rustRegistry
   , buildRustPackage ? support.buildRustPackage
   , upkeepers ? support.upkeepers
@@ -38,6 +38,8 @@
     ln -s ${support.component_lookup}/lib/libcomponent.so bootstrap/${support.component_lookup.name}.so
     cp ${support.contract_lookup}/lib/libcomponent.so $out/bootstrap/${support.contract_lookup.name}.so
     ln -s ${support.contract_lookup}/lib/libcomponent.so bootstrap/${support.contract_lookup.name}.so
+
+    cp ${pkgs.capnproto}/bin/capnp $out/bootstrap/capnp
 
     substituteInPlace src/lib.rs \
     --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
