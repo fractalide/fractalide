@@ -3,18 +3,18 @@ extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
 
-mod maths_boolean {
+mod contract_capnp {
     include!("maths_boolean.rs");
 }
-use self::maths_boolean::boolean;
+use self::contract_capnp::maths_boolean;
 
 use std::thread;
 
 component! {
     Nand,
-    inputs(input: boolean),
+    inputs(input: maths_boolean),
     inputs_array(),
-    outputs(output: boolean),
+    outputs(output: maths_boolean),
     outputs_array(),
     option(),
     acc(),
@@ -22,7 +22,7 @@ component! {
         let mut ip_a = try!(self.ports.recv("input"));
 
         let a_reader = try!(ip_a.get_reader());
-        let a_reader: boolean::Reader = try!(a_reader.get_root());
+        let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
         let a = a_reader.get_boolean();
 
         println!("boolean : {:?}", a);

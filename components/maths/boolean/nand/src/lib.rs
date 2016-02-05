@@ -4,16 +4,16 @@ extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
 
-mod maths_boolean {
+mod contract_capnp {
     include!("maths_boolean.rs");
 }
-use self::maths_boolean::boolean;
+use self::contract_capnp::maths_boolean;
 
 component! {
   Nand,
-  inputs(a: boolean, b: boolean),
+  inputs(a: maths_boolean, b: maths_boolean),
   inputs_array(),
-  outputs(output: boolean),
+  outputs(output: maths_boolean),
   outputs_array(),
   option(),
   acc(),
@@ -22,13 +22,13 @@ component! {
     let mut ip_b = try!(self.ports.recv("b"));
     let a_reader = try!(ip_a.get_reader());
     let b_reader = try!(ip_b.get_reader());
-    let a_reader: boolean::Reader = try!(a_reader.get_root());
-    let b_reader: boolean::Reader = try!(b_reader.get_root());
+    let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
+    let b_reader: maths_boolean::Reader = try!(b_reader.get_root());
     let a = a_reader.get_boolean();
     let b = b_reader.get_boolean();
     let mut new_out = capnp::message::Builder::new_default();
     {
-      let mut boolean = new_out.init_root::<boolean::Builder>();
+      let mut boolean = new_out.init_root::<maths_boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
     ip_a.write_builder(&new_out);

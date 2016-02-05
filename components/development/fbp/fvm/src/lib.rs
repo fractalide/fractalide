@@ -12,7 +12,7 @@ mod contract_capnp {
 }
 use contract_capnp::path;
 use contract_capnp::option_path;
-use contract_capnp::graph;
+use contract_capnp::fbp_graph;
 
 #[derive(Debug)]
 struct Graph {
@@ -26,9 +26,9 @@ struct Graph {
 
 component! {
     fvm,
-    inputs(input: graph, new_path: option_path, error: any),
+    inputs(input: fbp_graph, new_path: option_path, error: any),
     inputs_array(),
-    outputs(output: graph, ask_graph: text, ask_path: path),
+    outputs(output: fbp_graph, ask_graph: path, ask_path: path),
     outputs_array(),
     option(),
     acc(),
@@ -41,7 +41,7 @@ component! {
         // retrieve the asked graph
         let mut ip = try!(self.ports.recv("input"));
         let i_graph = try!(ip.get_reader());
-        let i_graph: graph::Reader = try!(i_graph.get_root());
+        let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
 
         try!(add_graph(self, &mut graph, i_graph, ""));
 
@@ -52,7 +52,7 @@ component! {
     }
 }
 
-fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, name: &str) -> Result<()> {
+fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
 
     if try!(new_graph.get_path()) == "error" { graph.errors = true; }
 
@@ -153,7 +153,7 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
             // retrieve the asked graph
             let mut ip = try!(component.ports.recv("input"));
             let i_graph = try!(ip.get_reader());
-            let i_graph: graph::Reader = try!(i_graph.get_root());
+            let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
 
             add_graph(component, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {
@@ -166,7 +166,7 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: graph::Reader, n
 fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
     let mut new_ip = capnp::message::Builder::new_default();
     {
-        let mut ip = new_ip.init_root::<graph::Builder>();
+        let mut ip = new_ip.init_root::<fbp_graph::Builder>();
         ip.set_path("");
         {
             let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);

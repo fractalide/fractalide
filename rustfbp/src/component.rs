@@ -140,5 +140,31 @@ macro_rules! component {
         pub extern fn create_component(name: String, sched: Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> {
             new(name, sched)
         }
+
+        #[no_mangle]
+        pub extern fn get_contract_input(port: &str) -> Result<String> {
+            match port {
+                $(
+                    stringify!($input_field_name)=> Ok(stringify!($input_contract_name).into()),
+                )*
+                $(
+                    stringify!($input_array_name) => Ok(stringify!($input_contract_array).into()),
+                )*
+                _ => { Err(result::Error::PortNotFound) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn get_contract_output(port: &str) -> Result<String> {
+            match port {
+                $(
+                    stringify!($output_field_name)=> Ok(stringify!($output_contract_name).into()),
+                )*
+                $(
+                    stringify!($output_array_name) => Ok(stringify!($output_contract_array).into()),
+                )*
+                _ => { Err(result::Error::PortNotFound) }
+            }
+        }
     }
 }

@@ -1,6 +1,6 @@
 @0x9c951b3548fca4c2;
 
-struct Lexical {
+struct FbpLexical {
   union {
     start @0 :Text;
     end @1 :Text;

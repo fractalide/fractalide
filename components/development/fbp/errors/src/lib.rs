@@ -10,15 +10,15 @@ mod contract_capnp {
     include!("fbp_semantic_error.rs");
     include!("file_error.rs");
 }
-use contract_capnp::graph;
+use contract_capnp::fbp_graph;
 use contract_capnp::file_error;
-use contract_capnp::semantic_error;
+use contract_capnp::fbp_semantic_error;
 
 component! {
     fvm,
-    inputs(file_error: file_error, semantic_error: semantic_error),
+    inputs(file_error: file_error, semantic_error: fbp_semantic_error),
     inputs_array(),
-    outputs(output: graph),
+    outputs(output: fbp_graph),
     outputs_array(),
     option(),
     acc(),
@@ -27,7 +27,7 @@ component! {
         match self.ports.try_recv("semantic_error") {
             Ok(mut ip) => {
                 let error = try!(ip.get_reader());
-                let error: semantic_error::Reader = try!(error.get_root());
+                let error: fbp_semantic_error::Reader = try!(error.get_root());
 
                 println!("Graph at : {}", try!(error.get_path()));
                 let parsing = try!(error.get_parsing());
@@ -51,7 +51,7 @@ component! {
 
         let mut new_ip = capnp::message::Builder::new_default();
         {
-            let mut ip = new_ip.init_root::<graph::Builder>();
+            let mut ip = new_ip.init_root::<fbp_graph::Builder>();
             ip.set_path("error");
         }
         let mut send_ip = IP::new();

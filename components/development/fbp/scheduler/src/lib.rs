@@ -1,21 +1,23 @@
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::scheduler::{Scheduler};
+use rustfbp::scheduler::{Comp, Scheduler};
 
 extern crate capnp;
 
 mod contract_capnp {
     include!("fbp_graph.rs");
-    include!("maths_boolean.rs");
+    include!("path.rs");
+    include!("generic_text.rs");
 }
-use contract_capnp::graph;
-use contract_capnp::boolean;
+use contract_capnp::fbp_graph;
+use contract_capnp::path;
+use contract_capnp::generic_text;
 
 component! {
     schedulder,
-    inputs(input: graph),
+    inputs(input: fbp_graph, contract_path: path, iip: any),
     inputs_array(),
-    outputs(error: error),
+    outputs(error: error, ask_path: path, iip_path: path, iip_contract: generic_text, iip_input: generic_text),
     outputs_array(),
     option(),
     acc(),
@@ -26,7 +28,7 @@ component! {
         // retrieve the asked graph
         let mut ip = try!(self.ports.recv("input"));
         let i_graph = try!(ip.get_reader());
-        let i_graph: graph::Reader = try!(i_graph.get_root());
+        let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
 
         for n in try!(i_graph.borrow().get_nodes()).iter() {
             sched.add_component(try!(n.get_name()), try!(n.get_sort()));
@@ -65,15 +67,37 @@ component! {
                                vec![],
                                vec!["s".into()],
                                vec![]));
-        sched.inputs.insert("exterior".into(), senders);
+        sched.components.insert("exterior".into(), Comp{
+            inputs: senders,
+            inputs_array: HashMap::new(),
+            sort: "".into(),
+        });
 
         for iip in try!(i_graph.borrow().get_iips()).iter() {
 
+            let comp = try!(iip.get_comp());
+            let port = try!(iip.get_port());
+            let input = try!(iip.get_iip());
+
+            let (contract, input) = try!(split_input(input));
+
+            // Get the real path
             let mut new_out = capnp::message::Builder::new_default();
             {
-                let mut boolean = new_out.init_root::<boolean::Builder>();
-                boolean.set_boolean(try!(iip.get_iip()) == "true");
+                let mut cont = new_out.init_root::<path::Builder>();
+                cont.set_path(&contract);
             }
+            let mut ip = IP::new();
+            ip.write_builder(&mut new_out);
+            try!(self.ports.send("ask_path", ip));
+
+            let contract_path_ip = try!(self.ports.recv("contract_path"));
+            let contract_path = try!(contract_path_ip.get_reader());
+            let contract_path: path::Reader = try!(contract_path.get_root());
+
+            let c_path = try!(contract_path.get_path());
+            let c_path = format!("/nix/store/{}/src/contract.capnp", c_path);
+            let contract_camel_case = to_camel_case(&contract);
 
             if try!(iip.get_selection()) == "" {
                 try!(p.connect("s".into(), try!(sched.get_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into()))));
@@ -81,11 +105,61 @@ component! {
                 try!(p.connect("s".into(), try!(sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
             }
 
+            let mut new_out = capnp::message::Builder::new_default();
+            {
+                let mut path = new_out.init_root::<path::Builder>();
+                path.set_path(&c_path);
+            }
             let mut ip = IP::new();
             ip.write_builder(&mut new_out);
-            try!(p.send("s", ip));
+            try!(self.ports.send("iip_path", ip));
+
+            let mut new_out = capnp::message::Builder::new_default();
+            {
+                let mut path = new_out.init_root::<generic_text::Builder>();
+                path.set_text(&contract_camel_case);
+            }
+            let mut ip = IP::new();
+            ip.write_builder(&mut new_out);
+            try!(self.ports.send("iip_contract", ip));
+
+            let mut new_out = capnp::message::Builder::new_default();
+            {
+                let mut path = new_out.init_root::<generic_text::Builder>();
+                path.set_text(&input);
+            }
+            let mut ip = IP::new();
+            ip.write_builder(&mut new_out);
+            try!(self.ports.send("iip_input", ip));
+
+            let iip = try!(self.ports.recv("iip"));
+            try!(p.send("s", iip));
         }
+
         sched.join();
         Ok(())
     }
+}
+
+fn to_camel_case(s: &str) -> String {
+    let mut result = "".to_string();
+    for word in s.split("_") {
+        result = format!("{}{}", result, capitalize_first_letter(word));
+    }
+    result
+}
+
+fn capitalize_first_letter(s : &str) -> String {
+    use std::ascii::*;
+    let mut result_chars : Vec<char> = Vec::new();
+    for c in s.chars() { result_chars.push(c) }
+    result_chars[0] = (result_chars[0] as u8).to_ascii_uppercase() as char;
+    return result_chars.into_iter().collect();
+}
+
+fn split_input(s: &str) -> Result<(String, String)> {
+    let pos = try!(s.find(":").ok_or(result::Error::Misc("bad definition of iip".into())));
+    let (a, b) = s.split_at(pos);
+    let (_, b) = b.split_at(1);
+    Ok((a.into(), b.into()))
 }
