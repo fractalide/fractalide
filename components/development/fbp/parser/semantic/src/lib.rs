@@ -8,9 +8,9 @@ mod contract_capnp {
     include!("fbp_lexical.rs");
     include!("fbp_semantic_error.rs");
 }
-use contract_capnp::graph;
-use contract_capnp::lexical;
-use contract_capnp::semantic_error;
+use contract_capnp::fbp_graph;
+use contract_capnp::fbp_lexical;
+use contract_capnp::fbp_semantic_error;
 
 #[derive(Debug)]
 struct Graph {
@@ -51,17 +51,17 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
         let literal = try!(ip.get_reader());
-        let literal: lexical::Reader = try!(literal.get_root());
+        let literal: fbp_lexical::Reader = try!(literal.get_root());
         let literal = try!(literal.which());
 
         match literal {
-            lexical::Start(path) => {
+            fbp_lexical::Start(path) => {
                 match handle_stream(&self) {
                     Ok(graph) => { try!(send_graph(&self, try!(path), &graph)) },
                     Err(errors) => {
                         let mut new_ip = capnp::message::Builder::new_default();
                         {
-                            let mut ip = new_ip.init_root::<semantic_error::Builder>();
+                            let mut ip = new_ip.init_root::<fbp_semantic_error::Builder>();
                             ip.set_path(try!(path));
                             {
                                 let mut nodes = ip.init_parsing(errors.len() as u32);
@@ -101,16 +101,16 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
 
         let mut ip = comp.ports.recv("input").expect("fbp_semantic : unable to receive");
         let literal = ip.get_reader().expect("fbp_semantic : cannot get reader");
-        let literal: lexical::Reader = literal.get_root().expect("fbp_semantic : not a literal");
+        let literal: fbp_lexical::Reader = literal.get_root().expect("fbp_semantic : not a literal");
         let literal = literal.which().expect("fbp_semantic : cannot which");
         match literal {
-            lexical::End(_) => {
+            fbp_lexical::End(_) => {
                 break;
             },
-            lexical::Token(t) => {
+            fbp_lexical::Token(t) => {
                 let token = t.which().expect("cannot which token");
                 match token {
-                    lexical::token::Bind(_) => {
+                    fbp_lexical::token::Bind(_) => {
                         state = match state {
                             CompPort => { CompPortBind },
                             ErrorS => { ErrorS },
@@ -121,7 +121,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             },
                         };
                     },
-                    lexical::token::External(_) => {
+                    fbp_lexical::token::External(_) => {
                         state = match state {
                             CompPort => { CompPortExternal },
                             Port => { PortExternal },
@@ -132,7 +132,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             },
                         };
                     },
-                    lexical::token::Port(port) => {
+                    fbp_lexical::token::Port(port) => {
                         stack.push(Literal::Port(port.get_name().unwrap().to_string(), port.get_selection().unwrap().to_string()));
                         state = match state {
                             Comp => { CompPort },
@@ -158,7 +158,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             },
                         };
                     },
-                    lexical::token::Comp(comp) => {
+                    fbp_lexical::token::Comp(comp) => {
                         if comp.get_sort().unwrap() != "" {
                             graph.nodes.push((comp.get_name().unwrap().to_string(), comp.get_sort().unwrap().to_string()));
                         }
@@ -213,7 +213,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             },
                         }
                     },
-                    lexical::token::Iip(iip) => {
+                    fbp_lexical::token::Iip(iip) => {
                         let iip = iip.expect("no iip");
                         stack.push(Literal::IIP(iip.to_string()));
                         state = match state {
@@ -225,7 +225,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
                             },
                         };
                     },
-                    lexical::token::Break(_) => {
+                    fbp_lexical::token::Break(_) => {
                         line += 1;
                         state = match state {
                             CompPortBind => { state },
@@ -274,7 +274,7 @@ fn get_expected(state: &State) -> String {
 fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
     let mut new_ip = capnp::message::Builder::new_default();
     {
-        let mut ip = new_ip.init_root::<graph::Builder>();
+        let mut ip = new_ip.init_root::<fbp_graph::Builder>();
         ip.set_path(path);
         {
             let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);

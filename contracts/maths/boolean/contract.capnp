@@ -1,5 +1,5 @@
 @0xbde554c96bf60f36;
 
-struct Boolean {
+struct MathsBoolean {
   boolean @0 :Bool;
 }

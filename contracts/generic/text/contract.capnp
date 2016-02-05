@@ -1,5 +1,5 @@
 @0xb1fc090ed4d12aee;
 
-struct Text {
+struct GenericText {
         text @0 :Text;
 }

@@ -28,6 +28,8 @@
     ln -s ${components.development_fbp_parser_semantic}/lib/libcomponent.so bootstrap/${components.development_fbp_parser_semantic.name}.so
     cp ${components.development_fbp_parser_print_graph}/lib/libcomponent.so $out/bootstrap/${components.development_fbp_parser_print_graph.name}.so
     ln -s ${components.development_fbp_parser_print_graph}/lib/libcomponent.so bootstrap/${components.development_fbp_parser_print_graph.name}.so
+    cp ${components.development_capnp_encode}/lib/libcomponent.so $out/bootstrap/${components.development_capnp_encode.name}.so
+    ln -s ${components.development_capnp_encode}/lib/libcomponent.so bootstrap/${components.development_capnp_encode.name}.so
     cp ${components.development_fbp_fvm}/lib/libcomponent.so $out/bootstrap/${components.development_fbp_fvm.name}.so
     ln -s ${components.development_fbp_fvm}/lib/libcomponent.so bootstrap/${components.development_fbp_fvm.name}.so
     cp ${components.development_fbp_errors}/lib/libcomponent.so $out/bootstrap/${components.development_fbp_errors.name}.so

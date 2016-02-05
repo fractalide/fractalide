@@ -6,7 +6,7 @@ extern crate capnp;
 mod contract_capnp {
     include!("fbp_graph.rs");
 }
-use contract_capnp::graph;
+use contract_capnp::fbp_graph;
 
 component! {
     fbp_print_graph,
@@ -19,7 +19,7 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
         let graph = try!(ip.get_reader());
-        let graph: graph::Reader = try!(graph.get_root());
+        let graph: fbp_graph::Reader = try!(graph.get_root());
 
         println!("Graph at : {}", try!(graph.get_path()));
         println!("nodes :");

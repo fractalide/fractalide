@@ -11,7 +11,7 @@ mod contract_capnp {
     include!("fbp_lexical.rs");
 }
 use contract_capnp::file;
-use contract_capnp::lexical;
+use contract_capnp::fbp_lexical;
 
 #[derive(Debug)]
 enum Literal {
@@ -99,7 +99,7 @@ named!(comp_or_port<&[u8], Literal>, chain!(
 named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_port));
 
 component! {
-    fbp_lexical,
+    comp,
     inputs(input: file),
     inputs_array(),
     outputs(output: fbp_lexical),
@@ -118,7 +118,7 @@ component! {
                 let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
-                    let mut ip = new_ip.init_root::<lexical::Builder>();
+                    let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.set_start(&path);
                 }
                 let mut send_ip = IP::new();
@@ -133,7 +133,7 @@ component! {
     }
 }
 
-fn handle_stream(comp: &fbp_lexical) -> Result<()> {
+fn handle_stream(comp: &comp) -> Result<()> {
     loop {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
@@ -149,7 +149,7 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
                             {
-                                let mut ip = new_ip.init_root::<lexical::Builder>();
+                                let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                                 match lit {
                                     Literal::Bind => { ip.init_token().set_bind(()); },
                                     Literal::External => {ip.init_token().set_external(()); },
@@ -182,7 +182,7 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                     }
                 }
                 {
-                    let mut ip = new_ip.init_root::<lexical::Builder>();
+                    let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.init_token().set_break(());
                 }
                 let mut send_ip = IP::new();
@@ -193,7 +193,7 @@ fn handle_stream(comp: &fbp_lexical) -> Result<()> {
                 let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
-                    let mut ip = new_ip.init_root::<lexical::Builder>();
+                    let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.set_end(&path);
                 }
                 let mut send_ip = IP::new();

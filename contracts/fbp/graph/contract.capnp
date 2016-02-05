@@ -1,6 +1,6 @@
 @0x84c8e268d3236b4f;
 
-struct Graph {
+struct FbpGraph {
   path @0 :Text;
   nodes @1 :List(Node);
   edges @2 :List(Edge);
