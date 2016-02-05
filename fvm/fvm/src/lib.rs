@@ -6,12 +6,14 @@ extern crate alloc_system;
 extern crate rustfbp;
 extern crate capnp;
 
-use self::rustfbp::scheduler::{Scheduler};
+use self::rustfbp::scheduler::{Scheduler, Comp};
 use self::rustfbp::ports::{IP, Ports};
 
 use std::thread;
 use std::env;
 use std::path::Path;
+
+use std::collections::HashMap;
 
 mod contract_capnp {
     include!("path_capnp.rs");
@@ -35,6 +37,7 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("errors", &build_path("development_fbp_errors.so"));
     sched.add_component("graph_print", &build_path("development_fbp_parser_print_graph.so"));
     sched.add_component("sched", &build_path("development_fbp_scheduler.so"));
+    sched.add_component("iip", &build_path("development_capnp_encode.so"));
     sched.add_component("component_lookup", &build_path("component_lookup.so"));
     sched.add_component("contract_lookup", &build_path("contract_lookup.so"));
 
@@ -44,24 +47,37 @@ pub extern "C" fn run(path_fbp: &str) {
                                       vec![],
                                       vec!["s".into(), "opt".into()],
                                       vec![]).expect("cannot create");
-    sched.inputs.insert("exterior".into(), senders);
+    sched.components.insert("exterior".into(), Comp {
+        inputs: senders,
+        inputs_array: HashMap::new(),
+        sort: "".into(),
+    });
 
     p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
     sched.connect("sem".into(), "output".into(), "fvm".into(), "input".into()).expect("cannot connect");
 
-    sched.connect("open".into(), "error".into(), "errors".into(), "file_error".into());
-    sched.connect("sem".into(), "error".into(), "errors".into(), "semantic_error".into());
-    sched.connect("errors".into(), "output".into(), "fvm".into(), "input".into());
+    sched.connect("open".into(), "error".into(), "errors".into(), "file_error".into()).expect("cannot connect");
+    sched.connect("sem".into(), "error".into(), "errors".into(), "semantic_error".into()).expect("cannot connect");
+    sched.connect("errors".into(), "output".into(), "fvm".into(), "input".into()).expect("cannot connect");
 
     // reccursive part
-    sched.connect("fvm".into(), "ask_graph".into(), "open".into(), "input".into());
-    sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into());
-    sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into());
+    sched.connect("fvm".into(), "ask_graph".into(), "open".into(), "input".into()).expect("cannot connect");
+    sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
+    sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into()).expect("cannot connect");
 
-    sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into());
-    sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into());
+    sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
+    sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
+
+    sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
+    sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
+
+    // IIP part
+    sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");
+    sched.connect("sched".into(), "iip_contract".into(), "iip".into(), "contract".into()).expect("cannot connect");
+    sched.connect("sched".into(), "iip_input".into(), "iip".into(), "input".into()).expect("cannot connect");
+    sched.connect("iip".into(), "output".into(), "sched".into(), "iip".into()).expect("cannot connect");
 
     let args: Vec<String> = env::args().collect();
     let mut msg = capnp::message::Builder::new_default();

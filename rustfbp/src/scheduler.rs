@@ -39,10 +39,16 @@ pub enum CompMsg {
     Remove(String, Sender<SyncMsg>),
 }
 
+pub struct Comp {
+    pub inputs: HashMap<String, IPSender>,
+    pub inputs_array: HashMap<String, HashMap<String, IPSender>>,
+    pub sort: String,
+}
+
 /// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
-    pub inputs: HashMap<String, HashMap<String, IPSender>>,
-    pub inputs_array: HashMap<String, HashMap<String, HashMap<String, IPSender>>>,
+    pub cache: ComponentCache,
+    pub components: HashMap<String, Comp>,
     pub sender: Sender<CompMsg>,
     pub error_receiver: Receiver<result::Error>,
     th: JoinHandle<()>,
@@ -94,8 +100,8 @@ impl Scheduler {
         });
 
         Scheduler {
-            inputs: HashMap::new(),
-            inputs_array: HashMap::new(),
+            cache: ComponentCache::new(),
+            components: HashMap::new(),
             sender: s,
             error_receiver: error_r,
             th: th,
@@ -104,21 +110,15 @@ impl Scheduler {
 
     pub fn add_component(&mut self, name: &str, sort: &str) -> Result<()> {
         let name = name.to_string();
-
-        let lib_comp = libloading::Library::new(sort).expect("cannot load");
-
-        let senders = {
-            let new_comp: libloading::Symbol<extern fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)>> = unsafe {
-                lib_comp.get(b"create_component\0").expect("cannot find create method")
-            };
-
-            let (comp, senders) = new_comp(name.clone(), self.sender.clone()).expect("cannot create comp");
-            self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
-            senders
-        };
+        let (comp, senders) = self.cache.create_comp(sort, name.clone(), self.sender.clone()).expect("cannot create comp");
+        self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
         let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound)).clone();
-        self.inputs.insert(name.clone(), senders);
-        self.inputs_array.insert(name.clone(), HashMap::new());
+        self.components.insert(name.clone(),
+                               Comp {
+                                   inputs: senders,
+                                   inputs_array: HashMap::new(),
+                                   sort: sort.into(),
+                               });
         self.sender.send(CompMsg::ConnectOutputPort(name, "acc".into(), s_acc)).expect("Cannot send to sched state");
         Ok(())
     }
@@ -127,15 +127,13 @@ impl Scheduler {
         self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); 
     }
 
-    pub fn remove_component(&mut self, name: String) -> Result<(BoxedComp, HashMap<String, IPSender>, HashMap<String, HashMap<String, IPSender>>)>{
+    pub fn remove_component(&mut self, name: String) -> Result<(BoxedComp, Comp)>{
         let (s, r) = channel();
         self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_component: cannot send to the state");
         let response = try!(r.recv());
         match response {
             SyncMsg::Remove(boxed_comp) => {
-                let senders = try!(self.inputs.remove(&name).ok_or(result::Error::ComponentNotFound));
-                let a_senders = try!(self.inputs_array.remove(&name).ok_or(result::Error::ComponentNotFound));
-                Ok((boxed_comp, senders, a_senders))
+                Ok((boxed_comp, try!(self.components.remove(&name).ok_or(result::Error::ComponentNotFound))))
             },
             SyncMsg::CannotRemove => {
                 Err(result::Error::CannotRemove)
@@ -184,12 +182,12 @@ impl Scheduler {
             dest: comp.clone(),
             sched: self.sender.clone(),
         };
-        try!(self.inputs_array.get_mut(&comp).ok_or(result::Error::ComponentNotFound)
+        try!(self.components.get_mut(&comp).ok_or(result::Error::ComponentNotFound)
             .and_then(|mut comp| {
-                if !comp.contains_key(&port) {
-                    comp.insert(port.clone(), HashMap::new());
+                if !comp.inputs_array.contains_key(&port) {
+                    comp.inputs_array.insert(port.clone(), HashMap::new());
                 }
-                comp.get_mut(&port).ok_or(result::Error::SelectionNotFound)
+                comp.inputs_array.get_mut(&port).ok_or(result::Error::SelectionNotFound)
                     .and_then(|mut port| {
                         port.insert(selection.clone(), s);
                         Ok(())
@@ -201,8 +199,8 @@ impl Scheduler {
 
     pub fn soft_add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
         let mut res = true;
-        if let Some(comp) = self.inputs_array.get(&comp) {
-            if let Some(port) = comp.get(&port) {
+        if let Some(comp) = self.components.get(&comp) {
+            if let Some(port) = comp.inputs_array.get(&port) {
                 if let Some(_) = port.get(&selection) {
                     res = true;
                 }
@@ -231,21 +229,35 @@ impl Scheduler {
     }
 
     pub fn get_sender(&self, comp: &str, port: &str) -> Result<IPSender> {
-        self.inputs.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
             .and_then(|c| {
-                c.get(port).ok_or(result::Error::PortNotFound)
+                c.inputs.get(port).ok_or(result::Error::PortNotFound)
                     .map(|s| { s.clone() })
             })
     }
 
     pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<IPSender> {
-        self.inputs_array.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
             .and_then(|c| {
-                c.get(port).ok_or(result::Error::PortNotFound)
+                c.inputs_array.get(port).ok_or(result::Error::PortNotFound)
                     .and_then(|p| {
                         p.get(selection).ok_or(result::Error::SelectionNotFound)
                             .map(|s| { s.clone() })
                     })
+            })
+    }
+
+    pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                self.cache.get_contract_input(&c.sort, port)
+            })
+    }
+
+    pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                self.cache.get_contract_output(&c.sort, port)
             })
     }
 
@@ -437,3 +449,66 @@ impl SchedState {
     }
 }
 
+pub struct ComponentLoader {
+    lib: libloading::Library,
+    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)>,
+    get_contract_input: extern "C" fn(&str) -> Result<String>,
+    get_contract_output: extern "C" fn(&str) -> Result<String>,
+}
+
+pub struct ComponentCache {
+    cache: HashMap<String, ComponentLoader>,
+}
+
+impl ComponentCache {
+    pub fn new() -> Self {
+        ComponentCache {
+            cache: HashMap::new(),
+        }
+    }
+
+    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> {
+        if !self.cache.contains_key(path) {
+            let lib_comp = libloading::Library::new(path).expect("cannot load");
+
+            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> = unsafe {
+                *(lib_comp.get(b"create_component\0").expect("cannot find create method"))
+            };
+
+            let get_in : extern fn(&str) -> Result<String> = unsafe {
+                *(lib_comp.get(b"get_contract_input\0").expect("cannot find get input method"))
+            };
+
+            let get_out : extern fn(&str) -> Result<String> = unsafe {
+                *(lib_comp.get(b"get_contract_output\0").expect("cannot find get output method"))
+            };
+
+            self.cache.insert(path.into(),
+                              ComponentLoader {
+                                  lib: lib_comp,
+                                  create: new_comp,
+                                  get_contract_input: get_in,
+                                  get_contract_output: get_out,
+                              });
+        }
+        if let Some(loader) = self.cache.get(path){
+            (loader.create)(name, sender)
+        } else {
+            unreachable!()
+        }
+    }
+
+    pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+            .map(|comp| {
+                (comp.get_contract_input)(port).expect("cannot get")
+            })
+    }
+
+    pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+            .map(|comp| {
+                (comp.get_contract_output)(port).expect("cannot get")
+            })
+    }
+}

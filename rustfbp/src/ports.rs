@@ -13,7 +13,7 @@ use scheduler::CompMsg;
 
 #[derive(Clone)]
 pub struct IP {
-    vec: Vec<u8>,
+    pub vec: Vec<u8>,
 }
 
 impl IP {
@@ -26,6 +26,7 @@ impl IP {
     }
 
     pub fn write_builder<A: capnp::message::Allocator>(&mut self, builder: &capnp::message::Builder<A>) -> Result<()> {
+        self.vec.clear();
         Ok(try!(capnp::serialize::write_message(&mut self.vec, builder)))
     }
 }
