@@ -67,8 +67,12 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
     sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into()).expect("cannot connect");
 
-    sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
-    sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
+    // With Graph print
+    // sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
+    // sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
+
+    // Without Graph print
+    sched.connect("fvm".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
 
     sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
     sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
