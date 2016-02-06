@@ -1,13 +1,10 @@
-{pkgs
-  , stdenv ? pkgs.stdenv
-  , rustUnstable ? pkgs.rustUnstable
-  , rustRegistry ? support.rustRegistry
-  , buildRustPackage ? support.buildRustPackage
-  , upkeepers ? support.upkeepers
-  , support, components, contracts,
-  }:
+{pkgs, buildRustPackage, components, contracts, ...}:
 
-  with rustUnstable rustRegistry;
+
+#    cp ${support.component_lookup}/lib/libcomponent.so $out/bootstrap/${support.component_lookup.name}.so
+#    ln -s ${support.component_lookup}/lib/libcomponent.so bootstrap/${support.component_lookup.name}.so
+#    cp ${support.contract_lookup}/lib/libcomponent.so $out/bootstrap/${support.contract_lookup.name}.so
+#    ln -s ${support.contract_lookup}/lib/libcomponent.so bootstrap/${support.contract_lookup.name}.so
 
   buildRustPackage rec {
     name = "fvm";
@@ -36,10 +33,6 @@
     ln -s ${components.development_fbp_errors}/lib/libcomponent.so bootstrap/${components.development_fbp_errors.name}.so
     cp ${components.development_fbp_scheduler}/lib/libcomponent.so $out/bootstrap/${components.development_fbp_scheduler.name}.so
     ln -s ${components.development_fbp_scheduler}/lib/libcomponent.so bootstrap/${components.development_fbp_scheduler.name}.so
-    cp ${support.component_lookup}/lib/libcomponent.so $out/bootstrap/${support.component_lookup.name}.so
-    ln -s ${support.component_lookup}/lib/libcomponent.so bootstrap/${support.component_lookup.name}.so
-    cp ${support.contract_lookup}/lib/libcomponent.so $out/bootstrap/${support.contract_lookup.name}.so
-    ln -s ${support.contract_lookup}/lib/libcomponent.so bootstrap/${support.contract_lookup.name}.so
 
     cp ${pkgs.capnproto}/bin/capnp $out/bootstrap/capnp
 
@@ -47,7 +40,7 @@
     --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
     '';
 
-    meta = with stdenv.lib; {
+    meta = with pkgs.stdenv.lib; {
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
       license = with licenses; [ agpl3Plus ];

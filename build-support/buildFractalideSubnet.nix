@@ -1,4 +1,4 @@
-{ stdenv, genName, writeTextFile, filterDeps, extractDepsFromSubnet #, fvm
+{ stdenv, genName, writeTextFile, filterDeps, extractDepsFromSubnet , fvm
   }:
   { src
     , ... } @ args:
@@ -20,5 +20,6 @@
       (dep: "ln -sf ${dep.outPath}/lib/*.* $out/lib/${dep.name};")
       (stdenv.lib.flatten subnetDeps)}
     cp ${subnet-txt} $out/lib/lib.subnet'';
-    #checkPhase = "fvm test $out/lib/lib.subnet";
+    doCheck = false;
+    checkPhase = "${fvm}/bin/fvm $out/lib/lib.subnet";
   })
