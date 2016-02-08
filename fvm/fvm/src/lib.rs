@@ -38,8 +38,8 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("graph_print", &build_path("development_fbp_parser_print_graph.so"));
     sched.add_component("sched", &build_path("development_fbp_scheduler.so"));
     sched.add_component("iip", &build_path("development_capnp_encode.so"));
-//    sched.add_component("component_lookup", &build_path("component_lookup.so"));
-//    sched.add_component("contract_lookup", &build_path("contract_lookup.so"));
+    sched.add_component("component_lookup", &build_path("component_lookup.so"));
+    sched.add_component("contract_lookup", &build_path("contract_lookup.so"));
 
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
@@ -64,8 +64,8 @@ pub extern "C" fn run(path_fbp: &str) {
 
     // reccursive part
     sched.connect("fvm".into(), "ask_graph".into(), "open".into(), "input".into()).expect("cannot connect");
-//    sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
-//    sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into()).expect("cannot connect");
+    sched.connect("fvm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
+    sched.connect("component_lookup".into(), "output".into(), "fvm".into(), "new_path".into()).expect("cannot connect");
 
     // With Graph print
     // sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
@@ -74,8 +74,8 @@ pub extern "C" fn run(path_fbp: &str) {
     // Without Graph print
     sched.connect("fvm".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
 
-//    sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
-//    sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
+    sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
+    sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
 
     // IIP part
     sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");

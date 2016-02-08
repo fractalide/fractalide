@@ -1,12 +1,7 @@
-{pkgs, buildRustPackage, components, contracts, ...}:
+{pkgs, components, contracts, support, ...}:
 
 
-#    cp ${support.component_lookup}/lib/libcomponent.so $out/bootstrap/${support.component_lookup.name}.so
-#    ln -s ${support.component_lookup}/lib/libcomponent.so bootstrap/${support.component_lookup.name}.so
-#    cp ${support.contract_lookup}/lib/libcomponent.so $out/bootstrap/${support.contract_lookup.name}.so
-#    ln -s ${support.contract_lookup}/lib/libcomponent.so bootstrap/${support.contract_lookup.name}.so
-
-  buildRustPackage rec {
+  support.buildRustPackage rec {
     name = "fvm";
     src = ./.;
     depsSha256 = "13f0fyjc9hphzqxh21qr7lcdjv1s617g3ccgxs5l17bgjg5z887l";
@@ -33,6 +28,10 @@
     ln -s ${components.development_fbp_errors}/lib/libcomponent.so bootstrap/${components.development_fbp_errors.name}.so
     cp ${components.development_fbp_scheduler}/lib/libcomponent.so $out/bootstrap/${components.development_fbp_scheduler.name}.so
     ln -s ${components.development_fbp_scheduler}/lib/libcomponent.so bootstrap/${components.development_fbp_scheduler.name}.so
+    cp ${support.component_lookup}/lib/libcomponent.so $out/bootstrap/${support.component_lookup.name}.so
+    ln -s ${support.component_lookup}/lib/libcomponent.so bootstrap/${support.component_lookup.name}.so
+    cp ${support.contract_lookup}/lib/libcomponent.so $out/bootstrap/${support.contract_lookup.name}.so
+    ln -s ${support.contract_lookup}/lib/libcomponent.so bootstrap/${support.contract_lookup.name}.so
 
     cp ${pkgs.capnproto}/bin/capnp $out/bootstrap/capnp
 

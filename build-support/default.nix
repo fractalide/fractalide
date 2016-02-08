@@ -24,6 +24,5 @@ rec {
   filterDeps = List: map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) components))) List;
   listifyContents = fileContents:(lib.splitString "|" (builtins.replaceStrings ["(" ")" " "] ["|" "|" ""] fileContents));
   extractDepsFromSubnet = subnetPath: (listifyContents (builtins.readFile subnetPath));
-  fvm = callPackage ../fvm/fvm {inherit pkgs components contracts buildRustPackage;};
-  buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName filterDeps extractDepsFromSubnet fvm;};
+  buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName filterDeps extractDepsFromSubnet;};
 }
