@@ -75,7 +75,7 @@ subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
 
 # build rustRegistry to get the sha256, then build it again...
 print "[*] Checking for new rustRegistry sha256"
-cmd =  "nix-build --argstr debug true -A support.rustRegistry"
+cmd =  "nix-build release.nix --argstr debug true -A support.rustRegistry"
 args = shlex.split(cmd)
 output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 if error:
@@ -93,7 +93,7 @@ if error:
     replace = "  sha256 = \"%s\";" % found[2:]
     subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
     print "[*] Building rustRegistry with latest sha256"
-    cmd =  "nix-build --argstr debug true -A support.rustRegistry"
+    cmd =  "nix-build release.nix --argstr debug true -A support.rustRegistry"
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
@@ -102,7 +102,7 @@ print "[*] Checking Rust components for new depsSha256"
 for root, dirs, files in os.walk("../components"):
   if "Cargo.toml" in files:
     name = generate_component_name(root)
-    cmd =  "nix-build --argstr debug true -A components." + name
+    cmd =  "nix-build release.nix --argstr debug true -A components." + name
     print "[ ] - " + name
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
@@ -130,9 +130,9 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
       name = os.path.basename(root)
       if name == "fvm":
-        cmd = "nix-build --argstr debug true -A fvm"
+        cmd = "nix-build release.nix --argstr debug true -A fvm"
       else:
-        cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root)
+        cmd =  "nix-build release.nix --argstr debug true -A support." + os.path.basename(root)
       print "[ ] - " + name
       args = shlex.split(cmd)
       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
