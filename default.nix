@@ -2,8 +2,8 @@
 , lib ? pkgs.lib
 , ...}:
 let
-fractalide = pkgs.stdenv.mkDerivation {
-  name = "fractalide";
+fractalide-src = pkgs.stdenv.mkDerivation {
+  name = "fractalide-src";
   src = ./.;
   unpackPhase = "true";
   installPhase = "
@@ -17,18 +17,22 @@ fvm-shell = pkgs.writeTextFile {
   text =
   ''#!${pkgs.bash}/bin/bash
     s=${pkgs.nix}/bin/nix-shell
-    b=${pkgs.nix}/bin/nix-build
-    exec $s ${fractalide}/src/default.nix --command \
-    "exec $s ${fractalide}/src/fvm.nix --argstr fbp $@ --command \
-      "eval $postUnpack; eval $postUnpack; eval $buildPhase; eval $installPhase; exec result/bin/fvm $@; return""'';};
+    e=${pkgs.nix}/bin/nix-env
+    exec $s ${fractalide-src}/src/default.nix --command \
+    "export NIX_REMOTE=daemon
+      export NIX_PATH='$NIX_PATH'
+      export NIX_BUILD_SHELL=${pkgs.bash}/bin/bash
+      exec $e -i -f ${fractalide-src}/src/fvm.nix --argstr fbp $@
+      "'';
+    };
 
-fvm = pkgs.stdenv.mkDerivation {
-  name = "fvm-shell";
+fractalide = pkgs.stdenv.mkDerivation {
+  name = "fractalide";
   unpackPhase = "true";
   installPhase = ''
   mkdir -p $out/bin
-  cp ${fvm-shell} $out/bin/fvm
+  cp ${fvm-shell} $out/bin/fractalide
   '';
 };
 in
-fvm
+fractalide

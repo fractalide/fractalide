@@ -2,8 +2,9 @@
 
 let
 subnetDeps = support.filterDeps (support.extractDepsFromSubnet fbp);
+
 fvm  = support.buildRustPackage rec {
-    name = "fvm";
+    name = "fvm_${(builtins.head (pkgs.stdenv.lib.splitString "." (builtins.baseNameOf fbp)))}";
     src = ./.;
     depsSha256 = "13k03lbs6gk8zwbzzlvh3s2x3c4hj3jj479hg1jwkzrpxlkirglw";
     configurePhase = ''
@@ -40,15 +41,19 @@ fvm  = support.buildRustPackage rec {
     ln -s ${pkgs.capnproto}/bin/capnp $out/per-session/capnp
 
     substituteInPlace src/lib.rs --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
+    substituteInPlace Cargo.toml --replace "[[bin]]
+    name = \"fvm\"" "[[bin]]
+    name = \""${name}\"""
+    substituteInPlace Cargo.toml --replace "[package]
+    name = \"fvm\"" "[package]
+    name = \""${name}\"""
     '';
-
-    setupHook = ./setup-hook.sh;
 
     meta = with pkgs.stdenv.lib; {
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
       license = with licenses; [ agpl3Plus ];
-      maintainers = with upkeepers; [ dmichiels sjmackenzie ];
+      maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
     };
   };
   in
