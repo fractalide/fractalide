@@ -7,11 +7,9 @@ use std::fs;
 
 mod contract_capnp {
     include!("path.rs");
-    include!("option_path.rs");
     include!("fbp_graph.rs");
 }
 use contract_capnp::path;
-use contract_capnp::option_path;
 use contract_capnp::fbp_graph;
 
 #[derive(Debug)]
@@ -26,9 +24,9 @@ struct Graph {
 
 component! {
     fvm,
-    inputs(input: fbp_graph, new_path: option_path, error: any),
+    inputs(input: fbp_graph, error: any),
     inputs_array(),
-    outputs(output: fbp_graph, ask_graph: path, ask_path: path),
+    outputs(output: fbp_graph, ask_graph: path),
     outputs_array(),
     option(),
     acc(),
@@ -99,45 +97,14 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
         let c_sort = try!(n.get_sort());
         let c_name = try!(n.get_name());
 
-        // get new path
-        let mut msg = capnp::message::Builder::new_default();
-        {
-            let mut path = msg.init_root::<path::Builder>();
-            path.set_path(c_sort);
-        }
-        let mut ip = IP::new();
-        ip.write_builder(&mut msg);
-        try!(component.ports.send("ask_path", ip));
-
-        // retrieve the asked graph
-        let mut ip = try!(component.ports.recv("new_path"));
-        let i_graph = try!(ip.get_reader());
-        let i_graph: option_path::Reader = try!(i_graph.get_root());
-
-        let new_path: Option<String> = match try!(i_graph.which()) {
-            option_path::Path(p) => { Some(try!(p).into()) },
-            option_path::None(()) => { None }
-        };
-
         let mut is_subnet = true;
-        let path = match new_path {
-            Some(hash_name) => {
-                let path = format!("{}{}{}", "/nix/store/", hash_name, "/lib/libcomponent.so");
-                if fs::metadata(&path).is_ok() {
-                    is_subnet = false;
-                    path
-                } else {
-                    format!("{}{}{}", "/nix/store/", hash_name, "/lib/lib.subnet")
-                }
-
-            },
-            None => {
-                println!("Error in {} : ", try!(new_graph.get_path()));
-                println!("component {}({}) doesn't exist", c_name, c_sort);
-                graph.errors = true;
-                continue;
-            }
-        };
+        let path = format!("{}{}", c_sort, "/lib/libcomponent.so");
+        if fs::metadata(&path).is_ok() {
+            is_subnet = false;
+            path
+        } else {
+            format!("{}{}", c_sort, "/lib/lib.subnet")
+        }
 
         if is_subnet {
             let mut msg = capnp::message::Builder::new_default();
