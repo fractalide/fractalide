@@ -22,7 +22,7 @@ fvm-shell = pkgs.writeTextFile {
     "export NIX_REMOTE=daemon
       export NIX_PATH='$NIX_PATH'
       export NIX_BUILD_SHELL=${pkgs.bash}/bin/bash
-      exec $e -i -f ${fractalide-src}/src/fvm.nix --argstr fbp $@
+      exec $e -i -f ${fractalide-src}/src/fvm.nix --argstr debug true --argstr fbp $@
       "'';
     };
 

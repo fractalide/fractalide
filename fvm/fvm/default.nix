@@ -1,10 +1,8 @@
-{pkgs, components, contracts, support, fbp, ...}:
+{pkgs, components, contracts, support, exeSubnet, ...}:
 
 let
-subnetDeps = support.filterDeps (support.extractDepsFromSubnet fbp);
-
 fvm  = support.buildRustPackage rec {
-    name = "fvm_${(builtins.head (pkgs.stdenv.lib.splitString "." (builtins.baseNameOf fbp)))}";
+    name = exeSubnet.name;
     src = ./.;
     depsSha256 = "13k03lbs6gk8zwbzzlvh3s2x3c4hj3jj479hg1jwkzrpxlkirglw";
     configurePhase = ''
@@ -29,14 +27,8 @@ fvm  = support.buildRustPackage rec {
     ln -s ${components.development_fbp_errors}/lib/libcomponent.so per-session-${name}/${components.development_fbp_errors.name}.so
     ln -s ${components.development_fbp_scheduler}/lib/libcomponent.so $out/per-session-${name}/${components.development_fbp_scheduler.name}.so
     ln -s ${components.development_fbp_scheduler}/lib/libcomponent.so per-session-${name}/${components.development_fbp_scheduler.name}.so
-    ln -s ${support.component_lookup}/lib/libcomponent.so $out/per-session-${name}/${support.component_lookup.name}.so
-    ln -s ${support.component_lookup}/lib/libcomponent.so per-session-${name}/${support.component_lookup.name}.so
     ln -s ${support.contract_lookup}/lib/libcomponent.so $out/per-session-${name}/${support.contract_lookup.name}.so
     ln -s ${support.contract_lookup}/lib/libcomponent.so per-session-${name}/${support.contract_lookup.name}.so
-
-    ${pkgs.stdenv.lib.concatMapStringsSep "\n"
-      (dep: "ln -sf ${dep.outPath}/lib/libcomponent.so $out/per-session-${name}/${dep.name}.so;")
-      (pkgs.stdenv.lib.flatten subnetDeps)}
 
     ln -s ${pkgs.capnproto}/bin/capnp $out/per-session-${name}/capnp
 
@@ -44,7 +36,7 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/lib.rs --replace "per-session" "per-session-${name}"
     substituteInPlace Cargo.toml --replace "fvm" "${name}"
     substituteInPlace src/main.rs --replace "fvm" "${name}"
-
+    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}/lib/lib.subnet"
     '';
 
     meta = with pkgs.stdenv.lib; {

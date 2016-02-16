@@ -125,7 +125,7 @@ for root, dirs, files in os.walk("../components"):
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
-paths = ('../build-support/contract_lookup', '../build-support/component_lookup', '../fvm')
+paths = ('../build-support/contract_lookup', '../fvm')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
       name = os.path.basename(root)

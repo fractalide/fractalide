@@ -20,7 +20,7 @@ use std::mem;
 pub type BoxedComp = Box<Component + Send>;
 // TODO : manage "can_run": allow a user to pause a component
 
-/// All the messages that can be send between the "exterior scheduler" and the "interior scheduler". 
+/// All the messages that can be send between the "exterior scheduler" and the "interior scheduler".
 pub enum CompMsg {
     /// Add a new component. The String is the name, the BoxedComp is the component itself
     NewComponent(String, BoxedComp),
@@ -124,7 +124,7 @@ impl Scheduler {
     }
 
     pub fn start(&self, name: String) {
-        self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state"); 
+        self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state");
     }
 
     pub fn remove_component(&mut self, name: String) -> Result<(BoxedComp, Comp)>{
@@ -449,6 +449,7 @@ impl SchedState {
     }
 }
 
+#[allow(dead_code)]
 pub struct ComponentLoader {
     lib: libloading::Library,
     create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)>,
