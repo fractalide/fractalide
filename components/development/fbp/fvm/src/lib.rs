@@ -56,14 +56,14 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
 
     for n in try!(new_graph.borrow().get_edges()).iter() {
         graph.edges.push((format!("{}-{}", name, try!(n.get_o_name())),
-                          try!(n.get_o_port()).into(), try!(n.get_o_selection()).into(),
-                          try!(n.get_i_port()).into(), try!(n.get_i_selection()).into(),
-                          format!("{}-{}", name, try!(n.get_i_name()))));
+          try!(n.get_o_port()).into(), try!(n.get_o_selection()).into(),
+          try!(n.get_i_port()).into(), try!(n.get_i_selection()).into(),
+          format!("{}-{}", name, try!(n.get_i_name()))));
     }
     for n in try!(new_graph.borrow().get_iips()).iter() {
         graph.iips.push((try!(n.get_iip()).into(),
-                         try!(n.get_port()).into(), try!(n.get_selection()).into(),
-                         format!("{}-{}", name, try!(n.get_comp())) ));
+           try!(n.get_port()).into(), try!(n.get_selection()).into(),
+           format!("{}-{}", name, try!(n.get_comp())) ));
     }
     for n in try!(new_graph.borrow().get_external_inputs()).iter() {
         // TODO : replace existing links
@@ -98,13 +98,12 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
         let c_name = try!(n.get_name());
 
         let mut is_subnet = true;
-        let path = format!("{}{}", c_sort, "/lib/libcomponent.so");
-        if fs::metadata(&path).is_ok() {
+        let path = if fs::metadata(format!("{}{}", c_sort, "/lib/libcomponent.so")).is_ok() {
             is_subnet = false;
-            path
+            format!("{}{}", c_sort, "/lib/libcomponent.so")
         } else {
             format!("{}{}", c_sort, "/lib/lib.subnet")
-        }
+        };
 
         if is_subnet {
             let mut msg = capnp::message::Builder::new_default();
