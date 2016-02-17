@@ -1,138 +1,52 @@
 # Fractalide
 
-Canonical repository for all Fractalide applications and the Fractalide Virtual Machine.
+Fractalide is a programming platform which removes three classes of errors.
+* [Memory safety](https://en.wikipedia.org/wiki/Rust_(programming_language))
+* [Dependency hell](https://en.wikipedia.org/wiki/Dependency_hell)
+* [Code reuse](http://www.jpaulmorrison.com/fbp/fbp2.htm)
 
-Fractalide is a collection of subnets (aka apps) built using Flow-based Programming components.
+## Memory Safety
+
+Fractalide components are implemented in Rust, a language which gives the programmer [fearless control](http://blog.rust-lang.org/2015/04/10/Fearless-Concurrency.html) over speed, concurrency and memory safety.
+
+## Dependency Hell
+
+Fractalide uses [Nix](http://nixos.org/nix/) as a replacement for [make](https://www.gnu.org/software/make/). Indeed, it seems Fractalide is the first programming language to exclusively use nix as a [package manager](https://www.youtube.com/watch?v=dQLO5CWuGVk). Each component is able to setup it's own OS environment, which might include database drivers written in C, specific versions of an executable or pull in a programming language like python. The package manager is lazily evaluated, thus only those dependencies needed will be compiled. This allows us to have an extremely large repository filled with possibly millions of components.
+
+## Code reuse
+
+The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor.
 
 "Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
 
-Subnets are meant to be executed by the [Fractalide Virtual Machine](https://github.com/fractalide/fractalide/tree/master/fvm).
+Flow script is just a coordination language for Rust shared objects.
 
-The repository consists of `rustfbp`, `components`, `contracts`, `subnets`, `build support`, `Fractalide Virtual Machine` and a Fractalide CI service which serves components and subnets.
-
-### Components
-Implemented in [Rust](https://www.rust-lang.org/) components have [capnproto](https://capnproto.org/) `contracts` for each input and output. Components do one thing, do it well, and are highly reusable. All components are licensed as MPLv2.
-
-Things to be aware of when implementing components:
-* Your component will be named according to the file hierarchy it sits in by [genName](https://github.com/fractalide/fractalide/blob/master/components/development/parser/fbp/lexical/default.nix#L4).
-* Ensure you add your new component to the `component/default.nix` like [such](https://github.com/fractalide/fractalide/blob/master/components/default.nix#L7).
-* Include needed contracts into the component you are developing by following this [example](https://github.com/fractalide/fractalide/blob/master/components/development/parser/fbp/lexical/default.nix#L6).
-* Ensure your contracts exists. Nix compiles the contracts during the buildPhase and copies the generated capnproto source code into a `/tmp/build-folder/` for later component compilation.
-
-### Contracts
-`capnproto` [contracts](https://github.com/fractalide/fractalide/blob/master/contracts/fbp/lexical/contract.capnp) clearly define the boundaries of each component. We subscribe to [langsec](http://langsec.org/) and strictly define what is allowed into a component. All contracts are licensed as MPLv2.
-
-Things to be aware of when implementing contracts:
-* Copy and paste a contract's `default.nix` into your new contract directory [i.e.](https://github.com/fractalide/fractalide/blob/master/contracts/fbp/lexical/default.nix) (They are generic).
-* Name your contract `contract.capnp` [i.e.](https://github.com/fractalide/fractalide/tree/master/contracts/fbp/lexical).
-* The `default.nix` will name your contract properly based on folder hierarchy it's sitting in, see [genName](https://github.com/fractalide/fractalide/blob/master/build-support/buildFractalideContract.nix#L4).
-* Ensure you add your new component to the `contracts/default.nix` like [such](https://github.com/fractalide/fractalide/blob/master/contracts/default.nix).
-
-### Subnets
-
-Subnets allow for generalization. This is a graph coordination language layer that represents the business logic of an application. The interface of a subnet is the same as a component but the implementation is quite different, notice the `default.nix` is slightly [different](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/not/default.nix) from a [Rust component](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/nand/default.nix). All subnets are licensed as MPLv2.
-
-Things to be aware of when implementing subnets:
-* Ensure you follow [this](https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/not) file structure.
-* Write your Flow-based Programming syntax in the (mandatory) `lib.subnet` file like [this](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/not/lib.subnet).
-* Subnets do not have contracts.
-* Again, don't forget to add the subnet to the `components/default.nix`, following a sane file hierarchy naming scheme (which determines the name of your subnet).
-
-### Build-support
-
-A bunch of nix scripts needed to tie this code base together. (Thanks nixos.org community!)
-
-### Rustfbp
-
-This is the domain of fractalide hackers, most people shouldn't need to interact with this codebase. Everything revolves around this bit of code. If you make a pull request here you'll need to sign a Contributors License Agreement, the license of this code is AGPL-v3-or-later.
-
-### FVM
-
-The Fractalide Virtual Machine which is the sole build artifact and executable needed for running subnets.
-
+A contrived example of displaying the output of an XOR gate to the terminal:
+```
+'maths_boolean:(boolean=false)' -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
+'maths_boolean:(boolean=false)' -> b xor()
+```
 
 ## Setup
 
-### Install Nix build tool (replaces `make`)
 Run this command as a user other than root (you will need `sudo`). To uninstall simply `rm -fr /nix`. See this [blog post](https://www.domenkozar.com/2014/01/02/getting-started-with-nix-package-manager/) for more detailed information.
 
-`$ curl https://nixos.org/nix/install | sh`
+`$ curl https://nixos.org/nix/install | sh` (ignore if on nixos)
 
-`$ source ~/.nix-profile/etc/profile.d/nix.sh`
+`$ source ~/.nix-profile/etc/profile.d/nix.sh` (ignore if on nixos)
 
 `$ git clone git://github.com/fractalide/fractalide`
 
 `$ cd fractalide`
 
-`$ nix-build`
+`$  nix-build --argstr subnet docs --argstr debug true`
 
-## Quick Start docs
+Congratulations, you just built your first Fractalide executable, now let's run it:
 
-`$ nix-build release.nix -A doc`
+`$ ./result/bin/docs`
 
-`$ firefox result/share/doc/fractalide/manual.html`
+This serves up the Quick Start manual section on [http://localhost:8083/docs](http://localhost:8083/docs).
 
-## Debug build
+This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L11-L13).
 
-`$ nix-build --argstr debug true`
-
-build a single component:
-
-`$ nix-build --argstr debug true -A components.maths_boolean_nand`
-
-## Release build
-
-`$ nix-build`
-
-build a single component:
-
-`$ nix-build -A components.maths_boolean_nand`
-
-## Running `fvm` when developing:
-
-`$ ./result/bin/fvm ~/path/to/test.subnet`
-
-Here is an example for you to run:
-
-`test.subnet`
-```
-'maths_boolean:(boolean=false)'  -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
-'maths_boolean:(boolean=false)'  -> b xor()
-```
-
-### Pro tip
-
-`$ nix-shell --argstr debug true -A components.maths_boolean_nand`
-
-`$ cd components/maths/boolean/nand`
-
-`$ eval "$buildPhase"`
-
-`$ cargo build`
-
-repeat till component is done
-
-`$ git checkout Cargo.*`
-
-`$ rm src/maths_boolean.rs` (or any other `capnp` generated file copied into the `src` folder)
-
-`<ctrl-d>`
-
-ensure you delete any nix generated files/changes before committing!
-
-This approach allows you to keep around your `target` folder so you don't have to build from scratch each time via `$nix-build --argstr debug true -A components.maths_boolean_nand`.
-
-## Installing `fvm` into your `nix` environment
-
-`$ nix-env -i fvm -f default.nix`
-
-## Hydra Service
-
-Hydra is NixOS own Continuous Integration server. We use it to serve freshly built components (before we move onto the Named Data Networking phase.).
-
-```
-{
-  require = [ "/path/to/fractalide-git-clone/utils/hydra-service.nix" ];
-...
-}
-```
+Happy Hacking!
