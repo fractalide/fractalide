@@ -294,7 +294,7 @@ touch ~/test.subnet
 </screen>
 Then insert the below into it:
 <screen>
-'true' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
+'maths_boolean:(boolean=true)' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
 </screen>
 
 Next, you'll need to compile the <filename>fvm</filename>:

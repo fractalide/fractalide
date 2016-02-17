@@ -1,4 +1,5 @@
 extern crate capnp;
+#[allow(unused_imports)]
 use std::io::Read;
 
 use result;
@@ -270,7 +271,9 @@ impl Ports {
     }
 }
 
+#[allow(unused_imports)]
 mod test_port {
+
     use super::Ports;
 
     use scheduler::CompMsg;

@@ -1,10 +1,10 @@
 [package]
-name = "file_open"
+name = "ip_clone"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "file_open"
+name = "ip_clone"
 crate-type = ["dylib"]
 
 [dependencies]

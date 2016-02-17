@@ -96,8 +96,8 @@ Here is an example for you to run:
 
 `test.subnet`
 ```
-'false' -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
-'false' -> b xor()
+'maths_boolean:(boolean=false)'  -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
+'maths_boolean:(boolean=false)'  -> b xor()
 ```
 
 ### Pro tip
