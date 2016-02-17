@@ -41,11 +41,7 @@ component! {
         let input: generic_text::Reader = try!(input.get_root());
         let input = try!(input.get_text());
 
-        let pstr = env::current_exe().unwrap();
-        let parent_dir = Path::new(&pstr).parent();
-        let capnp_path = try!(parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../bootstrap/capnp", s)}).ok_or(result::Error::Misc("cannot create capnp path".into())));
-
-        let mut child = try!(Command::new(capnp_path)
+        let mut child = try!(Command::new("capnp_path" )
             .arg("encode")
             .arg(path)
             .arg(f_contract)

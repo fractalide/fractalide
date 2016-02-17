@@ -20,25 +20,19 @@ mod contract_capnp {
 }
 use contract_capnp::path;
 
-fn build_path(path: &'static str) -> String {
-    let pstr = env::current_exe().unwrap();
-    let parent_dir = Path::new(&pstr).parent();
-    parent_dir.and_then(|s| s.to_str()).map(|s| {format!("{}/../per-session/{}", s, path)}).expect("not a file name")
-}
-
 #[no_mangle]
 pub extern "C" fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
-    sched.add_component("open", &build_path("file_open.so"));
-    sched.add_component("lex", &build_path("development_fbp_parser_lexical.so"));
-    sched.add_component("sem", &build_path("development_fbp_parser_semantic.so"));
-    sched.add_component("fvm", &build_path("development_fbp_fvm.so"));
-    sched.add_component("errors", &build_path("development_fbp_errors.so"));
-    sched.add_component("graph_print", &build_path("development_fbp_parser_print_graph.so"));
-    sched.add_component("sched", &build_path("development_fbp_scheduler.so"));
-    sched.add_component("iip", &build_path("development_capnp_encode.so"));
-    sched.add_component("contract_lookup", &build_path("contract_lookup.so"));
+    sched.add_component("open", "file_open.so");
+    sched.add_component("lex", "development_fbp_parser_lexical.so");
+    sched.add_component("sem", "development_fbp_parser_semantic.so");
+    sched.add_component("fvm", "development_fbp_fvm.so");
+    sched.add_component("errors", "development_fbp_errors.so");
+    sched.add_component("graph_print", "development_fbp_parser_print_graph.so");
+    sched.add_component("sched", "development_fbp_scheduler.so");
+    sched.add_component("iip", "development_capnp_encode.so");
+    sched.add_component("contract_lookup", "contract_lookup.so");
 
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),

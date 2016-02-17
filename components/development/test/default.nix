@@ -15,10 +15,9 @@ buildFractalideSubnet rec {
 'domain_port:(domainPort="localhost:8080")' -> domain_port www()
 'url:(url="/docs")' -> url www()
 
-'maths_boolean:(boolean="true"' -> input not(${maths_boolean_not}) output -> input disp(${maths_boolean_print})
-
-'maths_boolean:(boolean="true"' -> a and(${maths_boolean_and}) output -> input disp()
-'maths_boolean:(boolean="true"' -> b and()
+'maths_boolean:(boolean=true)' -> input not(${maths_boolean_not}) output -> input disp(${maths_boolean_print})
+'maths_boolean:(boolean=true)' -> a and(${maths_boolean_and}) output -> input disp()
+'maths_boolean:(boolean=true)' -> b and()
   '';
 
   meta = with stdenv.lib; {
