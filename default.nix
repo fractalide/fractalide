@@ -11,6 +11,6 @@ contracts = import ./contracts {inherit pkgs support;};
 fvm-android = import ./fvm/fvm-android {inherit pkgs support;};
 in
 {
-  inherit components;
+  inherit components support contracts;
   fvm = import ./fvm/fvm { inherit pkgs components contracts support exeSubnet;};
 }

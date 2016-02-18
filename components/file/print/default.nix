@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["file"];
-  depsSha256 = "0vjigcl0091slb53vaciswqikrx5wn7cr5r2xrrai1r23hg59ia9";
+  depsSha256 = "1flqcsa0mqaql1sxaa9p5gfnlcg9kb8jap5h5h279320gklv8d2w";
 
   meta = with stdenv.lib; {
     description = "Component: Prints the contents of a file";
