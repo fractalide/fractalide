@@ -12,6 +12,7 @@ self = rec {
   development_fbp_parser_semantic = callPackage ./development/fbp/parser/semantic {};
   development_fbp_scheduler = callPackage ./development/fbp/scheduler {};
   development_test =callPackage ./development/test {};
+  io_print = callPackage ./io/print {};
   ip_clone = callPackage ./ip/clone {};
   file_open = callPackage ./file/open {};
   file_print = callPackage ./file/print {};

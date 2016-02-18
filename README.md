@@ -39,14 +39,14 @@ Run this command as a user other than root (you will need `sudo`). To uninstall 
 
 `$ cd fractalide`
 
-`$  nix-build --argstr subnet docs --argstr debug true`
+`$  nix-build --argstr debug true --argstr subnet docs`
 
 Congratulations, you just built your first Fractalide executable, now let's run it:
 
 `$ ./result/bin/docs`
 
-This serves up the Quick Start manual section on [http://localhost:8083/docs](http://localhost:8083/docs).
+This serves up the Quick Start manual section on [http://localhost:8083/docs/manual.html](http://localhost:8083/docs/manual.html).
 
-This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L11-L13).
+This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
 
 Happy Hacking!
