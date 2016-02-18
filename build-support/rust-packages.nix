@@ -7,8 +7,8 @@
 { runCommand, fetchFromGitHub, git }:
 
 let
-version = "2016-02-12";
-rev = "64e05f3e631e9b2b7618c4b18d91577c2d580d41";
+version = "2016-02-18";
+rev = "9756ab101e9f7cb941b992348f3b2fa5b9383a1c";
 
 src = fetchFromGitHub {
   inherit rev;

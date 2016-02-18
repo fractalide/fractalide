@@ -12,5 +12,6 @@
     unpackPhase = "true";
     installPhase = ''
     mkdir -p $out/lib
-    cp  ${subnet-txt} $out/lib/lib.subnet'';
+    cp  ${subnet-txt} $out/lib/lib.subnet
+    '';
   })

@@ -43,7 +43,6 @@ component! {
         let domain_port = try!(domain_port.get_domain_port());
         let mut mount = Mount::new();
         mount.mount(url, Static::new(Path::new(www_dir)));
-        println!("[*] web_server - serving on {}{}", domain_port, url);
         Iron::new(mount).http(domain_port).unwrap();
         Ok(())
     }
