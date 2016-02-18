@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["generic_text"];
-  depsSha256 = "0vjigcl0091slb53vaciswqikrx5wn7cr5r2xrrai1r23hg59ia9";
+  depsSha256 = "1xzv0q6nm25i5p49nxkabwnx136nlxb4w88nq5q2gp6b0f99j46c";
 
   meta = with stdenv.lib; {
     description = "Component: Print to the terminal";
