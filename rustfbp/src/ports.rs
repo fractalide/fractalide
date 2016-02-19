@@ -15,11 +15,13 @@ use scheduler::CompMsg;
 #[derive(Clone)]
 pub struct IP {
     pub vec: Vec<u8>,
+    pub action: String,
+    pub origin: String,
 }
 
 impl IP {
     pub fn new() -> Self {
-        IP { vec: vec![] }
+        IP { vec: vec![], action: String::new(), origin: String::new() }
     }
 
     pub fn get_reader(&self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
@@ -162,6 +164,14 @@ impl Ports {
                             })
                     })
             })
+    }
+
+    pub fn send_action(&self, port_out: &'static str, ip: IP) -> Result<()> {
+        if try!(self.get_output_selections(&port_out)).contains(&ip.action) {
+            self.send_array(&port_out, &ip.action.clone(), ip)
+        } else {
+            self.send(&port_out, ip)
+        }
     }
 
     pub fn connect(&mut self, port_out: String, sender: IPSender) -> Result<()> {

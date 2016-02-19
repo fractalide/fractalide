@@ -30,8 +30,17 @@ component! {
         let i_graph = try!(ip.get_reader());
         let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
 
+        // add "magic_to_card" component
+        try!(sched.add_compoennt("magic_to_card", ${ui_magic}));
+
         for n in try!(i_graph.borrow().get_nodes()).iter() {
             sched.add_component(try!(n.get_name()), try!(n.get_sort()));
+            // connect magic_to_card to the new component, don't care if there is no input port.
+            let _ = sched.connect_array("magic_to_card".into(), "output".into(), try!(n.get_name()).into(), try!(n.get_name()).into(), "input".into());
+            // If the component is of sort "ui/conrod/window", connect it to the magic
+            if try!(n.get_sort()) == "ui/conrod/window" {
+                try!(sched.connect(try!(n.get_name()).into(), "magic".into(), "magic_to_card".into(), "input".into()));
+            }
         }
 
         for e in try!(i_graph.borrow().get_edges()).iter() {
