@@ -19,6 +19,9 @@ The use of Flow-based programming gives us the ability to combine and concatenat
 
 "Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
 
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">flow-based programming reduces complexity of your data-processing logic by promoting control flow to first-class citizen of the flow design</p>&mdash; Arnau Orriols (@Arnau_Orriols) <a href="https://twitter.com/Arnau_Orriols/status/694661751229583360">February 2, 2016</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 Flow script is just a coordination language for Rust shared objects.
 
 A contrived example of displaying the output of an XOR gate to the terminal:
