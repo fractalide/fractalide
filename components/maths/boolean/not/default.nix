@@ -1,7 +1,12 @@
-{ stdenv, buildFractalideSubnet, upkeepers, ...}:
+{ stdenv, buildFractalideSubnet, upkeepers, ip_clone, maths_boolean_nand, ...}:
 
 buildFractalideSubnet rec {
   src = ./.;
+  subnet = ''
+  input => input clone(${ip_clone})
+  clone() clone[1] -> a nand(${maths_boolean_nand}) output => output
+  clone() clone[2] -> b nand()
+  '';
 
   meta = with stdenv.lib; {
     description = "Subnet: NOT logic gate";

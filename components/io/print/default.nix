@@ -3,12 +3,12 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [];
-  depsSha256 = "1cnkva10a3ap9qlrl1q0qdspd3a81v8nzr5c9pxi2sb7wl3sdi50";
+  filteredContracts = filterContracts ["generic_text"];
+  depsSha256 = "1xzv0q6nm25i5p49nxkabwnx136nlxb4w88nq5q2gp6b0f99j46c";
 
   meta = with stdenv.lib; {
-    description = "Component: Clone the IPs coming in";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/ip/clone;
+    description = "Component: Print to the terminal";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/io/print;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

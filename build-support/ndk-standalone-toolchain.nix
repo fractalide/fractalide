@@ -12,6 +12,7 @@
         --platform=android-21 \
         --toolchain=arm-linux-androideabi-4.8 \
         --ndk-dir=${androidndk}/libexec/android-ndk-r10e \
+        --arch=arm \
         --install-dir=$out
     '';
 

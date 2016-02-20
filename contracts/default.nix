@@ -4,6 +4,7 @@ callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
+  domain_port = callPackage ./domain_port {};
   fbp_graph = callPackage ./fbp/graph {};
   fbp_lexical = callPackage ./fbp/lexical {};
   fbp_semantic_error = callPackage ./fbp/semantic_error {};
@@ -15,5 +16,6 @@ rec {
   maths_number = callPackage ./maths/number {};
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
+  url = callPackage ./url {};
 }
 
