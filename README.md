@@ -15,7 +15,7 @@ Fractalide uses [Nix](http://nixos.org/nix/) as a replacement for [make](https:/
 
 ## Code reuse
 
-The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor.
+The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor. Code is like mud, easy to mold when wet, harder when dry, impossible when baked. FBP gives one the ability to keep one's codebase nicely lubricated.
 
 "Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
 
@@ -32,7 +32,7 @@ Explanation:
 * `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the [contracts/maths/boolean](https://github.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp) folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
 * `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in [components/maths/boolean/xor](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix) folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
 * `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in [components/maths/boolean/print](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
-* `IN =>` means you have a input port interface named `IN`.
+* `IN =>` means you have an input port interface named `IN`.
 * What's inbetween `IN =>` and `=> OUT` is the implementation of the subnet.
 * `=> OUT` means you have an output port interface named `OUT`.
 * Do note, you will see [${component_name}](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
@@ -101,7 +101,7 @@ component! {
 }
 ```
 
-From there, you go native.
+From here, you go native.
 
 ## Setup
 
