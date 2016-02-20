@@ -126,3 +126,7 @@ This serves up the Quick Start manual section on [http://localhost:8083/docs/man
 This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
 
 Happy Hacking!
+
+## Collective Code Construction Contract
+
+We use the [C4](http://rfc.zeromq.org/spec:22) on this project.
