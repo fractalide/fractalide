@@ -4,11 +4,11 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [];
-  depsSha256 = "1y0kjbnrcr9klkk8qq53r279dd5nbgqd4pb0wjyp7dj95bh1063z";
+  depsSha256 = "0lijccynfvv4z05m35mnwaxd0arinlpy2qbmscayf5hk7c87nx8b";
 
   meta = with stdenv.lib; {
-    description = "Component: dispatch the action to the output selection";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/ip/clone;
+    description = "Component: draw a conrod button";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

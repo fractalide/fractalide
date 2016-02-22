@@ -3,20 +3,21 @@ extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
 
+use std::thread;
+
 component! {
-    magic,
+    ui_conrod_button,
     inputs(input: any),
     inputs_array(),
-    outputs(),
+    outputs(output: any),
     outputs_array(output: any),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
+        let ip_a = try!(self.ports.recv("input"));
 
-        let mut ip = try!(self.ports.recv("input"));
-
-        let output = ip.origin.clone();
-        try!(self.ports.send_array("output", &output, ip));
+        println!("Receive an action!");
+        let _ = self.ports.send_action("output", ip_a);
 
         Ok(())
     }

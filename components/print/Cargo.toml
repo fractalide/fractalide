@@ -1,10 +1,10 @@
 [package]
-name = "ui_magic"
+name = "file_open"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "ui_magic"
+name = "file_open"
 crate-type = ["dylib"]
 
 [dependencies]

@@ -18,6 +18,19 @@ component! {
 
         let _ = self.ports.send_action("output", ip_a);
 
+        let mut new_ip = IP::new();
+        new_ip.origin = "-button".to_string();
+        self.ports.send("magic", new_ip);
+
+        let mut new_ip = IP::new();
+        new_ip.origin = "-button".to_string();
+        self.ports.send("magic", new_ip);
+
+        let mut new_ip = IP::new();
+        new_ip.origin = "-button".to_string();
+        new_ip.action = "button_clicked".into();
+        self.ports.send("magic", new_ip);
+
         Ok(())
     }
 }
