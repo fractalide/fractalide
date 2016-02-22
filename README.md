@@ -1,4 +1,5 @@
 # Fractalide
+"Go with the flow", or should one say "Oxidize in the flow"?
 
 Fractalide is a programming platform which removes three classes of errors.
 * [Memory safety](https://en.wikipedia.org/wiki/Rust_(programming_language))
