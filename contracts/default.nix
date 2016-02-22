@@ -16,6 +16,7 @@ rec {
   maths_number = callPackage ./maths/number {};
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
+  ui_conrod = callPackage ./ui/conrod {};
   url = callPackage ./url {};
 }
 

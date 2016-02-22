@@ -10,4 +10,6 @@ crate-type = ["dylib"]
 [dependencies]
 capnp = "*"
 rustfbp = "*"
-
+conrod = "*"
+piston_window = "*"
+find_folder = "*"
