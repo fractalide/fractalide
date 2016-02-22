@@ -147,6 +147,13 @@ macro_rules! component {
                 $(
                     stringify!($input_field_name)=> Ok(stringify!($input_contract_name).into()),
                 )*
+                _ => { Err(result::Error::PortNotFound) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn get_contract_input_array(port: &str) -> Result<String> {
+            match port {
                 $(
                     stringify!($input_array_name) => Ok(stringify!($input_contract_array).into()),
                 )*
@@ -160,6 +167,13 @@ macro_rules! component {
                 $(
                     stringify!($output_field_name)=> Ok(stringify!($output_contract_name).into()),
                 )*
+                _ => { Err(result::Error::PortNotFound) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn get_contract_output_array(port: &str) -> Result<String> {
+            match port {
                 $(
                     stringify!($output_array_name) => Ok(stringify!($output_contract_array).into()),
                 )*
