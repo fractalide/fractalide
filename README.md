@@ -23,7 +23,9 @@ The use of Flow-based programming gives us the ability to combine and concatenat
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">flow-based programming reduces complexity of your data-processing logic by promoting control flow to first-class citizen of the flow design</p>&mdash; Arnau Orriols (@Arnau_Orriols) <a href="https://twitter.com/Arnau_Orriols/status/694661751229583360">February 2, 2016</a></blockquote>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-Flow script is just a coordination language for Rust shared objects.
+### Slight mindset shift
+
+The goal is to create reusable components that are efficient, solve real world problems and plug into each other, creating flow. As flow is now a first class citizen, it becomes much easier to manipulate. One should not place too much emphasis on component internals when designing for a flow. One should care about the shape of the data, the capnproto contracts, and how data flows through your system. Of equal importance; one should keep in mind when designing components that your code exists within a community. Pick up your litter, keep the paths clean,  Be polite when interacting with other components. Once we as a community have reached this point we will be near our goal.
 
 A contrived example of displaying the output of an XOR gate to the terminal:
 ```
