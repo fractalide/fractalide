@@ -413,7 +413,7 @@ impl SchedState {
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
             self.connections += 1;
             let sched_s = self.sched_sender.clone();
-            thread::spawn(move || {
+            thread::Builder::new().name(name.clone()).spawn(move || {
                 let res = b_comp.run();
                 if let Err(e) = res {
                     println!("{} fails : {}", name, e);

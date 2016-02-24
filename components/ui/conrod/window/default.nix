@@ -9,7 +9,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["ui_conrod"];
-  depsSha256 = "0vgh9kanrn0rc7zrb05lckayddj8yiy93134ay3bbkdw94rkz7kb";
+  depsSha256 = "0raj7al7y4k6vxp6x0njcdzsmnf5lr05nz5nfx9l42g0f51v2m4d";
 
   buildInputs = [ freetype SDL2 ];
   LD_LIBRARY_PATH = with xlibs; "${mesa}/lib:${libX11}/lib:${libXcursor}/lib:${libXxf86vm}/lib:${libXi}/lib:${SDL2}/lib";

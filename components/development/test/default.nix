@@ -4,10 +4,19 @@
   , ui_conrod_button
   , ui_conrod_window
   , print
+  , freetype
+  , SDL2
+  , mesa
+  , xlibs
   , ...}:
 
 buildFractalideSubnet rec {
-  src = ./.;
+ 
+ src = ./.;
+
+  buildInputs = [ freetype SDL2 ];
+  LD_LIBRARY_PATH = with xlibs; "${mesa}/lib:${libX11}/lib:${libXcursor}/lib:${libXxf86vm}/lib:${libXi}/lib:${SDL2}/lib";
+  
   subnet = ''
 'maths_boolean:(boolean=true)' -> input not(${maths_boolean_not}) output -> input disp(${maths_boolean_print})
 
