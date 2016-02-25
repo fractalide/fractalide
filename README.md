@@ -1,6 +1,10 @@
 # Fractalide
 "Go with the flow", or should one say "Oxidize in the flow"?
 
+## Canonical source
+
+The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
+
 Fractalide is a programming platform which removes three classes of errors.
 * [Memory safety](https://en.wikipedia.org/wiki/Rust_(programming_language))
 * [Dependency hell](https://en.wikipedia.org/wiki/Dependency_hell)
