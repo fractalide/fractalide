@@ -41,15 +41,15 @@ A contrived example of displaying the output of an XOR gate to the terminal:
 
 Explanation:
 
-* `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the [contracts/maths/boolean](https://github.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp) folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
-* `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in [components/maths/boolean/xor](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix) folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
-* `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in [components/maths/boolean/print](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
+* `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the [contracts/maths/boolean](https://gitlab.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp) folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
+* `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in [components/maths/boolean/xor](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix) folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
+* `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in [components/maths/boolean/print](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
 * `IN =>` means you have an input port interface named `IN`.
 * What's inbetween `IN =>` and `=> OUT` is the implementation of the subnet.
 * `=> OUT` means you have an output port interface named `OUT`.
-* Do note, you will see [${component_name}](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
+* Do note, you will see [${component_name}](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
 * 
-For more details, follow the setup steps below which will show you how to compile the [docs](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
+For more details, follow the setup steps below which will show you how to compile the [docs](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
 
 `maths_boolean_xor`
 ``` nix
@@ -68,7 +68,7 @@ buildFractalideSubnet rec {
 
   meta = with stdenv.lib; {
     description = "Subnet: XOR logic gate";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/xor;
+    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/xor;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };
@@ -117,13 +117,15 @@ From here, you go native.
 
 ## Setup
 
+Please read [Don't pipe to your shell](https://www.seancassidy.me/dont-pipe-to-your-shell.html), then read the script before you execute it. After you are comfortable with it, let's agree that the below one-liner is convenient. If you insist, there is [documentation](http://nixos.org/nix/manual/) to type this stuff manually.
+
 Run this command as a user other than root (you will need `sudo`). To uninstall simply `rm -fr /nix`. See this [blog post](https://www.domenkozar.com/2014/01/02/getting-started-with-nix-package-manager/) for more detailed information.
 
 `$ curl https://nixos.org/nix/install | sh` (ignore if on nixos)
 
 `$ source ~/.nix-profile/etc/profile.d/nix.sh` (ignore if on nixos)
 
-`$ git clone git://github.com/fractalide/fractalide`
+`$ git clone git://gitlab.com/fractalide/fractalide`
 
 `$ cd fractalide`
 
@@ -135,7 +137,7 @@ Congratulations, you just built your first Fractalide executable, now let's run 
 
 This serves up the Quick Start manual section on [http://localhost:8083/docs/manual.html](http://localhost:8083/docs/manual.html).
 
-This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
+This is what the code you just ran [looks like](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
 
 Happy Hacking!
 
