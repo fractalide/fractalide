@@ -1,4 +1,9 @@
 # Fractalide
+"Go with the flow", or should one say "Oxidize in the flow"?
+
+## Canonical source
+
+The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
 Fractalide is a programming platform which removes three classes of errors.
 * [Memory safety](https://en.wikipedia.org/wiki/Rust_(programming_language))
@@ -15,11 +20,16 @@ Fractalide uses [Nix](http://nixos.org/nix/) as a replacement for [make](https:/
 
 ## Code reuse
 
-The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor.
+The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor. Code is like mud, easy to mold when wet, harder when dry, impossible when baked. FBP gives one the ability to keep one's codebase nicely lubricated.
 
 "Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
 
-Flow script is just a coordination language for Rust shared objects.
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">flow-based programming reduces complexity of your data-processing logic by promoting control flow to first-class citizen of the flow design</p>&mdash; Arnau Orriols (@Arnau_Orriols) <a href="https://twitter.com/Arnau_Orriols/status/694661751229583360">February 2, 2016</a></blockquote>
+<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+### Slight mindset shift
+
+The goal is to create reusable components that are efficient, solve real world problems and plug into each other, creating flow. As flow is now a first class citizen, it becomes much easier to manipulate. One should not place too much emphasis on component internals when designing for a flow. One should care about the shape of the data, the capnproto contracts, and how data flows through your system. Of equal importance; one should keep in mind when designing components that your code exists within a community. Pick up your litter, keep the paths clean,  Be polite when interacting with other components. Once we as a community have reached this point we will be near our goal.
 
 A contrived example of displaying the output of an XOR gate to the terminal:
 ```
@@ -29,16 +39,79 @@ A contrived example of displaying the output of an XOR gate to the terminal:
 
 Explanation:
 
-* `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the `contracts/maths/boolean` folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
-* `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in `components/maths/boolean/xor` folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
-* `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in `components/maths/boolean/print`
-* Contract `maths_boolean` looks like this: [maths_boolean](https://github.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp)
-* `maths_boolean_xor` is a subnet which looks like this: [maths_boolean_xor](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix)
-* `maths_boolean_print` is implemented in Rust, and is a shared library, it looks like this: [maths_boolean_print](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
+* `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the [contracts/maths/boolean](https://github.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp) folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
+* `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in [components/maths/boolean/xor](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix) folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
+* `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in [components/maths/boolean/print](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
+* `IN =>` means you have an input port interface named `IN`.
+* What's inbetween `IN =>` and `=> OUT` is the implementation of the subnet.
+* `=> OUT` means you have an output port interface named `OUT`.
+* Do note, you will see [${component_name}](https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
+* 
+For more details, follow the setup steps below which will show you how to compile the [docs](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
 
-For more details, follow the setup steps below which will show you how to compile the [docs](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix). This component will teach you how to build a NOT logic gate.
+`maths_boolean_xor`
+``` nix
+{ stdenv, buildFractalideSubnet, upkeepers, maths_boolean_not, ip_clone, maths_boolean_and, maths_boolean_or,...}:
 
-From there, you go native.
+buildFractalideSubnet rec {
+  src = ./.;
+  subnet = ''
+    a => input clone1(${ip_clone})
+    b => input clone2(${ip_clone})
+    clone1() clone[2] -> input not1(${maths_boolean_not}) output -> a and2(${maths_boolean_and})
+    clone2() clone[1] -> input not2(${maths_boolean_not}) output -> b and1(${maths_boolean_and})
+    clone1() clone[1] -> a and1() output -> a or(${maths_boolean_or})
+    clone2() clone[2] -> b and2() output -> b or() output => output
+  '';
+
+  meta = with stdenv.lib; {
+    description = "Subnet: XOR logic gate";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/xor;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ dmichiels sjmackenzie];
+  };
+}
+```
+
+`maths_boolean_print`
+``` rust
+extern crate capnp;
+
+#[macro_use]
+extern crate rustfbp;
+
+mod contract_capnp {
+    include!("maths_boolean.rs");
+}
+use self::contract_capnp::maths_boolean;
+
+use std::thread;
+
+component! {
+    Print,
+    inputs(input: maths_boolean),
+    inputs_array(),
+    outputs(output: maths_boolean),
+    outputs_array(),
+    option(),
+    acc(),
+    fn run(&mut self) -> Result<()> {
+        let mut ip_a = try!(self.ports.recv("input"));
+
+        let a_reader = try!(ip_a.get_reader());
+        let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
+        let a = a_reader.get_boolean();
+
+        println!("boolean : {:?}", a);
+
+        let _ = self.ports.send("output", ip_a);
+
+        Ok(())
+    }
+}
+```
+
+From here, you go native.
 
 ## Setup
 
@@ -63,3 +136,7 @@ This serves up the Quick Start manual section on [http://localhost:8083/docs/man
 This is what the code you just ran [looks like](https://github.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
 
 Happy Hacking!
+
+## Collective Code Construction Contract
+
+We use the [C4](http://rfc.zeromq.org/spec:22) on this project.
