@@ -20,7 +20,7 @@ dependencies = [
  "piston_window 0.34.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "pistoncore-sdl2_window 0.23.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "quaternion 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.5",
  "sdl2 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "shader_version 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "vecmath 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -786,8 +786,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustfbp"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+version = "0.3.5"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",

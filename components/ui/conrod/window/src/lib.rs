@@ -3,7 +3,6 @@ extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
 
-
 extern crate piston_window;
 
 // use conrod::{Labelable, Positionable, Sizeable, Theme, Ui, Widget};

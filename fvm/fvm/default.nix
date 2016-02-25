@@ -9,6 +9,7 @@ fvm  = support.buildRustPackage rec {
     mkdir -p $out/per-session-${name}
     mkdir -p per-session-${name}
 
+    substituteInPlace src/lib.rs --replace "ui_conrod_window.so" "${components.ui_conrod_window}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "file_open.so" "${components.file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_semantic.so" "${components.development_fbp_parser_semantic}/lib/libcomponent.so"
@@ -33,5 +34,5 @@ fvm  = support.buildRustPackage rec {
       maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
   };
 };
-in
+in 
 fvm
