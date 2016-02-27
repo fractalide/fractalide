@@ -48,8 +48,7 @@ Explanation:
 * What's inbetween `IN =>` and `=> OUT` is the implementation of the subnet.
 * `=> OUT` means you have an output port interface named `OUT`.
 * Do note, you will see [${component_name}](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
-* 
-For more details, follow the setup steps below which will show you how to compile the [docs](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
+* For more details, follow the setup steps below which will show you how to compile the [docs](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
 
 `maths_boolean_xor`
 ``` nix
@@ -117,6 +116,8 @@ From here, you go native.
 
 ## Setup
 
+Fractalide supports whatever platform Nix runs on, with the exception of Mac OS as Rust on Nix on Darwin doesn't work.
+
 Please read [Don't pipe to your shell](https://www.seancassidy.me/dont-pipe-to-your-shell.html), then read the script before you execute it. After you are comfortable with it, let's agree that the below one-liner is convenient. If you insist, there is [documentation](http://nixos.org/nix/manual/) to type this stuff manually.
 
 Run this command as a user other than root (you will need `sudo`). To uninstall simply `rm -fr /nix`. See this [blog post](https://www.domenkozar.com/2014/01/02/getting-started-with-nix-package-manager/) for more detailed information.
@@ -125,7 +126,9 @@ Run this command as a user other than root (you will need `sudo`). To uninstall 
 
 `$ source ~/.nix-profile/etc/profile.d/nix.sh` (ignore if on nixos)
 
-`$ git clone git://gitlab.com/fractalide/fractalide`
+Quite possibly your Linux package manager has a Nix package already.
+
+`$ git clone https://gitlab.com/fractalide/fractalide.git`
 
 `$ cd fractalide`
 
