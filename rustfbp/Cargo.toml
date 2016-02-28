@@ -8,6 +8,6 @@ repository = "http://github.com/fractalide/rustfbp"
 description = "Fractalide, a Flow-based programming environment in Rust"
 
 [dependencies]
-capnp = "*"
-capnpc = "*"
-libloading = "*"
+capnp = "^0.6.2"
+capnpc = "^0.6.0"
+libloading = "^0.2.1"
