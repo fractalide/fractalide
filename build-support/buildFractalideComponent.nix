@@ -7,6 +7,7 @@
   , buildInputs ? []
   , filteredContracts ? []
   , cargoUpdateHook ? ""
+  , patchElfDeps ? ""
   , ... } @ args:
 
   let
@@ -111,5 +112,6 @@ mkdir -p $out/lib
 for f in $(find target/${directory} -maxdepth 1 -type f); do
 cp $f $out/lib
 done;
+${if patchElfDeps != "" then patchElfDeps else ""}
 '';
 })

@@ -61,7 +61,7 @@ component! {
             return Err(result::Error::Misc("capnp encode command doesn't work".into()));
         }
 
-        let send_ip = IP { vec : output.stdout };
+        let send_ip = IP { vec : output.stdout, action: String::new(), origin: String::new() };
         let _ = self.ports.send("output", send_ip);
         Ok(())
     }

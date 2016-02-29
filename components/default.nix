@@ -23,6 +23,10 @@ self = rec {
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_boolean_print = callPackage ./maths/boolean/print {};
   maths_number_add = callPackage ./maths/number/add {};
+  print = callPackage ./print {};
+  ui_conrod_button = callPackage ./ui/conrod/button {};
+  ui_conrod_window = callPackage ./ui/conrod/window {};
+  ui_magic = callPackage ./ui/magic {};
   net_ndn_face = callPackage ./net/ndn/face {};
   web_server = callPackage ./web/server {};
 };

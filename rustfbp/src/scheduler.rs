@@ -254,10 +254,24 @@ impl Scheduler {
             })
     }
 
+    pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                self.cache.get_contract_input_array(&c.sort, port)
+            })
+    }
+
     pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
         self.components.get(comp).ok_or(result::Error::ComponentNotFound)
             .and_then(|c| {
                 self.cache.get_contract_output(&c.sort, port)
+            })
+    }
+
+    pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+            .and_then(|c| {
+                self.cache.get_contract_output_array(&c.sort, port)
             })
     }
 
@@ -399,7 +413,7 @@ impl SchedState {
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
             self.connections += 1;
             let sched_s = self.sched_sender.clone();
-            thread::spawn(move || {
+            thread::Builder::new().name(name.clone()).spawn(move || {
                 let res = b_comp.run();
                 if let Err(e) = res {
                     println!("{} fails : {}", name, e);
@@ -454,7 +468,9 @@ pub struct ComponentLoader {
     lib: libloading::Library,
     create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)>,
     get_contract_input: extern "C" fn(&str) -> Result<String>,
+    get_contract_input_array: extern "C" fn(&str) -> Result<String>,
     get_contract_output: extern "C" fn(&str) -> Result<String>,
+    get_contract_output_array: extern "C" fn(&str) -> Result<String>,
 }
 
 pub struct ComponentCache {
@@ -480,8 +496,16 @@ impl ComponentCache {
                 *(lib_comp.get(b"get_contract_input\0").expect("cannot find get input method"))
             };
 
+            let get_in_a : extern fn(&str) -> Result<String> = unsafe {
+                *(lib_comp.get(b"get_contract_input_array\0").expect("cannot find get input method"))
+            };
+
             let get_out : extern fn(&str) -> Result<String> = unsafe {
                 *(lib_comp.get(b"get_contract_output\0").expect("cannot find get output method"))
+            };
+
+            let get_out_a : extern fn(&str) -> Result<String> = unsafe {
+                *(lib_comp.get(b"get_contract_output_array\0").expect("cannot find get output method"))
             };
 
             self.cache.insert(path.into(),
@@ -489,7 +513,9 @@ impl ComponentCache {
                                   lib: lib_comp,
                                   create: new_comp,
                                   get_contract_input: get_in,
+                                  get_contract_input_array: get_in_a,
                                   get_contract_output: get_out,
+                                  get_contract_output_array: get_out_a,
                               });
         }
         if let Some(loader) = self.cache.get(path){
@@ -506,10 +532,24 @@ impl ComponentCache {
             })
     }
 
+    pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+            .map(|comp| {
+                (comp.get_contract_input_array)(port).expect("cannot get")
+            })
+    }
+
     pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
         self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
             .map(|comp| {
                 (comp.get_contract_output)(port).expect("cannot get")
+            })
+    }
+
+    pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+            .map(|comp| {
+                (comp.get_contract_output_array)(port).expect("cannot get")
             })
     }
 }

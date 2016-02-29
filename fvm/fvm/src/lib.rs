@@ -34,11 +34,10 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("iip", "development_capnp_encode.so");
     sched.add_component("contract_lookup", "contract_lookup.so");
 
-
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
                                       vec!["r".into()],
                                       vec![],
-                                      vec!["s".into(), "opt".into()],
+                                      vec!["s".into(), "opt".into(), "w".into()],
                                       vec![]).expect("cannot create");
     sched.components.insert("exterior".into(), Comp {
         inputs: senders,
@@ -84,6 +83,5 @@ pub extern "C" fn run(path_fbp: &str) {
     let mut ip = IP::new();
     ip.write_builder(&mut msg);
     p.send("s".into(), ip).expect("unable to send to comp");
-
     sched.join();
 }
