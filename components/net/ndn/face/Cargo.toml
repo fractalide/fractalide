@@ -1,0 +1,12 @@
+[package]
+name = "net_ndn_face"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+
+[lib]
+name = "ip_clone"
+crate-type = ["dylib"]
+
+[dependencies]
+rustfbp = "*"
+capnp = "*"
