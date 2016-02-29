@@ -3,7 +3,7 @@ name = "ip_clone"
 version = "0.1.0"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -53,7 +53,7 @@ dependencies = [
 
 [[package]]
 name = "rustfbp"
-version = "0.3.3"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",

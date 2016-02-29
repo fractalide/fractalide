@@ -5,7 +5,7 @@ dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "iron 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "mount 0.0.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "staticfile 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -65,7 +65,7 @@ dependencies = [
 
 [[package]]
 name = "gcc"
-version = "0.3.24"
+version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -224,7 +224,7 @@ version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "gcc 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 0.1.15 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "openssl-sys 0.7.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -248,7 +248,7 @@ name = "openssl-sys-extras"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.3.24 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.3.25 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "openssl-sys 0.7.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -297,7 +297,7 @@ dependencies = [
 
 [[package]]
 name = "rustfbp"
-version = "0.3.3"
+version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",

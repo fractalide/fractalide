@@ -7,12 +7,6 @@ homepage = "http://github.com/fractalide/fvm"
 repository = "http://github.com/fractalide/fvm"
 description = "FVM, the Fractalide virtual machine"
 
-
-[lib]
-name = "fvm"
-path = "./src/lib.rs"
-crate-type = ["rlib", "dylib"]
-
 [[bin]]
 name = "fvm"
 path = "./src/main.rs"

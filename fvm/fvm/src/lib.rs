@@ -33,8 +33,6 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("sched", "development_fbp_scheduler.so");
     sched.add_component("iip", "development_capnp_encode.so");
     sched.add_component("contract_lookup", "contract_lookup.so");
-    sched.add_component("window", "ui_conrod_window.so");
-
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
                                       vec!["r".into()],
@@ -48,7 +46,6 @@ pub extern "C" fn run(path_fbp: &str) {
     });
 
     p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
-    p.connect("w".into(), sched.get_sender("window".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
     sched.connect("sem".into(), "output".into(), "fvm".into(), "input".into()).expect("cannot connect");
@@ -86,8 +83,5 @@ pub extern "C" fn run(path_fbp: &str) {
     let mut ip = IP::new();
     ip.write_builder(&mut msg);
     p.send("s".into(), ip).expect("unable to send to comp");
-
-    let mut ip = IP::new();
-    p.send("w".into(), ip).expect("unable to trigger window");
     sched.join();
 }

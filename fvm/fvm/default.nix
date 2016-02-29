@@ -4,7 +4,7 @@ let
 fvm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "13k03lbs6gk8zwbzzlvh3s2x3c4hj3jj479hg1jwkzrpxlkirglw";
+    depsSha256 = "1isrda8qmkyfb73zqb34d61b1sr98hxdr8cvp67611vak7ak3vfp";
     configurePhase = ''
     mkdir -p $out/per-session-${name}
     mkdir -p per-session-${name}
@@ -34,5 +34,5 @@ fvm  = support.buildRustPackage rec {
       maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
   };
 };
-in 
+in
 fvm

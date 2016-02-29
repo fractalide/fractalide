@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["fbp_graph" "path" "generic_text"];
-  depsSha256 = "11mpqfda6byhssfcq7cbk1qh1xjknh5qpxxma59m05ljw5165zi3";
+  depsSha256 = "1hqggb84l7crp2mshnxbqj2xdq8nvf9jqcviz897yrdy74a4zaki";
   configurePhase = ''
   substituteInPlace src/lib.rs --replace "ui_magic" "${ui_magic}"
   substituteInPlace src/lib.rs --replace "ui_conrod_window" "${ui_conrod_window}"

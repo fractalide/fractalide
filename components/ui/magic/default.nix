@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [];
-  depsSha256 = "1y0kjbnrcr9klkk8qq53r279dd5nbgqd4pb0wjyp7dj95bh1063z";
+  depsSha256 = "0l2w3p24s7c82iw36vrckqlr0l8y23pq80rbnf8kg6aikrrk9zpl";
 
   meta = with stdenv.lib; {
     description = "Component: dispatch the action to the output selection";
