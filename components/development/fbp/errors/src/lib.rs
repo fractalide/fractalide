@@ -26,8 +26,7 @@ component! {
 
         match self.ports.try_recv("semantic_error") {
             Ok(mut ip) => {
-                let error = try!(ip.get_reader());
-                let error: fbp_semantic_error::Reader = try!(error.get_root());
+                let error: fbp_semantic_error::Reader = try!(ip.get_root());
 
                 println!("Graph at : {}", try!(error.get_path()));
                 let parsing = try!(error.get_parsing());
@@ -41,22 +40,19 @@ component! {
 
         match self.ports.try_recv("file_error") {
             Ok(mut ip) => {
-                let error = try!(ip.get_reader());
-                let error: file_error::Reader = try!(error.get_root());
+                let error: file_error::Reader = try!(ip.get_root());
                 println!("Subnet not exist at : {}\n", try!(error.get_not_found()));
             }
             _ => {}
         };
 
 
-        let mut new_ip = capnp::message::Builder::new_default();
+        let mut new_ip = IP::new();
         {
             let mut ip = new_ip.init_root::<fbp_graph::Builder>();
             ip.set_path("error");
         }
-        let mut send_ip = IP::new();
-        try!(send_ip.write_builder(&new_ip));
-        let _ = self.ports.send("output", send_ip);
+        let _ = self.ports.send("output", new_ip);
         Ok(())
     }
 }

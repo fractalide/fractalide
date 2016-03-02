@@ -109,21 +109,18 @@ component! {
     fn run(&mut self) -> Result<()>{
         // Get one IP
         let mut ip = try!(self.ports.recv("input"));
-        let file = try!(ip.get_reader());
-        let file: file_desc::Reader = try!(file.get_root());
+        let file: file::Reader = try!(ip.get_root());
 
         // print it
         match try!(file.which()) {
             file_desc::Start(path) => {
                 let path = try!(path);
-                let mut new_ip = capnp::message::Builder::new_default();
+                let mut new_ip = IP::new();
                 {
                     let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.set_start(&path);
                 }
-                let mut send_ip = IP::new();
-                try!(send_ip.write_builder(&new_ip));
-                let _ = self.ports.send("output", send_ip);
+                let _ = self.ports.send("output", new_ip);
                 try!(handle_stream(&self));
             },
             _ => { return Err(result::Error::Misc("bad stream".to_string())) }
@@ -137,19 +134,18 @@ fn handle_stream(comp: &comp) -> Result<()> {
     loop {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
-        let file = try!(ip.get_reader());
-        let file: file_desc::Reader = try!(file.get_root());
+        let file: file::Reader = try!(ip.get_root());
 
         // print it
         match try!(file.which()) {
-            file_desc::Text(text) => {
-                let mut new_ip = capnp::message::Builder::new_default();
+            file::Text(text) => {
                 let mut text = try!(text).as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
+                            let mut send_ip = IP::new();
                             {
-                                let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
+                                let mut ip = send_ip.init_root::<fbp_lexical::Builder>();
                                 match lit {
                                     Literal::Bind => { ip.init_token().set_bind(()); },
                                     Literal::External => {ip.init_token().set_external(()); },
@@ -174,31 +170,26 @@ fn handle_stream(comp: &comp) -> Result<()> {
                                 }
                             }
                             text = rest;
-                            let mut send_ip = IP::new();
-                            try!(send_ip.write_builder(&new_ip));
                             let _ = comp.ports.send("output", send_ip);
                         },
                         _ => { break;}
                     }
                 }
+                let mut new_ip = IP::new();
                 {
                     let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.init_token().set_break(());
                 }
-                let mut send_ip = IP::new();
-                try!(send_ip.write_builder(&new_ip));
-                let _ = comp.ports.send("output", send_ip);
+                let _ = comp.ports.send("output", new_ip);
             },
             file_desc::End(path) => {
                 let path = try!(path);
-                let mut new_ip = capnp::message::Builder::new_default();
+                let mut new_ip = IP::new();
                 {
                     let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.set_end(&path);
                 }
-                let mut send_ip = IP::new();
-                try!(send_ip.write_builder(&new_ip));
-                let _ = comp.ports.send("output", send_ip);
+                let _ = comp.ports.send("output", new_ip);
                 break;
             },
             _ => { return Err(result::Error::Misc("Bad stream".to_string())); }

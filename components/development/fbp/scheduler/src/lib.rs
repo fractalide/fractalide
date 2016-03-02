@@ -27,8 +27,7 @@ component! {
 
         // retrieve the asked graph
         let mut ip = try!(self.ports.recv("input"));
-        let i_graph = try!(ip.get_reader());
-        let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
+        let i_graph: fbp_graph::Reader = try!(ip.get_root());
 
         // add "magic_to_card" component
         try!(sched.add_component("magic_to_card", &format!("{}{}", "ui_magic", "/lib/libcomponent.so")));
@@ -92,18 +91,15 @@ component! {
             let (contract, input) = try!(split_input(input));
 
             // Get the real path
-            let mut new_out = capnp::message::Builder::new_default();
+            let mut new_out = IP::new();
             {
                 let mut cont = new_out.init_root::<path::Builder>();
                 cont.set_path(&contract);
             }
-            let mut ip = IP::new();
-            ip.write_builder(&mut new_out);
-            try!(self.ports.send("ask_path", ip));
+            try!(self.ports.send("ask_path", new_out));
 
-            let contract_path_ip = try!(self.ports.recv("contract_path"));
-            let contract_path = try!(contract_path_ip.get_reader());
-            let contract_path: path::Reader = try!(contract_path.get_root());
+            let mut contract_path_ip = try!(self.ports.recv("contract_path"));
+            let contract_path: path::Reader = try!(contract_path_ip.get_root());
 
             let c_path = try!(contract_path.get_path());
             let c_path = format!("/nix/store/{}/src/contract.capnp", c_path);
@@ -115,32 +111,26 @@ component! {
                 try!(p.connect("s".into(), try!(sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
             }
 
-            let mut new_out = capnp::message::Builder::new_default();
+            let mut new_out = IP::new();
             {
                 let mut path = new_out.init_root::<path::Builder>();
                 path.set_path(&c_path);
             }
-            let mut ip = IP::new();
-            ip.write_builder(&mut new_out);
-            try!(self.ports.send("iip_path", ip));
+            try!(self.ports.send("iip_path", new_out));
 
-            let mut new_out = capnp::message::Builder::new_default();
+            let mut new_out = IP::new();
             {
                 let mut path = new_out.init_root::<generic_text::Builder>();
                 path.set_text(&contract_camel_case);
             }
-            let mut ip = IP::new();
-            ip.write_builder(&mut new_out);
-            try!(self.ports.send("iip_contract", ip));
+            try!(self.ports.send("iip_contract", new_out));
 
-            let mut new_out = capnp::message::Builder::new_default();
+            let mut new_out = IP::new();
             {
                 let mut path = new_out.init_root::<generic_text::Builder>();
                 path.set_text(&input);
             }
-            let mut ip = IP::new();
-            ip.write_builder(&mut new_out);
-            try!(self.ports.send("iip_input", ip));
+            try!(self.ports.send("iip_input", new_out));
 
             let iip = try!(self.ports.recv("iip"));
             try!(p.send("s", iip));

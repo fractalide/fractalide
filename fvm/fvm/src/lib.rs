@@ -74,14 +74,12 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.connect("iip".into(), "output".into(), "sched".into(), "iip".into()).expect("cannot connect");
 
     let args: Vec<String> = env::args().collect();
-    let mut msg = capnp::message::Builder::new_default();
+    let mut msg = IP::new();
     {
         let mut number = msg.init_root::<path::Builder>();
         number.set_path(&path_fbp);
     }
 
-    let mut ip = IP::new();
-    ip.write_builder(&mut msg);
-    p.send("s".into(), ip).expect("unable to send to comp");
+    p.send("s".into(), msg).expect("unable to send to comp");
     sched.join();
 }

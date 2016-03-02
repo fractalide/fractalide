@@ -6,31 +6,62 @@ use result;
 use result::Result;
 
 use std::collections::HashMap;
+use std::mem;
 
 use std::sync::mpsc::{Sender, Receiver, SyncSender};
 use std::sync::mpsc::sync_channel;
 
 use scheduler::CompMsg;
 
-#[derive(Clone)]
 pub struct IP {
     pub vec: Vec<u8>,
     pub action: String,
     pub origin: String,
+    reader: Option<capnp::message::Reader<capnp::serialize::OwnedSegments>>,
+    builder: Option<capnp::message::Builder<capnp::message::HeapAllocator>>,
 }
 
 impl IP {
     pub fn new() -> Self {
-        IP { vec: vec![], action: String::new(), origin: String::new() }
+        IP { vec: vec![],
+             action: String::new(),
+             origin: String::new(),
+             reader: None,
+             builder: None,
+        }
     }
 
-    pub fn get_reader(&self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
-        Ok(try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new())))
+    pub fn get_root<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
+        let msg = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
+        self.reader = Some(msg);
+        Ok(try!(self.reader.as_ref().unwrap().get_root()))
+    }
+    pub fn init_root<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
+        let msg = capnp::message::Builder::new_default();
+        self.builder = Some(msg);
+        self.builder.as_mut().unwrap().init_root()
     }
 
-    pub fn write_builder<A: capnp::message::Allocator>(&mut self, builder: &capnp::message::Builder<A>) -> Result<()> {
-        self.vec.clear();
-        Ok(try!(capnp::serialize::write_message(&mut self.vec, builder)))
+    pub fn before_send(&mut self) -> Result<()> {
+        let mut build = mem::replace(&mut self.builder, None);
+        if let Some(ref mut b) = build {
+            self.vec.clear();
+            try!(capnp::serialize::write_message(&mut self.vec, b))
+        }
+        Ok(())
+
+    }
+}
+
+impl Clone for IP {
+    fn clone(&self) -> Self {
+        IP {
+            vec: self.vec.clone(),
+            action: self.action.clone(),
+            origin: self.origin.clone(),
+            reader: None,
+            builder: None,
+        }
     }
 }
 
@@ -137,7 +168,8 @@ impl Ports {
             })
     }
 
-    pub fn send(&self, port_out: &str, ip: IP) -> Result<()> {
+    pub fn send(&self, port_out: &str, mut ip: IP) -> Result<()> {
+        try!(ip.before_send());
         self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
@@ -151,7 +183,8 @@ impl Ports {
             })
     }
 
-    pub fn send_array(&self, port_out: &str, selection_out: &str, ip: IP) -> Result<()> {
+    pub fn send_array(&self, port_out: &str, selection_out: &str, mut ip: IP) -> Result<()> {
+        try!(ip.before_send());
         self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port| {
                 port.get(selection_out).ok_or(result::Error::SelectionNotFound)

@@ -38,8 +38,7 @@ component! {
 
         // retrieve the asked graph
         let mut ip = try!(self.ports.recv("input"));
-        let i_graph = try!(ip.get_reader());
-        let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
+        let i_graph: fbp_graph::Reader = try!(ip.get_root());
 
         try!(add_graph(self, &mut graph, i_graph, ""));
 
@@ -106,20 +105,16 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
         };
 
         if is_subnet {
-            let mut msg = capnp::message::Builder::new_default();
+            let mut msg = IP::new();
             {
                 let mut number = msg.init_root::<path::Builder>();
                 number.set_path(&path);
             }
-            let mut ip = IP::new();
-            ip.write_builder(&mut msg);
-
-            try!(component.ports.send("ask_graph", ip));
+            try!(component.ports.send("ask_graph", msg));
 
             // retrieve the asked graph
             let mut ip = try!(component.ports.recv("input"));
-            let i_graph = try!(ip.get_reader());
-            let i_graph: fbp_graph::Reader = try!(i_graph.get_root());
+            let i_graph: fbp_graph::Reader = try!(ip.get_root());
 
             add_graph(component, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {
@@ -130,7 +125,7 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
 }
 
 fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
-    let mut new_ip = capnp::message::Builder::new_default();
+    let mut new_ip = IP::new();
     {
         let mut ip = new_ip.init_root::<fbp_graph::Builder>();
         ip.set_path("");
@@ -190,8 +185,6 @@ fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
             }
         }
     }
-    let mut send_ip = IP::new();
-    try!(send_ip.write_builder(&new_ip));
-    let _ = comp.ports.send("output", send_ip);
+    let _ = comp.ports.send("output", new_ip);
     Ok(())
 }

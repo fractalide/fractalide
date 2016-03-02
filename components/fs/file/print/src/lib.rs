@@ -21,31 +21,18 @@ component! {
 
         // Get one IP
         let mut ip = try!(self.ports.recv("input"));
-        let file = try!(ip.get_reader());
-        let file: file_desc::Reader = try!(file.get_root());
+        {
+            let file: file::Reader = try!(ip.get_root());
+            // print it
+            match try!(file.which()) {
+                file::Start(path) => { println!("Start : {}", try(path)); },
+                file::Text(text) => { println!("Text : {} ", try!(text)); },
+                file::End(path) => { println!("End : {} ", try!(path)); },
+            }
+        }
         // Send outside (don't care about loss)
         let _ = self.ports.send("output", ip);
-        // print it
-        match try!(file.which()) {
-            file_desc::Start(path) => {
-                println!("Start : {} ", try!(path));
-                loop {
-                    // Get one IP
-                    let mut ip = try!(self.ports.recv("input"));
-                    let file = try!(ip.get_reader());
-                    let file: file_desc::Reader = try!(file.get_root());
-                    // Send outside (don't care about loss)
-                    let _ = self.ports.send("output", ip);
-
-                    match try!(file.which()) {
-                      file_desc::Text(text) => { println!("Text : {} ", try!(text)); },
-                      file_desc::End(path) => { println!("End : {} ", try!(path)); break; },
-                      _ => { return Err(result::Error::Misc("bad stream".to_string())); },
-                    }
-                }
-            },
-            _ => { return Err(result::Error::Misc("bad stream".to_string())); },
-        }
         Ok(())
     }
 }
+
