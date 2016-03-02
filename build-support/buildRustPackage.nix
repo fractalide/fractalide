@@ -105,10 +105,10 @@ cargo test
 
 doCheck = args.doCheck or true;
 
-installPhase = args.installPhase or ''
+installPhase = ''
 mkdir -p $out/bin
 for f in $(find target/${directory} -maxdepth 1 -type f); do
 cp $f $out/bin
 done;
-'';
+'' + (args.installPhase or '''');
 })

@@ -1,15 +1,10 @@
 { stdenv, buildFractalideComponent, filterContracts, genName, openssl, ...}:
-let
 
-  tls-openssl = stdenv.lib.overrideDerivation openssl (oldAttrs : {
-    NIX_CFLAGS_COMPILE = " -fPIC -DPIC";
-    });
-in
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["path" "domain_port" "url"];
-  buildInputs = [ tls-openssl ];
+  buildInputs = [ openssl ];
   depsSha256 = "1hlznyvzhz19miif03khzvldxp2w3b2wm0qb7n1ppr0lb707z12s";
 
   meta = with stdenv.lib; {
