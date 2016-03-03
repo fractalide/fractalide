@@ -85,12 +85,12 @@ if error:
   if re.search('.*invalid base-32 hash.*', error):
     print error
     exit()
-  m = re.search('.*instead has \xe2(.*)\xe2', error)
+  m = re.search('.*hash.*(\w{52}).*when.*', error)
   if m:
     found = m.group(1)
     print "[*] Inserting latest sha256 into rustRegistry"
     find = r"^.*sha256 = .*$";
-    replace = "  sha256 = \"%s\";" % found[2:]
+    replace = "  sha256 = \"%s\";" % found
     subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
     print "[*] Building rustRegistry with latest sha256"
     cmd =  "nix-build --argstr debug true -A support.rustRegistry"
@@ -116,12 +116,12 @@ for root, dirs, files in os.walk("../components"):
       if re.search('.*invalid base-32 hash.*', error):
         print error
         exit()
-      m = re.search('.*instead has \xe2(.*)\xe2', error)
+      m = re.search('.*hash.*(\w{52}).*when.*', error)
       if m:
         print "[!] -- found new depsSha256... building "
         found = m.group(1)
         find = r"^.*depsSha256 = .*$";
-        replace = "  depsSha256 = \"%s\";" % found[2:]
+        replace = "  depsSha256 = \"%s\";" % found
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
@@ -141,9 +141,8 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
           print error
           exit()
         if re.search('.*invalid base-32 hash.*', error):
-          print error
           exit()
-        m = re.search('.*instead has \xe2(.*)\xe2', error)
+        m = re.search('.*hash.*(\w{52}).*when.*', error)
         if m:
           print "[!] -- found new depsSha256... building "
           found = m.group(1)
@@ -152,7 +151,7 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
             space = "    "
           else:
             space = "  "
-          replace = space + "depsSha256 = \"%s\";" % found[2:]
+          replace = space + "depsSha256 = \"%s\";" % found
           subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
           output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 

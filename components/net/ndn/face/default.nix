@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [];
-  depsSha256 = "1kj8zgpjw3mwyx557iammq91hr4gyqyj1dyd7vwgybh7b2iaaddn";
+  depsSha256 = "1j9kjxykir69n2vskfribgj4xyz3n94622x5v6by07d2ar70qngi";
 
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Face";
