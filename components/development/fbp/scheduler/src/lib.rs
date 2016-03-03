@@ -38,7 +38,7 @@ component! {
             try!(sched.add_output_array_selection("magic_to_card".into(), "output".into(), try!(n.get_name()).into()));
             let _ = sched.connect_array("magic_to_card".into(), "output".into(), try!(n.get_name()).into(), try!(n.get_name()).into(), "input".into());
             // If the component is of sort "ui/conrod/window", connect it to the magic
-            if try!(n.get_sort()) == format!("{}{}", "ui_conrod_window", "/lib/libcomponent.so") {
+            if try!(n.get_sort()).find("ui_conrod_window").is_some() {
                 try!(sched.connect(try!(n.get_name()).into(), "magic".into(), "magic_to_card".into(), "input".into()));
             }
         }

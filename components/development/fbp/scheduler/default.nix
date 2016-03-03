@@ -1,4 +1,4 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ui_magic, ui_conrod_window, ...}:
+{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ui_magic, ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
@@ -7,7 +7,6 @@ buildFractalideComponent rec {
   depsSha256 = "1hqggb84l7crp2mshnxbqj2xdq8nvf9jqcviz897yrdy74a4zaki";
   configurePhase = ''
   substituteInPlace src/lib.rs --replace "ui_magic" "${ui_magic}"
-  substituteInPlace src/lib.rs --replace "ui_conrod_window" "${ui_conrod_window}"
 '';
 
   meta = with stdenv.lib; {

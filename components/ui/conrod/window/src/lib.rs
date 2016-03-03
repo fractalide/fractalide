@@ -4,7 +4,6 @@ extern crate capnp;
 extern crate rustfbp;
 
 extern crate piston_window;
-extern crate sdl2;
 extern crate sdl2_window;
 
 use piston_window::*;
@@ -29,16 +28,16 @@ component! {
         let ip_a = try!(self.ports.recv("input"));
 
         let window: PistonWindow<(), Sdl2Window> =
-        WindowSettings::new("What a mission!", [640, 480])
-        .exit_on_esc(true).build().expect("cannot create windows");
+            WindowSettings::new("Hello Piston!", [640, 480])
+            .exit_on_esc(true).build().expect("cannot create windows");
         for e in window {
-         e.draw_2d(|c, g| {
-             clear([1.0; 4], g);
-             rectangle([1.0, 0.0, 0.0, 1.0], // red
-               [0.0, 0.0, 100.0, 100.0],
-               c.transform, g);
-         });
-     }
+            e.draw_2d(|c, g| {
+                clear([1.0; 4], g);
+                rectangle([1.0, 0.0, 0.0, 1.0], // red
+                          [0.0, 0.0, 100.0, 100.0],
+                          c.transform, g);
+            });
+        }
      Ok(())
  }
 }
