@@ -79,6 +79,7 @@ pub struct Ports {
     inputs_array: HashMap< String, HashMap<String, Receiver<IP>>>,
     outputs: HashMap<String, Option<IPSender>>,
     outputs_array: HashMap<String, HashMap<String, Option<IPSender>>>,
+    senders: HashMap<String, IPSender>,
 }
 
 impl Ports {
@@ -110,9 +111,17 @@ impl Ports {
             inputs_array: inputs_array,
             outputs: outputs,
             outputs_array: outputs_array,
+            senders: senders.clone(),
         };
 
         Ok((ports, senders))
+    }
+
+    pub fn get_sender(&self, port_in: &str) -> Result<IPSender> {
+        self.senders.get(port_in).ok_or(result::Error::PortNotFound)
+            .map(|sender| {
+                sender.clone()
+            })
     }
 
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
@@ -168,17 +177,21 @@ impl Ports {
             })
     }
 
+    pub fn send_sender(sender: &IPSender, ip: IP) -> Result<()> {
+        try!(sender.sender.send(ip));
+        if sender.dest != "" {
+            try!(sender.sched.send(CompMsg::Inc(sender.dest.clone())));
+        }
+        Ok(())
+    }
+
     pub fn send(&self, port_out: &str, mut ip: IP) -> Result<()> {
         try!(ip.before_send());
         self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
                     .and_then(|sender| {
-                        try!(sender.sender.send(ip));
-                        if sender.dest != "" {
-                            try!(sender.sched.send(CompMsg::Inc(sender.dest.clone())));
-                        }
-                        Ok(())
+                        Ports::send_sender(sender, ip)
                     })
             })
     }
@@ -191,9 +204,7 @@ impl Ports {
                     .and_then(|sender| {
                         sender.as_ref().ok_or(result::Error::OutputPortNotConnected)
                             .and_then(|sender| {
-                                try!(sender.sender.send(ip));
-                                try!(self.sched.send(CompMsg::Inc(sender.dest.clone())));
-                                Ok(())
+                                Ports::send_sender(sender, ip)
                             })
                     })
             })

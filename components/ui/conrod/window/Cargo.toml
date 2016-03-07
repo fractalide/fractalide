@@ -10,6 +10,5 @@ crate-type = ["dylib"]
 [dependencies]
 rustfbp = "*"
 capnp = "*"
+conrod = "*"
 piston_window = "*"
-pistoncore-sdl2_window = "*"
-

@@ -13,6 +13,7 @@ rec {
   file_list = callPackage ./file/list {};
   generic_list_text = callPackage ./generic/list_text {};
   generic_text = callPackage ./generic/text {};
+  generic_u64 = callPackage ./generic/u64 {};
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
