@@ -5,24 +5,18 @@ extern crate rustfbp;
 
 component! {
     Face,
-    inputs(
-        receive_interest: any
-        , receive_data: any
-        , send_interest: any
-        , send_data: any),
+    inputs( new_interest: any, kill_face: any),
     inputs_array(),
-    outputs(),
-    outputs_array(clone: any),
+    outputs(name_registered: any, data_found: any),
+    outputs_array(),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
 
         // Get the path
-        let mut ip = try!(self.ports.recv("input"));
+        let mut ip = try!(self.ports.recv("new_interest"));
 
-        for p in try!(self.ports.get_output_selections("clone")) {
-            try!(self.ports.send_array("clone", &p, ip.clone()));
-        }
+        try!(self.ports.send("name_registered", ip.clone()));
 
         Ok(())
     }

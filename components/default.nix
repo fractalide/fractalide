@@ -27,7 +27,11 @@ self = rec {
   ui_conrod_button = callPackage ./ui/conrod/button {};
   ui_conrod_window = callPackage ./ui/conrod/window {};
   ui_magic = callPackage ./ui/magic {};
+  net_ndn = callPackage ./net/ndn {};
   net_ndn_face = callPackage ./net/ndn/face {};
+  net_ndn_pit = callPackage ./net/ndn/pit {};
+  net_ndn_cs = callPackage ./net/ndn/cs {};
+  net_ndn_fib = callPackage ./net/ndn/fib {};
   web_server = callPackage ./web/server {};
 };
 in
