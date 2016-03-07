@@ -10,8 +10,8 @@
    '';
 
    meta = with stdenv.lib; {
-    description = "Subnet: development testing file";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
+    description = "Subnet: testing file for sjm";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/test/sjm;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };
