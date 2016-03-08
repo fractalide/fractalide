@@ -7,7 +7,7 @@ component! {
     ForwardingInformationBase,
     inputs( forward: any),
     inputs_array(),
-    outputs(),
+    outputs(data_arrives: any),
     outputs_array(),
     option(),
     acc(),
