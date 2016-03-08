@@ -6,7 +6,7 @@
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'maths_boolean:(boolean=false)' -> interest ndn(${net_ndn}) data_found -> input disp(${maths_boolean_print})
+   'maths_boolean:(boolean=false)' -> interest ndn(${net_ndn}) data -> input disp(${maths_boolean_print})
    '';
 
    meta = with stdenv.lib; {

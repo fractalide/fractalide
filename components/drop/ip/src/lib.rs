@@ -4,15 +4,15 @@ extern crate capnp;
 extern crate rustfbp;
 
 component! {
-    Face,
-    inputs( new_face: any),
+    DropIp,
+    inputs( drop: any),
     inputs_array(),
     outputs(),
-    outputs_array(),
+    outputs_array(interest_hit: any),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("new_face"));
+        let mut ip = try!(self.ports.recv("new_interest"));
         Ok(())
     }
 }

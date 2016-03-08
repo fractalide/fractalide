@@ -1,0 +1,12 @@
+[package]
+name = "drop_ip"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+
+[lib]
+name = "drop_ip"
+crate-type = ["dylib"]
+
+[dependencies]
+rustfbp = "*"
+capnp = "*"

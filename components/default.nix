@@ -12,6 +12,7 @@ self = rec {
   development_fbp_scheduler = callPackage ./development/fbp/scheduler {};
   development_test =callPackage ./development/test {};
   docs = callPackage ./docs {};
+  drop_ip = callPackage ./drop/ip {};
   file_open = callPackage ./file/open {};
   file_print = callPackage ./file/print {};
   io_print = callPackage ./io/print {};
