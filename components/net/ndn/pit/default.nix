@@ -4,7 +4,7 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [];
+  filteredContracts = filterContracts [ "net_ndn_interest" "net_ndn_data" ];
   depsSha256 = "1j9kjxykir69n2vskfribgj4xyz3n94622x5v6by07d2ar70qngi";
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Pending Interest Table";

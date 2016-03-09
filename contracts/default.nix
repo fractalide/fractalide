@@ -14,6 +14,8 @@ rec {
   generic_text = callPackage ./generic/text {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
+  net_ndn_data = callPackage ./net/ndn/data {};
+  net_ndn_interest = callPackage ./net/ndn/interest {};
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
   ui_conrod = callPackage ./ui/conrod {};
