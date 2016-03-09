@@ -1,10 +1,10 @@
 [package]
-name = "net_ndn_face"
+name = "net_ndn_pit"
 version = "0.1.0"
 authors = ["Stewart Mackenzie <setori88@gmail.com>"]
 
 [lib]
-name = "ip_clone"
+name = "net_ndn_pit"
 crate-type = ["dylib"]
 
 [dependencies]

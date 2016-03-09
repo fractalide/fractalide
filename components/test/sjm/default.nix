@@ -1,12 +1,12 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , net_ndn
-  , maths_boolean_print
+  , net_ndn_print_interest
   , ...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'maths_boolean:(boolean=false)' -> interest ndn(${net_ndn}) data -> input disp(${maths_boolean_print})
+   'net_ndn_interest:(name="the name", nonce=0100)' -> interest ndn(${net_ndn}) data -> input disp(${net_ndn_print_interest})
    '';
 
    meta = with stdenv.lib; {

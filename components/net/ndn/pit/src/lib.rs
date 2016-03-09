@@ -25,6 +25,10 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("lookup_interest"));
+        let interest_reader = try!(ip.get_reader());
+        let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
+        println!("PIT");
+        println!("name: {}", try!(interest_reader.get_name()));
         for p in try!(self.ports.get_output_selections("data_hit")) {
             try!(self.ports.send_array("data_hit", &p, ip.clone()));
         }
