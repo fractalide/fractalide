@@ -2,5 +2,4 @@
 
 struct NetNdnInterest {
   name @0 :Text;
-  nonce @1 :UInt8;
 }

@@ -19,22 +19,32 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut data: HashMap<u8, &str> = HashMap::new();
-        data.insert(0000, "0");
-        data.insert(0001, "1");
-        data.insert(0010, "2");
-        data.insert(0011, "3");
-
-        let mut ip = try!(self.ports.recv("lookup_interest"));
-        let interest_reader = try!(ip.get_reader());
-        let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
-        let nonce = interest_reader.get_nonce();
-
-        match data.get(&nonce) {
-            Some(found) => try!(self.ports.send("interest_hit", ip.clone())),
-            None => try!(self.ports.send("interest_miss", ip.clone())),
+        let mut data: HashMap<String, String> = HashMap::new();
+        loop {
+            match self.ports.try_recv("cache_data") {
+                Ok(mut ip) => {
+                    let data_reader = try!(ip.get_reader());
+                    let data_reader: net_ndn_data::Reader = try!(data_reader.get_root());
+                    data.insert(try!(data_reader.get_name()).into(), try!(data_reader.get_content()).into());
+                }
+                _ => {}
+            };
+            match self.ports.try_recv("lookup_interest") {
+                Ok(mut ip) => {
+                    let interest_reader = try!(ip.get_reader());
+                    let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
+                    if data.contains_key(try!(interest_reader.get_name())) {
+                        try!(self.ports.send("interest_hit", ip.clone()));
+                        println!("CS interest_hit");
+                    }
+                    else {
+                        try!(self.ports.send("interest_miss", ip.clone()));
+                        println!("CS interest_miss");
+                    }
+                }
+                _ => {}
+            };
         }
-
         Ok(())
     }
 }

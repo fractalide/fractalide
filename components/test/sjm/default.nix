@@ -6,7 +6,7 @@
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'net_ndn_interest:(name="the name", nonce=0100)' -> interest ndn(${net_ndn}) data -> input disp(${net_ndn_print_interest})
+   'net_ndn_interest:(name="zero")' -> interest ndn(${net_ndn}) data -> input disp(${net_ndn_print_interest})
    '';
 
    meta = with stdenv.lib; {
