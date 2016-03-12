@@ -18,6 +18,7 @@ rec {
   net_ndn_interest = callPackage ./net/ndn/interest {};
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
+  protocol_domain_port = callPackage ./protocol_domain_port {};
   ui_conrod = callPackage ./ui/conrod {};
   url = callPackage ./url {};
 }

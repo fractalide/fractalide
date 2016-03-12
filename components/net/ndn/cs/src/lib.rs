@@ -13,19 +13,18 @@ component! {
     inputs(lookup_interest: net_ndn_interest
         , cache_data: net_ndn_data),
     inputs_array(),
-    outputs(interest_hit: net_ndn_interest
-        , interest_miss: net_ndn_interest),
+    outputs( interest_miss: net_ndn_interest),
     outputs_array(),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut data: HashMap<String, String> = HashMap::new();
+        let mut cs: HashMap<String, String> = HashMap::new();
         loop {
             match self.ports.try_recv("cache_data") {
                 Ok(mut ip) => {
                     let data_reader = try!(ip.get_reader());
                     let data_reader: net_ndn_data::Reader = try!(data_reader.get_root());
-                    data.insert(try!(data_reader.get_name()).into(), try!(data_reader.get_content()).into());
+                    cs.insert(try!(data_reader.get_name()).into(), try!(data_reader.get_content()).into());
                 }
                 _ => {}
             };
@@ -33,7 +32,7 @@ component! {
                 Ok(mut ip) => {
                     let interest_reader = try!(ip.get_reader());
                     let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
-                    if data.contains_key(try!(interest_reader.get_name())) {
+                    if cs.contains_key(try!(interest_reader.get_name())) {
                         try!(self.ports.send("interest_hit", ip.clone()));
                         println!("CS interest_hit");
                     }

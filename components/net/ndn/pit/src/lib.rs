@@ -24,13 +24,31 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("lookup_interest"));
-        let interest_reader = try!(ip.get_reader());
-        let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
-        println!("PIT");
-        println!("name: {}", try!(interest_reader.get_name()));
-        for p in try!(self.ports.get_output_selections("data_hit")) {
-            try!(self.ports.send_array("data_hit", &p, ip.clone()));
+        let mut pit: HashMap<String, String> = HashMap::new();
+        loop {
+            match self.ports.try_recv("lookup_data") {
+                Ok(mut ip) => {
+                    let data_reader = try!(ip.get_reader());
+                    let data_reader: net_ndn_data::Reader = try!(data_reader.get_root());
+                    pit.insert(try!(data_reader.get_name()).into(), try!(data_reader.get_content()).into());
+                }
+                _ => {}
+            };
+            match self.ports.try_recv("lookup_interest") {
+                Ok(mut ip) => {
+                    let interest_reader = try!(ip.get_reader());
+                    let interest_reader: net_ndn_interest::Reader = try!(interest_reader.get_root());
+                    if pit.contains_key(try!(interest_reader.get_name())) {
+                        try!(self.ports.send("interest_hit", ip.clone()));
+                        println!("CS interest_hit");
+                    }
+                    else {
+                        try!(self.ports.send("interest_miss", ip.clone()));
+                        println!("CS interest_miss");
+                    }
+                }
+                _ => {}
+            };
         }
         Ok(())
     }

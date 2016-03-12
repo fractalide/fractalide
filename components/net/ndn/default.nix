@@ -1,5 +1,5 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , net_ndn_face
+  , net_ndn_faces
   , net_ndn_cs
   , net_ndn_fib
   , net_ndn_pit
@@ -12,16 +12,19 @@ buildFractalideSubnet rec {
 // Interests flow upstream towards data creator
 // Data flows downstream towards intested actor
 
-  interest => lookup_interest cs(${net_ndn_cs}) interest_hit => data
-  cs() interest_miss -> lookup_interest pit(${net_ndn_pit}) interest_hit -> new_face face(${net_ndn_face})
-  pit() interest_miss -> lookup_interest fib(${net_ndn_fib}) interest_miss -> drop drop_ip(${drop_ip})
+  interest => app_interest faces(${net_ndn_faces}) interest ->
+    lookup_interest cs(${net_ndn_cs}) interest_hit -> forward faces() out => data
+
+  cs() interest_miss -> lookup_interest pit(${net_ndn_pit}) interest_miss ->
+     lookup_interest fib(${net_ndn_fib}) interest_miss -> drop drop_ip(${drop_ip})
+
   fib() interest_hit[0] -> create_entry pit()
-  fib() interest_hit[1] => forward
+  fib() interest_hit[1] -> forward faces()
 
   data => lookup_data pit() data_miss -> drop drop_ip()
   pit() data_hit[0] -> delete_entry pit()
   pit() data_hit[1] -> cache_data cs()
-  pit() data_hit[2] => forward
+  pit() data_hit[2]  -> forward faces()
   '';
 
   meta = with stdenv.lib; {

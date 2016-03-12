@@ -1,5 +1,5 @@
 [root]
-name = "net_ndn_face"
+name = "net_ndn_fib"
 version = "0.1.0"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
