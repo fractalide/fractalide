@@ -1,0 +1,12 @@
+[package]
+name = "accumulate_keyValues"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+
+[lib]
+name = "accumulate_keyValues"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"

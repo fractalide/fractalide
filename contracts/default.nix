@@ -12,6 +12,7 @@ rec {
   file_error = callPackage ./file_error {};
   generic_list_text = callPackage ./generic/list_text {};
   generic_text = callPackage ./generic/text {};
+  key_value = callPackage ./key/value {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_ndn_data = callPackage ./net/ndn/data {};

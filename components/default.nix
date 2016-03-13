@@ -3,6 +3,7 @@ let
 callPackage = pkgs.lib.callPackageWith (pkgs // support // self);
 # insert in alphabetical order to reduce conflicts
 self = rec {
+  accumulate_keyValues = callPackage ./accumulate/keyValues {};
   development_capnp_encode = callPackage ./development/capnp/encode {};
   development_fbp_errors = callPackage ./development/fbp/errors {};
   development_fbp_fvm = callPackage ./development/fbp/fvm {};
@@ -28,12 +29,14 @@ self = rec {
   net_ndn_cs = callPackage ./net/ndn/cs {};
   net_ndn_faces = callPackage ./net/ndn/faces {};
   net_ndn_faces_wrap = callPackage ./net/ndn/faces/wrap {};
+  net_ndn_faces_tcp = callPackage ./net/ndn/faces/tcp {};
   net_ndn_fib = callPackage ./net/ndn/fib {};
   net_ndn_pit = callPackage ./net/ndn/pit {};
   net_ndn_print_interest = callPackage ./net/ndn/print/interest {};
   net_socket_client = callPackage ./net/socket/client {};
   net_socket_server = callPackage ./net/socket/server {};
   print = callPackage ./print {};
+  serialize_json_decode_extractKVfromVec = callPackage ./serialize/json/decode/extractKVfromVec {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};
   ui_conrod_button = callPackage ./ui/conrod/button {};

@@ -1,12 +1,16 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , net_ndn
-  , net_ndn_print_interest
-  , ...}:
+  , file_open
+  , file_print
+  , io_print
+  , serialize_json_decode_extractKVfromVec
+  , accumulate_keyValues
+  ,...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'net_ndn_interest:(name="zero")' -> interest ndn(${net_ndn}) data -> input disp(${net_ndn_print_interest})
+  'path:(path="/home/stewart/Downloads/deleteme/data/1032.json")' -> input file_open(${file_open}) output ->
+      input get_airline(${serialize_json_decode_extractKVfromVec}) output -> input lb(${accumulate_keyValues}) output -> input io_print(${io_print})
    '';
 
    meta = with stdenv.lib; {
