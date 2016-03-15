@@ -42,6 +42,19 @@ impl IP {
         self.builder.as_mut().unwrap().init_root()
     }
 
+    pub fn init_root_from_reader<'a, T: capnp::traits::FromPointerBuilder<'a>,
+                                 U: capnp::traits::FromPointerReader<'a> + capnp::traits::SetPointerBuilder<T>>
+        (&'a mut self) -> Result<T> {
+        let reader = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
+        self.reader = Some(reader);
+        let reader: U = try!(self.reader.as_ref().unwrap().get_root());
+
+        let mut msg = capnp::message::Builder::new_default();
+        try!(msg.set_root(reader));
+        self.builder = Some(msg);
+        Ok(try!(self.builder.as_mut().unwrap().get_root()))
+    }
+
     pub fn before_send(&mut self) -> Result<()> {
         let mut build = mem::replace(&mut self.builder, None);
         if let Some(ref mut b) = build {
@@ -169,6 +182,20 @@ impl Ports {
                 port.get(selection_in).ok_or(result::Error::SelectionNotFound)
                     .and_then(|recv| {
                         let ip = try!(recv.recv());
+                        if port_in != "acc" && port_in != "option" {
+                            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+                        }
+                        Ok(ip)
+                    })
+            })
+    }
+
+    pub fn try_recv_array(&self, port_in: &str, selection_in: &str) -> Result<IP> {
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
+            .and_then(|port|{
+                port.get(selection_in).ok_or(result::Error::SelectionNotFound)
+                    .and_then(|recv| {
+                        let ip = try!(recv.try_recv());
                         if port_in != "acc" && port_in != "option" {
                             try!(self.sched.send(CompMsg::Dec(self.name.clone())));
                         }

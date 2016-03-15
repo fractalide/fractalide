@@ -25,7 +25,12 @@ rec {
   path = callPackage ./path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};
   quadruple = callPackage ./quadruple {};
-  ui_conrod = callPackage ./ui/conrod {};
+  ui_button = callPackage ./ui/button {};
+  ui_create = callPackage ./ui/create {};
+  ui_lr = callPackage ./ui/lr {};
+  ui_position = callPackage ./ui/position {};
+  ui_size = callPackage ./ui/size {};
+  ui_text = callPackage ./ui/text {};
   url = callPackage ./url {};
   value_int64 = callPackage ./value/int64 {};
   value_string = callPackage ./value/string {};

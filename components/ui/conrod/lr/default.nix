@@ -3,11 +3,11 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["ui_button" "ui_create"];
+  filteredContracts = filterContracts ["ui_lr" "ui_create"];
   depsSha256 = "01062z2pzhd1jm5vag6nw17cdjk78163jq62b91c9cg6cj4sx6bk";
 
   meta = with stdenv.lib; {
-    description = "Component: draw a conrod button";
+    description = "Component: draw a conrod lr";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];

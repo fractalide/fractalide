@@ -3,9 +3,9 @@ name = "ui_conrod_window"
 version = "0.1.0"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "conrod 0.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "piston_window 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "sdl2 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.7",
 ]
 
 [[package]]
@@ -65,6 +65,20 @@ version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "conrod"
+version = "0.32.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "daggy 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
+ "piston2d-graphics 0.15.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pistoncore-input 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
+ "time 0.1.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "vecmath 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -95,6 +109,14 @@ dependencies = [
 name = "crossbeam"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "daggy"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "petgraph 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "dlib"
@@ -136,6 +158,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "fixedbitset"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "flate2"
@@ -454,6 +481,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "petgraph"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "fixedbitset 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "piston"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -616,7 +651,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "rustfbp"
 version = "0.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",

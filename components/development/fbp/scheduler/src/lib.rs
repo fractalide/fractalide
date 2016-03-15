@@ -78,7 +78,7 @@ component! {
             let port = try!(iip.get_port());
             let input = try!(iip.get_iip());
 
-            let (contract, input) = try!(split_input(input));
+            let (contract, input, option_action) = try!(split_input(input));
 
             // Get the real path
             let mut new_out = IP::new();
@@ -122,7 +122,8 @@ component! {
             }
             try!(self.ports.send("iip_input", new_out));
 
-            let iip = try!(self.ports.recv("iip"));
+            let mut iip = try!(self.ports.recv("iip"));
+            option_action.map(|action| { iip.action = action; });
             try!(p.send("s", iip));
         }
 
@@ -147,9 +148,15 @@ fn capitalize_first_letter(s : &str) -> String {
     return result_chars.into_iter().collect();
 }
 
-fn split_input(s: &str) -> Result<(String, String)> {
+fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
     let pos = try!(s.find(":").ok_or(result::Error::Misc("bad definition of iip".into())));
     let (a, b) = s.split_at(pos);
     let (_, b) = b.split_at(1);
-    Ok((a.into(), b.into()))
+    let pos2 = b.find("~");
+    if let Some(pos) = pos2 {
+        let (b, c) = b.split_at(pos);
+        let (_, c) = c.split_at(1);
+        return Ok((a.into(), b.into(), Some(c.into())));
+    };
+    Ok((a.into(), b.into(), None))
 }
