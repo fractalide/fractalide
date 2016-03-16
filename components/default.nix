@@ -58,6 +58,7 @@ self = rec {
   ui_conrod_lr = callPackage ./ui/conrod/lr {};
   ui_conrod_position = callPackage ./ui/conrod/position {};
   ui_conrod_size = callPackage ./ui/conrod/size {};
+  ui_conrod_text = callPackage ./ui/conrod/text {};
   ui_conrod_window = callPackage ./ui/conrod/window {};
   net_ndn_face = callPackage ./net/ndn/face {};
   web_server = callPackage ./web/server {};

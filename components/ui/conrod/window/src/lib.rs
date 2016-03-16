@@ -15,7 +15,7 @@ mod contract_capnp {
 }
 use self::contract_capnp::ui_create;
 
-use conrod::{Labelable, Positionable, Sizeable, Theme, Widget, WidgetIndex, WidgetId, Place};
+use conrod::{Labelable, Positionable, Sizeable, Theme, Widget, WidgetIndex, WidgetId, Place, Color, color, Colorable};
 use piston_window::{EventLoop, Glyphs, PistonWindow, UpdateEvent, WindowSettings};
 
 use std::path::Path;
@@ -74,6 +74,12 @@ component! {
                             WidgetType::Button(WButton {
                                 label: try!(b.get_label()).into(),
                                 enable: b.get_enable(),
+                            })
+                        },
+                        contract_capnp::widget::Which::Text(t) => {
+                            let t = try!(t);
+                            WidgetType::Text(WText {
+                                label: try!(t.get_label()).into(),
                             })
                         },
                         contract_capnp::widget::Which::Lr(lr) => {
@@ -195,6 +201,14 @@ component! {
                                 b = set_size(b, &widget, &mut id_manager);
                                 b = set_position(b, &widget, &mut id_manager);
                                 b.set(id_manager.get(&i), ui);
+                            },
+                            WidgetType::Text(ref text) => {
+                                let mut t = conrod::Text::new(&text.label)
+                                    .align_text_middle()
+                                    .color(color::WHITE);
+                                t = set_size(t, &widget, &mut id_manager);
+                                t = set_position(t, &widget, &mut id_manager);
+                                t.set(id_manager.get(&i), ui);
                             },
                             WidgetType::Lr(ref lr) => {
                                 let mut vec = vec![];
@@ -346,12 +360,17 @@ fn set_position<T: Positionable>(widget: T, position: &WidgetBuilder, id_manager
 
 enum WidgetType {
     Button(WButton),
+    Text(WText),
     Lr(WLr),
 }
 
 struct WButton {
     label: String,
     enable: bool,
+}
+
+struct WText {
+    label: String,
 }
 
 struct WLr {

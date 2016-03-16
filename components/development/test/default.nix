@@ -6,6 +6,7 @@
   , ui_conrod_lr
   , ui_conrod_position
   , ui_conrod_size
+  , ui_conrod_text
   , ui_conrod_window
   , print
   , web_server
@@ -23,8 +24,10 @@
 
    'ui_button:(label="first", enable=true)' -> acc button(${ui_conrod_button})
    'ui_button:(label="second", enable=false)' -> acc button2(${ui_conrod_button})
+   'generic_text:(text="0")' -> acc text(${ui_conrod_text})
    'generic_text:(text="create")~create' -> input button()
    'generic_text:(text="create")~create' -> input button2()
+   'generic_text:(text="create")~create' -> input text()
 
    button() output[create] -> input button_size(${ui_conrod_size}) output ->
       input button_position(${ui_conrod_position}) output ->
@@ -32,7 +35,8 @@
    'ui_size:(w = (fixed = 80.0), h = (padded = 100.0))' -> option button_size()
    'ui_position:(x = (right = 10.0), y = (none = void))' -> option button_position()
 
-   button2() output -> places[2] lr()
+   text() output -> places[2] lr()
+   button2() output -> places[3] lr()
 
    'ui_lr:(places=[])' -> acc lr()
 
