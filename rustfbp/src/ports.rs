@@ -16,7 +16,6 @@ use scheduler::CompMsg;
 pub struct IP {
     pub vec: Vec<u8>,
     pub action: String,
-    pub origin: String,
     reader: Option<capnp::message::Reader<capnp::serialize::OwnedSegments>>,
     builder: Option<capnp::message::Builder<capnp::message::HeapAllocator>>,
 }
@@ -25,7 +24,6 @@ impl IP {
     pub fn new() -> Self {
         IP { vec: vec![],
              action: String::new(),
-             origin: String::new(),
              reader: None,
              builder: None,
         }
@@ -71,7 +69,6 @@ impl Clone for IP {
         IP {
             vec: self.vec.clone(),
             action: self.action.clone(),
-            origin: self.origin.clone(),
             reader: None,
             builder: None,
         }

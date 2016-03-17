@@ -11,6 +11,7 @@ rec {
   file_desc = callPackage ./file/desc {};
   file_error = callPackage ./file_error {};
   file_list = callPackage ./file/list {};
+  generic_i64 = callPackage ./generic/i64 {};
   generic_list_text = callPackage ./generic/list_text {};
   generic_text = callPackage ./generic/text {};
   generic_u64 = callPackage ./generic/u64 {};

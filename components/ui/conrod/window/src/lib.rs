@@ -349,7 +349,7 @@ fn set_position<T: Positionable>(widget: T, position: &WidgetBuilder, id_manager
             widget.y_place_on(id_manager.get(&position.parent_id), Place::Middle)
         },
         YPosition::Top(t) => {
-            widget.y_place_on(id_manager.get(&position.parent_id), Place::Start(Some(t)))
+            widget.y_place_on(id_manager.get(&position.parent_id), Place::Start(Some(-t)))
         },
         YPosition::Bottom(b) => {
             widget.y_place_on(id_manager.get(&position.parent_id), Place::End(Some(b)))

@@ -20,7 +20,7 @@ component! {
     outputs(output: any),
     outputs_array(output: any),
     option(),
-    acc(ui_button),
+    acc(generic_text),
     fn run(&mut self) -> Result<()> {
         let mut ip_acc = try!(self.ports.recv("acc"));
         let mut ip_input = try!(self.ports.recv("input"));
@@ -33,10 +33,12 @@ component! {
             "set_label" => {
                 {
                     let mut reader: generic_text::Reader = try!(ip_input.get_root());
-                    let builder = try!(ip_acc.init_root_from_reader::<ui_create::Builder, ui_create::Reader>());
-                    let widget = try!(builder.get_widget());
-                    let mut text = widget.init_text();
-                    text.set_label(try!(reader.get_text()));
+                    let mut builder = try!(ip_acc.init_root_from_reader::<generic_text::Builder, generic_text::Reader>());
+                    builder.set_text(try!(reader.get_text()));
+                }
+                try!(ip_acc.before_send());
+                {
+                    let mut reader: generic_text::Reader = try!(ip_acc.get_root());
                 }
                 try!(build_create(&self, &mut ip_acc, &mut ip_input));
                 let _ = self.ports.send_action("output", ip_input);
