@@ -8,11 +8,11 @@ component! {
     inputs( drop: any),
     inputs_array(),
     outputs(),
-    outputs_array(interest_hit: any),
+    outputs_array(),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("new_interest"));
+        let mut ip = try!(self.ports.recv("drop"));
         Ok(())
     }
 }

@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "protocol_domain_port" ];
-  depsSha256 = "1prhbsh82lrbr0cvh1lm1yla6n88y10l7c4m2af4jjpg4jvkmsp6";
+  depsSha256 = "1fhaagkhjjbv93bmljqpnbjhdah20vk2bn9c2639s78yrgyp645x";
   meta = with stdenv.lib; {
     description = "Component: Socket input";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/socket/in;

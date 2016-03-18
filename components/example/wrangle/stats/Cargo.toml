@@ -1,0 +1,12 @@
+[package]
+name = "example_wrangle_stats"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+
+[lib]
+name = "example_wrangle_stats"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"

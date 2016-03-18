@@ -8,8 +8,6 @@ mod contract_capnp {
 }
 use self::contract_capnp::generic_text;
 
-use std::thread;
-
 component! {
     Print,
     inputs(input: generic_text),
