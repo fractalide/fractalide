@@ -1,18 +1,10 @@
 [root]
-name = "example_wrangle_convert_json_vector"
+name = "file_open"
 version = "0.1.0"
 dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustfbp 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_macros 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
-
-[[package]]
-name = "aster"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "byteorder"
@@ -60,32 +52,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "num"
-version = "0.1.31"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "quasi"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "quasi_codegen"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "aster 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "quasi_macros"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "quasi_codegen 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rustfbp"
 version = "0.3.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -93,38 +59,6 @@ dependencies = [
  "capnp 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnpc 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libloading 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "serde"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "serde_codegen"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "aster 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "quasi 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "quasi_macros 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "serde_json"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "num 0.1.31 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "serde_macros"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "serde_codegen 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

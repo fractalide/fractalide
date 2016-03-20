@@ -31,7 +31,7 @@ struct Vector {
 
 component! {
     clone,
-    inputs(input: file),
+    inputs(input: file_desc),
     inputs_array(),
     outputs(output: key_value),
     outputs_array(),

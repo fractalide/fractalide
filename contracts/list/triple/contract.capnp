@@ -7,5 +7,5 @@ struct Triple {
 }
 
 struct ListTriple {
-    files @0 :List(Triple);
+    triples @0 :List(Triple);
 }

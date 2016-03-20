@@ -6,5 +6,5 @@ struct Tuple {
 }
 
 struct ListTuple {
-    files @0 :List(Tuple);
+    tuples @0 : List(Tuple);
 }

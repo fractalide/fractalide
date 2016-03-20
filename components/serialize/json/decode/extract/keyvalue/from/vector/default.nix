@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "file_desc" "key_value" ];
-  depsSha256 = "1q0sy6bxcv7iv340f73rk8931ql2sh8b40zw1nf6n29ahwlm0fg0";
+  depsSha256 = "111dqnfghwl3ra8vmda1z6qmfpg7af1m3dz6wknbfmmqp0rz6k8n";
   postConfigure = "ls -la";
 
   meta = with stdenv.lib; {

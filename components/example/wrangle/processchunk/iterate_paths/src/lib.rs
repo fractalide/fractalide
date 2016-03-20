@@ -20,7 +20,33 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
+        let mut ip = try!(self.ports.recv("input"));
+        let list = try!(ip.get_reader());
+        let list: file_list::Reader = try!(list.get_root());
+        let list = try!(list.get_files());
 
+        for i in 0..list.len()
+        {
+            let mut new_ip = capnp::message::Builder::new_default();
+            {
+                let mut ip = new_ip.init_root::<path::Builder>();
+                ip.set_path(try!(list.get(i)));
+            }
+            let mut send_ip = IP::new();
+            try!(send_ip.write_builder(&new_ip));
+            try!(self.ports.send("output", send_ip));
+
+            let mut ip = try!(self.ports.recv("next"));
+        }
+
+        let mut end_ip = capnp::message::Builder::new_default();
+        {
+            let mut ip = end_ip.init_root::<path::Builder>();
+            ip.set_path("end");
+        }
+        let mut send_ip = IP::new();
+        try!(send_ip.write_builder(&end_ip));
+        try!(self.ports.send("output", send_ip));
         Ok(())
     }
 }

@@ -1,27 +1,28 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , dt_vector_extract_keyvalue
   , example_wrangle_processchunk_iterate_paths
-  , fs_file_open
+  , example_wrangle_processchunk_file_open
   , example_wrangle_processchunk_convert_json_vector
-  , example_wrangle_processchunk_aggregate_tuple
+  , example_wrangle_processchunk_agg_chunk_triples
+  , print_file_with_feedback
   ,...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   // receive 1000 paths
-   // convert each path into kv_list
-   // send out kv_list
-
    // IIP
    'value_string:(value="airline")' -> option extract_kvs(${dt_vector_extract_keyvalue})
 
    input => input iterate_paths(${example_wrangle_processchunk_iterate_paths}) output ->
-      input open_file(${fs_file_open}) output -> input convert_json_vector(${example_wrangle_processchunk_convert_json_vector}) output ->
-        input extract_kvs() output ->
-          input aggregate_tuples(${example_wrangle_processchunk_aggregate_tuple})
-   aggregate_tuples() next -> next iterate_paths()
-   aggregate_tuples() output => output
+      input open_file(${example_wrangle_processchunk_file_open}) output ->
+          input convert_json_vector(${example_wrangle_processchunk_convert_json_vector}) output ->
+              input extract_kvs() output ->
+                input print(${print_file_with_feedback}) output => output
+                print() next -> next iterate_paths()
+ //                 input aggregate_tuples(${example_wrangle_processchunk_agg_chunk_triples})
+ //  aggregate_tuples() next -> next iterate_paths()
+ //  aggregate_tuples() output => output
+
    '';
 
    meta = with stdenv.lib; {
@@ -31,3 +32,11 @@
     maintainers = with upkeepers; [ sjmackenzie];
   };
 }
+
+
+#   input => input iterate_paths(${example_wrangle_processchunk_iterate_paths}) output ->
+#      input open_file(${fs_file_open}) output -> input convert_json_vector(${example_wrangle_processchunk_convert_json_vector}) output ->
+#        input extract_kvs() output ->
+#          input aggregate_tuples(${example_wrangle_processchunk_aggregate_tuple})
+#   aggregate_tuples() next -> next iterate_paths()
+#   aggregate_tuples() output => output

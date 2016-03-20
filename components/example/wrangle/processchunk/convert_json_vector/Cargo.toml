@@ -10,3 +10,4 @@ crate-type = ["dylib"]
 [dependencies]
 capnp = "*"
 rustfbp = "*"
+rustc-serialize = "*"

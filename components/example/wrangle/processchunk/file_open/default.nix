@@ -3,12 +3,12 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["generic_text"];
-  depsSha256 = "0rr33g9zff87hi7dhn6yzl252l81wn7dwdgpqwcmjlkmwpmwivx0";
+  filteredContracts = filterContracts ["value_string" "path" "file_error"];
+  depsSha256 = "1ghlrmicdwisjbvbn4ilicbs772yrf0mxqpmq1lgv2l00cics3dv";
 
   meta = with stdenv.lib; {
     description = "Component: Opens files";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/print;
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/file/open;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };
