@@ -40,7 +40,6 @@ component! {
                         feedback_list.borrow().get(i).set_second(try!(acc_triple.get(i).get_second()));
                         feedback_list.borrow().get(i).set_third(format!("{}", try!(acc_triple.get(i).get_third())).as_str());
                     }
-                    //println!("total medium_fin_triple length: {}", feedback_list.len());
                 }
                 let mut send_ip = IP::new();
                 try!(send_ip.write_builder(&feedback_ip));

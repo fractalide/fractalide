@@ -29,11 +29,3 @@
     maintainers = with upkeepers; [ sjmackenzie];
   };
 }
-
-
-#   input => input iterate_paths(${example_wrangle_processchunk_iterate_paths}) output ->
-#      input open_file(${fs_file_open}) output -> input convert_json_vector(${example_wrangle_processchunk_convert_json_vector}) output ->
-#        input extract_kvs() output ->
-#          input aggregate_tuples(${example_wrangle_processchunk_aggregate_tuple})
-#   aggregate_tuples() next -> next iterate_paths()
-#   aggregate_tuples() output => output
