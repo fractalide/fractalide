@@ -24,7 +24,6 @@ component! {
         let list = try!(ip.get_reader());
         let list: file_list::Reader = try!(list.get_root());
         let list = try!(list.get_files());
-
         for i in 0..list.len()
         {
             let mut new_ip = capnp::message::Builder::new_default();

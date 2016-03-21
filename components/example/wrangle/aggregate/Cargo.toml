@@ -1,5 +1,5 @@
 [package]
-name = "example_wrangle_convert_aggregate_triple"
+name = "example_wrangle_convert_aggregate"
 version = "0.1.0"
 authors = ["Stewart Mackenzie <setori88@gmail.com>"]
 

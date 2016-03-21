@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   depsSha256 = "1ghlrmicdwisjbvbn4ilicbs772yrf0mxqpmq1lgv2l00cics3dv";
 
   meta = with stdenv.lib; {
-    description = "Component: Opens files";
+    description = "Component: input: a path, output: a list of filenames";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/file/open;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];

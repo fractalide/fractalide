@@ -41,7 +41,7 @@ component! {
                 }
             }
             if small_sized_bean_counter.len() == 0 {
-                small_sized_bean_counter.insert("zero",0);
+                small_sized_bean_counter.insert("0",0);
             }
             let mut new_ip = capnp::message::Builder::new_default();
             {
