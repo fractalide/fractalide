@@ -4,5 +4,5 @@ struct Quadruple {
   first @0 : UInt32;
   second @1 : UInt32;
   third @2 : UInt32;
-  fourth @3 : UInt32;
+  fourth @3 : Float32;
 }
