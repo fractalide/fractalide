@@ -29,7 +29,6 @@ fn process_data(ip: rustfbp::ports::IP) -> Result<(u32,u32,u32,f32)>
     let min =  stats.iter().next().unwrap();
     let max =  stats.iter().last().unwrap();
     let average :u32 = total / stats.len() as u32;
-    let median :u32 = stats.iter().nth(&stats.len()/2).unwrap().clone();
     let median = if stats.len() as f32 % 2 as f32 != 0 as f32{
         let mid :f32 = stats.len() as f32 / 2 as f32;
         let floor = mid.floor();
@@ -39,7 +38,7 @@ fn process_data(ip: rustfbp::ports::IP) -> Result<(u32,u32,u32,f32)>
         let median = floor_val as f32 + ceil_val as f32 / 2 as f32;
         median
     } else {
-        stats.iter().nth(stats.len()).unwrap().clone() as f32
+        stats.iter().nth(stats.len()/2).unwrap().clone() as f32
     };
     Ok((min.clone(),max.clone(),average.clone(),median.clone()))
 }
