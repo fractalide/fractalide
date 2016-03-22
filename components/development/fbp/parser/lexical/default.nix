@@ -3,7 +3,7 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["file" "fbp_lexical"];
+  filteredContracts = filterContracts ["file_desc" "fbp_lexical"];
   depsSha256 = "0r5lgcrilhnyd3c9v25mqbs6f41ff3zwlwczi0xh7vg14xqzs24w";
 
   meta = with stdenv.lib; {

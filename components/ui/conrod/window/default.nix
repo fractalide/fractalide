@@ -7,7 +7,7 @@
     name = genName ./.;
     src = ./.;
     filteredContracts = filterContracts ["ui_conrod"];
-  depsSha256 = "1zxc6f5mz45db2wrl4ldnggjigbljr7xys17i7d8vwdyzsbik30y";
+  depsSha256 = "1lri4ra9f7364jib0yqbdvpn1qckh7wqwgzc18g76vfzxn7b7jd1";
     buildInputs = [ freetype SDL2 ];
 
     meta = with stdenv.lib; {

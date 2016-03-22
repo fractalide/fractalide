@@ -6,7 +6,7 @@ fvm  = support.buildRustPackage rec {
     src = ./.;
     depsSha256 = "1isrda8qmkyfb73zqb34d61b1sr98hxdr8cvp67611vak7ak3vfp";
     configurePhase = ''
-    substituteInPlace src/lib.rs --replace "file_open.so" "${components.file_open}/lib/libcomponent.so"
+    substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_semantic.so" "${components.development_fbp_parser_semantic}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_fvm.so" "${components.development_fbp_fvm}/lib/libcomponent.so"

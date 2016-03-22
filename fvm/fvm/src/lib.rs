@@ -24,7 +24,7 @@ use contract_capnp::path;
 pub extern "C" fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
-    sched.add_component("open", "file_open.so");
+    sched.add_component("open", "fs_file_open.so");
     sched.add_component("lex", "development_fbp_parser_lexical.so");
     sched.add_component("sem", "development_fbp_parser_semantic.so");
     sched.add_component("fvm", "development_fbp_fvm.so");

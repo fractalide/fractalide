@@ -7,10 +7,10 @@ extern crate nom;
 extern crate capnp;
 
 mod contract_capnp {
-    include!("file.rs");
+    include!("file_desc.rs");
     include!("fbp_lexical.rs");
 }
-use contract_capnp::file;
+use contract_capnp::file_desc;
 use contract_capnp::fbp_lexical;
 
 #[derive(Debug)]
@@ -100,7 +100,7 @@ named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_p
 
 component! {
     comp,
-    inputs(input: file),
+    inputs(input: file_desc),
     inputs_array(),
     outputs(output: fbp_lexical),
     outputs_array(),
@@ -110,11 +110,11 @@ component! {
         // Get one IP
         let mut ip = try!(self.ports.recv("input"));
         let file = try!(ip.get_reader());
-        let file: file::Reader = try!(file.get_root());
+        let file: file_desc::Reader = try!(file.get_root());
 
         // print it
         match try!(file.which()) {
-            file::Start(path) => {
+            file_desc::Start(path) => {
                 let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
@@ -138,11 +138,11 @@ fn handle_stream(comp: &comp) -> Result<()> {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
         let file = try!(ip.get_reader());
-        let file: file::Reader = try!(file.get_root());
+        let file: file_desc::Reader = try!(file.get_root());
 
         // print it
         match try!(file.which()) {
-            file::Text(text) => {
+            file_desc::Text(text) => {
                 let mut new_ip = capnp::message::Builder::new_default();
                 let mut text = try!(text).as_bytes();
                 loop {
@@ -189,7 +189,7 @@ fn handle_stream(comp: &comp) -> Result<()> {
                 try!(send_ip.write_builder(&new_ip));
                 let _ = comp.ports.send("output", send_ip);
             },
-            file::End(path) => {
+            file_desc::End(path) => {
                 let path = try!(path);
                 let mut new_ip = capnp::message::Builder::new_default();
                 {
