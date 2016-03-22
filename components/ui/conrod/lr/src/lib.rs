@@ -5,16 +5,8 @@ extern crate rustfbp;
 
 use std::thread;
 
-mod contract_capnp {
-    include!("ui_create.rs");
-    include!("ui_lr.rs");
-}
-
-use contract_capnp::ui_lr;
-use contract_capnp::ui_create;
-
 component! {
-    ui_conrod_lr,
+    ui_conrod_lr, contracts(ui_lr, ui_create)
     inputs(input: any),
     inputs_array(places: any),
     outputs(output: any),

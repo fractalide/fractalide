@@ -28,11 +28,10 @@ pub trait Component {
     fn run(&mut self) -> Result<()>;
 }
 
-
 #[macro_export]
 macro_rules! component {
     (
-       $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
+       $name:ident, $( contracts( $( $contract:ident ),* ) )*
         inputs($( $input_field_name:ident: $input_contract_name:ident),* ),
         inputs_array($( $input_array_name:ident: $input_contract_array:ident),* ),
         outputs($( $output_field_name:ident: $output_contract_name:ident),* ),
@@ -40,7 +39,6 @@ macro_rules! component {
         option($($option_contract: ident),*),
         acc($($acc_contract: ident),*),
         fn run(&mut $arg:ident) -> Result<()> $fun:block
-        $($more:item)*
     )
         =>
     {
@@ -64,7 +62,16 @@ macro_rules! component {
 
         use std::io::{Read, Write};
 
-        $($more)*
+        $(
+        mod contract_capnp {
+            $(
+                include!(concat!(stringify!($contract), ".rs"));
+            )*
+        })*
+
+        $( $(
+            use contract_capnp::$contract;
+        )* )*
 
         impl $name {
             pub fn recv_option(&mut self) -> IP {

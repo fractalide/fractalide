@@ -41,7 +41,7 @@ component! {
         let mut ui = {
             // let assets = find_folder::Search::KidsThenParents(3, 5)
             //     .for_folder("assets").unwrap();
-            let font_path = Path::new("/home/denis/fractalide/fractalide/components/ui/conrod/window/assets/fonts/NotoSans/NotoSans-Regular.ttf");
+            let font_path = Path::new("/home/denis/dev/fractalide/components/ui/conrod/window/assets/fonts/NotoSans/NotoSans-Regular.ttf");
             let theme = Theme::default();
             let glyph_cache = Glyphs::new(&font_path, window.factory.borrow().clone());
             Ui::new(glyph_cache.unwrap(), theme)
