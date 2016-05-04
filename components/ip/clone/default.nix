@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [];
-  depsSha256 = "02hc1brypy46i1p7sd6iijnbfyylx45k82jih193h70d26gxl3kf";
+  depsSha256 = "0imv6633x4v9x809yp21h2hn5zj0nwr17r294fza9w4fyh0879bg";
 
   meta = with stdenv.lib; {
     description = "Component: Clone the IPs coming in";

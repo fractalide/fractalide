@@ -109,7 +109,7 @@ component! {
     fn run(&mut self) -> Result<()>{
         // Get one IP
         let mut ip = try!(self.ports.recv("input"));
-        let file: file::Reader = try!(ip.get_root());
+        let file: file_desc::Reader = try!(ip.get_root());
 
         // print it
         match try!(file.which()) {
@@ -134,11 +134,11 @@ fn handle_stream(comp: &comp) -> Result<()> {
     loop {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
-        let file: file::Reader = try!(ip.get_root());
+        let file: file_desc::Reader = try!(ip.get_root());
 
         // print it
         match try!(file.which()) {
-            file::Text(text) => {
+            file_desc::Text(text) => {
                 let mut text = try!(text).as_bytes();
                 loop {
                     match literal(text) {

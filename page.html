@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script>
+      var conn = "";
+      var s = function(msg) {
+        conn.send(msg);
+      };
+      $(document).ready(function() {
+        var connection = new WebSocket('ws://localhost:3012');
+
+        connection.onmessage = function(e){
+          var msg = e.data;
+          var c = msg.search(";");
+          var action = msg.substring(0, c);
+          var div_content = msg.substring(c+1);
+          var c = div_content.search(";");
+          var div = div_content.substring(0, c);
+          var content = div_content.substring(c+1);
+          console.log("received : " + action + " and " + div + " and " + content);
+          switch (action) {
+            case "insert":
+              $("#"+div).append(content);
+              break;
+            case "replace":
+              $("#"+div).replaceWith(content);
+              break;
+            case "html":
+              $("#"+div).html(content);
+              break;
+          }
+        }
+
+      //connection.send("hello");
+      console.log(connection);
+      conn = connection;
+
+      $("#main").bind("click mouseover mouseout onclick", function(e) {
+        conn.send(e.target.id + "#" + e.type);
+      });
+
+      $("#main").bind("input", function(e) {
+        conn.send(e.target.id + "#" + e.type + "#" + e.target.value);
+      });
+      });
+    </script>
+  </head>
+<body id="main">
+
+</body>
+</html>

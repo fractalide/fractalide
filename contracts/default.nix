@@ -15,6 +15,10 @@ rec {
   generic_list_text = callPackage ./generic/list_text {};
   generic_text = callPackage ./generic/text {};
   generic_u64 = callPackage ./generic/u64 {};
+  js_block = callPackage ./js/block {};
+  js_button = callPackage ./js/button {};
+  js_create = callPackage ./js/create {};
+  js_text = callPackage ./js/text {};
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
@@ -26,12 +30,6 @@ rec {
   path = callPackage ./path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};
   quadruple = callPackage ./quadruple {};
-  ui_button = callPackage ./ui/button {};
-  ui_create = callPackage ./ui/create {};
-  ui_lr = callPackage ./ui/lr {};
-  ui_position = callPackage ./ui/position {};
-  ui_size = callPackage ./ui/size {};
-  ui_text = callPackage ./ui/text {};
   url = callPackage ./url {};
   value_int64 = callPackage ./value/int64 {};
   value_string = callPackage ./value/string {};
