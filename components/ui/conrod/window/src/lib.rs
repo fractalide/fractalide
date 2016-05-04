@@ -97,7 +97,7 @@ component! {
                        _ =>  { println!("unreachable heere"); unreachable!() }
                     };
                     let w_w_size = match try!(try!(reader.get_size()).get_w().which()) {
-                        contract_capnp::size::w::None => {
+                        contract_capnp::size::w::None(_) => {
                             WHSize::None
                         },
                         contract_capnp::size::w::Fixed(f) => {
@@ -108,7 +108,7 @@ component! {
                         }
                     };
                     let w_h_size = match try!(try!(reader.get_size()).get_h().which()) {
-                        contract_capnp::size::h::None => {
+                        contract_capnp::size::h::None(_) => {
                             WHSize::None
                         },
                         contract_capnp::size::h::Fixed(f) => {
@@ -123,7 +123,7 @@ component! {
                         h: w_h_size,
                     };
                     let w_x_position = match try!(try!(reader.get_position()).get_x().which()) {
-                        contract_capnp::position::x::None => {
+                        contract_capnp::position::x::None(_) => {
                             XPosition::None
                         },
                         contract_capnp::position::x::Right(r) => {
@@ -134,7 +134,7 @@ component! {
                         },
                     };
                     let w_y_position = match try!(try!(reader.get_position()).get_y().which()) {
-                        contract_capnp::position::y::None => {
+                        contract_capnp::position::y::None(_) => {
                             YPosition::None
                         },
                         contract_capnp::position::y::Top(t) => {
@@ -195,7 +195,7 @@ component! {
                                     .react(|| {
                                         let mut ip = IP::new();
                                         ip.action = "button_clicked".into();
-                                        let _ = Ports::send_sender(&widget.sender, ip);
+                                        let _ = &widget.sender.send(ip);
                                     })
                                     .enabled(button.enable);
                                 b = set_size(b, &widget, &mut id_manager);

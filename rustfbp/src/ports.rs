@@ -82,6 +82,16 @@ pub struct IPSender {
     pub sched: Sender<CompMsg>,
 }
 
+impl IPSender {
+    pub fn send(&self, ip: IP) -> Result<()> {
+        try!(self.sender.send(ip));
+        if self.dest != "" {
+            try!(self.sched.send(CompMsg::Inc(self.dest.clone())));
+        }
+        Ok(())
+    }
+}
+
 pub struct Ports {
     name: String,
     sched: Sender<CompMsg>,
@@ -201,21 +211,13 @@ impl Ports {
             })
     }
 
-    pub fn send_sender(sender: &IPSender, ip: IP) -> Result<()> {
-        try!(sender.sender.send(ip));
-        if sender.dest != "" {
-            try!(sender.sched.send(CompMsg::Inc(sender.dest.clone())));
-        }
-        Ok(())
-    }
-
     pub fn send(&self, port_out: &str, mut ip: IP) -> Result<()> {
         try!(ip.before_send());
         self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
                     .and_then(|sender| {
-                        Ports::send_sender(sender, ip)
+                        sender.send(ip)
                     })
             })
     }
@@ -228,7 +230,7 @@ impl Ports {
                     .and_then(|sender| {
                         sender.as_ref().ok_or(result::Error::OutputPortNotConnected)
                             .and_then(|sender| {
-                                Ports::send_sender(sender, ip)
+                                sender.send(ip)
                             })
                     })
             })
