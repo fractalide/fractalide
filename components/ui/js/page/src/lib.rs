@@ -85,6 +85,13 @@ component! {
                     }
                     out.send(try!(reader.get_html()));
                 },
+                "delete" => {
+                    out.send("html;main;");
+                }
+                "forward" => {
+                    let mut reader: js_create::Reader = try!(ip.get_root());
+                    out.send(try!(reader.get_html()));
+                }
                 "intern_msg" => {
                     let mut reader: generic_text::Reader = try!(ip.get_root());
                     let text = try!(reader.get_text());

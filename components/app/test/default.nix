@@ -26,11 +26,38 @@
     'js_button:(label="3")' -> acc b3(${ui_js_button})
     'generic_text:(text="create")~create' -> input b3()
     b3() output -> places[2] td()
-    // 'generic_text:(text="testcreate")~testcreate' -> input d1(${ip_delay}) output -> input d2(${ip_delay}) output -> input b1()
 
     b3() output[click] -> input display(${debug})
     'generic_text:(text="button 3 is clicked")' -> option display()
 
+    'generic_text:(text="delete")~delete' -> input d1(${ip_delay}) output -> input d2(${ip_delay}) output -> input b1()
+
+    'generic_text:(text="delete")~delete' ->
+        input d11(${ip_delay}) output ->
+        input d12(${ip_delay}) output ->
+        input d13(${ip_delay}) output ->
+        input d14(${ip_delay}) output ->
+        input b2()
+
+    'generic_text:(text="delete")~delete' ->
+    input d111(${ip_delay}) output ->
+    input d112(${ip_delay}) output ->
+    input d113(${ip_delay}) output ->
+    input d114(${ip_delay}) output ->
+    input d115(${ip_delay}) output ->
+    input d116(${ip_delay}) output ->
+    input b3()
+    
+    //'js_button:(label="5", css="color:green;", blockCss="")' -> acc b12(${ui_js_button})
+    //'generic_text:(text="create")~create' -> input b12()
+    //b12() output ->
+    //    input d111(${ip_delay}) output ->
+    //    input d112(${ip_delay}) output ->
+    //    input d113(${ip_delay}) output ->
+    //    input d114(${ip_delay}) output ->
+    //    input d115(${ip_delay}) output ->
+    //    input d116(${ip_delay}) output ->
+    //    places[1] block()
    '';
 
    meta = with stdenv.lib; {

@@ -54,6 +54,13 @@ component! {
                         format!("{}<div id=\"{}-{}\" style=\"order:{};{}\">{}</div>", action, place, self.name, place, div_style, html)
                     };
                     builder.set_html(&new_html);
+                } else if ip.action == "delete" {
+                    let all = try!(delete_place(&mut ip_acc, &place));
+                    if !all {
+                        ip.action = "forward".into();
+                        let mut builder = try!(ip.init_root_from_reader::<js_create::Builder, js_create::Reader>());
+                        builder.set_html(&format!("delete;{}-{};", place, self.name))
+                    }
                 }
                 try!(self.ports.send_action("output", ip));
             }
@@ -89,4 +96,28 @@ fn is_inside_and_add(acc: &mut IP, port: &str) -> Result<bool> {
     }
     init.borrow().set(i, port);
     Ok(false)
+}
+
+fn delete_place(acc: &mut IP, port: &str) -> Result<bool> {
+    let mut vec: Vec<String> = vec![];
+    {
+        let acc: js_block::Reader = try!(acc.get_root());
+        let acc_places = try!(acc.get_places());
+        for i in 0..acc_places.len() {
+            let p = try!(acc_places.get(i));
+            if p != port { vec.push(p.into()); }
+        }
+    }
+    let mut builder = acc.init_root::<js_block::Builder>();
+    let mut init = builder.init_places((vec.len()) as u32);
+    if vec.len() == 0 {
+        return Ok(true);
+    } else {
+        let mut i = 0;
+        for p in vec {
+            init.borrow().set(i, &p);
+            i += 1;
+        }
+        return Ok(false);
+    }
 }

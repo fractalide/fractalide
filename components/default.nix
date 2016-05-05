@@ -10,6 +10,7 @@ self = rec {
   app_counter_viewer = callPackage ./app/counter/viewer {};
   app_counter_view = callPackage ./app/counter/view {};
   app_model = callPackage ./app/model {};
+  app_test = callPackage ./app/test {};
   debug = callPackage ./debug {};
   development_capnp_encode = callPackage ./development/capnp/encode {};
   development_fbp_errors = callPackage ./development/fbp/errors {};
