@@ -22,7 +22,6 @@ impl Handler for Server {
             let msg = try!(msg.as_text());
             builder.set_text(msg);
         }
-        new_ip.before_send().expect("cannot before send");
         &self.input.send(new_ip).expect("cannot send intern");
         Ok(())
     }
