@@ -1,7 +1,9 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , app_counter_viewer
+  , io_print
   , ip_action
   , ip_dispatcher
+  , ui_js_input
   , ui_js_block
   , ui_js_button
   , ui_js_page
@@ -15,7 +17,10 @@
    subnet = ''
    input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
 
-   lr(${ui_js_block}) output -> input page(${ui_js_page})
+   td(${ui_js_block}) output -> input page(${ui_js_page})
+   'js_block:(places=[], css="display: flex; flex-direction: column")' -> acc td()
+
+   lr(${ui_js_block}) output -> places[0] td()
    'js_block:(places=[], css="display: flex;")' -> acc lr()
 
    'js_button:(label="-")' -> acc button(${ui_js_button})
@@ -36,6 +41,13 @@
    'generic_text:(text="minus")' -> option minus()
    'generic_text:(text="add")' -> option add()
 
+
+   input(${ui_js_input}) output -> places[1] td()
+   'js_input:()' -> acc input()
+   'generic_text:(text="create")~create' -> input input()
+
+   input() output[input] -> input delta(${ip_action}) output -> input out_dispatch()
+   'generic_text:(text="delta")' -> option delta()
    '';
 
    meta = with stdenv.lib; {

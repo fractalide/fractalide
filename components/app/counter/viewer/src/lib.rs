@@ -5,17 +5,9 @@ extern crate rustfbp;
 
 use std::thread;
 
-mod contract_capnp {
-    include!("generic_text.rs");
-    include!("generic_i64.rs");
-}
-
-use contract_capnp::generic_text;
-use contract_capnp::generic_i64;
-
 component! {
-    app_counter_viewer,
-    inputs(input: generic_i64),
+    app_counter_viewer, contracts(generic_text, app_counter)
+    inputs(input: app_counter),
     inputs_array(),
     outputs(label: generic_text),
     outputs_array(),
@@ -25,8 +17,8 @@ component! {
         let mut ip_input = try!(self.ports.recv("input"));
 
         let number = {
-            let mut reader: generic_i64::Reader = try!(ip_input.get_root());
-            reader.get_number()
+            let mut reader: app_counter::Reader = try!(ip_input.get_root());
+            reader.get_value()
         };
         {
             let mut builder = ip_input.init_root::<generic_text::Builder>();

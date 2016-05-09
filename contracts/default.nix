@@ -4,6 +4,7 @@ callPackage = pkgs.lib.callPackageWith (pkgs // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
+  app_counter = callPackage ./app/counter {};
   domain_port = callPackage ./domain_port {};
   fbp_graph = callPackage ./fbp/graph {};
   fbp_lexical = callPackage ./fbp/lexical {};
@@ -18,6 +19,7 @@ rec {
   js_block = callPackage ./js/block {};
   js_button = callPackage ./js/button {};
   js_create = callPackage ./js/create {};
+  js_input = callPackage ./js/input {};
   js_text = callPackage ./js/text {};
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};

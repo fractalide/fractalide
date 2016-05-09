@@ -5,14 +5,8 @@ extern crate rustfbp;
 
 use std::thread;
 
-mod contract_capnp {
-    include!("generic_i64.rs");
-}
-
-use contract_capnp::generic_i64;
-
 component! {
-    app_counter_add,
+    app_counter_add, contracts(app_counter)
     inputs(input: generic_i64),
     inputs_array(),
     outputs(output: generic_i64),
@@ -28,9 +22,10 @@ component! {
         }
 
         {
-            let mut builder = try!(ip_actual.init_root_from_reader::<generic_i64::Builder, generic_i64::Reader>());
-            let actual = builder.borrow().as_reader().get_number();
-            builder.set_number(actual+1);
+            let mut builder = try!(ip_actual.init_root_from_reader::<app_counter::Builder, app_counter::Reader>());
+            let actual = builder.borrow().as_reader().get_value();
+            let delta = builder.borrow().as_reader().get_delta();
+            builder.set_value(actual+delta);
         }
 
         try!(self.ports.send("output", ip_actual));

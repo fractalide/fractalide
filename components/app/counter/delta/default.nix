@@ -3,11 +3,11 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["app_counter"];
+  filteredContracts = filterContracts ["app_counter" "generic_text"];
   depsSha256 = "01062z2pzhd1jm5vag6nw17cdjk78163jq62b91c9cg6cj4sx6bk";
 
   meta = with stdenv.lib; {
-    description = "Component: decrease by one the number";
+    description = "Component: increase by one the number";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];

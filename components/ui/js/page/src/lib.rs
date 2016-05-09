@@ -95,12 +95,24 @@ component! {
                     let mut reader: generic_text::Reader = try!(ip.get_root());
                     let text = try!(reader.get_text());
                     let pos = try!(text.find("#").ok_or(result::Error::Misc("bad response from page".into())));
-                    let (a, b) = text.split_at(pos);
-                    let (_, b) = b.split_at(1);
-                    if senders.contains_key(a) {
-                        let s = senders.get(a).expect("unreachable");
-                        let mut ip = IP::new();
-                        ip.action = b.into();
+                    let (action, id) = text.split_at(pos);
+                    let (_, id) = id.split_at(1);
+                    let mut ip = IP::new();
+                    ip.action = action.into();
+                    let id = if action == "input" {
+                        let pos = try!(id.find("#").ok_or(result::Error::Misc("bad response from page".into())));
+                        let (id, text) = id.split_at(pos);
+                        let (_, text) = text.split_at(1);
+                        {
+                            let mut builder: generic_text::Builder = ip.init_root();
+                            builder.set_text(text);
+                        }
+                        id
+                    } else {
+                        id
+                    };
+                    if senders.contains_key(id) {
+                        let s = senders.get(id).expect("unreachable");
                         try!(s.send(ip));
                     }
                 },

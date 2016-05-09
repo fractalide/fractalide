@@ -40,11 +40,11 @@
       conn = connection;
 
       $("#main").bind("click mouseover mouseout onclick", function(e) {
-        conn.send(e.target.id + "#" + e.type);
+        conn.send(e.type + "#" + e.target.id);
       });
 
       $("#main").bind("input", function(e) {
-        conn.send(e.target.id + "#" + e.type + "#" + e.target.value);
+        conn.send(e.type + "#" + e.target.id + "#" + e.target.value);
       });
       });
     </script>

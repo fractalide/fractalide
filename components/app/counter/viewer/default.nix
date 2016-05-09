@@ -3,7 +3,7 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["generic_text" "generic_i64"];
+  filteredContracts = filterContracts ["generic_text" "app_counter"];
   depsSha256 = "01062z2pzhd1jm5vag6nw17cdjk78163jq62b91c9cg6cj4sx6bk";
 
   meta = with stdenv.lib; {
