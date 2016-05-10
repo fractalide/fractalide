@@ -37,7 +37,7 @@ macro_rules! component {
         outputs($( $output_field_name:ident: $output_contract_name:ident),* ),
         outputs_array($($output_array_name:ident: $output_contract_array:ident),* ),
         option($($option_contract: ident),*),
-        acc($($acc_contract: ident),*),
+        acc($($acc_contract: ident),*), $( portal($portal_type:ty => $portal_value:expr))*
         fn run(&mut $arg:ident) -> Result<()> $fun:block
     )
         =>
@@ -124,6 +124,9 @@ macro_rules! component {
             name: String,
             pub ports: Ports,
             pub option_ip: Option<IP>,
+            $(
+            pub portal: $portal_type ,
+            )*
         }
 
         #[allow(dead_code)]
@@ -139,6 +142,9 @@ macro_rules! component {
                 name: name,
                 ports: ports,
                 option_ip: None,
+                $(
+                    portal: $portal_value,
+                )*
             };
             Ok((Box::new(comp) as Box<Component + Send>, senders))
         }
