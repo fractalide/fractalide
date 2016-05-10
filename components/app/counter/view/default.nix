@@ -43,11 +43,13 @@
 
 
    input(${ui_js_input}) output -> places[1] td()
-   'js_input:()' -> acc input()
+   'js_input:(label="1")' -> acc input()
    'generic_text:(text="create")~create' -> input input()
 
    input() output[input] -> input delta(${ip_action}) output -> input out_dispatch()
    'generic_text:(text="delta")' -> option delta()
+
+   viewer() delta -> input input()
    '';
 
    meta = with stdenv.lib; {

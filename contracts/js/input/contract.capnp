@@ -1,10 +1,11 @@
 @0xbc078cc6e946648c;
 
 struct JsInput {
-    disabled @0 :Bool;
-    size @1 :UInt32 = 20;
-    maxSize @2 :UInt32 = 524288;
-    css @3 :Text;
-    blockCss @4 :Text;
+    label @0 :Text;
+    disabled @1 :Bool;
+    size @2 :UInt32 = 20;
+    maxSize @3 :UInt32 = 524288;
+    css @4 :Text;
+    blockCss @5 :Text;
 }
 
