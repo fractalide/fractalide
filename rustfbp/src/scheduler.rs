@@ -565,3 +565,5 @@ impl ComponentCache {
             })
     }
 }
+
+unsafe impl Send for ComponentCache {}

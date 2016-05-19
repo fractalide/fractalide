@@ -1,135 +1,228 @@
 #[macro_use]
 extern crate rustfbp;
 use rustfbp::scheduler::{Comp, Scheduler};
+use std::mem;
 
 extern crate capnp;
 
-mod contract_capnp {
-    include!("fbp_graph.rs");
-    include!("path.rs");
-    include!("generic_text.rs");
+#[derive(Debug)]
+pub struct Subnet {
+    nodes: Vec<String>,
+    ext_in: HashMap<String, (String, String)>,
+    ext_out: HashMap<String, (String, String)>,
 }
-use contract_capnp::fbp_graph;
-use contract_capnp::path;
-use contract_capnp::generic_text;
+impl Subnet {
+    pub fn new() -> Subnet {
+        Subnet {
+            nodes: vec![],
+            ext_in: HashMap::new(),
+            ext_out: HashMap::new(),
+        }
+    }
+}
+
+pub struct Portal {
+    sched: Scheduler,
+    subnet: HashMap<String, Subnet>,
+}
+
+impl Portal {
+    fn new() -> Portal {
+        Portal {
+            sched: Scheduler::new(),
+            subnet: HashMap::new(),
+        }
+    }
+}
 
 component! {
-    schedulder,
-    inputs(input: fbp_graph, contract_path: path, iip: any),
+    fbp_scheduler, contracts(fbp_graph, path, generic_text, fbp_action)
+        inputs(action: fbp_action,
+               graph: fbp_graph,
+               contract_path: path,
+               iip: any),
     inputs_array(),
-    outputs(error: error, ask_path: path, iip_path: path, iip_contract: generic_text, iip_input: generic_text),
+    outputs(error: error,
+            ask_path: path,
+            iip_path: path,
+            iip_contract: generic_text,
+            iip_input: generic_text),
     outputs_array(),
     option(),
-    acc(),
+    acc(), portal(Portal => Portal::new())
     fn run(&mut self) -> Result<()> {
 
-        let mut sched = Scheduler::new();
+        let mut ip = try!(self.ports.recv("action"));
+        let mut reader: fbp_action::Reader = try!(ip.get_root());
 
-        // retrieve the asked graph
-        let mut ip = try!(self.ports.recv("input"));
-        let i_graph: fbp_graph::Reader = try!(ip.get_root());
-
-        for n in try!(i_graph.borrow().get_nodes()).iter() {
-            sched.add_component(try!(n.get_name()), try!(n.get_sort()));
-        }
-
-        for e in try!(i_graph.borrow().get_edges()).iter() {
-            let o_name = try!(e.get_o_name()).into();
-            let o_port = try!(e.get_o_port()).into();
-            let o_selection: String = try!(e.get_o_selection()).into();
-            let i_port = try!(e.get_i_port()).into();
-            let i_selection: String = try!(e.get_i_selection()).into();
-            let i_name = try!(e.get_i_name()).into();
-
-            match (try!(e.get_o_selection()), try!(e.get_i_selection())) {
-                ("", "") => {
-                    try!(sched.connect(o_name, o_port, i_name, i_port));
-                },
-                (_, "") => {
-                    try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
-                    try!(sched.connect_array(o_name, o_port, o_selection, i_name, i_port));
-                },
-                ("", _) => {
-                    try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
-                    try!(sched.connect_to_array(o_name, o_port, i_name, i_port, i_selection));
-                },
-                _ => {
-                    try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
-                    try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
-                    try!(sched.connect_array_to_array(o_name, o_port, o_selection, i_name, i_port, i_selection));
+        match try!(reader.which()) {
+            fbp_action::Which::Add(add) => {
+                let mut add = try!(add);
+                let name = try!(add.get_name());
+                try!(add_graph(self, name));
+            },
+            fbp_action::Which::Remove(remove) => {
+                let name = try!(remove);
+                if let Some(subnet) = self.portal.subnet.remove(name) {
+                    for node in subnet.nodes {
+                        try!(self.portal.sched.remove_component(node));
+                    }
+                } else {
+                    try!(self.portal.sched.remove_component(name.into()));
                 }
-            }
+            },
+            fbp_action::Which::Connect(connect) => {
+                let connect = try!(connect);
+                let mut o_name: String = try!(connect.get_o_name()).into();
+                let mut o_port: String = try!(connect.get_o_port()).into();
+                let o_selection: String = try!(connect.get_o_selection()).into();
+                if let Some(subnet) = self.portal.subnet.get(&o_name) {
+                    if let Some(port) = subnet.ext_out.get(&o_port) {
+                        o_name = port.0.clone();
+                        o_port = port.1.clone();
+                    }
+                }
+                let mut i_name: String = try!(connect.get_i_name()).into();
+                let mut i_port: String = try!(connect.get_i_port()).into();
+                let i_selection: String = try!(connect.get_i_selection()).into();
+                if let Some(subnet) = self.portal.subnet.get(&i_name) {
+                    if let Some(port) = subnet.ext_in.get(&i_port) {
+                        i_name = port.0.clone();
+                        i_port = port.1.clone();
+                    }
+                }
+                try!(connect_ports(&mut self.portal.sched,
+                        o_name, o_port, o_selection,
+                        i_name, i_port, i_selection));
+            },
+            fbp_action::Which::Send(send) => {
+                let send = try!(send);
+                let mut comp = try!(send.get_comp());
+                let mut port = try!(send.get_port());
+                let selection = try!(send.get_selection());
+                if let Some(subnet) = self.portal.subnet.get(comp) {
+                    if let Some(subnet_port) = subnet.ext_in.get(port) {
+                        comp = &subnet_port.0;
+                        port = &subnet_port.1;
+                    }
+                }
+                let ip = try!(self.ports.recv("input"));
+                let sender = if selection != "" {
+                    try!(self.portal.sched.get_sender(comp, port))
+                } else {
+                    try!(self.portal.sched.get_array_sender(comp, port, selection))
+                };
+                try!(sender.send(ip));
+            },
         }
-
-        let (mut p, senders) = try!(Ports::new("exterior".into(), sched.sender.clone(),
-                               vec![],
-                               vec![],
-                               vec!["s".into()],
-                               vec![]));
-        sched.components.insert("exterior".into(), Comp{
-            inputs: senders,
-            inputs_array: HashMap::new(),
-            sort: "".into(),
-        });
-
-        for iip in try!(i_graph.borrow().get_iips()).iter() {
-
-            let comp = try!(iip.get_comp());
-            let port = try!(iip.get_port());
-            let input = try!(iip.get_iip());
-
-            let (contract, input, option_action) = try!(split_input(input));
-
-            // Get the real path
-            let mut new_out = IP::new();
-            {
-                let mut cont = new_out.init_root::<path::Builder>();
-                cont.set_path(&contract);
-            }
-            try!(self.ports.send("ask_path", new_out));
-
-            let mut contract_path_ip = try!(self.ports.recv("contract_path"));
-            let contract_path: path::Reader = try!(contract_path_ip.get_root());
-
-            let c_path = try!(contract_path.get_path());
-            let c_path = format!("/nix/store/{}/src/contract.capnp", c_path);
-            let contract_camel_case = to_camel_case(&contract);
-
-            if try!(iip.get_selection()) == "" {
-                try!(p.connect("s".into(), try!(sched.get_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into()))));
-            } else {
-                try!(p.connect("s".into(), try!(sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
-            }
-
-            let mut new_out = IP::new();
-            {
-                let mut path = new_out.init_root::<path::Builder>();
-                path.set_path(&c_path);
-            }
-            try!(self.ports.send("iip_path", new_out));
-
-            let mut new_out = IP::new();
-            {
-                let mut path = new_out.init_root::<generic_text::Builder>();
-                path.set_text(&contract_camel_case);
-            }
-            try!(self.ports.send("iip_contract", new_out));
-
-            let mut new_out = IP::new();
-            {
-                let mut path = new_out.init_root::<generic_text::Builder>();
-                path.set_text(&input);
-            }
-            try!(self.ports.send("iip_input", new_out));
-
-            let mut iip = try!(self.ports.recv("iip"));
-            option_action.map(|action| { iip.action = action; });
-            try!(p.send("s", iip));
-        }
-
-        sched.join();
         Ok(())
     }
+}
+
+fn add_graph(mut component: &mut fbp_scheduler, name: &str) -> Result<()> {
+    let mut ip = try!(component.ports.recv("graph"));
+    let i_graph: fbp_graph::Reader = try!(ip.get_root());
+
+    let mut subnet = Subnet::new();
+    for n in try!(i_graph.borrow().get_nodes()).iter() {
+        subnet.nodes.push(try!(n.get_name()).into());
+        component.portal.sched.add_component(try!(n.get_name()), try!(n.get_sort()));
+    }
+
+    for e in try!(i_graph.borrow().get_edges()).iter() {
+        let o_name = try!(e.get_o_name()).into();
+        let o_port = try!(e.get_o_port()).into();
+        let o_selection: String = try!(e.get_o_selection()).into();
+        let i_port = try!(e.get_i_port()).into();
+        let i_selection: String = try!(e.get_i_selection()).into();
+        let i_name = try!(e.get_i_name()).into();
+
+        try!(connect_ports(&mut component.portal.sched,
+                o_name, o_port, o_selection,
+                i_name, i_port, i_selection));
+    }
+
+    for ext in try!(i_graph.borrow().get_external_inputs()).iter() {
+        let name = try!(ext.get_name());
+        let comp = try!(ext.get_comp());
+        let port = try!(ext.get_port());
+        subnet.ext_in.insert(name.into(), (comp.into(), port.into()));
+    }
+    for ext in try!(i_graph.borrow().get_external_outputs()).iter() {
+        let name = try!(ext.get_name());
+        let comp = try!(ext.get_comp());
+        let port = try!(ext.get_port());
+        subnet.ext_out.insert(name.into(), (comp.into(), port.into()));
+    }
+
+    let (mut p, senders) = try!(Ports::new("exterior".into(), component.portal.sched.sender.clone(),
+                                           vec![],
+                                           vec![],
+                                           vec!["s".into()],
+                                           vec![]));
+    component.portal.sched.components.insert("exterior".into(), Comp{
+        inputs: senders,
+        inputs_array: HashMap::new(),
+        sort: "".into(),
+    });
+
+    for iip in try!(i_graph.borrow().get_iips()).iter() {
+
+        let comp = try!(iip.get_comp());
+        let port = try!(iip.get_port());
+        let input = try!(iip.get_iip());
+
+        let (contract, input, option_action) = try!(split_input(input));
+
+        // Get the real path
+        let mut new_out = IP::new();
+        {
+            let mut cont = new_out.init_root::<path::Builder>();
+            cont.set_path(&contract);
+        }
+        try!(component.ports.send("ask_path", new_out));
+
+        let mut contract_path_ip = try!(component.ports.recv("contract_path"));
+        let contract_path: path::Reader = try!(contract_path_ip.get_root());
+
+        let c_path = try!(contract_path.get_path());
+        let c_path = format!("/nix/store/{}/src/contract.capnp", c_path);
+        let contract_camel_case = to_camel_case(&contract);
+
+        if try!(iip.get_selection()) == "" {
+            try!(p.connect("s".into(), try!(component.portal.sched.get_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into()))));
+        } else {
+            try!(p.connect("s".into(), try!(component.portal.sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
+        }
+
+        let mut new_out = IP::new();
+        {
+            let mut path = new_out.init_root::<path::Builder>();
+            path.set_path(&c_path);
+        }
+        try!(component.ports.send("iip_path", new_out));
+
+        let mut new_out = IP::new();
+        {
+            let mut path = new_out.init_root::<generic_text::Builder>();
+            path.set_text(&contract_camel_case);
+        }
+        try!(component.ports.send("iip_contract", new_out));
+
+        let mut new_out = IP::new();
+        {
+            let mut path = new_out.init_root::<generic_text::Builder>();
+            path.set_text(&input);
+        }
+        try!(component.ports.send("iip_input", new_out));
+
+        let mut iip = try!(component.ports.recv("iip"));
+        option_action.map(|action| { iip.action = action; });
+        try!(p.send("s", iip));
+    }
+    component.portal.subnet.insert(name.into(), subnet);
+
+    Ok(())
 }
 
 fn to_camel_case(s: &str) -> String {
@@ -159,4 +252,27 @@ fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
         return Ok((a.into(), b.into(), Some(c.into())));
     };
     Ok((a.into(), b.into(), None))
+}
+
+fn connect_ports(sched: &mut Scheduler, o_name: String, o_port: String, o_selection: String,
+           i_name: String, i_port: String, i_selection: String) -> Result<()> {
+    match (&o_selection[..], &i_selection[..]) {
+        ("", "") => {
+            try!(sched.connect(o_name, o_port, i_name, i_port));
+        },
+        (_, "") => {
+            try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
+            try!(sched.connect_array(o_name, o_port, o_selection, i_name, i_port));
+        },
+        ("", _) => {
+            try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
+            try!(sched.connect_to_array(o_name, o_port, i_name, i_port, i_selection));
+        },
+        _ => {
+            try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
+            try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
+            try!(sched.connect_array_to_array(o_name, o_port, o_selection, i_name, i_port, i_selection));
+        }
+    }
+    Ok(())
 }

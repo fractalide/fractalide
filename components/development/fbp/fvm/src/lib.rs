@@ -81,6 +81,8 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
                 iip.2 = try!(n.get_selection()).into();
             }
         }
+
+        graph.ext_in.push((try!(n.get_name()).into(), try!(n.get_comp()).into(), try!(n.get_port()).into(), try!(n.get_selection()).into()));
     }
     for n in try!(new_graph.borrow().get_external_outputs()).iter() {
         for edge in &mut graph.edges {
@@ -90,6 +92,7 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
                 edge.2 = try!(n.get_selection()).into();
             }
         }
+        graph.ext_out.push((try!(n.get_name()).into(), try!(n.get_comp()).into(), try!(n.get_port()).into(), try!(n.get_selection()).into()));
     }
 
     for n in try!(new_graph.borrow().get_nodes()).iter() {
@@ -167,9 +170,9 @@ fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
             let mut i = 0;
             for e in &graph.ext_in {
                 ext.borrow().get(i).set_name(&e.0[..]);
-                ext.borrow().get(i).set_port(&e.1[..]);
-                ext.borrow().get(i).set_selection(&e.2[..]);
-                ext.borrow().get(i).set_comp(&e.3[..]);
+                ext.borrow().get(i).set_comp(&e.1[..]);
+                ext.borrow().get(i).set_port(&e.2[..]);
+                ext.borrow().get(i).set_selection(&e.3[..]);
                 i += 1;
             }
         }
@@ -177,10 +180,10 @@ fn send_graph(comp: &fvm, graph: &Graph) -> Result<()> {
             let mut ext = ip.borrow().init_external_outputs(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
-                ext.borrow().get(i).set_comp(&e.0[..]);
-                ext.borrow().get(i).set_port(&e.1[..]);
-                ext.borrow().get(i).set_selection(&e.2[..]);
-                ext.borrow().get(i).set_name(&e.3[..]);
+                ext.borrow().get(i).set_name(&e.0[..]);
+                ext.borrow().get(i).set_comp(&e.1[..]);
+                ext.borrow().get(i).set_port(&e.2[..]);
+                ext.borrow().get(i).set_selection(&e.3[..]);
                 i += 1;
             }
         }

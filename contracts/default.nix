@@ -6,6 +6,7 @@ in
 rec {
   app_counter = callPackage ./app/counter {};
   domain_port = callPackage ./domain_port {};
+  fbp_action = callPackage ./fbp/action {};
   fbp_graph = callPackage ./fbp/graph {};
   fbp_lexical = callPackage ./fbp/lexical {};
   fbp_semantic_error = callPackage ./fbp/semantic_error {};

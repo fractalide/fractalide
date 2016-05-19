@@ -38,6 +38,7 @@ self = rec {
   fs_file_open = callPackage ./fs/file/open {};
   fs_file_print = callPackage ./fs/file/print {};
   fs_dir_list = callPackage ./fs/dir/list {};
+  halter = callPackage ./halter {};
   io_print = callPackage ./io/print {};
   ip_action = callPackage ./ip/action {};
   ip_clone = callPackage ./ip/clone {};
