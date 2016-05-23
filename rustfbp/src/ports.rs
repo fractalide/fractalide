@@ -145,6 +145,19 @@ impl Ports {
             })
     }
 
+    pub fn get_array_sender(&self, port: &str, selection: &str) -> Result<IPSender> {
+        self.outputs_array.get(port).ok_or(result::Error::PortNotFound)
+            .and_then(|port|{
+                port.get(selection).ok_or(result::Error::SelectionNotFound)
+                    .and_then(|recv| {
+                        recv.as_ref().ok_or(result::Error::Misc("selection Not connected".into()))
+                            .and_then(|sender| {
+                                Ok(sender.clone())
+                            })
+                    })
+            })
+    }
+
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
         self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
             .map(|port| {
