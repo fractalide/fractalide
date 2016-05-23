@@ -57,33 +57,35 @@ component! {
             let ip = try!(self.ports.recv("input"));
             match &ip.action[..] {
                 "remove" => {
-                    let name = format!("{}", index);
+                    if index > 0 {
+                        let name = format!("{}", index);
 
-                    // Send the delete IP
-                    let mut send_ip = IP::new();
-                    {
-                        let mut builder: fbp_action::Builder = send_ip.init_root();
-                        let mut connect = builder.init_send();
-                        connect.set_comp(&name);
-                        connect.set_port("input");
+                        // Send the delete IP
+                        let mut send_ip = IP::new();
+                        {
+                            let mut builder: fbp_action::Builder = send_ip.init_root();
+                            let mut connect = builder.init_send();
+                            connect.set_comp(&name);
+                            connect.set_port("input");
+                        }
+                        try!(self.ports.send("scheduler", send_ip));
+                        let mut comp_ip = IP::new();
+                        comp_ip.action = "delete".into();
+                        try!(self.ports.send("scheduler", comp_ip));
+
+
+                        // TODO : remove the sleep once scheduler.remove_comp is async
+                        thread::sleep_ms(50);
+                        // Send the remove IP
+                        let mut remove_ip = IP::new();
+                        {
+                            let mut builder: fbp_action::Builder = remove_ip.init_root();
+                            let mut rem = builder.set_remove(&name);
+                        }
+                        try!(self.ports.send("scheduler", remove_ip));
+
+                        index -= 1;
                     }
-                    try!(self.ports.send("scheduler", send_ip));
-                    let mut comp_ip = IP::new();
-                    comp_ip.action = "delete".into();
-                    try!(self.ports.send("scheduler", comp_ip));
-
-
-                    // TODO : remove the sleep once scheduler.remove_comp is async
-                    thread::sleep_ms(500);
-                    // Send the remove IP
-                    let mut remove_ip = IP::new();
-                    {
-                        let mut builder: fbp_action::Builder = remove_ip.init_root();
-                        let mut rem = builder.set_remove(&name);
-                    }
-                    try!(self.ports.send("scheduler", remove_ip));
-
-                    index -= 1;
                 },
                 "add" => {
                     index += 1;

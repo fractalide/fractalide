@@ -1,5 +1,6 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , app_counter_add
+  , app_counter_delta
   , app_counter_minus
   , app_counter_view
   , app_model
@@ -20,12 +21,14 @@
    'generic_i64:(number=0)' -> acc model()
    out_dispatch() output[add] -> input model()
    out_dispatch() output[minus] -> input model()
+   out_dispatch() output[delta] -> input model()
 
    in_dispatch() output[create] -> input view()
    in_dispatch() output[delete] -> input view()
 
    model() compute[add] -> input add(${app_counter_add}) output -> result model()
    model() compute[minus] -> input minus(${app_counter_minus}) output -> result model()
+   model() compute[delta] -> input delta(${app_counter_delta}) output -> result model()
    '';
 
    meta = with stdenv.lib; {

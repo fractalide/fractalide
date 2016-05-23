@@ -24,7 +24,9 @@ component! {
         {
             let mut reader: generic_text::Reader = try!(ip_delta.get_root());
             let mut builder = try!(ip_actual.init_root_from_reader::<app_counter::Builder, app_counter::Reader>());
-            if let Ok(i) = try!(reader.get_text()).parse::<i64>() {
+            let mut text = try!(reader.get_text());
+            if text == "" { text = "0"; }
+            if let Ok(i) = text.parse::<i64>() {
               builder.set_delta(i);
             }
         }
