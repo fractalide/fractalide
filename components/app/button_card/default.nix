@@ -1,16 +1,16 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , app_counter_card
-  , ui_js_page
+  , debug
+  , ui_js_button
+  , ui_js_block
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
 
-   counter(${app_counter_card}) output -> input page(${ui_js_page})
-   'generic_text:(text="hello")~create' -> input counter()
+   input => input button(${ui_js_button}) output -> places[0] lr(${ui_js_block}) output => output
+   'js_button:(label="button test")' -> acc button()
+
+   'js_block:(css="display: flex;")' -> acc lr()
 
    '';
 

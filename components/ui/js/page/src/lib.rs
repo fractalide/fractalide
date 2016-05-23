@@ -118,6 +118,7 @@ component! {
                 },
                 _ => {
                     println!("Receive a random ip : {}", act);
+                    self.ports.send_action("output", ip);
                 }
 
 

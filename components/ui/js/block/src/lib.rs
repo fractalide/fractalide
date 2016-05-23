@@ -58,7 +58,7 @@ component! {
                     let all = try!(delete_place(&mut ip_acc, &place));
                     if !all {
                         ip.action = "forward".into();
-                        let mut builder = try!(ip.init_root_from_reader::<js_create::Builder, js_create::Reader>());
+                        let mut builder = ip.init_root::<js_create::Builder>();
                         builder.set_html(&format!("delete;{}-{};", place, self.name))
                     }
                 }
