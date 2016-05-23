@@ -8,6 +8,6 @@ name = "ui_conrod_window"
 crate-type = ["dylib"]
 
 [dependencies]
-capnp = "0.6.2"
+capnp = "*"
 rustfbp = "*"
 ws = "*"

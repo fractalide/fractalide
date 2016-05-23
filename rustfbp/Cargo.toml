@@ -1,13 +1,13 @@
 [package]
 name = "rustfbp"
-version = "0.3.7"
-authors = ["Denis Michiels <dmichiels@gmail.com>"]
-license = "AGPL-3.0"
-homepage = "http://github.com/fractalide/rustfbp"
-repository = "http://github.com/fractalide/rustfbp"
+version = "0.3.11"
+authors = ["Denis Michiels <dmichiels@gmail.com>","Stewart Mackenzie <setori88@gmail.com>"]
+license = "MPL-2.0"
+homepage = "https://gitlab.com/fractalide/fractalide/tree/master/rustfbp"
+repository = "https://gitlab.com/fractalide/fractalide/tree/master/rustfbp"
 description = "Fractalide, a Flow-based programming environment in Rust"
 
 [dependencies]
-capnp = "^0.6.2"
-capnpc = "^0.6.0"
-libloading = "^0.2.1"
+capnp = "^0.7.0"
+capnpc = "^0.7.0"
+libloading = "^0.2.2"

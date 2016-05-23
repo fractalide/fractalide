@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   src = ./.;
   filteredContracts = filterContracts [ "protocol_domain_port" ];
   buildInputs = [nanomsg];
-  depsSha256 = "0xan0piih1m93h4m4dysvrdv6rnyz8wllb5xkzm3n3pq113sdija";
+  depsSha256 = "06mjncygiph2hj6h048jngz398w4ff7cswl8afvi0mpacw5fbgxh";
   meta = with stdenv.lib; {
     description = "Component: Socket output";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/socket/out;

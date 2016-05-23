@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["value_string" "path" "file_error"];
-  depsSha256 = "017xfb99bpdcxmraaf99rcvl9rqxxzr71064mzn95hbfj47cabfy";
+  depsSha256 = "0qq8yjn67cs29fln12g5mn698h652d3c8xbb75ijxp8hsic7afqv";
 
   meta = with stdenv.lib; {
     description = "Component: input: a path, output: a list of filenames";
