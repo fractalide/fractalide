@@ -225,7 +225,7 @@ impl Ports {
             })
     }
 
-    pub fn send(&self, port_out: &str, mut ip: IP) -> Result<()> {
+    pub fn send(&self, port_out: &str, ip: IP) -> Result<()> {
         self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
@@ -235,7 +235,7 @@ impl Ports {
             })
     }
 
-    pub fn send_array(&self, port_out: &str, selection_out: &str, mut ip: IP) -> Result<()> {
+    pub fn send_array(&self, port_out: &str, selection_out: &str, ip: IP) -> Result<()> {
         self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port| {
                 port.get(selection_out).ok_or(result::Error::SelectionNotFound)

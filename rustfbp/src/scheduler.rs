@@ -416,7 +416,7 @@ impl SchedState {
         }
         Ok(())
     }
-
+    #[allow(unused_must_use)]
     fn run(&mut self, name: String) {
         let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
