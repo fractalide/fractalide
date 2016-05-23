@@ -26,19 +26,16 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()>{
 
-        let path_ip = try!(self.ports.recv("path"));
-        let path = try!(path_ip.get_reader());
-        let path: path::Reader = try!(path.get_root());
+        let mut path_ip = try!(self.ports.recv("path"));
+        let path: path::Reader = try!(path_ip.get_root());
         let path = try!(path.get_path());
 
-        let contract_ip = try!(self.ports.recv("contract"));
-        let contract = try!(contract_ip.get_reader());
-        let contract: generic_text::Reader = try!(contract.get_root());
+        let mut contract_ip = try!(self.ports.recv("contract"));
+        let contract: generic_text::Reader = try!(contract_ip.get_root());
         let f_contract = try!(contract.get_text());
 
-        let input_ip = try!(self.ports.recv("input"));
-        let input = try!(input_ip.get_reader());
-        let input: generic_text::Reader = try!(input.get_root());
+        let mut input_ip = try!(self.ports.recv("input"));
+        let input: generic_text::Reader = try!(input_ip.get_root());
         let input = try!(input.get_text());
 
         let mut child = try!(Command::new("capnp_path" )
@@ -61,7 +58,8 @@ component! {
             return Err(result::Error::Misc("capnp encode command doesn't work".into()));
         }
 
-        let send_ip = IP { vec : output.stdout, action: String::new(), origin: String::new() };
+        let mut send_ip = IP::new();
+        send_ip.vec = output.stdout;
         let _ = self.ports.send("output", send_ip);
         Ok(())
     }

@@ -6,31 +6,72 @@ use result;
 use result::Result;
 
 use std::collections::HashMap;
+use std::mem;
 
 use std::sync::mpsc::{Sender, Receiver, SyncSender};
 use std::sync::mpsc::sync_channel;
 
 use scheduler::CompMsg;
 
-#[derive(Clone)]
 pub struct IP {
     pub vec: Vec<u8>,
     pub action: String,
-    pub origin: String,
+    reader: Option<capnp::message::Reader<capnp::serialize::OwnedSegments>>,
+    builder: Option<capnp::message::Builder<capnp::message::HeapAllocator>>,
 }
 
 impl IP {
     pub fn new() -> Self {
-        IP { vec: vec![], action: String::new(), origin: String::new() }
+        IP { vec: vec![],
+             action: String::new(),
+             reader: None,
+             builder: None,
+        }
     }
 
-    pub fn get_reader(&self) -> Result<capnp::message::Reader<capnp::serialize::OwnedSegments>> {
-        Ok(try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new())))
+    pub fn get_root<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
+        let msg = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
+        self.reader = Some(msg);
+        Ok(try!(self.reader.as_ref().unwrap().get_root()))
+    }
+    pub fn init_root<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
+        let msg = capnp::message::Builder::new_default();
+        self.builder = Some(msg);
+        self.builder.as_mut().unwrap().init_root()
     }
 
-    pub fn write_builder<A: capnp::message::Allocator>(&mut self, builder: &capnp::message::Builder<A>) -> Result<()> {
-        self.vec.clear();
-        Ok(try!(capnp::serialize::write_message(&mut self.vec, builder)))
+    pub fn init_root_from_reader<'a, T: capnp::traits::FromPointerBuilder<'a>,
+                                 U: capnp::traits::FromPointerReader<'a> + capnp::traits::SetPointerBuilder<T>>
+        (&'a mut self) -> Result<T> {
+        let reader = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
+        self.reader = Some(reader);
+        let reader: U = try!(self.reader.as_ref().unwrap().get_root());
+
+        let mut msg = capnp::message::Builder::new_default();
+        try!(msg.set_root(reader));
+        self.builder = Some(msg);
+        Ok(try!(self.builder.as_mut().unwrap().get_root()))
+    }
+
+    pub fn before_send(&mut self) -> Result<()> {
+        let mut build = mem::replace(&mut self.builder, None);
+        if let Some(ref mut b) = build {
+            self.vec.clear();
+            try!(capnp::serialize::write_message(&mut self.vec, b))
+        }
+        Ok(())
+
+    }
+}
+
+impl Clone for IP {
+    fn clone(&self) -> Self {
+        IP {
+            vec: self.vec.clone(),
+            action: self.action.clone(),
+            reader: None,
+            builder: None,
+        }
     }
 }
 
@@ -41,6 +82,17 @@ pub struct IPSender {
     pub sched: Sender<CompMsg>,
 }
 
+impl IPSender {
+    pub fn send(&self, mut ip: IP) -> Result<()> {
+        try!(ip.before_send());
+        try!(self.sender.send(ip));
+        if self.dest != "" {
+            try!(self.sched.send(CompMsg::Inc(self.dest.clone())));
+        }
+        Ok(())
+    }
+}
+
 pub struct Ports {
     name: String,
     sched: Sender<CompMsg>,
@@ -48,6 +100,7 @@ pub struct Ports {
     inputs_array: HashMap< String, HashMap<String, Receiver<IP>>>,
     outputs: HashMap<String, Option<IPSender>>,
     outputs_array: HashMap<String, HashMap<String, Option<IPSender>>>,
+    senders: HashMap<String, IPSender>,
 }
 
 impl Ports {
@@ -79,9 +132,30 @@ impl Ports {
             inputs_array: inputs_array,
             outputs: outputs,
             outputs_array: outputs_array,
+            senders: senders.clone(),
         };
 
         Ok((ports, senders))
+    }
+
+    pub fn get_sender(&self, port_in: &str) -> Result<IPSender> {
+        self.senders.get(port_in).ok_or(result::Error::PortNotFound)
+            .map(|sender| {
+                sender.clone()
+            })
+    }
+
+    pub fn get_array_sender(&self, port: &str, selection: &str) -> Result<IPSender> {
+        self.outputs_array.get(port).ok_or(result::Error::PortNotFound)
+            .and_then(|port|{
+                port.get(selection).ok_or(result::Error::SelectionNotFound)
+                    .and_then(|recv| {
+                        recv.as_ref().ok_or(result::Error::Misc("selection Not connected".into()))
+                            .and_then(|sender| {
+                                Ok(sender.clone())
+                            })
+                    })
+            })
     }
 
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
@@ -137,16 +211,26 @@ impl Ports {
             })
     }
 
+    pub fn try_recv_array(&self, port_in: &str, selection_in: &str) -> Result<IP> {
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
+            .and_then(|port|{
+                port.get(selection_in).ok_or(result::Error::SelectionNotFound)
+                    .and_then(|recv| {
+                        let ip = try!(recv.try_recv());
+                        if port_in != "acc" && port_in != "option" {
+                            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+                        }
+                        Ok(ip)
+                    })
+            })
+    }
+
     pub fn send(&self, port_out: &str, ip: IP) -> Result<()> {
         self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
             .and_then(|port|{
                 port.as_ref().ok_or(result::Error::OutputPortNotConnected)
                     .and_then(|sender| {
-                        try!(sender.sender.send(ip));
-                        if sender.dest != "" {
-                            try!(sender.sched.send(CompMsg::Inc(sender.dest.clone())));
-                        }
-                        Ok(())
+                        sender.send(ip)
                     })
             })
     }
@@ -158,9 +242,7 @@ impl Ports {
                     .and_then(|sender| {
                         sender.as_ref().ok_or(result::Error::OutputPortNotConnected)
                             .and_then(|sender| {
-                                try!(sender.sender.send(ip));
-                                try!(self.sched.send(CompMsg::Inc(sender.dest.clone())));
-                                Ok(())
+                                sender.send(ip)
                             })
                     })
             })

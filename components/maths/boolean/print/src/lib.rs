@@ -21,11 +21,12 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip_a = try!(self.ports.recv("input"));
 
-        let a_reader = try!(ip_a.get_reader());
-        let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
-        let a = a_reader.get_boolean();
+        {
+            let a_reader: maths_boolean::Reader = try!(ip_a.get_root());
+            let a = a_reader.get_boolean();
 
-        println!("boolean : {:?}", a);
+            println!("boolean : {:?}", a);
+        }
 
         let _ = self.ports.send("output", ip_a);
 

@@ -17,8 +17,10 @@ use std::collections::HashMap;
 
 mod contract_capnp {
     include!("path_capnp.rs");
+    include!("fbp_action.rs");
 }
 use contract_capnp::path;
+use contract_capnp::fbp_action;
 
 #[no_mangle]
 pub extern "C" fn run(path_fbp: &str) {
@@ -33,17 +35,24 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("sched", "development_fbp_scheduler.so");
     sched.add_component("iip", "development_capnp_encode.so");
     sched.add_component("contract_lookup", "contract_lookup.so");
+    sched.add_component("halter", "halter.so");
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
                                       vec!["r".into()],
                                       vec![],
-                                      vec!["s".into(), "opt".into(), "w".into()],
+                                      vec!["s".into(), "opt".into(), "w".into(),
+                                           "h".into(), "add".into()],
                                       vec![]).expect("cannot create");
     sched.components.insert("exterior".into(), Comp {
         inputs: senders,
         inputs_array: HashMap::new(),
         sort: "".into(),
     });
+
+    // Send the start ip for the graph
+    p.connect("h".into(), sched.get_sender("halter".into(), "input".into()).unwrap()).expect("unable to connect");
+    let start_ip = IP::new();
+    p.send("h".into(), start_ip).expect("start");
 
     p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
@@ -62,7 +71,7 @@ pub extern "C" fn run(path_fbp: &str) {
     // sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
 
     // Without Graph print
-    sched.connect("fvm".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
+    sched.connect("fvm".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");
 
     sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
     sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
@@ -73,15 +82,18 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.connect("sched".into(), "iip_input".into(), "iip".into(), "input".into()).expect("cannot connect");
     sched.connect("iip".into(), "output".into(), "sched".into(), "iip".into()).expect("cannot connect");
 
-    let args: Vec<String> = env::args().collect();
-    let mut msg = capnp::message::Builder::new_default();
-    {
-        let mut number = msg.init_root::<path::Builder>();
-        number.set_path(&path_fbp);
-    }
+    sched.connect("sched".into(), "ask_graph".into(), "fvm".into(), "input".into()).expect("cannot connect ask_graph");
 
-    let mut ip = IP::new();
-    ip.write_builder(&mut msg);
-    p.send("s".into(), ip).expect("unable to send to comp");
+    // Send the first IP to the scheduler
+    p.connect("add".into(), sched.get_sender("sched".into(), "action".into()).unwrap()).expect("unable to connect");
+    let mut start_ip = IP::new();
+    {
+        let mut builder: fbp_action::Builder = start_ip.init_root();
+        let mut add = builder.init_add();
+        add.set_name("hello");
+        add.set_comp(&path_fbp);
+    }
+    p.send("add".into(), start_ip).expect("add");
+
     sched.join();
 }

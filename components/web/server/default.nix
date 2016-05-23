@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   src = ./.;
   filteredContracts = filterContracts ["path" "domain_port" "url"];
   buildInputs = [ openssl ];
-  depsSha256 = "0gn11wzndnbfwzfsw2bi5i7dn6hr56ffzq129bcjs26a44zyl8ml";
+  depsSha256 = "1g7wxpz8h9dg1jvra4l7amkcn023clih28a58y6ffiaszrijc7cc";
 
   meta = with stdenv.lib; {
     description = "Component:  web_server";

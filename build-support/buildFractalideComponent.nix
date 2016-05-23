@@ -89,7 +89,7 @@ buildPhase = args.buildPhase or ''
 sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
 sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
 ${stdenv.lib.concatMapStringsSep "\n"
-(contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
+(contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs && cp ${contract.outPath}/src/contract_capnp.rs ${contract.name}.rs;")
 (stdenv.lib.flatten filteredContracts)}
 echo "*********************************************************************"
 echo "****** building: ${name} "

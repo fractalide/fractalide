@@ -31,6 +31,7 @@ pub enum CompMsg {
     Disconnect(String, String),
     DisconnectArray(String, String, String),
     AddInputArraySelection(String, String, String, Receiver<IP>),
+    RemoveInputArraySelection(String, String, String),
     AddOutputArraySelection(String, String, String),
     RunEnd(String, BoxedComp),
     SetReceiver(String, String, Receiver<IP>),
@@ -70,6 +71,9 @@ impl Scheduler {
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
                     CompMsg::AddInputArraySelection(name, port, selection, recv) => {
                         sched_s.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv))
+                    },
+                    CompMsg::RemoveInputArraySelection(name, port, selection) => {
+                        sched_s.edit_component(name, EditCmp::RemoveInputArraySelection(port, selection))
                     },
                     CompMsg::AddOutputArraySelection(name, port, selection) => {
                         sched_s.edit_component(name, EditCmp::AddOutputArraySelection(port, selection))
@@ -197,6 +201,10 @@ impl Scheduler {
         Ok(())
     }
 
+    // pub fn remove_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
+    //     // TODO
+    // }
+
     pub fn soft_add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
         let mut res = true;
         if let Some(comp) = self.components.get(&comp) {
@@ -283,6 +291,7 @@ impl Scheduler {
 
 enum EditCmp {
     AddInputArraySelection(String, String, Receiver<IP>),
+    RemoveInputArraySelection(String, String),
     AddOutputArraySelection(String, String),
     ConnectOutputPort(String, IPSender),
     ConnectOutputArrayPort(String, String, IPSender),
@@ -407,7 +416,7 @@ impl SchedState {
         }
         Ok(())
     }
-
+    #[allow(unused_must_use)]
     fn run(&mut self, name: String) {
         let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
@@ -440,6 +449,9 @@ impl SchedState {
             EditCmp::AddInputArraySelection(port, selection, recv) => {
                 try!(c.add_input_receiver(&port, selection, recv));
             },
+            EditCmp::RemoveInputArraySelection(port, selection) => {
+                try!(c.remove_array_receiver(&port, &selection));
+            }
             EditCmp::AddOutputArraySelection(port, selection) => {
                 try!(c.add_output_selection(&port, selection));
             },
@@ -553,3 +565,5 @@ impl ComponentCache {
             })
     }
 }
+
+unsafe impl Send for ComponentCache {}

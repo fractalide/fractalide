@@ -4,7 +4,7 @@ let
 fvm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "1isrda8qmkyfb73zqb34d61b1sr98hxdr8cvp67611vak7ak3vfp";
+    depsSha256 = "0kih5l16ssaxx3kr11w40a1k61p97niw60vvmrvfaxh8a0kp1p70";
     configurePhase = ''
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
@@ -14,12 +14,14 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/lib.rs --replace "development_fbp_parser_print_graph.so" "${components.development_fbp_parser_print_graph}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_scheduler.so" "${components.development_fbp_scheduler}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_capnp_encode.so" "${components.development_capnp_encode}/lib/libcomponent.so"
+    substituteInPlace src/lib.rs --replace "halter.so" "${components.halter}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "contract_lookup.so" "${support.contract_lookup}/lib/libcomponent.so"
 
     substituteInPlace src/lib.rs --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
+    substituteInPlace src/lib.rs --replace "fbp_action.rs" "${contracts.fbp_action}/src/contract_capnp.rs"
     substituteInPlace Cargo.toml --replace "fvm" "${name}"
     substituteInPlace src/main.rs --replace "fvm" "${name}"
-    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}/lib/lib.subnet"
+    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
     installPhase = ''

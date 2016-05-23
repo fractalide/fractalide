@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["quadruple"];
-  depsSha256 = "0mw3x17wzs01r7cwz0whj65wm2kk3h5nwy2hj8c12vvr1g7h4757";
+  depsSha256 = "1rxf279yg87q2caq1alljrdaamdwcypxf6m7ckxnq65s8x57mas8";
 
   meta = with stdenv.lib; {
     description = "Component: Print raw unanonymized and anonymized statistics to the terminal";

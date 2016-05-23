@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["maths_number"];
-  depsSha256 = "1c3xn618k0z05hv2hng9ds05x3hlw5ywin7ip4yr3xs7i459jrzp";
+  depsSha256 = "1v96pchxij3x73ll6c88hdm66g046rs9xycchqixw3vh5xksjc5r";
 
   meta = with stdenv.lib; {
     description = "Component: Adds all inputs together";

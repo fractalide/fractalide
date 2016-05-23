@@ -28,19 +28,17 @@ pub trait Component {
     fn run(&mut self) -> Result<()>;
 }
 
-
 #[macro_export]
 macro_rules! component {
     (
-       $name:ident, $( ( $($c_t:ident$(: $c_tr:ident)* ),* ),)*
+       $name:ident, $( contracts( $( $contract:ident ),* ) )*
         inputs($( $input_field_name:ident: $input_contract_name:ident),* ),
         inputs_array($( $input_array_name:ident: $input_contract_array:ident),* ),
         outputs($( $output_field_name:ident: $output_contract_name:ident),* ),
         outputs_array($($output_array_name:ident: $output_contract_array:ident),* ),
         option($($option_contract: ident),*),
-        acc($($acc_contract: ident),*),
+        acc($($acc_contract: ident),*), $( portal($portal_type:ty => $portal_value:expr))*
         fn run(&mut $arg:ident) -> Result<()> $fun:block
-        $($more:item)*
     )
         =>
     {
@@ -64,7 +62,16 @@ macro_rules! component {
 
         use std::io::{Read, Write};
 
-        $($more)*
+        $(
+        mod contract_capnp {
+            $(
+                include!(concat!("src/",stringify!($contract), ".rs"));
+            )*
+        })*
+
+        $( $(
+            use contract_capnp::$contract;
+        )* )*
 
         impl $name {
             pub fn recv_option(&mut self) -> IP {
@@ -117,6 +124,9 @@ macro_rules! component {
             name: String,
             pub ports: Ports,
             pub option_ip: Option<IP>,
+            $(
+            pub portal: $portal_type ,
+            )*
         }
 
         #[allow(dead_code)]
@@ -132,6 +142,9 @@ macro_rules! component {
                 name: name,
                 ports: ports,
                 option_ip: None,
+                $(
+                    portal: $portal_value,
+                )*
             };
             Ok((Box::new(comp) as Box<Component + Send>, senders))
         }

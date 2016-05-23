@@ -20,19 +20,16 @@ component! {
     let mut acc = 0;
     for ins in try!(self.ports.get_input_selections("numbers")) {
       let mut ip = try!(self.ports.recv_array("numbers", &ins));
-      let mut m = try!(ip.get_reader());
-      let m: maths_number::Reader = try!(m.get_root());
+      let m: maths_number::Reader = try!(ip.get_root());
       let n = m.get_number();
       acc += n;
     }
-    let mut new_m = capnp::message::Builder::new_default();
+    let mut new_m = IP::new();
     {
       let mut number = new_m.init_root::<maths_number::Builder>();
       number.set_number(acc);
     }
-    let mut ip = IP::new();
-    try!(ip.write_builder(&new_m));
-    try!(self.ports.send("output", ip));
+    try!(self.ports.send("output", new_m));
 
     Ok(())
   }

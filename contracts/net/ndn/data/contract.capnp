@@ -1,4 +1,4 @@
-@0xfb1dd6f039abae98;
+@0xb8fe0e9d444693c3;
 
 struct NetNdnData {
   name @0 :Text;

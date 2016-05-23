@@ -1,14 +1,10 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ui_magic, ui_conrod_window, ...}:
+{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["fbp_graph" "path" "generic_text"];
-  depsSha256 = "1hqggb84l7crp2mshnxbqj2xdq8nvf9jqcviz897yrdy74a4zaki";
-  configurePhase = ''
-  substituteInPlace src/lib.rs --replace "ui_magic" "${ui_magic}"
-  substituteInPlace src/lib.rs --replace "ui_conrod_window" "${ui_conrod_window}"
-'';
+  filteredContracts = filterContracts ["fbp_graph" "path" "generic_text" "fbp_action"];
+  depsSha256 = "1x8x616h4a617n0h72m8jxxmw7n7k9likaa0klzxbynf78fwgr0h";
 
   meta = with stdenv.lib; {
     description = "Component: Fractalide scheduler";

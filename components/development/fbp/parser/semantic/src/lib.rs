@@ -1,3 +1,4 @@
+// TODO : remove the expect...
 #[macro_use]
 extern crate rustfbp;
 
@@ -50,8 +51,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let literal = try!(ip.get_reader());
-        let literal: fbp_lexical::Reader = try!(literal.get_root());
+        let literal: fbp_lexical::Reader = try!(ip.get_root());
         let literal = try!(literal.which());
 
         match literal {
@@ -59,7 +59,7 @@ component! {
                 match handle_stream(&self) {
                     Ok(graph) => { try!(send_graph(&self, try!(path), &graph)) },
                     Err(errors) => {
-                        let mut new_ip = capnp::message::Builder::new_default();
+                        let mut new_ip = IP::new();
                         {
                             let mut ip = new_ip.init_root::<fbp_semantic_error::Builder>();
                             ip.set_path(try!(path));
@@ -72,9 +72,7 @@ component! {
                                 }
                             }
                         }
-                        let mut send_ip = IP::new();
-                        try!(send_ip.write_builder(&new_ip));
-                        let _ = self.ports.send("error", send_ip);
+                        let _ = self.ports.send("error", new_ip);
                     },
                 }
             }
@@ -100,8 +98,7 @@ fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>>
     loop {
 
         let mut ip = comp.ports.recv("input").expect("fbp_semantic : unable to receive");
-        let literal = ip.get_reader().expect("fbp_semantic : cannot get reader");
-        let literal: fbp_lexical::Reader = literal.get_root().expect("fbp_semantic : not a literal");
+        let literal: fbp_lexical::Reader = ip.get_root().expect("fbp_semantic : not a literal");
         let literal = literal.which().expect("fbp_semantic : cannot which");
         match literal {
             fbp_lexical::End(_) => {
@@ -272,7 +269,7 @@ fn get_expected(state: &State) -> String {
 }
 
 fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
-    let mut new_ip = capnp::message::Builder::new_default();
+    let mut new_ip = IP::new();
     {
         let mut ip = new_ip.init_root::<fbp_graph::Builder>();
         ip.set_path(path);
@@ -332,8 +329,6 @@ fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
             }
         }
     }
-    let mut send_ip = IP::new();
-    try!(send_ip.write_builder(&new_ip));
-    let _ = comp.ports.send("output", send_ip);
+    let _ = comp.ports.send("output", new_ip);
     Ok(())
 }

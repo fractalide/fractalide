@@ -1,0 +1,12 @@
+[package]
+name = "net_ndn_relay_in_sort"
+version = "0.1.0"
+authors = ["Stewart Mackenzie <setori88@gmail.com>"]
+
+[lib]
+name = "net_ndn_relay_in_sort"
+crate-type = ["dylib"]
+
+[dependencies]
+rustfbp = "*"
+capnp = "*"
