@@ -5,13 +5,6 @@ extern crate capnp;
 
 use std::fs;
 
-mod contract_capnp {
-    include!("path.rs");
-    include!("fbp_graph.rs");
-}
-use contract_capnp::path;
-use contract_capnp::fbp_graph;
-
 #[derive(Debug)]
 struct Graph {
     errors: bool,
@@ -23,7 +16,7 @@ struct Graph {
 }
 
 component! {
-    fvm,
+    fvm, contracts(path, fbp_graph)
     inputs(input: fbp_graph, error: any),
     inputs_array(),
     outputs(output: fbp_graph, ask_graph: path),
@@ -65,34 +58,40 @@ fn add_graph(component: &fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reade
            format!("{}-{}", name, try!(n.get_comp())) ));
     }
     for n in try!(new_graph.borrow().get_external_inputs()).iter() {
-        // TODO : replace existing links
+        let comp_name = format!("{}-{}", name, try!(n.get_comp()));
         for edge in &mut graph.edges {
             if edge.5 == name && edge.3 == try!(n.get_name()) {
-                edge.5 = format!("{}-{}", name, try!(n.get_comp()));
+                edge.5 = comp_name.clone();
                 edge.3 = try!(n.get_port()).into();
-                edge.4 = try!(n.get_selection()).into();
             }
         }
 
         for iip in &mut graph.iips {
             if iip.3 == name && iip.1 == try!(n.get_name()) {
-                iip.3 = format!("{}-{}", name, try!(n.get_comp()));
+                iip.3 = comp_name.clone();
                 iip.1 = try!(n.get_port()).into();
                 iip.2 = try!(n.get_selection()).into();
             }
         }
 
-        graph.ext_in.push((try!(n.get_name()).into(), try!(n.get_comp()).into(), try!(n.get_port()).into(), try!(n.get_selection()).into()));
+        // add only if it's the main subnet
+        if graph.nodes.len() < 1 {
+            graph.ext_in.push((try!(n.get_name()).into(), comp_name, try!(n.get_port()).into(), try!(n.get_selection()).into()));
+        }
     }
     for n in try!(new_graph.borrow().get_external_outputs()).iter() {
+        let comp_name = format!("{}-{}", name, try!(n.get_comp()));
         for edge in &mut graph.edges {
             if edge.0 == name && edge.1 == try!(n.get_name()) {
-                edge.0 = format!("{}-{}", name, try!(n.get_comp()));
+                edge.0 = comp_name.clone();
                 edge.1 = try!(n.get_port()).into();
-                edge.2 = try!(n.get_selection()).into();
             }
         }
-        graph.ext_out.push((try!(n.get_name()).into(), try!(n.get_comp()).into(), try!(n.get_port()).into(), try!(n.get_selection()).into()));
+
+        // add only if it's the main subnet
+        if graph.nodes.len() < 1 {
+            graph.ext_out.push((try!(n.get_name()).into(), comp_name, try!(n.get_port()).into(), try!(n.get_selection()).into()));
+        }
     }
 
     for n in try!(new_graph.borrow().get_nodes()).iter() {

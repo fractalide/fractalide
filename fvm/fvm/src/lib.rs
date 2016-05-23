@@ -82,14 +82,7 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.connect("sched".into(), "iip_input".into(), "iip".into(), "input".into()).expect("cannot connect");
     sched.connect("iip".into(), "output".into(), "sched".into(), "iip".into()).expect("cannot connect");
 
-    let args: Vec<String> = env::args().collect();
-    let mut msg = IP::new();
-    {
-        let mut number = msg.init_root::<path::Builder>();
-        number.set_path(&path_fbp);
-    }
-
-    p.send("s".into(), msg).expect("unable to send to comp");
+    sched.connect("sched".into(), "ask_graph".into(), "fvm".into(), "input".into()).expect("cannot connect ask_graph");
 
     // Send the first IP to the scheduler
     p.connect("add".into(), sched.get_sender("sched".into(), "action".into()).unwrap()).expect("unable to connect");
@@ -98,7 +91,7 @@ pub extern "C" fn run(path_fbp: &str) {
         let mut builder: fbp_action::Builder = start_ip.init_root();
         let mut add = builder.init_add();
         add.set_name("hello");
-        add.set_comp("ho");
+        add.set_comp(&path_fbp);
     }
     p.send("add".into(), start_ip).expect("add");
 

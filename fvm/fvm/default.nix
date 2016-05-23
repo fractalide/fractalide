@@ -21,7 +21,7 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/lib.rs --replace "fbp_action.rs" "${contracts.fbp_action}/src/contract_capnp.rs"
     substituteInPlace Cargo.toml --replace "fvm" "${name}"
     substituteInPlace src/main.rs --replace "fvm" "${name}"
-    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}/lib/lib.subnet"
+    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
     installPhase = ''

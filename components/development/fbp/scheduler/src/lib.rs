@@ -43,11 +43,12 @@ component! {
                iip: any),
     inputs_array(),
     outputs(error: error,
+            ask_graph: path,
             ask_path: path,
             iip_path: path,
             iip_contract: generic_text,
             iip_input: generic_text),
-    outputs_array(),
+    outputs_array(outputs: any),
     option(),
     acc(), portal(Portal => Portal::new())
     fn run(&mut self) -> Result<()> {
@@ -59,6 +60,17 @@ component! {
             fbp_action::Which::Add(add) => {
                 let mut add = try!(add);
                 let name = try!(add.get_name());
+                let mut ask_ip = IP::new();
+                {
+                    let mut builder: fbp_graph::Builder = ask_ip.init_root();
+                    builder.set_path(try!(add.get_comp()));
+                    {
+                        let mut nodes = builder.borrow().init_nodes(1);
+                        nodes.borrow().get(0).set_name(try!(add.get_name()));
+                        nodes.borrow().get(0).set_sort(try!(add.get_comp()));
+                    }
+                }
+                try!(self.ports.send("ask_graph", ask_ip));
                 try!(add_graph(self, name));
             },
             fbp_action::Which::Remove(remove) => {
@@ -95,6 +107,21 @@ component! {
                         o_name, o_port, o_selection,
                         i_name, i_port, i_selection));
             },
+            // TODO : add selection (array port management)
+            fbp_action::Which::ConnectSender(connect) => {
+                let connect = try!(connect);
+                let mut name: String = try!(connect.get_name()).into();
+                let mut port: String = try!(connect.get_port()).into();
+                let selection: String = try!(connect.get_selection()).into();
+                if let Some(subnet) = self.portal.subnet.get(&name) {
+                    if let Some(p) = subnet.ext_in.get(&port) {
+                        name = p.0.clone();
+                        port = p.1.clone();
+                    }
+                }
+                let sender = try!(self.ports.get_array_sender("outputs", try!(connect.get_output())));
+                try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender)));
+            },
             fbp_action::Which::Send(send) => {
                 let send = try!(send);
                 let mut comp = try!(send.get_comp());
@@ -106,8 +133,8 @@ component! {
                         port = &subnet_port.1;
                     }
                 }
-                let ip = try!(self.ports.recv("input"));
-                let sender = if selection != "" {
+                let ip = try!(self.ports.recv("action"));
+                let sender = if selection == "" {
                     try!(self.portal.sched.get_sender(comp, port))
                 } else {
                     try!(self.portal.sched.get_array_sender(comp, port, selection))

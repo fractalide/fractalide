@@ -6,6 +6,7 @@ struct FbpAction {
     remove @1 :Text;
     connect @2 :Connect;
     send @3 :Send;
+    connectSender @4 :ConnectSender;
   }
 }
 
@@ -21,6 +22,13 @@ struct Connect {
        iName @3 :Text;
        iPort @4 :Text;
        iSelection @5 :Text;
+}
+
+struct ConnectSender {
+       name @0 :Text;
+       port @1 :Text;
+       selection @2 :Text;
+       output @3 :Text;
 }
 
 struct Send {
