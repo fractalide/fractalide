@@ -1,21 +1,14 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , net_ndn_relay
+  , net_ndn
   , ...}:
 
 buildFractalideSubnet rec {
   src = ./.;
   subnet = ''
-    // when an interest arrives your app needs to satisfy it if possible with data
-    relay(${net_ndn_relay}) interest => interest
+  // receiver receives packets coming from the ndn network
+  // sender "sends" packets onto the ndn network
+  'net_ndn_interest:(name="interest",nonce=888)' -> interest ndn(${net_ndn})
 
-    // responding to the above interest
-    data => data relay()
-
-    // when your app has an interest
-    interest => interest relay()
-
-    // the response to the interest your app just expressed
-    relay() data => data
   '';
 
   meta = with stdenv.lib; {

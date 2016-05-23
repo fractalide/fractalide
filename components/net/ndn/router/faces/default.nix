@@ -1,12 +1,17 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , net_ndn_relay
+  , net_websocket_server
   , ...}:
 
 buildFractalideSubnet rec {
   src = ./.;
   subnet = ''
+  // receiver receives packets coming from the ndn network
+  // sender "sends" packets onto the ndn network
+  'protocol_domain_port:(protocol="ws://",domain="127.0.0.1",port=8888)' -> start relay(${net_websocket_server})
+  'protocol_domain_port:(protocol="ws://",domain="127.0.0.1",port=8888)' -> option relay()
+
     // when an interest arrives your app needs to satisfy it if possible with data
-    relay(${net_ndn_relay}) interest => interest
+    relay() interest => interest
 
     // responding to the above interest
     data => data relay()
@@ -20,8 +25,9 @@ buildFractalideSubnet rec {
 
   meta = with stdenv.lib; {
     description = "Subnet: net_ndn; Named Data Networking";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn;
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn/router;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };
 }
+3
