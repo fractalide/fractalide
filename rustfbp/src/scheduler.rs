@@ -44,6 +44,7 @@ pub struct Comp {
     pub inputs: HashMap<String, IPSender>,
     pub inputs_array: HashMap<String, HashMap<String, IPSender>>,
     pub sort: String,
+    pub start: bool,
 }
 
 /// the exterior scheduler. The end user use the methods of this structure.
@@ -115,6 +116,7 @@ impl Scheduler {
     pub fn add_component(&mut self, name: &str, sort: &str) -> Result<()> {
         let name = name.to_string();
         let (comp, senders) = self.cache.create_comp(sort, name.clone(), self.sender.clone()).expect("cannot create comp");
+        let start = !comp.is_input_ports();
         self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
         let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound)).clone();
         self.components.insert(name.clone(),
@@ -122,12 +124,31 @@ impl Scheduler {
                                    inputs: senders,
                                    inputs_array: HashMap::new(),
                                    sort: sort.into(),
+                                   start: start,
                                });
         self.sender.send(CompMsg::ConnectOutputPort(name, "acc".into(), s_acc)).expect("Cannot send to sched state");
         Ok(())
     }
 
-    pub fn start(&self, name: String) {
+    pub fn start(&self) {
+        for (name, comp) in &self.components {
+            if comp.start {
+                self.sender.send(CompMsg::Start(name.clone())).expect("start: unable to send to sched state");
+            }
+        }
+    }
+
+    pub fn start_if_needed(&self, name: &str) -> Result<()> {
+        self.components.get(name).ok_or(result::Error::ComponentNotFound)
+            .and_then(|comp| {
+                if comp.start {
+                    self.sender.send(CompMsg::Start(name.into())).expect("start_if_needed");
+                }
+                Ok(())
+            })
+    }
+
+    pub fn start_component(&self, name: String) {
         self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state");
     }
 

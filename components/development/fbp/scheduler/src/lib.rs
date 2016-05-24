@@ -191,6 +191,7 @@ fn add_graph(mut component: &mut fbp_scheduler, name: &str) -> Result<()> {
         inputs: senders,
         inputs_array: HashMap::new(),
         sort: "".into(),
+        start: false,
     });
 
     for iip in try!(i_graph.borrow().get_iips()).iter() {
@@ -247,6 +248,13 @@ fn add_graph(mut component: &mut fbp_scheduler, name: &str) -> Result<()> {
         option_action.map(|action| { iip.action = action; });
         try!(p.send("s", iip));
     }
+
+    // Start all components without input port
+    for n in &subnet.nodes {
+        try!(component.portal.sched.start_if_needed(n));
+    }
+
+    // Remember the subnet
     component.portal.subnet.insert(name.into(), subnet);
 
     Ok(())
