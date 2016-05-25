@@ -47,6 +47,7 @@ pub extern "C" fn run(path_fbp: &str) {
         inputs: senders,
         inputs_array: HashMap::new(),
         sort: "".into(),
+        start: false,
     });
 
     // Send the start ip for the graph
