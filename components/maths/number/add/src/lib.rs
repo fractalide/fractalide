@@ -1,15 +1,9 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contract_capnp {
-    include!("maths_number.rs");
-}
-use self::contract_capnp::maths_number;
+extern crate capnp;
 
 component! {
-  Add,
+  maths_number_add, contracts(maths_number)
   inputs(),
   inputs_array(numbers: maths_number),
   outputs(output: number),

@@ -1,15 +1,11 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-mod contract_capnp {
-    include!("list_triple.rs");
-}
-use contract_capnp::list_triple;
+extern crate capnp;
+
 use std::str::FromStr;
 
 component! {
-    example_wrangle_anonymize,
+    example_wrangle_anonymize, contracts(list_triple)
     inputs(input: list_triple),
     inputs_array(),
     outputs(output: list_triple),
@@ -18,9 +14,8 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
 
-        let ip = try!(self.ports.recv("input"));
-        let anon_reader = try!(ip.get_reader());
-        let anon_reader: list_triple::Reader = try!(anon_reader.get_root());
+        let mut ip = try!(self.ports.recv("input"));
+        let anon_reader: list_triple::Reader = try!(ip.get_root());
         let to_anon_triple = try!(anon_reader.get_triples());
 
         let mut anonymized_bean_counter = HashMap::new();
@@ -33,7 +28,7 @@ component! {
             }
             anonymized_bean_counter.insert(second, third);
         }
-        let mut fin_ip = capnp::message::Builder::new_default();
+        let mut fin_ip = IP::new();
         {
             let ip = fin_ip.init_root::<list_triple::Builder>();
             let mut fin_triple = ip.init_triples(anonymized_bean_counter.len() as u32);
@@ -45,10 +40,7 @@ component! {
                 i += 1;
             }
         }
-        let mut send_ip = IP::new();
-        try!(send_ip.write_builder(&fin_ip));
-        try!(self.ports.send("output", send_ip));
+        try!(self.ports.send("output", fin_ip));
         Ok(())
     }
 }
-

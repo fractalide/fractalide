@@ -1,21 +1,11 @@
 #[macro_use]
 extern crate rustfbp;
-
 extern crate capnp;
 
 use std::fs;
 
-mod contract_capnp {
-    include!("fbp_graph.rs");
-    include!("fbp_semantic_error.rs");
-    include!("file_error.rs");
-}
-use contract_capnp::fbp_graph;
-use contract_capnp::file_error;
-use contract_capnp::fbp_semantic_error;
-
 component! {
-    fvm,
+    development_fbp_errors, contracts(fbp_graph, fbp_semantic_error, file_error)
     inputs(file_error: file_error, semantic_error: fbp_semantic_error),
     inputs_array(),
     outputs(output: fbp_graph),

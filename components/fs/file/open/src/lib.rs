@@ -1,24 +1,13 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contracts {
-    include!("path.rs");
-    include!("file_desc.rs");
-    include!("file_error.rs");
-}
-
-use contracts::file_error;
-use contracts::file_desc;
-use contracts::path;
+extern crate capnp;
 
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 
 component! {
-    FileOpen,
+    fs_file_open, contracts(path, file_desc, file_error)
     inputs(input: path),
     inputs_array(),
     outputs(output: file_desc, error: file_error),

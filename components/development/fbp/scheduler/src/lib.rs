@@ -36,7 +36,7 @@ impl Portal {
 }
 
 component! {
-    fbp_scheduler, contracts(fbp_graph, path, generic_text, fbp_action)
+    development_fbp_scheduler, contracts(fbp_graph, path, generic_text, fbp_action)
         inputs(action: fbp_action,
                graph: fbp_graph,
                contract_path: path,
@@ -146,7 +146,7 @@ component! {
     }
 }
 
-fn add_graph(mut component: &mut fbp_scheduler, name: &str) -> Result<()> {
+fn add_graph(mut component: &mut development_fbp_scheduler, name: &str) -> Result<()> {
     let mut ip = try!(component.ports.recv("graph"));
     let i_graph: fbp_graph::Reader = try!(ip.get_root());
 

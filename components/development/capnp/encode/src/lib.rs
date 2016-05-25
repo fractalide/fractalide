@@ -3,21 +3,13 @@ extern crate rustfbp;
 extern crate capnp;
 
 use std::fs;
-
-mod contract_capnp {
-    include!("path.rs");
-    include!("generic_text.rs");
-}
-use contract_capnp::path;
-use contract_capnp::generic_text;
-
 use std::process::Command;
 use std::process;
 use std::path::Path;
 use std::env;
 
 component! {
-    fvm,
+    development_capnp_encode, contracts(path, generic_text)
     inputs(path: path, contract: generic_text, input: generic_text),
     inputs_array(),
     outputs(output: any),

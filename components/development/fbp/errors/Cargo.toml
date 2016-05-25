@@ -1,10 +1,10 @@
 [package]
-name = "errors"
+name = "development_fbp_errors"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "errors"
+name = "development_fbp_errors"
 crate-type = ["dylib"]
 
 [dependencies]

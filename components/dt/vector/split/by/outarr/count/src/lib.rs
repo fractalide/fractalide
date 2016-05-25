@@ -1,15 +1,9 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contracts {
-    include!("file_list.rs");
-}
-use contracts::file_list;
+extern crate capnp;
 
 component! {
-    DtVectorSplitByOutarrCount,
+    dt_vector_split_by_outarr_count, contracts(file_list)
     inputs(input: file_list),
     inputs_array(),
     outputs(),
@@ -18,8 +12,9 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let list = try!(ip.get_reader());
-        let list: file_list::Reader = try!(list.get_root());
+        let list: file_list::Reader = try!(ip.get_root());
+        //let list = try!(ip.get_reader());
+        //let list: file_list::Reader = try!(list.get_root());
         let list = try!(list.get_files());
 
         let mut v =Vec::with_capacity(list.len() as usize);
@@ -32,7 +27,7 @@ component! {
         let mut i: u32 = 0;
         for chunk in v.chunks(inc_by)
         {
-            let mut new_ip = capnp::message::Builder::new_default();
+            let mut new_ip = IP::new();
             {
                 let ip = new_ip.init_root::<file_list::Builder>();
                 let mut files = ip.init_files(chunk.len() as u32);
@@ -42,9 +37,7 @@ component! {
                     i += 1;
                 }
             }
-            let mut send_ip = IP::new();
-            try!(send_ip.write_builder(&new_ip));
-            try!(self.ports.send_array("output", &format!("{}", i), send_ip));
+            try!(self.ports.send_array("output", &format!("{}", i), new_ip));
             i += 1;
         }
         Ok(())

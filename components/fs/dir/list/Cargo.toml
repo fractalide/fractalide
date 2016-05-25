@@ -1,10 +1,10 @@
 [package]
-name = "fs_list_dir"
+name = "fs_dir_list"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "fs_list_dir"
+name = "fs_dir_list"
 crate-type = ["dylib"]
 
 [dependencies]

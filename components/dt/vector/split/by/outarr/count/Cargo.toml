@@ -1,10 +1,10 @@
 [package]
-name = "ip_clone"
+name = "dt_vector_split_by_outarr_count"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "ip_clone"
+name = "dt_vector_split_by_outarr_count"
 crate-type = ["dylib"]
 
 [dependencies]

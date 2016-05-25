@@ -1,17 +1,7 @@
 // TODO : remove the expect...
 #[macro_use]
 extern crate rustfbp;
-
 extern crate capnp;
-
-mod contract_capnp {
-    include!("fbp_graph.rs");
-    include!("fbp_lexical.rs");
-    include!("fbp_semantic_error.rs");
-}
-use contract_capnp::fbp_graph;
-use contract_capnp::fbp_lexical;
-use contract_capnp::fbp_semantic_error;
 
 #[derive(Debug)]
 struct Graph {
@@ -42,7 +32,7 @@ enum Literal {
 }
 
 component! {
-    fbp_semantic,
+    development_fbp_parser_semantic, contracts(fbp_graph, fbp_lexical, fbp_semantic_error)
     inputs(input: fbp_lexical),
     inputs_array(),
     outputs(output: fbp_graph, error: fbp_semantic_error),
@@ -82,7 +72,7 @@ component! {
     }
 }
 
-fn handle_stream(comp: &fbp_semantic) -> std::result::Result<Graph, Vec<String>> {
+fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<Graph, Vec<String>> {
     let mut state = Break;
     let mut stack: Vec<Literal> = vec![];
     let mut graph = Graph {
@@ -268,7 +258,7 @@ fn get_expected(state: &State) -> String {
     }
 }
 
-fn send_graph(comp: &fbp_semantic, path: &str, graph: &Graph) -> Result<()> {
+fn send_graph(comp: &development_fbp_parser_semantic, path: &str, graph: &Graph) -> Result<()> {
     let mut new_ip = IP::new();
     {
         let mut ip = new_ip.init_root::<fbp_graph::Builder>();

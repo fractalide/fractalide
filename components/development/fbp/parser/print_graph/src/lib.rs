@@ -1,15 +1,9 @@
 #[macro_use]
 extern crate rustfbp;
-
 extern crate capnp;
 
-mod contract_capnp {
-    include!("fbp_graph.rs");
-}
-use contract_capnp::fbp_graph;
-
 component! {
-    fbp_print_graph,
+    development_fbp_parser_print_graph, contracts(fbp_graph)
     inputs(input: fbp_graph),
     inputs_array(),
     outputs(output: fbp_graph),

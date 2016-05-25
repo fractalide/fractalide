@@ -1,10 +1,10 @@
 [package]
-name = "fbp_semantic"
+name = "development_fbp_parser_semantic"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "fbp_semantic"
+name = "development_fbp_parser_semantic"
 crate-type = ["dylib"]
 
 [dependencies]

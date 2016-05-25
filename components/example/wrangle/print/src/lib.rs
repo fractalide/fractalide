@@ -1,17 +1,10 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-mod contract_capnp {
-    include!("quadruple.rs");
-}
-use contract_capnp::quadruple;
+extern crate capnp;
 
-
-fn print_data(ip: rustfbp::ports::IP)  -> Result<(String,String,String,String)>
+fn print_data(mut ip: rustfbp::ports::IP)  -> Result<(String,String,String,String)>
 {
-    let data_reader = try!(ip.get_reader());
-    let data: quadruple::Reader = try!(data_reader.get_root());
+    let data: quadruple::Reader = try!(ip.get_root());
     let min = data.get_first().to_string();
     let max =  data.get_second().to_string();
     let average =  data.get_third().to_string();
@@ -20,7 +13,7 @@ fn print_data(ip: rustfbp::ports::IP)  -> Result<(String,String,String,String)>
 }
 
 component! {
-    example_wrangle_stats,
+    example_wrangle_print, contracts(quadruple)
     inputs(raw: quadruple, anonymous: quadruple),
     inputs_array(),
     outputs(),
@@ -35,4 +28,3 @@ component! {
         Ok(())
     }
 }
-

@@ -1,17 +1,9 @@
 #[macro_use]
 extern crate rustfbp;
+extern crate capnp;
 
 #[macro_use]
 extern crate nom;
-
-extern crate capnp;
-
-mod contract_capnp {
-    include!("file_desc.rs");
-    include!("fbp_lexical.rs");
-}
-use contract_capnp::file_desc;
-use contract_capnp::fbp_lexical;
 
 #[derive(Debug)]
 enum Literal {
@@ -99,7 +91,7 @@ named!(comp_or_port<&[u8], Literal>, chain!(
 named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_port));
 
 component! {
-    comp,
+    development_fbp_parser_lexical, contracts(file_desc, fbp_lexical)
     inputs(input: file_desc),
     inputs_array(),
     outputs(output: fbp_lexical),
@@ -130,7 +122,7 @@ component! {
     }
 }
 
-fn handle_stream(comp: &comp) -> Result<()> {
+fn handle_stream(comp: &development_fbp_parser_lexical) -> Result<()> {
     loop {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
@@ -145,7 +137,7 @@ fn handle_stream(comp: &comp) -> Result<()> {
                         IResult::Done(rest, lit) => {
                             let mut send_ip = IP::new();
                             {
-                                let mut ip = send_ip.init_root::<fbp_lexical::Builder>();
+                                let ip = send_ip.init_root::<fbp_lexical::Builder>();
                                 match lit {
                                     Literal::Bind => { ip.init_token().set_bind(()); },
                                     Literal::External => {ip.init_token().set_external(()); },
@@ -177,7 +169,7 @@ fn handle_stream(comp: &comp) -> Result<()> {
                 }
                 let mut new_ip = IP::new();
                 {
-                    let mut ip = new_ip.init_root::<fbp_lexical::Builder>();
+                    let ip = new_ip.init_root::<fbp_lexical::Builder>();
                     ip.init_token().set_break(());
                 }
                 let _ = comp.ports.send("output", new_ip);

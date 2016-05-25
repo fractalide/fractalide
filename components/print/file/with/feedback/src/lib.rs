@@ -1,18 +1,11 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
+extern crate capnp;
 
-mod contract_capnp {
-    include!("value_string.rs");
-    include!("list_triple.rs");
-}
-use contract_capnp::value_string;
-use contract_capnp::list_triple;
 use std::str::FromStr;
 
 component! {
-    print_with_feedback,
+    print_file_with_feedback, contracts(value_string, list_triple)
     inputs(input: list_triple),
     inputs_array(),
     outputs(next: value_string),
@@ -22,8 +15,7 @@ component! {
     fn run(&mut self) -> Result<()> {
         loop{
             let mut ip = try!(self.ports.recv("input"));
-            let list_triple = try!(ip.get_reader());
-            let list_triple: list_triple::Reader = try!(list_triple.get_root());
+            let list_triple: list_triple::Reader = try!(ip.get_root());
             let list_triple = try!(list_triple.get_triples());
             if try!(list_triple.get(0).get_first()) == "end" {
                 println!("{}",try!(list_triple.get(0).get_first()));
@@ -38,14 +30,12 @@ component! {
                     }
                 }
             }
-            let mut next_ip = capnp::message::Builder::new_default();
+            let mut next_ip = IP::new();
             {
                 let mut ip = next_ip.init_root::<value_string::Builder>();
                 ip.set_value("next");
             }
-            let mut send_ip = IP::new();
-            try!(send_ip.write_builder(&next_ip));
-            try!(self.ports.send("next", send_ip));
+            try!(self.ports.send("next", next_ip));
         }
         Ok(())
     }

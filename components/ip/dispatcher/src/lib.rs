@@ -1,10 +1,9 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
+extern crate capnp;
 
 component! {
-    clone,
+    ip_dispatcher,
     inputs(input: any),
     inputs_array(),
     outputs(output: any),
@@ -14,7 +13,6 @@ component! {
     fn run(&mut self) -> Result<()> {
         let ip = try!(self.ports.recv("input"));
         let _ = self.ports.send_action("output", ip);
-
         Ok(())
     }
 }

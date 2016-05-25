@@ -1,20 +1,9 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contract_capnp {
-    include!("list_tuple.rs");
-    include!("value_string.rs");
-    include!("list_triple.rs");
-
-}
-use contract_capnp::list_tuple;
-use contract_capnp::list_triple;
-use contract_capnp::value_string;
+extern crate capnp;
 
 component! {
-    DtVectorExtractKeyValue,
+    example_wrangle_processchunk_extract_keyvalue, contracts(list_tuple, value_string, list_triple)
     inputs(input: list_tuple),
     inputs_array(),
     outputs(output: list_tuple),
@@ -23,12 +12,10 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut opt = self.recv_option();
-        let extract_key = try!(opt.get_reader());
-        let extract_key: value_string::Reader = try!(extract_key.get_root());
+        let extract_key: value_string::Reader = try!(opt.get_root());
 
         let mut ip = try!(self.ports.recv("input"));
-        let list_tuple = try!(ip.get_reader());
-        let list_tuple: list_tuple::Reader = try!(list_tuple.get_root());
+        let list_tuple: list_tuple::Reader = try!(ip.get_root());
         let list_tuple = try!(list_tuple.get_tuples());
 
         if try!(list_tuple.get(0).get_first()) != "end" {
@@ -43,7 +30,7 @@ component! {
             if small_sized_bean_counter.len() == 0 {
                 small_sized_bean_counter.insert("0",0);
             }
-            let mut new_ip = capnp::message::Builder::new_default();
+            let mut new_ip = IP::new();
             {
                 let ip = new_ip.init_root::<list_triple::Builder>();
                 let mut triples = ip.init_triples(small_sized_bean_counter.len() as u32);
@@ -55,19 +42,15 @@ component! {
                     i += 1;
                 }
             }
-            let mut send_ip = IP::new();
-            try!(send_ip.write_builder(&new_ip));
-            try!(self.ports.send("output", send_ip));
+            try!(self.ports.send("output", new_ip));
         } else {
-            let mut end_ip = capnp::message::Builder::new_default();
+            let mut end_ip = IP::new();
             {
                 let ip = end_ip.init_root::<list_triple::Builder>();
                 let mut triples = ip.init_triples(1);
                 triples.borrow().get(0).set_first("end");
             }
-            let mut send_ip = IP::new();
-            try!(send_ip.write_builder(&end_ip));
-            try!(self.ports.send("output", send_ip));
+            try!(self.ports.send("output", end_ip));
         }
         Ok(())
     }

@@ -40,7 +40,6 @@ self = rec {
   example_wrangle_processchunk_iterate_paths = callPackage ./example/wrangle/processchunk/iterate_paths {};
   example_wrangle_stats = callPackage ./example/wrangle/stats {};
   fs_file_open = callPackage ./fs/file/open {};
-  fs_file_print = callPackage ./fs/file/print {};
   fs_dir_list = callPackage ./fs/dir/list {};
   halter = callPackage ./halter {};
   io_print = callPackage ./io/print {};

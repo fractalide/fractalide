@@ -1,5 +1,5 @@
 [root]
-name = "ui_conrod_window"
+name = "ui_js_block"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",

@@ -1,16 +1,9 @@
-extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
-
-mod contracts {
-    include!("net_ndn_interest.rs");
-    include!("net_ndn_data.rs");
-}
-use self::contracts::net_ndn_interest;
-use self::contracts::net_ndn_data;
+extern crate capnp;
 
 component! {
-    ContentStore,
+    net_ndn_router_cs, contracts(net_ndn_data, net_ndn_interest)
     inputs(lookup_interest: net_ndn_interest
         , cache_data: net_ndn_data),
     inputs_array(),
