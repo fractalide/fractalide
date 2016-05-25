@@ -1,5 +1,5 @@
 [root]
-name = "encode"
+name = "development_capnp_encode"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",

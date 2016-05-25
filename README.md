@@ -1,5 +1,5 @@
 # Fractalide
-"Go with the flow", or should one say "Oxidize in the flow"?
+A Browser for a Named Data Network
 
 ## Canonical source
 

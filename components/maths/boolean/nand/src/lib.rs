@@ -1,15 +1,10 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contract_capnp {
-    include!("maths_boolean.rs");
-}
-use self::contract_capnp::maths_boolean;
+extern crate capnp;
 
 component! {
   maths_boolean_nand,
+  contracts(maths_boolean),
   inputs(a: maths_boolean, b: maths_boolean),
   inputs_array(),
   outputs(output: maths_boolean),

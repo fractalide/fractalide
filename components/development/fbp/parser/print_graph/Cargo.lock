@@ -1,5 +1,5 @@
 [root]
-name = "print_graph"
+name = "development_fbp_parser_print_graph"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",

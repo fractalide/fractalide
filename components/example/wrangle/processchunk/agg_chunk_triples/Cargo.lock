@@ -1,5 +1,5 @@
 [root]
-name = "example_wrangle_convert_aggregate_tuple"
+name = "example_wrangle_process_agg_chunk_triples"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
