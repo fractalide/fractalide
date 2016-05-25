@@ -80,7 +80,6 @@ self = rec {
   ui_js_input = callPackage ./ui/js/input {};
   ui_js_page = callPackage ./ui/js/page {};
   ui_js_text = callPackage ./ui/js/text {};
-  net_ndn_face = callPackage ./net/ndn/face {};
   web_server = callPackage ./web/server {};
 };
 in

@@ -9,7 +9,7 @@
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
 ## Problem
-Disseminations over a point-to-point communications system (TCP/IP) is costly and technically complex, requiring expensive hardware and engineers to overcome the problem. Look at the company valuations of the Internet Giants to get a rough idea of  how costly this problem is.
+Disseminations over a point-to-point communications system (TCP/IP) are costly and technically complex, requiring expensive hardware and engineers to overcome the problem. Look at the company valuations of the Internet Giants to get a rough idea of how costly this problem is.
 
 ## Solution
 Named Data Networking builds the concept of dissemination into the protocol, making disseminations extremely cheap, yet retaining use of the ubiquitous TCP/IP network, as Named Data Networking is an optional TCP/IP overlay.
