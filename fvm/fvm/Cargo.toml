@@ -2,7 +2,7 @@
 name = "fvm"
 version = "0.2.0"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
-license = "AGPL-3.0"
+license = "MPL-2.0"
 homepage = "http://github.com/fractalide/fvm"
 repository = "http://github.com/fractalide/fvm"
 description = "FVM, the Fractalide virtual machine"
