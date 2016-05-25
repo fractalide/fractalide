@@ -13,7 +13,7 @@ fn print_data(mut ip: rustfbp::ports::IP)  -> Result<(String,String,String,Strin
 }
 
 component! {
-    example_wrangle_stats, contracts(quadruple)
+    example_wrangle_print, contracts(quadruple)
     inputs(raw: quadruple, anonymous: quadruple),
     inputs_array(),
     outputs(),

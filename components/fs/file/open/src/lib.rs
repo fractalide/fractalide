@@ -7,7 +7,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 component! {
-    FileOpen, contracts(path, file_desc, file_error)
+    fs_file_open, contracts(path, file_desc, file_error)
     inputs(input: path),
     inputs_array(),
     outputs(output: file_desc, error: file_error),

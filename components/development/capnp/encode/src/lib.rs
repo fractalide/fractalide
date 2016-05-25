@@ -9,7 +9,7 @@ use std::path::Path;
 use std::env;
 
 component! {
-    fvm, contracts(path, generic_text)
+    development_capnp_encode, contracts(path, generic_text)
     inputs(path: path, contract: generic_text, input: generic_text),
     inputs_array(),
     outputs(output: any),

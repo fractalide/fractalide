@@ -1,10 +1,10 @@
 [package]
-name = "print_graph"
+name = "development_fbp_parser_print_graph"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "print_graph"
+name = "development_fbp_parser_print_graph"
 crate-type = ["dylib"]
 
 [dependencies]

@@ -13,7 +13,7 @@ use std::path::Path;
 
 
 component! {
-    clone, contracts(path, domain_port, url)
+    web_server, contracts(path, domain_port, url)
     inputs(www_dir: path, domain_port: domain_port, url: url),
     inputs_array(),
     outputs(),

@@ -9,7 +9,7 @@ mod contract_capnp {
 use self::contract_capnp::maths_boolean;
 
 component! {
-  Nand,
+  maths_boolean_nand,
   inputs(a: maths_boolean, b: maths_boolean),
   inputs_array(),
   outputs(output: maths_boolean),

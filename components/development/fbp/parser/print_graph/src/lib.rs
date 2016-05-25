@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    fbp_print_graph, contracts(fbp_graph)
+    development_fbp_parser_print_graph, contracts(fbp_graph)
     inputs(input: fbp_graph),
     inputs_array(),
     outputs(output: fbp_graph),

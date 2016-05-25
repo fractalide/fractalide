@@ -7,7 +7,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 component! {
-    FileOpen, contracts(path, value_string, file_error)
+    example_wrangle_processchunk_file_open, contracts(path, value_string, file_error)
     inputs(input: path),
     inputs_array(),
     outputs(output: value_string, error: file_error),

@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    PendingInformationTable, contracts(net_ndn_interest)
+    net_ndn_router_print_interest, contracts(net_ndn_interest)
     inputs(input: net_ndn_interest),
     inputs_array(),
     outputs(),

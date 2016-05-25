@@ -1,10 +1,10 @@
 [package]
-name = "encode"
+name = "development_capnp_encode"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "encode"
+name = "development_capnp_encode"
 crate-type = ["dylib"]
 
 [dependencies]

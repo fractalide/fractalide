@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    Print, contracts(generic_text)
+    io_print, contracts(generic_text)
     inputs(input: generic_text),
     inputs_array(),
     outputs(output: generic_text),

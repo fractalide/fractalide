@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    DtVectorExtractKeyValue, contracts(list_tuple, value_string, list_triple)
+    example_wrangle_processchunk_extract_keyvalue, contracts(list_tuple, value_string, list_triple)
     inputs(input: list_tuple),
     inputs_array(),
     outputs(output: list_tuple),

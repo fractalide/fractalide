@@ -4,7 +4,7 @@ extern crate capnp;
 extern crate ws;
 
 component! {
-    Face, contracts(protocol_domain_port)
+    net_websocket_server, contracts(protocol_domain_port)
     inputs( ),
     inputs_array(),
     outputs(output: any),

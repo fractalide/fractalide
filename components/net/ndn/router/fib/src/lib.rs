@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    ForwardingInformationBase, contracts(net_ndn_interest)
+    net_ndn_router_fib, contracts(net_ndn_interest)
     inputs( lookup_interest: net_ndn_interest),
     inputs_array(),
     outputs(interest_hit: net_ndn_interest),

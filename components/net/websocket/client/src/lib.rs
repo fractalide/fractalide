@@ -7,7 +7,7 @@ extern crate env_logger;
 use ws::{connect, CloseCode};
 
 component! {
-    Face, contracts(protocol_domain_port)
+    net_websocket_client, contracts(protocol_domain_port)
     inputs( start: protocol_domain_port, input: any ),
     inputs_array(),
     outputs(output: any),

@@ -5,7 +5,7 @@ extern crate capnp;
 use std::str::FromStr;
 
 component! {
-    print_with_feedback, contracts(value_string, list_triple)
+    print_file_with_feedback, contracts(value_string, list_triple)
     inputs(input: list_triple),
     inputs_array(),
     outputs(next: value_string),

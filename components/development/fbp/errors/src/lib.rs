@@ -5,7 +5,7 @@ extern crate capnp;
 use std::fs;
 
 component! {
-    fvm, contracts(fbp_graph, fbp_semantic_error, file_error)
+    development_fbp_errors, contracts(fbp_graph, fbp_semantic_error, file_error)
     inputs(file_error: file_error, semantic_error: fbp_semantic_error),
     inputs_array(),
     outputs(output: fbp_graph),

@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-  Add, contracts(maths_number)
+  maths_number_add, contracts(maths_number)
   inputs(),
   inputs_array(numbers: maths_number),
   outputs(output: number),

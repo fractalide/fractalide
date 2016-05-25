@@ -4,7 +4,7 @@ extern crate capnp;
 extern crate rustfbp;
 
 component! {
-    DropIp,
+    drop_ip,
     inputs( drop: any),
     inputs_array(),
     outputs(),

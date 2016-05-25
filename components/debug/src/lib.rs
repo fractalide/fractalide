@@ -4,7 +4,7 @@ extern crate capnp;
 extern crate rustfbp;
 
 component! {
-    print_comp, contracts(generic_text)
+    debug, contracts(generic_text)
     inputs(input: any),
     inputs_array(),
     outputs(output: any),

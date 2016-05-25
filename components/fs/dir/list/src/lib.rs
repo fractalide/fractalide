@@ -7,7 +7,7 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 component! {
-    FsDirList, contracts(file_list, path)
+    fs_dir_list, contracts(file_list, path)
     inputs(input: path),
     inputs_array(),
     outputs(output: file_list),

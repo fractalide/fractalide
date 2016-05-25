@@ -5,7 +5,7 @@ extern crate capnp;
 use std::str::FromStr;
 
 component! {
-    example_wrangle_agg_chunk_triples, contracts(list_triple, value_string)
+    example_wrangle_process_agg_chunk_triples, contracts(list_triple, value_string)
     inputs(input: list_triple),
     inputs_array(),
     outputs(output: list_triple, next : value_string),

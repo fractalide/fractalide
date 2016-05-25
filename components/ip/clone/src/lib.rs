@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    clone,
+    ip_clone,
     inputs(input: any),
     inputs_array(),
     outputs(),
@@ -11,7 +11,7 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input"));
+        let ip = try!(self.ports.recv("input"));
         for p in try!(self.ports.get_output_selections("clone")) {
             try!(self.ports.send_array("clone", &p, ip.clone()));
         }

@@ -1,10 +1,10 @@
 [package]
-name = "ip_clone"
+name = "example_wrangle_processchunk_extract_keyvalue"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "ip_clone"
+name = "example_wrangle_processchunk_extract_keyvalue"
 crate-type = ["dylib"]
 
 [dependencies]

@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    DtVectorSplitByOutarrCount, contracts(file_list)
+    dt_vector_split_by_outarr_count, contracts(file_list)
     inputs(input: file_list),
     inputs_array(),
     outputs(),

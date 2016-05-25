@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    clone,
+    ip_dispatcher,
     inputs(input: any),
     inputs_array(),
     outputs(output: any),

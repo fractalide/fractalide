@@ -5,7 +5,7 @@ extern crate capnp;
 use std::thread;
 
 component! {
-    ip_action,
+    ip_delay,
     inputs(input: any),
     inputs_array(),
     outputs(output: any),
@@ -13,7 +13,7 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip_input = try!(self.ports.recv("input"));
+        let ip_input = try!(self.ports.recv("input"));
         thread::sleep_ms(1000);
         try!(self.ports.send("output", ip_input));
         Ok(())
