@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate rustfbp;
-
 extern crate capnp;
 
 use std::fs;

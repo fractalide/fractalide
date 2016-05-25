@@ -17,21 +17,23 @@ component! {
   option(),
   acc(),
   fn run(&mut self) -> Result<()> {
-    let mut ip_a = try!(self.ports.recv("a"));
-    let mut ip_b = try!(self.ports.recv("b"));
     let a = {
+        let mut ip_a = try!(self.ports.recv("a"));
         let a_reader: maths_boolean::Reader = try!(ip_a.get_root());
         a_reader.get_boolean()
     };
-    let b_reader: maths_boolean::Reader = try!(ip_b.get_root());
-    let b = b_reader.get_boolean();
+    let b = {
+        let mut ip_b = try!(self.ports.recv("b"));
+        let b_reader: maths_boolean::Reader = try!(ip_b.get_root());
+        b_reader.get_boolean()
+    };
 
+    let mut out_ip = IP::new();
     {
-      let mut boolean = ip_a.init_root::<maths_boolean::Builder>();
+      let mut boolean = out_ip.init_root::<maths_boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
-
-    try!(self.ports.send("output", ip_a));
+    try!(self.ports.send("output", out_ip));
     Ok(())
   }
 }

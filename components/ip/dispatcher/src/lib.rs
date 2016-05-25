@@ -1,7 +1,6 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
+extern crate capnp;
 
 component! {
     clone,
@@ -14,7 +13,6 @@ component! {
     fn run(&mut self) -> Result<()> {
         let ip = try!(self.ports.recv("input"));
         let _ = self.ports.send_action("output", ip);
-
         Ok(())
     }
 }

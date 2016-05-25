@@ -1,22 +1,15 @@
 #![feature(btree_range, collections_bound)]
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-mod contract_capnp {
-    include!("list_triple.rs");
-    include!("quadruple.rs");
-}
-use contract_capnp::list_triple;
-use contract_capnp::quadruple;
+extern crate capnp;
+
 use std::collections::BTreeSet;
 use std::collections::Bound::{Included, Unbounded, Excluded};
 use std::str::FromStr;
 
-fn process_data(ip: rustfbp::ports::IP) -> Result<(u32,u32,u32,f32)>
+fn process_data(mut ip: rustfbp::ports::IP) -> Result<(u32,u32,u32,f32)>
 {
-    let data_reader = try!(ip.get_reader());
-    let data_reader: list_triple::Reader = try!(data_reader.get_root());
+    let data_reader: list_triple::Reader = try!(ip.get_root());
     let data = try!(data_reader.get_triples());
     let stats_length = data.len();
     let mut total :u32 = 0;
@@ -43,7 +36,7 @@ fn process_data(ip: rustfbp::ports::IP) -> Result<(u32,u32,u32,f32)>
 }
 
 component! {
-    example_wrangle_stats,
+    example_wrangle_stats, contracts(list_triple, quadruple)
     inputs(raw: list_triple, anonymous: list_triple),
     inputs_array(),
     outputs(raw: quadruple, anonymous: quadruple),
@@ -52,7 +45,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let (min, max, average, median): (u32, u32, u32, f32) = try!(process_data(try!(self.ports.recv("raw"))));
-        let mut raw_ip = capnp::message::Builder::new_default();
+        let mut raw_ip = IP::new();
         {
             let mut quad = raw_ip.init_root::<quadruple::Builder>();
             quad.set_first(min);
@@ -60,12 +53,10 @@ component! {
             quad.set_third(average);
             quad.set_fourth(median);
         }
-        let mut send_ip = IP::new();
-        try!(send_ip.write_builder(&raw_ip));
-        try!(self.ports.send("raw", send_ip));
+        try!(self.ports.send("raw", raw_ip));
 
         let (min, max, average, median): (u32, u32, u32, f32) = try!(process_data(try!(self.ports.recv("anonymous"))));
-        let mut anonymous_ip = capnp::message::Builder::new_default();
+        let mut anonymous_ip = IP::new();
         {
             let mut quad = anonymous_ip.init_root::<quadruple::Builder>();
             quad.set_first(min);
@@ -73,10 +64,7 @@ component! {
             quad.set_third(average);
             quad.set_fourth(median);
         }
-        let mut send_ip = IP::new();
-        try!(send_ip.write_builder(&anonymous_ip));
-        try!(self.ports.send("anonymous", send_ip));
+        try!(self.ports.send("anonymous", anonymous_ip));
         Ok(())
     }
 }
-

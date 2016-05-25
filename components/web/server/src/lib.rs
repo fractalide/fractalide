@@ -11,17 +11,9 @@ use mount::Mount;
 use staticfile::Static;
 use std::path::Path;
 
-mod contracts {
-    include!("path.rs");
-    include!("domain_port.rs");
-    include!("url.rs");
-}
-
-use self::contracts::path;
-use self::contracts::domain_port;
 
 component! {
-    clone,
+    clone, contracts(path, domain_port, url)
     inputs(www_dir: path, domain_port: domain_port, url: url),
     inputs_array(),
     outputs(),
@@ -34,8 +26,8 @@ component! {
         let www_dir = try!(www_dir.get_path());
 
         let mut url_ip = try!(self.ports.recv("url"));
-        let url: path::Reader = try!(url_ip.get_root());
-        let url = try!(url.get_path());
+        let url: url::Reader = try!(url_ip.get_root());
+        let url = try!(url.get_url());
 
         let mut domain_ip = try!(self.ports.recv("domain_port"));
         let domain_port: domain_port::Reader = try!(domain_ip.get_root());

@@ -12,13 +12,8 @@ component! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-
-        // Get the path
         try!(self.ports.recv("input"));
         try!(self.ports.recv("input"));
-
         Ok(())
-
     }
-
 }

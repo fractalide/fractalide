@@ -1,17 +1,7 @@
 // TODO : remove the expect...
 #[macro_use]
 extern crate rustfbp;
-
 extern crate capnp;
-
-mod contract_capnp {
-    include!("fbp_graph.rs");
-    include!("fbp_lexical.rs");
-    include!("fbp_semantic_error.rs");
-}
-use contract_capnp::fbp_graph;
-use contract_capnp::fbp_lexical;
-use contract_capnp::fbp_semantic_error;
 
 #[derive(Debug)]
 struct Graph {
@@ -42,7 +32,7 @@ enum Literal {
 }
 
 component! {
-    fbp_semantic,
+    fbp_semantic, contracts(fbp_graph, fbp_lexical, fbp_semantic_error)
     inputs(input: fbp_lexical),
     inputs_array(),
     outputs(output: fbp_graph, error: fbp_semantic_error),

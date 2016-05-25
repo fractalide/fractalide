@@ -1,17 +1,9 @@
 #[macro_use]
 extern crate rustfbp;
+extern crate capnp;
 
 #[macro_use]
 extern crate nom;
-
-extern crate capnp;
-
-mod contract_capnp {
-    include!("file_desc.rs");
-    include!("fbp_lexical.rs");
-}
-use contract_capnp::file_desc;
-use contract_capnp::fbp_lexical;
 
 #[derive(Debug)]
 enum Literal {
@@ -99,7 +91,7 @@ named!(comp_or_port<&[u8], Literal>, chain!(
 named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_port));
 
 component! {
-    comp,
+    comp, contracts(file_desc, fbp_lexical)
     inputs(input: file_desc),
     inputs_array(),
     outputs(output: fbp_lexical),

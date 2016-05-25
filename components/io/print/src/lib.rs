@@ -1,15 +1,9 @@
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contract_capnp {
-    include!("generic_text.rs");
-}
-use self::contract_capnp::generic_text;
+extern crate capnp;
 
 component! {
-    Print,
+    Print, contracts(generic_text)
     inputs(input: generic_text),
     inputs_array(),
     outputs(output: generic_text),
@@ -24,9 +18,7 @@ component! {
 
             println!("{:?}", a);
         }
-
         let _ = self.ports.send("output", ip_a);
-
         Ok(())
     }
 }
