@@ -1,149 +1,116 @@
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/fractalide.png)
 # Fractalide
-A Browser for a Named Data Network
+ _**Cheapest Disseminations Ever**_
 
-## Canonical source
+## Welcome
+
+**Fractalide is a Browser for a Named Data Network**.
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
-## Quick start
+## Problem
+Disseminations over a point-to-point communications system (TCP/IP) is costly and technically complex, requiring expensive hardware and engineers to overcome the problem. Look at the company valuations of the Internet Giants to get a rough idea of  how costly this problem is.
 
-Fractalide is a programming platform which removes three classes of errors associated with:
-* [Memory safety](https://en.wikipedia.org/wiki/Rust_(programming_language))
-* [Dependency hell](https://en.wikipedia.org/wiki/Dependency_hell)
-* [Code reuse](http://www.jpaulmorrison.com/fbp/fbp2.htm)
+## Solution
+Named Data Networking builds the concept of dissemination into the protocol, making disseminations extremely cheap, yet retaining use of the ubiquitous TCP/IP network, as Named Data Networking is an optional TCP/IP overlay.
 
-## Memory Safety
+### Rationale for a Named Data Network Browser
+TCP/IP blossomed after the HTTP browser was created, so, it's anticipated, that Named Data Networking will blossom once a Named Data Networking browser is created.
 
-Fractalide components are implemented in Rust, a language which gives the programmer [fearless control](http://blog.rust-lang.org/2015/04/10/Fearless-Concurrency.html) over speed, concurrency and memory safety.
+### Design requirements
+Our design requirements are:
+* blazingly fast.
+* easy to create applications.
+* application components must be modular and reusable, making it friendly for dissemination.
+* encrypt data, not channels.
+* support multiple architectures.
 
-## Dependency Hell
+### Layers
+- [x] Component Oriented Language built on Rust (completed)
+- [ ] HyperCard implementation (in progress)
+- [ ] Name Data Networking implementation (in progress)
+- [ ] Crypto-contract implementation
 
-Fractalide uses [Nix](http://nixos.org/nix/) as a replacement for [make](https://www.gnu.org/software/make/). Indeed, it seems Fractalide is the first programming language to exclusively use nix as a [package manager](https://www.youtube.com/watch?v=dQLO5CWuGVk). Each component is able to setup it's own OS environment, which might include database drivers written in C, specific versions of an executable or pull in a programming language like python. The package manager is lazily evaluated, thus only those dependencies needed will be compiled. This allows us to have an extremely large repository filled with possibly millions of components.
+### Basic concepts
+* **Components**: A component is a Rust library with a C ABI.
+* **Ports**: A component has an arbitrary number of input and output ports.
+* **IIP**: An Initial Information Packet is a packet of information sent at the start of a component's execution
+* **IP**: Information Packets are serialized packets of information sent between components. They are Capnproto contracts
 
-## Code reuse
+### Easy syntax
 
-The use of Flow-based programming gives us the ability to combine and concatenate programs in ways never anticipated. Much like the BASH shell coordinates the execution of GNU utils and other executables in neat, sneaky ways. This is a sign of a high reusability factor. Code is like mud, easy to mold when wet, harder when dry, impossible when baked. FBP gives one the ability to keep one's codebase nicely lubricated.
+Example:
 
-"Flow-based Programming defines applications as networks of "black box" processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. FBP is thus naturally component-oriented." - J Paul Morrison.
+`INTERFACE_IN => component_input INSTANCE_NAME(${COMPONENT_NAME}) component_output => INTERFACE_OUT`
 
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">flow-based programming reduces complexity of your data-processing logic by promoting control flow to first-class citizen of the flow design</p>&mdash; Arnau Orriols (@Arnau_Orriols) <a href="https://twitter.com/Arnau_Orriols/status/694661751229583360">February 2, 2016</a></blockquote>
-<script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+* **`=>`**: signifies either an interface input or output.
+	* `INTERFACE_INPUT_NAME => ...` .
+	* `... => INTERFACE_OUTPUT_NAME`.
+* **`->`**: signifies a message passing activity.
+	* `... component_output_port_name -> component_input_port_name ...`: indicates a serialized Information Packet is passed from the output port called `component_output_port_name` to the input port called `component_input_port_name`.
+* **`COMPONENT_INSTANCE_NAME(...)`**: signifies the instantiation of a component. Once instantiated, the programmer may refer to the instance `COMPONENT_INSTANCE_NAME()` without text between the parenthesis.
+* **`${...}`**: resolves the component name to the file system path the component is located at.
+* **`component_instance_name(${COMPONENT_NAME})`**: is the name of the component, for example `app_counter_add`'s source code can be found in `fractalide/component/app/counter/add`. After compilation, either a textual file are a binary will be generated where all `${app_counter_add}` symbols resolve to `/nix/store/7bpb867x7rvj0i74ahhig5r4h6gampzv-app_counter_add`.
+* `'generic_i64:(number=0)' -> ...`: represents an **IIP**, the `generic_i64` indicates a **contract** of type `generic_i64` is being used. The `number=0` means the field `number` is being initialized with a `0`.
 
-### Slight mindset shift
 
-The goal is to create reusable components that are efficient, solve real world problems and plug into each other, creating flow. As flow is now a first class citizen, it becomes much easier to manipulate. One should not place too much emphasis on component internals when designing for a flow. One should care about the shape of the data, the capnproto contracts, and how data flows through your system. Of equal importance; one should keep in mind when designing components that your code exists within a community. Pick up your litter, keep the paths clean,  Be polite when interacting with other components. Once we as a community have reached this point we will be near our goal.
 
-A contrived example of displaying the output of an XOR gate to the terminal:
+### A simple counter
+(we will run the counter in the `setup` section)
 ```
-'maths_boolean:(boolean=false)' -> a xor(maths_boolean_xor) output -> input disp(maths_boolean_print)
-'maths_boolean:(boolean=false)' -> b xor()
-```
-
-Explanation:
-
-* `'maths_boolean:(boolean=false)'` is an `IIP (Initial Information Packet)` which tells the virtual machine to use the `maths_boolean` capnproto contract which can be found in the [contracts/maths/boolean](https://gitlab.com/fractalide/fractalide/blob/master/contracts/maths/boolean/contract.capnp) folder. The `:(boolean=false)` bit puts the value `false` into the `boolean` field of `maths_boolean`
-* `->` means message pass the `IIP` to the input `a` of `xor()`. `xor()` is an initialized variable of the type `maths_boolean_xor` which can be found in [components/maths/boolean/xor](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix) folder. Thereafter you may simply refer to `xor()` without the `maths_boolean_xor`.
-* `output` is the output of `xor` which feeds into `input` of `disp()`, which is of type `maths_boolean_print` located in [components/maths/boolean/print](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/print/src/lib.rs)
-* `IN =>` means you have an input port interface named `IN`.
-* What's inbetween `IN =>` and `=> OUT` is the implementation of the subnet.
-* `=> OUT` means you have an output port interface named `OUT`.
-* Do note, you will see [${component_name}](https://gitlab.com/fractalide/fractalide/blob/master/components/maths/boolean/xor/default.nix#L8) this particular syntax is the [nix](http://nixos.org/nix/) programming language. It will lazily evaluate to the correct path just before compile time.
-* For more details, follow the setup steps below which will show you how to compile the [docs](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix) component. This component will teach you how to build a NOT logic gate.
-
-`maths_boolean_xor`
-``` nix
-{ stdenv, buildFractalideSubnet, upkeepers, maths_boolean_not, ip_clone, maths_boolean_and, maths_boolean_or,...}:
-
-buildFractalideSubnet rec {
-  src = ./.;
-  subnet = ''
-    a => input clone1(${ip_clone})
-    b => input clone2(${ip_clone})
-    clone1() clone[2] -> input not1(${maths_boolean_not}) output -> a and2(${maths_boolean_and})
-    clone2() clone[1] -> input not2(${maths_boolean_not}) output -> b and1(${maths_boolean_and})
-    clone1() clone[1] -> a and1() output -> a or(${maths_boolean_or})
-    clone2() clone[2] -> b and2() output -> b or() output => output
-  '';
-
-  meta = with stdenv.lib; {
-    description = "Subnet: XOR logic gate";
-    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/xor;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
-}
+   input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
+   model(${app_model}) output -> input view(${app_counter_view}) output -> input out_dispatch()
+   'generic_i64:(number=0)' -> acc model()
+   out_dispatch() output[add] -> input model()
+   out_dispatch() output[minus] -> input model()
+   out_dispatch() output[delta] -> input model()
+   in_dispatch() output[create] -> input view()
+   in_dispatch() output[delete] -> input view()
+   model() compute[add] -> input add(${app_counter_add}) output -> result model()
+   model() compute[minus] -> input minus(${app_counter_minus}) output -> result model()
+   model() compute[delta] -> input delta(${app_counter_delta}) output -> result model()
 ```
 
-`maths_boolean_print`
-``` rust
-extern crate capnp;
-
-#[macro_use]
-extern crate rustfbp;
-
-mod contract_capnp {
-    include!("maths_boolean.rs");
-}
-use self::contract_capnp::maths_boolean;
-
-use std::thread;
-
-component! {
-    Print,
-    inputs(input: maths_boolean),
-    inputs_array(),
-    outputs(output: maths_boolean),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip_a = try!(self.ports.recv("input"));
-
-        let a_reader = try!(ip_a.get_reader());
-        let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
-        let a = a_reader.get_boolean();
-
-        println!("boolean : {:?}", a);
-
-        let _ = self.ports.send("output", ip_a);
-
-        Ok(())
-    }
-}
-```
-
-From here, you go native.
-
-## Setup
+### Setup
+Please read [Don't pipe to your shell](https://www.seancassidy.me/dont-pipe-to-your-shell.html), then read the script before you execute it. After you are comfortable with it, let's agree that the below one-liner is convenient. If you insist, there is [documentation](http://nixos.org/nix/manual/) to type this stuff manually.
 
 Fractalide supports whatever platform Nix runs on, with the exception of Mac OS as Rust on Nix on Darwin doesn't work.
 
-Please read [Don't pipe to your shell](https://www.seancassidy.me/dont-pipe-to-your-shell.html), then read the script before you execute it. After you are comfortable with it, let's agree that the below one-liner is convenient. If you insist, there is [documentation](http://nixos.org/nix/manual/) to type this stuff manually.
+Run the command below as a user other than root (you will need `sudo`). Quite possibly your Linux package manager already has the `nix` package, please check first.
 
-Run this command as a user other than root (you will need `sudo`). To uninstall simply `rm -fr /nix`. See this [blog post](https://www.domenkozar.com/2014/01/02/getting-started-with-nix-package-manager/) for more detailed information.
-
-`$ curl https://nixos.org/nix/install | sh` (ignore if on nixos)
-
-`$ source ~/.nix-profile/etc/profile.d/nix.sh` (ignore if on nixos)
-
-Quite possibly your Linux package manager has a Nix package already.
-
-`$ git clone https://gitlab.com/fractalide/fractalide.git`
-
-`$ cd fractalide`
-
-`$  nix-build --argstr debug true --argstr subnet docs`
-
-Congratulations, you just built your first Fractalide executable, now let's run it:
-
-`$ ./result/bin/docs`
-
-This serves up the Quick Start manual section on [http://localhost:8083/docs/manual.html](http://localhost:8083/docs/manual.html).
-
-This is what the code you just ran [looks like](https://gitlab.com/fractalide/fractalide/blob/master/components/docs/default.nix#L12-L15).
+* `$ curl https://nixos.org/nix/install | sh` _(ignore if on nixos, or if you installed `nix` via your package manager)_
+* `$ source ~/.nix-profile/etc/profile.d/nix.sh` _(ignore if on nixos, or if you installed `nix` via your package manager)_
+* `$ git clone https://gitlab.com/fractalide/fractalide.git`
+* `$ cd fractalide`
+* `$  nix-build --argstr debug true --argstr subnet app_growtest`
+* `$ ./result/bin/app_growtest`
+* navigate your browser to `file:///home/user/path/to/fractalide/page.html`
+* To uninstall simply `rm -fr /nix` _(ignore if on nixos, or if you installed `nix` via your package manager)_.
 
 Happy Hacking!
 
-## Collective Code Construction Contract
 
-We use the [C4](http://rfc.zeromq.org/spec:22) on this project.
+### Contributing to Fractalide
+
+The contributors are listed in `fractalide/build-support/upkeepers.nix` (add yourself).
+
+Please read this document BEFORE you send a patch:
+
+* Fractalide uses the [C4.1 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:22) process for contributions. Please read this if you are unfamiliar with it.
+
+Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people. Some people seem to not understand this. So in case of doubt:
+
+* Each patch defines one clear and agreed problem, and one clear, minimal, plausible solution. If you come with a large, complex problem and a large, complex solution, you will provoke a negative reaction from Fractalide maintainers and users.
+
+* We will usually merge patches aggressively, without a blocking review. If you send us bad patches, without taking the care to read and understand our rules, that reflects on you. Do NOT expect us to do your homework for you.
+
+* As rapidly we will merge poor quality patches, we will remove them again. If you insist on arguing about this and trying to justify your changes, we will simply ignore you and your patches. If you still insist, we will ban you.
+
+* Fractalide is not a sandbox where "anything goes until the next stable release". If you want to experiment, please work in your own projects.
+
+
+### License
+
+The project license is specified in LICENSE.
+
+Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
