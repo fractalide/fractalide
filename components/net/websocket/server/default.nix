@@ -1,13 +1,12 @@
 { stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
-  , nanomsg
   ,...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "protocol_domain_port" ];
-  buildInputs = [nanomsg];
-  depsSha256 = "06mjncygiph2hj6h048jngz398w4ff7cswl8afvi0mpacw5fbgxh";
+  depsSha256 = "1f4pxphalbg5bgw50w38flbk4lw14nyz1pfas5c5lxcnh40ibb9v";
+
   meta = with stdenv.lib; {
     description = "Component: Socket output";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/socket/out;

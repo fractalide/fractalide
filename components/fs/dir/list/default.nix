@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["file_list" "path" ];
-  depsSha256 = "1ywc9a6w8dan8rbjsy958wjmjbs7i90mz8l2szdr4f7ybbchyq8z";
+  depsSha256 = "0wskvl17p16rjlqk88lyiy3h18f7djwp4fbda9wfmc4z9m7j2cm3";
 
   meta = with stdenv.lib; {
     description = "Component: List files in a folder";

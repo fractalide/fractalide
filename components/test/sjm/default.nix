@@ -1,16 +1,13 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , file_open
-  , file_print
-  , io_print
-  , serialize_json_decode_extractKVfromVec
-  , accumulate_keyValues
+  , maths_boolean_nand
+  , maths_boolean_print
   ,...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-  'path:(path="/home/stewart/Downloads/deleteme/data/1032.json")' -> input file_open(${file_open}) output ->
-      input get_airline(${serialize_json_decode_extractKVfromVec}) output -> input lb(${accumulate_keyValues}) output -> input io_print(${io_print})
+  'maths_boolean:(boolean=true)' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
+  'maths_boolean:(boolean=true)' -> b nand()
    '';
 
    meta = with stdenv.lib; {

@@ -126,8 +126,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-  maths_boolean_nand,
-  contracts(maths_boolean),
+  maths_boolean_nand, contracts(maths_boolean)
   inputs(a: maths_boolean, b: maths_boolean),
   inputs_array(),
   outputs(output: maths_boolean),

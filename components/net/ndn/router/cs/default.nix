@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "net_ndn_interest" "net_ndn_data" ];
-  depsSha256 = "1cyf0rvc1ny811w5j8r1rh12yvdrblzmpvll5raz7z9vv2k9f69w";
+  depsSha256 = "1x0p8qiqlk1bkph6zwxhh0i317mvf5x10gscs1aga1llnih9d584";
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Content Store";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn/cs;
