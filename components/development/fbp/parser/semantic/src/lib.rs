@@ -87,9 +87,9 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
 
     loop {
 
-        let mut ip = comp.ports.recv("input").expect("fbp_semantic : unable to receive");
-        let literal: fbp_lexical::Reader = ip.get_root().expect("fbp_semantic : not a literal");
-        let literal = literal.which().expect("fbp_semantic : cannot which");
+        let mut ip = comp.ports.recv("input").expect("development_fbp_parser_semantic : unable to receive");
+        let literal: fbp_lexical::Reader = ip.get_root().expect("development_fbp_parser_semantic : not a literal");
+        let literal = literal.which().expect("development_fbp_parser_semantic : cannot which");
         match literal {
             fbp_lexical::End(_) => {
                 break;

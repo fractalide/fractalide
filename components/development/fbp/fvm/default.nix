@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["fbp_graph" "path" "option_path"];
-  depsSha256 = "1x8x616h4a617n0h72m8jxxmw7n7k9likaa0klzxbynf78fwgr0h";
+  depsSha256 = "1x7yyi0ygsi67yxc2411vy7dh2r4fqq9lhdygg6aaw1xks6xgl0i";
 
   meta = with stdenv.lib; {
     description = "Component: Fractalide Virtual Machine";

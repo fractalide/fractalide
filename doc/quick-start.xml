@@ -121,50 +121,41 @@ Run <screen>cargo generate-lockfile</screen> in the <filename>components/maths/b
   <para>
 Insert a the below into your <filename>components/maths/boolean/nand/src/lib.rs</filename>:
 <screen>
-extern crate capnp;
-
 #[macro_use]
 extern crate rustfbp;
-
-mod contract_capnp {
-    include!("maths_boolean.rs");
-}
-use self::contract_capnp::maths_boolean;
+extern crate capnp;
 
 component! {
-  Nand,
+  maths_boolean_nand, contracts(maths_boolean)
   inputs(a: maths_boolean, b: maths_boolean),
   inputs_array(),
   outputs(output: maths_boolean),
   outputs_array(),
   option(),
   acc(),
-  fn run(&amp;mut self) -> Result&amp;()> {
-    let mut ip_a = try!(self.ports.recv("a"));
-    let mut ip_b = try!(self.ports.recv("b"));
-    let a_reader = try!(ip_a.get_reader());
-    let b_reader = try!(ip_b.get_reader());
-    let a_reader: maths_boolean::Reader = try!(a_reader.get_root());
-    let b_reader: maths_boolean::Reader = try!(b_reader.get_root());
-    let a = a_reader.get_boolean();
-    let b = b_reader.get_boolean();
-    let mut new_out = capnp::message::Builder::new_default();
+  fn run(&amp;mut self) -> Result&lt;()> {
+    let a = {
+        let mut ip_a = try!(self.ports.recv("a"));
+        let a_reader: maths_boolean::Reader = try!(ip_a.get_root());
+        a_reader.get_boolean()
+    };
+    let b = {
+        let mut ip_b = try!(self.ports.recv("b"));
+        let b_reader: maths_boolean::Reader = try!(ip_b.get_root());
+        b_reader.get_boolean()
+    };
+
+    let mut out_ip = IP::new();
     {
-      let mut boolean = new_out.init_root::&lt;maths_boolean::Builder>();
+      let mut boolean = out_ip.init_root::&lt;maths_boolean::Builder>();
       boolean.set_boolean(if a == true &amp;&amp; b == true {false} else {true});
     }
-    ip_a.write_builder(&amp;new_out);
-    try!(self.ports.send("output", ip_a));
+    try!(self.ports.send("output", out_ip));
     Ok(())
   }
 }
 </screen>
-Notice this <filename>mod maths_boolean</filename> section:
-<screen>
-  mod maths_boolean {
-    include!("maths_boolean.rs");
-  }
-</screen>
+Notice the <filename>contracts(maths_boolean)</filename> line:
 This is where we reference our contracts we made earlier. But we still have not tied the contract with this <filename>NAND</filename> implemenation. This is done in the next section.
 </para>
 </listitem>

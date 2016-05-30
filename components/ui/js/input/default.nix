@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["js_input" "js_create" "generic_text"];
-  depsSha256 = "0pvvlmf1ikm6hnbixd21y3i1i3fyqa7qz4z5nsr2r49b5lj8vs73";
+  depsSha256 = "0nxsyvy3pk5gxjsiig7vm28q2cjbr9a3gzxdybil6fkwcm7bv6qy";
 
   meta = with stdenv.lib; {
     description = "Component: draw a html input";
