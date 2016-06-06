@@ -6,19 +6,19 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    ui_js_block, contracts(js_create, js_block)
+    ui_js_placeholder, contracts(js_create, js_placeholder)
     inputs(),
     inputs_array(places: any),
     outputs(output: any),
     outputs_array(output: any),
     option(),
-    acc(js_block),
+    acc(js_placeholder),
     fn run(&mut self) -> Result<()> {
         let mut ip_acc = try!(self.ports.recv("acc"));
 
-        // First? -> create the parent div
+        // Create if new
         {
-            let acc_reader: js_block::Reader = try!(ip_acc.get_root());
+            let acc_reader: js_placeholder::Reader = try!(ip_acc.get_root());
             let num = try!(acc_reader.get_places()).len();
             if num == 0 {
                 let mut new_ip = IP::new();
@@ -30,6 +30,7 @@ component! {
                 try!(self.ports.send_action("output", new_ip));
             }
         }
+
         let places = try!(self.ports.get_input_selections("places"));
         for place in places {
             let mut ip_place = self.ports.try_recv_array("places", &place);
@@ -50,7 +51,7 @@ component! {
                         } else {
                             format!("insert;{};", self.name)
                         };
-                        format!("{}<div id=\"{}-{}\" style=\"order:{};{}\">{}</div>", action, place, self.name, place, div_style, html)
+                        format!("{}<div id=\"{}-{}\" style=\"display:none;{}\">{}</div>", action, place, self.name, div_style, html)
                     };
                     builder.set_html(&new_html);
                 } else if ip.action == "delete" {
@@ -60,6 +61,29 @@ component! {
                         let mut builder = ip.init_root::<js_create::Builder>();
                         builder.set_html(&format!("delete;{}-{};", place, self.name))
                     }
+                } else if ip.action == "display" {
+                    {
+                        let mut builder = try!(ip_acc.init_root_from_reader::<js_placeholder::Builder, js_placeholder::Reader>());
+                        // Is there something already displayed?
+                        {
+                            let reader: js_placeholder::Reader = builder.borrow().as_reader();
+                            let actual = try!(reader.get_actual());
+                            if actual != "" {
+                                let mut ip = IP::new();
+                                ip.action = "forward".into();
+                                {
+                                    let mut builder = ip.init_root::<js_create::Builder>();
+                                    builder.set_html(&format!("css;{}-{};display;none", actual, self.name));
+                                }
+                                try!(self.ports.send_action("output", ip));
+                            }
+                        }
+                        // Set the new
+                        builder.set_actual(&format!("{}", place));
+                    }
+                    ip.action = "forward".into();
+                    let mut builder = ip.init_root::<js_create::Builder>();
+                    builder.set_html(&format!("css;{}-{};display;block", place, self.name))
                 }
                 try!(self.ports.send_action("output", ip));
             }
@@ -71,11 +95,10 @@ component! {
     }
 }
 
-
 fn is_inside_and_add(acc: &mut IP, port: &str) -> Result<bool> {
     let mut vec: Vec<String> = vec![];
     {
-        let acc: js_block::Reader = try!(acc.get_root());
+        let acc: js_placeholder::Reader = try!(acc.get_root());
         let acc_places = try!(acc.get_places());
         let mut create = false;
         if acc_places.len() == 0 { create = true; }
@@ -86,7 +109,7 @@ fn is_inside_and_add(acc: &mut IP, port: &str) -> Result<bool> {
         }
     }
     // Add it
-    let mut builder = acc.init_root::<js_block::Builder>();
+    let mut builder = acc.init_root::<js_placeholder::Builder>();
     let mut init = builder.init_places((vec.len() + 1) as u32);
     let mut i = 0;
     for p in vec {
@@ -100,14 +123,14 @@ fn is_inside_and_add(acc: &mut IP, port: &str) -> Result<bool> {
 fn delete_place(acc: &mut IP, port: &str) -> Result<bool> {
     let mut vec: Vec<String> = vec![];
     {
-        let acc: js_block::Reader = try!(acc.get_root());
+        let acc: js_placeholder::Reader = try!(acc.get_root());
         let acc_places = try!(acc.get_places());
         for i in 0..acc_places.len() {
             let p = try!(acc_places.get(i));
             if p != port { vec.push(p.into()); }
         }
     }
-    let mut builder = acc.init_root::<js_block::Builder>();
+    let mut builder = acc.init_root::<js_placeholder::Builder>();
     let mut init = builder.init_places((vec.len()) as u32);
     if vec.len() == 0 {
         return Ok(true);

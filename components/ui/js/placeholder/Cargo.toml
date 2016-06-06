@@ -1,0 +1,12 @@
+[package]
+name = "ui_js_growing_block"
+version = "0.1.0"
+authors = ["test <test@test.com>"]
+
+[lib]
+name = "ui_js_growing_block"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"

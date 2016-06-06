@@ -79,6 +79,7 @@ self = rec {
   ui_js_growing_block = callPackage ./ui/js/growing_block {};
   ui_js_input = callPackage ./ui/js/input {};
   ui_js_page = callPackage ./ui/js/page {};
+  ui_js_placeholder = callPackage ./ui/js/placeholder {};
   ui_js_text = callPackage ./ui/js/text {};
   web_server = callPackage ./web/server {};
 };
