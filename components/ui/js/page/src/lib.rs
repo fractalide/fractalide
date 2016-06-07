@@ -108,6 +108,15 @@ component! {
                             builder.set_text(text);
                         }
                         id
+                    } else if action == "keyup" {
+                        let pos = try!(id.find("#").ok_or(result::Error::Misc("bad response from page".into())));
+                        let (id, text) = id.split_at(pos);
+                        let (_, text) = text.split_at(1);
+                        {
+                            let mut builder: generic_text::Builder = ip.init_root();
+                            builder.set_text(text);
+                        }
+                        id
                     } else {
                         id
                     };

@@ -49,8 +49,12 @@
       console.log(connection);
       conn = connection;
 
-      $("#main").bind("click mouseover mouseout dblclick", function(e) {
+      $("#main").bind("click mouseover mouseout dblclick focusin focusout", function(e) {
         conn.send(e.type + "#" + e.target.id);
+      });
+
+      $("#main").bind("keyup", function(e) {
+        conn.send(e.type + "#" + e.target.id + "#" + e.keyCode);
       });
 
       $("#main").bind("input", function(e) {
