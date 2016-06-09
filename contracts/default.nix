@@ -21,6 +21,7 @@ rec {
   js_button = callPackage ./js/button {};
   js_create = callPackage ./js/create {};
   js_input = callPackage ./js/input {};
+  js_placeholder = callPackage ./js/placeholder {};
   js_text = callPackage ./js/text {};
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};

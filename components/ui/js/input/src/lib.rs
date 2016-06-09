@@ -67,6 +67,15 @@ component! {
                 let _ = self.ports.send_action("output", ip_input);
 
             },
+            "input" => {
+                {
+                    let mut reader: generic_text::Reader = try!(ip_input.get_root());
+                    let mut builder = try!(ip_acc.init_root_from_reader::<js_input::Builder, js_input::Reader>());
+                    builder.set_label(try!(reader.get_text()));
+                }
+                let _ = self.ports.send_action("output", ip_input);
+
+            }
             _ => { let _ = self.ports.send_action("output", ip_input); }
         }
 

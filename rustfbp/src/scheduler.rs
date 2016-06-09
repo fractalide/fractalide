@@ -1,4 +1,7 @@
 extern crate libloading;
+extern crate threadpool;
+
+use self::threadpool::ThreadPool;
 
 use result;
 use result::Result;
@@ -339,6 +342,7 @@ struct SchedState {
     components: HashMap<String, CompState>,
     connections: usize,
     can_halt: bool,
+    pool: ThreadPool,
 }
 
 impl SchedState {
@@ -348,6 +352,7 @@ impl SchedState {
             components: HashMap::new(),
             connections: 0,
             can_halt: false,
+            pool: ThreadPool::new(8),
         }
     }
 
@@ -443,7 +448,7 @@ impl SchedState {
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
             self.connections += 1;
             let sched_s = self.sched_sender.clone();
-            thread::Builder::new().name(name.clone()).spawn(move || {
+            self.pool.execute(move || {
                 let res = b_comp.run();
                 if let Err(e) = res {
                     println!("{} fails : {}", name, e);

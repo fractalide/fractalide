@@ -35,6 +35,13 @@
             case "val":
               $("#"+div).val(content);
               break;
+            case "css":
+              var c = content.search(";");
+              var prop = content.substring(0, c);
+              var val = content.substring(c+1);
+              console.log(div, prop, val);
+              $("#"+div).css(prop, val);
+              break;
           }
         }
 
@@ -42,8 +49,12 @@
       console.log(connection);
       conn = connection;
 
-      $("#main").bind("click mouseover mouseout onclick", function(e) {
+      $("#main").bind("click mouseover mouseout dblclick focusin focusout", function(e) {
         conn.send(e.type + "#" + e.target.id);
+      });
+
+      $("#main").bind("keyup", function(e) {
+        conn.send(e.type + "#" + e.target.id + "#" + e.keyCode);
       });
 
       $("#main").bind("input", function(e) {
