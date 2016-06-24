@@ -8,14 +8,14 @@
 
 let
 version = "2016-05-29";
-rev = "dfff9d3303501fcdcca91902e004f9d5cd91d87c";
+rev = "c0eb9a2a14712ebaf6f9e0c1579c42a99bade75d";
 
 src = fetchFromGitHub {
   inherit rev;
 
   owner = "rust-lang";
   repo = "crates.io-index";
-  sha256 = "1yzbwijc6ivwsr4mjns0y9fv5ks595by4ibxdb81xnc169kcy7j5";
+  sha256 = "120vaxawv8l4sa1hdnw9bq9y61l4k1zfxiki81wjz4zgx1pifpj9";
 };
 
 in
@@ -34,4 +34,6 @@ $git config --local user.email "example@example.com"
 $git config --local user.name "example"
 $git add .
 $git commit -m 'Rust registry commit'
+
+touch $out/touch . "$out/.cargo-index-lock"
 ''

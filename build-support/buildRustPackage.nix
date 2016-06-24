@@ -1,4 +1,4 @@
-{ lib, stdenv, cacert, git, cargo,rustcMaster, rustRegistry, debug }:
+{ lib, stdenv, cacert, git, cargo, rustc, rustRegistry, debug }:
 { name, depsSha256
   , src ? null
   , srcs ? null
@@ -11,7 +11,7 @@
   rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
 
   fetchDeps = import ./fetchcargo.nix {
-    inherit stdenv cacert git cargo rustcMaster rustRegistry;
+    inherit stdenv cacert git cargo rustc rustRegistry;
   };
 
   cargoDeps = fetchDeps {
@@ -27,7 +27,7 @@
 
     patchRegistryDeps = ./patch-registry-deps;
 
-    buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
+    buildInputs = [ git cargo rustc ] ++ buildInputs;
 
     configurePhase = args.configurePhase or "true";
 

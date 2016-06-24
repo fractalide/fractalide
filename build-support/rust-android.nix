@@ -1,7 +1,7 @@
 {pkgs
   , fetchurl
   , stdenv ? pkgs.stdenv
-  , rustcMaster
+  , rustc
   , ndk-standalone-toolchain
   , ncurses_32bit
   , zlib_32bit
@@ -16,7 +16,7 @@
   androidBuildTools = pkgs.androidenv.buildTools + /build-tools/23.0.1/lib;
   llvmShared = pkgs.llvmPackages_37.llvm.override { enableSharedLibraries = true; };
   forceBundledLLVM = true;
-  rust = rustcMaster.overrideDerivation (oldAttrs: {
+  rust = rustc.overrideDerivation (oldAttrs: {
     inherit androidBuildTools;
     forceBundledLLVM = forceBundledLLVM;
     nativeBuildInputs = with pkgs; [ file python2 procps libcxx androidBuildTools ncurses_32bit zlib_32bit];

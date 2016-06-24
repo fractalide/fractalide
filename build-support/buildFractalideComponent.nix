@@ -1,4 +1,4 @@
-{lib, stdenv, cacert, git, cargo, capnproto, capnpc-rust, rustcMaster, rustRegistry, debug}:
+{lib, stdenv, cacert, git, rustc, cargo, capnproto, capnpc-rust, rustRegistry, debug}:
 
 { name, depsSha256
   , src ? null
@@ -13,7 +13,7 @@
   rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
 
   fetchDeps = import ./fetchcargo.nix {
-    inherit stdenv cacert git cargo rustcMaster rustRegistry;
+    inherit stdenv cacert git cargo rustc rustRegistry;
   };
 
   cargoDeps = fetchDeps {
@@ -27,7 +27,7 @@
   in stdenv.mkDerivation (args // {
     inherit cargoDeps rustRegistry capnproto capnpc-rust;
     patchRegistryDeps = ./patch-registry-deps;
-    buildInputs = [ git cargo rustcMaster ] ++ buildInputs;
+    buildInputs = [ git cargo rustc ] ++ buildInputs;
     configurePhase = args.configurePhase or "true";
     postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
@@ -89,7 +89,9 @@ buildPhase = args.buildPhase or ''
 sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
 sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
 ${stdenv.lib.concatMapStringsSep "\n"
-(contract: "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs && cp ${contract.outPath}/src/contract_capnp.rs ${contract.name}.rs;")
+(contract:
+  "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs
+   cp ${contract.outPath}/src/contract_capnp.rs ${contract.name}.rs;")
 (stdenv.lib.flatten filteredContracts)}
 echo "*********************************************************************"
 echo "****** building: ${name} "

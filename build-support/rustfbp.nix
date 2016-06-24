@@ -8,11 +8,8 @@ stdenv.mkDerivation {
   mkdir -p $out/src
   '';
   installPhase = ''
-  cp -r * $out/src
-  rm -fr $out/src/target
-  rm -fr $out/src/.git
-  rm -fr $out/src/tests
-  rm -fr $out/src/benches
+  cp -r src $out/src/
+  cp Cargo.toml $out/src/Cargo.toml
+  cp Cargo.lock $out/src/Cargo.lock
   '';
 }
-

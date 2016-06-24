@@ -45,7 +45,7 @@ macro_rules! component {
         $(
         mod contract_capnp {
             $(
-                include!(concat!("src/",stringify!($contract), ".rs"));
+                include!(concat!(stringify!($contract), ".rs"));
             )*
         })*
 
