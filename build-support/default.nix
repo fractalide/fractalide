@@ -2,8 +2,8 @@
 let
 upkeepers = import ./upkeepers.nix;
 callPackage = pkgs.lib.callPackageWith (pkgs);
-cargo = pkgs.rustBeta.cargo;
-rustc = pkgs.rustBeta.rustc;
+cargo = pkgs.rustUnstable.cargo;
+rustc = pkgs.rustUnstable.rustc;
 in
 rec {
   inherit upkeepers rustc cargo;
