@@ -6,6 +6,7 @@ buildFractalideComponent rec {
   filteredContracts = filterContracts ["path" "option_path"];
   depsSha256 = "1hm8gi4jcqk4gpm71jvaqr2dfmhz88sf0s0k9ya9rnwjcbaxckdr";
   configurePhase = ''
+runHook preConfigure
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"
 (pkg: ''\"${pkg.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" pkg.outPath))}\")},'')
 (stdenv.lib.attrValues contracts)}"

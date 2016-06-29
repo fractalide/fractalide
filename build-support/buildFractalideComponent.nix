@@ -26,11 +26,13 @@
   type = if debug == "true" then "" else "--release";
   directory = if debug == "true" then "debug" else "release";
 
-  in stdenv.mkDerivation (args // {
+  in stdenv.mkCachedDerivation (args // {
     inherit cargoDeps rustRegistry capnproto capnpc-rust;
+
     patchRegistryDeps = ./patch-registry-deps;
     buildInputs = [ git cargo rustc ] ++ buildInputs;
-    configurePhase = args.configurePhase or "true";
+    #Don't forget to runHook, else the incremental builds wont work
+    configurePhase = (args.configurePhase or "runHook preConfigure");
     postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
 
@@ -51,7 +53,7 @@
     # Let's find out which $indexHash cargo uses for file:///dev/null
     (cd $sourceRoot && cargo fetch &>/dev/null) || true
     cd deps
-    indexHash="$(basename $(echo registry/index/*))"
+    indexHash="$(basename $(echo registry/index/*))" #*/
 
     echo "Using indexHash '$indexHash'"
 
@@ -111,10 +113,12 @@ cargo test
 
 doCheck = args.doCheck or true;
 
-installPhase = args.installPhase or ''
+#Don't forget to runHook, else the incremental builds wont work
+installPhase = (args.installPhase or ''
+runHook preInstall
 mkdir -p $out/lib
 for f in $(find target/${directory} -maxdepth 1 -type f); do
 cp $f $out/lib
 done;
-'' ;
+'' );
 })
