@@ -24,7 +24,7 @@ component! {
             let mut builder = ip_input.init_root::<generic_text::Builder>();
             builder.set_text(&format!("{}", number));
         }
-        ip_input.action = "set_label".into();
+        ip_input.action = "set_content".into();
         try!(self.ports.send("label", ip_input));
 
         let mut new_ip = IP::new();
@@ -32,7 +32,7 @@ component! {
             let mut builder = new_ip.init_root::<generic_text::Builder>();
             builder.set_text(&format!("{}", delta));
         }
-        new_ip.action = "set_label".into();
+        new_ip.action = "set_val".into();
         try!(self.ports.send("delta", new_ip));
 
 

@@ -5,6 +5,7 @@
   , app_counter_view
   , app_model
   , debug
+  , ip_clone
   , ip_dispatcher
   , ...}:
   let
@@ -23,7 +24,10 @@
    out_dispatch() output[minus] -> input model()
    out_dispatch() output[delta] -> input model()
 
-   in_dispatch() output[create] -> input view()
+   in_dispatch() output[create] -> input clone_create(${ip_clone})
+   clone_create() clone[0] -> input view()
+   clone_create() clone[1] -> input model()
+
    in_dispatch() output[delete] -> input view()
 
    model() compute[add] -> input add(${app_counter_add}) output -> result model()

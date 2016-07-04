@@ -16,12 +16,14 @@ rec {
   generic_i64 = callPackage ./generic/i64 {};
   generic_list_text = callPackage ./generic/list_text {};
   generic_text = callPackage ./generic/text {};
+  generic_tuple_text = callPackage ./generic/tuple_text {};
   generic_u64 = callPackage ./generic/u64 {};
   js_block = callPackage ./js/block {};
   js_button = callPackage ./js/button {};
   js_create = callPackage ./js/create {};
   js_input = callPackage ./js/input {};
   js_placeholder = callPackage ./js/placeholder {};
+  js_tag = callPackage ./js/tag {};
   js_text = callPackage ./js/text {};
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};

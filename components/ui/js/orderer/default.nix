@@ -3,11 +3,11 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["generic_text"];
-  depsSha256 = "17g2mjw2c7iwb5fdnh6382pjhxy02xnd4k7gnban1ac2c6j959mm";
+  filteredContracts = filterContracts ["js_create"];
+  depsSha256 = "1zqyq3chh2a72dfrcnrz926chi4lbj6ndkdf8bc1xibhlbhi6a1l";
 
   meta = with stdenv.lib; {
-    description = "Component: app general atomic model";
+    description = "Component: manage the inside of a js block";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];

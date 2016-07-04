@@ -114,7 +114,7 @@ component! {
                 let mut port: String = try!(connect.get_port()).into();
                 let selection: String = try!(connect.get_selection()).into();
                 if let Some(subnet) = self.portal.subnet.get(&name) {
-                    if let Some(p) = subnet.ext_in.get(&port) {
+                    if let Some(p) = subnet.ext_out.get(&port) {
                         name = p.0.clone();
                         port = p.1.clone();
                     }

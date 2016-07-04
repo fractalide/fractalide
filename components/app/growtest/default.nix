@@ -3,9 +3,10 @@
   , app_counter_card
   , ip_action
   , ip_delay
+  , ip_replace
   , ui_js_block
-  , ui_js_button
   , ui_js_growing_block
+  , ui_js_tag
   , ui_js_page
   , development_fbp_subnet
   , ...}:
@@ -14,28 +15,26 @@
    subnet = ''
 
    td(${ui_js_block}) output -> input page(${ui_js_page})
-   'js_block:(css="display: flex; flex-direction: column")' -> acc td()
+   'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])~create' -> input td()
 
    lr(${ui_js_block}) output -> places[1] td()
-   'js_block:(css="display: flex;")' -> acc lr()
+   'js_tag:(type="div", css=[(key="display", value="flex")])~create' -> input lr()
 
-   button_add(${ui_js_button}) output -> places[1] lr()
-   button_remove(${ui_js_button}) output -> places[2] lr()
-   'js_button:(label="add")' -> acc button_add(${ui_js_button})
-   'js_button:(label="remove")' -> acc button_remove(${ui_js_button})
-   'generic_text:(text="")~create' -> input button_add()
-   'generic_text:(text="")~create' -> input button_remove()
-
+   button_add(${ui_js_tag}) output -> places[1] lr()
+   button_remove(${ui_js_tag}) output -> places[2] lr()
+   'js_tag:(type="button", content="add")~create' -> input button_add(${ui_js_tag})
+   'js_tag:(type="button", content="remove")~create' -> input button_remove(${ui_js_tag})
 
    gblock(${ui_js_growing_block}) output -> places[2] td()
    gblock() scheduler -> action sched(${development_fbp_subnet})
-   sched() outputs[td] -> places[2] td()
+   sched() outputs[block] -> places[2] td()
    'generic_text:(text="${app_counter_card}")' -> option gblock()
+   'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])~create' -> input gblock()
 
-   button_add() output[click] -> input minus(${ip_action}) output -> input gblock()
-   button_remove() output[click] -> input add(${ip_action}) output -> input gblock()
-   'generic_text:(text="add")' -> option minus()
-   'generic_text:(text="remove")' -> option add()
+   button_add() output[click] -> input add(${ip_replace}) output -> input gblock()
+   button_remove() output[click] -> input minus(${ip_action}) output -> input gblock()
+   'generic_text:(text="remove")' -> option minus()
+   'app_counter:(value=0)~add' -> option add()
 
    '';
 

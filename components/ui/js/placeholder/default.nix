@@ -1,14 +1,20 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
+{ stdenv, buildFractalideSubnet, upkeepers
+  , ui_js_tag
+  , ui_js_visible
   , ...}:
+  let
+  doc = import ../../../doc {};
+  in
+  buildFractalideSubnet rec {
+   src = ./.;
+   subnet = ''
+   input => input div(${ui_js_tag}) output => output
+   places => places orderer(${ui_js_visible}) output -> input div()
+   '';
 
-buildFractalideComponent rec {
-  name = genName ./.;
-  src = ./.;
-  filteredContracts = filterContracts ["js_create" "js_placeholder"];
-  depsSha256 = "0bhc7hg1q6h5hqzv80p36jm0zhmcpk8qq28pb3yr1ilpx7x4qn2z";
-  meta = with stdenv.lib; {
-    description = "Component: draw a place holder";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
+   meta = with stdenv.lib; {
+    description = "Subnet: editor card";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

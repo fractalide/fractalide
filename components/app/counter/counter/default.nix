@@ -1,6 +1,7 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , app_counter_card
   , ui_js_page
+  , debug
   , ...}:
   let
   doc = import ../../../doc {};
@@ -10,7 +11,7 @@
    subnet = ''
 
    counter(${app_counter_card}) output -> input page(${ui_js_page})
-   'generic_text:(text="hello")~create' -> input counter()
+   'app_counter:(value=42)~create' -> input counter()
 
    '';
 

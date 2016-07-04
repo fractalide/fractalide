@@ -42,6 +42,13 @@
               console.log(div, prop, val);
               $("#"+div).css(prop, val);
               break;
+            case "attr":
+              var c = content.search(";");
+              var prop = content.substring(0, c);
+              var val = content.substring(c+1);
+              console.log(div, prop, val);
+              $("#"+div).attr(prop, val);
+              break;
           }
         }
 
