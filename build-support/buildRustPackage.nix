@@ -1,4 +1,5 @@
-{ lib, stdenv, cacert, git, cargo, rustc, rustRegistry, debug }:
+{ lib, stdenv, cacert, git, cargo, rustc
+  , rustRegistry, debug, local-rustfbp }:
 { name, depsSha256
   , src ? null
   , srcs ? null
@@ -92,7 +93,9 @@ prePatch = ''
 '' + (args.prePatch or "");
 
 buildPhase = args.buildPhase or ''
-sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
+${if local-rustfbp == "true" then
+"sed -i 's@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g' Cargo.toml"
+else ""}
 echo "Running cargo build ${type}"
 cargo build ${type}
 '';

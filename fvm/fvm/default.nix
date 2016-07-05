@@ -24,16 +24,10 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
-    installPhase = ''
-      wrapProgram $out/bin/${name} --prefix LD_PRELOAD : /run/opengl-driver/lib/libGL.so
-    '';
-
-    buildInputs = [ pkgs.makeWrapper ];
-
     meta = with pkgs.stdenv.lib; {
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
-      license = with licenses; [ agpl3Plus ];
+      license = with licenses; [ mpl20 ];
       maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
   };
 };
