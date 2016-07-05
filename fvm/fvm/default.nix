@@ -4,7 +4,7 @@ let
 fvm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "1qnk2z2f3cl7rnhb2j2n2rpi2gaqsf7260m3i19r4w6wdd6cycsi";
+    depsSha256 = "0g6d0ik4f6qscqph7z2flb84c0yymcddcxp617h9mslfkpa640nh";
     configurePhase = ''
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
@@ -24,16 +24,10 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
-    installPhase = ''
-      wrapProgram $out/bin/${name} --prefix LD_PRELOAD : /run/opengl-driver/lib/libGL.so
-    '';
-
-    buildInputs = [ pkgs.makeWrapper ];
-
     meta = with pkgs.stdenv.lib; {
       description = "Fractalide Virtual Machine";
       homepage = https://github.com/fractalide/fractalide;
-      license = with licenses; [ agpl3Plus ];
+      license = with licenses; [ mpl20 ];
       maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
   };
 };

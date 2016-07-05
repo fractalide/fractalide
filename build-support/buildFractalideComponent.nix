@@ -1,4 +1,6 @@
-{lib, stdenv, cacert, git, rustc, cargo, capnproto, capnpc-rust, rustRegistry, debug}:
+{lib, stdenv, cacert, git, rustc, cargo
+  , capnproto, capnpc-rust, rustRegistry
+  , debug, local-rustfbp}:
 
 { name, depsSha256
   , src ? null
@@ -87,11 +89,12 @@ prePatch = ''
 
 buildPhase = args.buildPhase or ''
 sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
-sed -i "s@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g" Cargo.toml
+${if local-rustfbp == "true" then
+"sed -i 's@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g' Cargo.toml"
+else ""}
 ${stdenv.lib.concatMapStringsSep "\n"
 (contract:
-  "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs
-   cp ${contract.outPath}/src/contract_capnp.rs ${contract.name}.rs;")
+  "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
 (stdenv.lib.flatten filteredContracts)}
 echo "*********************************************************************"
 echo "****** building: ${name} "

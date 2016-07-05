@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "protocol_domain_port" ];
-  depsSha256 = "1f4pxphalbg5bgw50w38flbk4lw14nyz1pfas5c5lxcnh40ibb9v";
+  depsSha256 = "02by4iiafgkyqc766xyhizmx0q2vnbr7cl96hv8bh9cdndbcbyyk";
 
   meta = with stdenv.lib; {
     description = "Component: Socket output";
