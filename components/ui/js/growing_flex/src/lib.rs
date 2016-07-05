@@ -6,7 +6,7 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    ui_js_growing_block, contracts(js_create, js_tag, generic_text, fbp_action)
+    ui_js_growing_flex, contracts(js_create, js_tag, generic_text, fbp_action)
     inputs(input: any),
     inputs_array(),
     outputs(output: any, scheduler: fbp_action),
@@ -23,8 +23,8 @@ component! {
                 {
                     let mut builder: fbp_action::Builder = send_ip.init_root();
                     let mut add = builder.init_add();
-                    add.set_name("block");
-                    add.set_comp("ui_js_block");
+                    add.set_name("flex");
+                    add.set_comp("ui_js_flex");
                 }
                 try!(self.ports.send("scheduler", send_ip));
                 // Connect to outside
@@ -32,9 +32,9 @@ component! {
                 {
                     let mut builder: fbp_action::Builder = connect_ip.init_root();
                     let mut connect = builder.init_connect_sender();
-                    connect.set_name("block");
+                    connect.set_name("flex");
                     connect.set_port("output");
-                    connect.set_output("block");
+                    connect.set_output("flex");
                 }
                 try!(self.ports.send("scheduler", connect_ip));
 
@@ -43,7 +43,7 @@ component! {
                 {
                     let mut builder: fbp_action::Builder = send_ip.init_root();
                     let mut connect = builder.init_send();
-                    connect.set_comp("block");
+                    connect.set_comp("flex");
                     connect.set_port("input");
                 }
                 try!(self.ports.send("scheduler", send_ip));
@@ -104,7 +104,7 @@ component! {
                     let mut connect = builder.init_connect();
                     connect.set_o_name(&name);
                     connect.set_o_port("output");
-                    connect.set_i_name("block");
+                    connect.set_i_name("flex");
                     connect.set_i_port("places");
                     connect.set_i_selection(&name)
                 }

@@ -4,7 +4,7 @@
   , ip_delay
   , ui_js_page
   , ui_js_placeholder
-  , ui_js_block
+  , ui_js_flex
   , ui_js_tag
   , ui_js_edit
   , ...}:
@@ -12,7 +12,7 @@
    src = ./.;
    subnet = ''
 
-   td(${ui_js_block}) output -> input page(${ui_js_page})
+   td(${ui_js_flex}) output -> input page(${ui_js_page})
    'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])~create' -> input td()
 
    edit(${ui_js_edit}) output -> places[0] td()
@@ -21,18 +21,19 @@
 
    // counter(${app_counter_view}) output -> places[0] td()
 
-   // td(${ui_js_block}) output -> input page(${ui_js_page})
+   // td(${ui_js_flex}) output -> input page(${ui_js_page})
    // 'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])' -> input td()
 
-   // lr(${ui_js_block}) output -> places[0] td()
+   // lr(${ui_js_flex}) output -> places[0] td()
    // 'js_tag:(type="div", css=[(key="display", value="flex")])' -> input lr()
 
    // 'js_tag:(type="button", content="+")' -> input button2(${ui_js_tag})
    // 'js_tag:(type="span", content="0", css=[(key="maring", value="0 10px")])' -> input text(${ui_js_tag})
 
 
-   'js_tag:(type="button", content="-")~create' -> input button(${ui_js_tag})
-   button() output -> places[1] td()
+   'js_tag:(type="svg", attributes=[(key="width", value="200"), (key="height", value="200")])~create' -> input svg(${ui_js_flex}) output -> places[1] td()
+
+   'js_tag:(type="circle", attributes=[(key="cx", value="50"), (key="cy", value="50"), (key="r", value="40"), (key="fill", value="yellow"), (key="stroke", value="green"), (key="stroke-width", value="4")])~create' -> input circl(${ui_js_tag}) output -> places[0] svg()
 
    // button2() output -> places[2] lr()
    // text() output -> places[1] lr()
@@ -43,7 +44,7 @@
 
 
 
-    // 'js_tag:(type="div", css=[(key="display", value="flex")])~create' -> input taglr(${ui_js_block}) output -> places[5] td()
+    // 'js_tag:(type="div", css=[(key="display", value="flex")])~create' -> input taglr(${ui_js_flex}) output -> places[5] td()
 
     // 'js_tag:(type="img", attributes=[(key="src", value="/home/denis/29_jpg.jpg")])~create' -> input tag3(${ui_js_tag}) output -> places[0] taglr()
     // 'js_tag:(type="button", content="test")~create' -> input tag4(${ui_js_tag}) output -> places[1] taglr()
