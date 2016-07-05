@@ -6,6 +6,7 @@
   , ui_js_placeholder
   , ui_js_block
   , ui_js_tag
+  , ui_js_edit
   , ...}:
   buildFractalideSubnet rec {
    src = ./.;
@@ -13,6 +14,10 @@
 
    td(${ui_js_block}) output -> input page(${ui_js_page})
    'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])~create' -> input td()
+
+   edit(${ui_js_edit}) output -> places[0] td()
+   'generic_text:(text="initial value")~create' -> input edit()
+
 
    // counter(${app_counter_view}) output -> places[0] td()
 
@@ -22,12 +27,13 @@
    // lr(${ui_js_block}) output -> places[0] td()
    // 'js_tag:(type="div", css=[(key="display", value="flex")])' -> input lr()
 
-   'js_tag:(type="button", content="-")' -> input button(${ui_js_tag})
    // 'js_tag:(type="button", content="+")' -> input button2(${ui_js_tag})
    // 'js_tag:(type="span", content="0", css=[(key="maring", value="0 10px")])' -> input text(${ui_js_tag})
 
 
-   button() output -> places[0] td()
+   'js_tag:(type="button", content="-")~create' -> input button(${ui_js_tag})
+   button() output -> places[1] td()
+
    // button2() output -> places[2] lr()
    // text() output -> places[1] lr()
 

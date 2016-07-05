@@ -9,26 +9,25 @@ component! {
     ui_js_edit_viewer, contracts(generic_text)
     inputs(input: generic_text),
     inputs_array(),
-    outputs(label: generic_text),
+    outputs(text: generic_text, input: generic_text),
     outputs_array(),
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip_input = try!(self.ports.recv("input"));
 
-        /*
-        let mut res = "".to_string();
         {
             let mut reader: generic_text::Reader = try!(ip_input.get_root());
-            res.push_str(try!(reader.get_text()));
+            let mut ip = IP::new();
+            ip.action = "set_content".into();
+            {
+                let mut build = ip.init_root::<generic_text::Builder>();
+                build.set_text(try!(reader.get_text()));
+            }
+            try!(self.ports.send("text", ip));
         }
-        {
-            let mut builder = ip_input.init_root::<generic_text::Builder>();
-            builder.set_text(&res);
-        }
-        */
-        ip_input.action = "set_label".into();
-        try!(self.ports.send("label", ip_input));
+        ip_input.action = "set_val".into();
+        try!(self.ports.send("input", ip_input));
 
         Ok(())
     }

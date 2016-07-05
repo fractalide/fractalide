@@ -5,6 +5,7 @@
   , ip_delay
   , ip_replace
   , ui_js_block
+  , ui_js_edit
   , ui_js_growing_block
   , ui_js_tag
   , ui_js_page
@@ -28,13 +29,15 @@
    gblock(${ui_js_growing_block}) output -> places[2] td()
    gblock() scheduler -> action sched(${development_fbp_subnet})
    sched() outputs[block] -> places[2] td()
-   'generic_text:(text="${app_counter_card}")' -> option gblock()
+   //'generic_text:(text="${app_counter_card}")' -> option gblock()
+   'generic_text:(text="${ui_js_edit}")' -> option gblock()
    'js_tag:(type="div", css=[(key="display", value="flex"), (key="flex-direction", value="column")])~create' -> input gblock()
 
    button_add() output[click] -> input add(${ip_replace}) output -> input gblock()
    button_remove() output[click] -> input minus(${ip_action}) output -> input gblock()
    'generic_text:(text="remove")' -> option minus()
-   'app_counter:(value=0)~add' -> option add()
+   //'app_counter:(value=0)~add' -> option add()
+   'generic_text:(text="initial")~add' -> option add()
 
    '';
 

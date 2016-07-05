@@ -84,6 +84,7 @@ self = rec {
   ui_js_button = callPackage ./ui/js/button {};
   ui_js_edit = callPackage ./ui/js/edit {};
   ui_js_edit_contentedited = callPackage ./ui/js/edit/contentedited {};
+  ui_js_edit_create = callPackage ./ui/js/edit/create {};
   ui_js_edit_keyfilter = callPackage ./ui/js/edit/keyfilter {};
   ui_js_edit_validate = callPackage ./ui/js/edit/validate {};
   ui_js_edit_view = callPackage ./ui/js/edit/view {};

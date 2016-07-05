@@ -24,12 +24,16 @@ component! {
         }
         if res == "27" { // Escape
             ip_input.action = "get_model".into();
+            {
+                let mut builder: generic_text::Builder = ip_input.init_root();
+                builder.set_text("escape");
+            }
             try!(self.ports.send("escape", ip_input));
             let mut new_ip = IP::new();
             new_ip.action = "display".into();
             try!(self.ports.send("display", new_ip))
         } else if res == "13" { // Enter
-            ip_input.action="get_label".into();
+            ip_input.action="get_val".into();
             {
                 let mut builder: generic_text::Builder = ip_input.init_root();
                 builder.set_text("content_edited");
