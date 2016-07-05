@@ -4,7 +4,7 @@ let
 fvm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "1qnk2z2f3cl7rnhb2j2n2rpi2gaqsf7260m3i19r4w6wdd6cycsi";
+    depsSha256 = "0g6d0ik4f6qscqph7z2flb84c0yymcddcxp617h9mslfkpa640nh";
     configurePhase = ''
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
