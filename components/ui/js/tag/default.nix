@@ -3,7 +3,7 @@
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["js_tag" "js_create" "generic_tuple_text" "generic_text"];
+  filteredContracts = filterContracts ["js_create" "generic_tuple_text" "generic_text" "generic_bool"];
   depsSha256 = "0nxsyvy3pk5gxjsiig7vm28q2cjbr9a3gzxdybil6fkwcm7bv6qy";
 
   meta = with stdenv.lib; {

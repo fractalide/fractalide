@@ -7,10 +7,11 @@ use std::thread;
 
 pub struct Portal {
     ty: Option<String>,
-    content: Option<String>,
-    css: HashMap<String, String>,
-    block_css: HashMap<String, String>,
+    text: Option<String>,
+    style: HashMap<String, String>,
+    class: HashMap<String, bool>,
     attributes: HashMap<String, String>,
+    property: HashMap<String, String>,
     buffer: Vec<IP>,
 }
 
@@ -18,65 +19,59 @@ impl Portal {
     fn new() -> Self {
         Portal {
             ty: None,
-            content: None,
-            css: HashMap::new(),
-            block_css: HashMap::new(),
+            text: None,
+            style: HashMap::new(),
+            class: HashMap::new(),
             attributes: HashMap::new(),
+            property: HashMap::new(),
             buffer: Vec::new(),
         }
     }
 
     fn clear(&mut self) {
         self.ty = None;
-        self.content = None;
-        self.css.clear();
-        self.block_css.clear();
+        self.text = None;
+        self.style.clear();
+        self.class.clear();
         self.attributes.clear();
+        self.property.clear();
     }
 
     fn build(&mut self, ip_input: &mut IP) -> Result<()> {
         self.clear();
-        let reader: js_tag::Reader = try!(ip_input.get_root());
+        let reader: js_create::Reader = try!(ip_input.get_root());
         let ty = try!(reader.get_type());
         self.ty = Some(ty.into());
-        let content = try!(reader.get_content());
-        if content != "" {
-            self.content = Some(content.into());
+        let text = try!(reader.get_text());
+        if text != "" {
+            self.text = Some(text.into());
         }
-        let mut style = "".to_string();
-        for css in try!(reader.get_css()).iter() {
-            let key = try!(css.get_key());
-            let value = try!(css.get_value());
-            self.css.insert(key.into(), value.into());
+        for style in try!(reader.get_style()).iter() {
+            let key = try!(style.get_key());
+            let value = try!(style.get_val());
+            self.style.insert(key.into(), value.into());
         }
-        let mut attributes = "".to_string();
-        for css in try!(reader.get_attributes()).iter() {
-            let key = try!(css.get_key());
-            let value = try!(css.get_value());
-            attributes.push_str(key);
-            attributes.push_str("=");
-            attributes.push_str(value);
-            attributes.push_str(" ");
+        for attr in try!(reader.get_attr()).iter() {
+            let key = try!(attr.get_key());
+            let value = try!(attr.get_val());
             self.attributes.insert(key.into(), value.into());
         }
-        // set upper css
-        let mut block_css: String = "".to_string();
-        for css in try!(reader.get_block_css()).iter() {
-            let key = try!(css.get_key());
-            let value = try!(css.get_value());
-            block_css.push_str(key);
-            block_css.push_str(":");
-            block_css.push_str(value);
-            block_css.push_str("");
-            self.block_css.insert(key.into(), value.into());
+        for class in try!(reader.get_class()).iter() {
+            let name = try!(class.get_name());
+            let set = class.get_set();
+            self.class.insert(name.into(), set);
         }
-
+        for prop in try!(reader.get_property()).iter() {
+            let key = try!(prop.get_key());
+            let value = try!(prop.get_val());
+            self.property.insert(key.into(), value.into());
+        }
         Ok(())
     }
 }
 
 component! {
-    ui_js_tag, contracts(js_create, js_tag, generic_tuple_text, generic_text)
+    ui_js_tag, contracts(js_create, generic_tuple_text, generic_text, generic_bool)
         inputs(input: any),
     inputs_array(),
     outputs(output: any),
@@ -100,54 +95,15 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             // Put in the portal
             try!(comp.portal.build(&mut ip_input));
             // create the create IP
-            let mut ip_create = IP::new();
-            ip_create.action = "create".to_string();
             {
-                let mut builder = ip_create.init_root::<js_create::Builder>();
+                let mut builder = try!(ip_input.init_root_from_reader::<js_create::Builder, js_create::Reader>());
                 // set the name
                 builder.set_name(&comp.name);
                 // set the sender (raw ip to the input port)
                 let sender = Box::new(try!(comp.ports.get_sender("input")));
                 builder.set_sender(Box::into_raw(sender) as u64);
-
-                let mut style = "".to_string();
-                for (key, val) in comp.portal.css.iter() {
-                    style.push_str(key);
-                    style.push_str(":");
-                    style.push_str(val);
-                    style.push_str(";");
-                }
-                let mut attributes = "".to_string();
-                for (key, val) in comp.portal.attributes.iter() {
-                    attributes.push_str(key);
-                    attributes.push_str("=\"");
-                    attributes.push_str(val);
-                    attributes.push_str("\" ");
-                }
-                let mut block_css = "".to_string();
-                for (key, val) in comp.portal.block_css.iter() {
-                    block_css.push_str(key);
-                    block_css.push_str(":");
-                    block_css.push_str(val);
-                    block_css.push_str(";");
-                }
-                // Set the html
-                let end = match comp.portal.content {
-                    Some(ref content) => {
-                        format!(">{}</{}>", content, comp.portal.ty.as_ref().expect("unreachable"))
-                    },
-                    None => "/>".to_string()
-                };
-                let html = format!("<{} id=\"{}\" style=\"{}\" {}{}",
-                                   comp.portal.ty.as_ref().expect("unreachable"),
-                                   comp.name,
-                                   style,
-                                   attributes,
-                                   end);
-                builder.set_html(&html);
-                builder.set_css(&block_css);
             }
-            let _ = comp.ports.send_action("output", ip_create);
+            let _ = comp.ports.send_action("output", ip_input);
             let buffer = comp.portal.buffer.drain(..).collect::<Vec<_>>();
             for ip in buffer {
                 try!(handle_ip(&mut comp, ip));
@@ -159,13 +115,16 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
             let key = try!(reader.get_key());
             let value = try!(reader.get_value());
-            comp.portal.css.insert(key.into(), value.into());
+            comp.portal.style.insert(key.into(), value.into());
             // Send outside
             let mut ip = IP::new();
             ip.action = "forward".into();
             {
                 let mut builder = ip.init_root::<js_create::Builder>();
-                builder.set_html(&format!("css;{};{};{}", comp.name, key, value));
+                builder.set_name(&comp.name);
+                let mut style = builder.init_style(1);
+                style.borrow().get(0).set_key(key);
+                style.borrow().get(0).set_val(value);
             }
             try!(comp.ports.send_action("output", ip));
         }
@@ -173,7 +132,7 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
             let key = try!(reader.get_key());
             let value = try!(reader.get_value());
-            let resp = comp.portal.css.get(value).map(|resp| resp.as_str())
+            let resp = comp.portal.style.get(value).map(|resp| resp.as_str())
                 .unwrap_or("");
             let mut ip = IP::new();
             {
@@ -195,7 +154,10 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             ip.action = "forward".into();
             {
                 let mut builder = ip.init_root::<js_create::Builder>();
-                builder.set_html(&format!("attr;{};{};{}", comp.name, key, value));
+                builder.set_name(&comp.name);
+                let mut attr = builder.init_attr(1);
+                attr.borrow().get(0).set_key(key);
+                attr.borrow().get(0).set_val(value);
             }
             try!(comp.ports.send_action("output", ip));
         }
@@ -213,58 +175,63 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             ip.action = key.to_string();
             let _ = comp.ports.send_action("output", ip);
         }
-        // Content
-        "set_content" => {
-            let reader = try!(ip_input.get_root::<generic_text::Reader>());
-            let new_content = try!(reader.get_text());
+        // class
+        "set_class" => {
             // Change in portal
-            comp.portal.content = Some(new_content.to_string());
-            // Send new content
+            let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
+            let key = try!(reader.get_key());
+            let value = try!(reader.get_value());
+            let value = if value == "true" { true } else { false };
+            comp.portal.class.insert(key.into(), value);
+            // Send outside
             let mut ip = IP::new();
-            ip.action = "forward".to_string();
+            ip.action = "forward".into();
             {
-                let mut builder: js_create::Builder = ip.init_root();
-                builder.set_html(&format!("html;{};{}",
-                                          comp.name,
-                                          new_content,
-                ));
+                let mut builder = ip.init_root::<js_create::Builder>();
+                builder.set_name(&comp.name);
+                let mut class = builder.init_class(1);
+                class.borrow().get(0).set_name(key);
+                class.borrow().get(0).set_set(value);
             }
-            comp.ports.send_action("output", ip);
+            try!(comp.ports.send_action("output", ip));
         }
-        "insert_content" => {
-            ip_input.action = "forward_create".into();
-            {
-                let mut builder = try!(ip_input.init_root_from_reader::<js_create::Builder, js_create::Reader>());
-                let new_html = {
-                    let html = {
-                        let reader = builder.borrow().as_reader();
-                        try!(reader.get_html())
-                    };
-                    format!("insert;{};{}",
-                            comp.name,
-                            html)
-                };
-                builder.set_html(&new_html);
-            }
-            comp.ports.send_action("output", ip_input);
-        }
-        "get_content" => {
-            let reader = try!(ip_input.get_root::<generic_text::Reader>());
-            let key = try!(reader.get_text());
-            let resp = comp.portal.content.as_ref().map(|resp| resp.as_str()).unwrap_or("");
+        "get_class" => {
+            let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
+            let key = try!(reader.get_key());
+            let value = try!(reader.get_value());
+            let resp = comp.portal.class.get(value).map(|b| b.to_owned()).unwrap_or(false);
             let mut ip = IP::new();
             {
-                let mut builder = ip.init_root::<generic_text::Builder>();
-                builder.set_text(resp);
+                let mut builder = ip.init_root::<generic_bool::Builder>();
+                builder.set_bool(resp);
             }
             ip.action = key.to_string();
             let _ = comp.ports.send_action("output", ip);
         }
-        // Value (for input)
-        "get_val" => {
+        // property
+        "set_property" => {
+            // Change in portal
             let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
             let key = try!(reader.get_key());
-            let resp = comp.portal.attributes.get("value").map(|resp| resp.as_str())
+            let value = try!(reader.get_value());
+            comp.portal.property.insert(key.into(), value.into());
+            // Send outside
+            let mut ip = IP::new();
+            ip.action = "forward".into();
+            {
+                let mut builder = ip.init_root::<js_create::Builder>();
+                builder.set_name(&comp.name);
+                let mut prop = builder.init_property(1);
+                prop.borrow().get(0).set_key(key);
+                prop.borrow().get(0).set_val(value);
+            }
+            try!(comp.ports.send_action("output", ip));
+        }
+        "get_property" => {
+            let reader = try!(ip_input.get_root::<generic_tuple_text::Reader>());
+            let key = try!(reader.get_key());
+            let value = try!(reader.get_value());
+            let resp = comp.portal.property.get(value).map(|resp| resp.as_str())
                 .unwrap_or("");
             let mut ip = IP::new();
             {
@@ -274,26 +241,46 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             ip.action = key.to_string();
             let _ = comp.ports.send_action("output", ip);
         }
-        "set_val" => {
-            let new_val = {
-                let reader = try!(ip_input.get_root::<generic_text::Reader>());
-                try!(reader.get_text()).to_string()
-            };
+        // Content
+        "set_text" => {
+            let reader = try!(ip_input.get_root::<generic_text::Reader>());
+            let new_content = try!(reader.get_text());
+            // Change in portal
+            comp.portal.text = Some(new_content.to_string());
+            // Send new content
+            let mut ip = IP::new();
+            ip.action = "forward".to_string();
             {
-                ip_input.action = "forward".into();
-                let mut builder = ip_input.init_root::<js_create::Builder>();
-                let html = format!("val;{};{}", comp.name, &new_val);
-                builder.set_html(&html);
+                let mut builder: js_create::Builder = ip.init_root();
+                builder.set_name(&comp.name);
+                builder.set_text(new_content);
             }
-            let _ = comp.ports.send_action("output", ip_input);
-
-            // Save it
-            comp.portal.attributes.insert("value".into(), new_val);
+            comp.ports.send_action("output", ip);
+        }
+        "insert_text" => {
+            ip_input.action = "forward_create".into();
+            {
+                let mut builder = try!(ip_input.init_root_from_reader::<js_create::Builder, js_create::Reader>());
+                builder.set_append(&comp.name);
+            }
+            comp.ports.send_action("output", ip_input);
+        }
+        "get_text" => {
+            let reader = try!(ip_input.get_root::<generic_text::Reader>());
+            let key = try!(reader.get_text());
+            let resp = comp.portal.text.as_ref().map(|resp| resp.as_str()).unwrap_or("");
+            let mut ip = IP::new();
+            {
+                let mut builder = ip.init_root::<generic_text::Builder>();
+                builder.set_text(resp);
+            }
+            ip.action = key.to_string();
+            let _ = comp.ports.send_action("output", ip);
         }
         "input" => {
             {
                 let mut reader: generic_text::Reader = try!(ip_input.get_root());
-                comp.portal.attributes.insert("value".into(), try!(reader.get_text()).into());
+                comp.portal.property.insert("value".into(), try!(reader.get_text()).into());
             }
             let _ = comp.ports.send_action("output", ip_input);
 
@@ -302,5 +289,4 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
     }
 
     Ok(())
-        
 }

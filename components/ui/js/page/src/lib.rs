@@ -71,25 +71,49 @@ component! {
             let act = ip.action.clone();
             match &act[..] {
                 "create" => {
-                    let mut reader: js_create::Reader = try!(ip.get_root());
-                    out.send(format!("insert;main;{}", try!(reader.get_html())));
+                    // Add append to main
+                    println!("Create!");
+                    {
+                        let mut builder = try!(ip.init_root_from_reader::<js_create::Builder, js_create::Reader>());
+                        builder.set_append("main");
+                    }
+                    try!(ip.before_send());
+                    // Save the sender
+                    {
+                        let mut reader: js_create::Reader = try!(ip.get_root());
+                        let name = try!(reader.get_name());
+                        let ptr = reader.get_sender();
+                        if name.len() > 0 {
+                            let sender: Box<IPSender> = unsafe { Box::from_raw(ptr as *mut IPSender) };
+                            senders.insert(name.into(), sender);
+                        }
+                    }
+                    // Create d3
+                    let d3 = try!(create_d3(ip));
+                    println!("d3 => \n{}", d3);
+                    out.send(d3);
                 },
                 "forward_create" => {
-                    let mut reader: js_create::Reader = try!(ip.get_root());
-                    let name = try!(reader.get_name());
-                    let ptr = reader.get_sender();
-                    if name.len() > 0 {
-                        let sender: Box<IPSender> = unsafe { Box::from_raw(ptr as *mut IPSender) };
-                        senders.insert(name.into(), sender);
+                    {
+                        let mut reader: js_create::Reader = try!(ip.get_root());
+                        let name = try!(reader.get_name());
+                        let ptr = reader.get_sender();
+                        if name.len() > 0 {
+                            let sender: Box<IPSender> = unsafe { Box::from_raw(ptr as *mut IPSender) };
+                            senders.insert(name.into(), sender);
+                        }
                     }
-                    out.send(try!(reader.get_html()));
+                    let d3 = try!(create_d3(ip));
+                    println!("d3 => \n{}", d3);
+                    out.send(d3);
                 },
-                "delete" => {
-                    out.send("html;main;");
-                }
+                // "delete" => {
+                //     out.send("html;main;");
+                // }
                 "forward" => {
-                    let mut reader: js_create::Reader = try!(ip.get_root());
-                    out.send(try!(reader.get_html()));
+                    let d3 = try!(create_d3(ip));
+                    println!("d3 => \n{}", d3);
+                    out.send(d3);
                 }
                 "intern_msg" => {
                     let mut reader: generic_text::Reader = try!(ip.get_root());
@@ -138,4 +162,69 @@ component! {
 
         Ok(())
     }
+}
+
+fn create_d3(mut ip: IP) -> Result<String> {
+    let mut reader: js_create::Reader = try!(ip.get_root());
+    // Manage name and sender
+    let mut d3 = "d3.select(\"#".to_string();
+    // Two possibilities : append is set, so add to the parent. append is not send, select the name
+    if reader.has_append() {
+        d3.push_str(try!(reader.get_append()));
+        d3.push_str("\").append(\"");
+        d3.push_str(try!(reader.get_type()));
+        d3.push_str("\").attr(\"id\", \"");
+        d3.push_str(try!(reader.get_name()));
+        d3.push_str("\")");
+    } else {
+        d3.push_str(try!(reader.get_name()));
+        d3.push_str("\")");
+    }
+
+    if reader.get_remove() {
+        d3.push_str(".remove();");
+        return Ok(d3);
+    }
+
+    let text = try!(reader.get_text());
+    if text != "" {
+        d3.push_str(".text(\"");
+        d3.push_str(text);
+        d3.push_str("\")");
+    }
+
+    for attr in try!(reader.get_attr()).iter() {
+        d3.push_str(".attr(\"");
+        d3.push_str(try!(attr.get_key()));
+        d3.push_str("\", \"");
+        d3.push_str(try!(attr.get_val()));
+        d3.push_str("\")");
+    }
+    for class in try!(reader.get_class()).iter() {
+        d3.push_str(".classed(\"");
+        d3.push_str(try!(class.get_name()));
+        d3.push_str("\",");
+        if class.get_set() {
+            d3.push_str("true");
+        } else {
+            d3.push_str("false");
+        }
+        d3.push_str(")");
+    }
+    for style in try!(reader.get_style()).iter() {
+        d3.push_str(".style(\"");
+        d3.push_str(try!(style.get_key()));
+        d3.push_str("\", \"");
+        d3.push_str(try!(style.get_val()));
+        d3.push_str("\")");
+    }
+    for property in try!(reader.get_property()).iter() {
+        d3.push_str(".property(\"");
+        d3.push_str(try!(property.get_key()));
+        d3.push_str("\", \"");
+        d3.push_str(try!(property.get_val()));
+        d3.push_str("\")");
+    }
+    d3.push_str(";");
+    Ok(d3)
 }
