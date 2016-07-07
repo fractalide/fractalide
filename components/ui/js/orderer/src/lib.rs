@@ -12,45 +12,36 @@ component! {
     outputs(output: any),
     outputs_array(),
     option(),
-    acc(), portal(Vec<String> => Vec::new())
+    acc(),
     fn run(&mut self) -> Result<()> {
         let places = try!(self.ports.get_input_selections("places"));
         for place in places {
             let mut ip_place = self.ports.try_recv_array("places", &place);
             if let Ok(mut ip) = ip_place {
                 if ip.action == "create" {
-                    // ip.action is "insert_content" or "forward"
-                    let mut action: Option<String> = None;
+                    ip.action = "insert_text".into();
+                    // Add the css
+                    let mut vec: Vec<(String, String)> = vec![];
+                    {
+                        let acc: js_create::Reader = try!(ip.get_root());
+                        let acc_places = try!(acc.get_style());
+                        for i in 0..acc_places.len() {
+                            let p = acc_places.get(i);
+                            vec.push((try!(p.get_key()).into(), try!(p.get_val()).into()));
+                        }
+                    }
+                    // Add it
                     {
                         let mut builder = try!(ip.init_root_from_reader::<js_create::Builder, js_create::Reader>());
-                        let new_html = {
-                            let (div_style, html) = {
-                                let reader = builder.borrow().as_reader();
-                                (try!(reader.get_css()), try!(reader.get_html()))
-                            };
-                            // Check if in acc
-                            if self.portal.contains(&place) {
-                                action = Some("forward_create".to_string());
-                                format!("html;{}-{};{}", place, self.name, html)
-                            } else {
-                                action = Some("insert_content".to_string());
-                                let n_html = format!("<div id=\"{}-{}\" style=\"order:{};{}\">{}</div>", place, self.name, place, div_style, html);
-                                self.portal.push(place.into());
-                                n_html
-                            }
-                        };
-                        builder.set_html(&new_html);
-                    }
-                    ip.action = action.expect("unreachable");
-                } else if ip.action == "delete" {
-                    let pos = self.portal.iter()
-                        .position(|el| el.as_str() == place)
-                        .expect("unreachable");
-                    self.portal.remove(pos);
-                    ip.action = "forward".into();
-                    {
-                        let mut builder = ip.init_root::<js_create::Builder>();
-                        builder.set_html(&format!("delete;{}-{};", place, self.name))
+                        let mut init = builder.init_style((vec.len() + 1) as u32);
+                        let mut i = 0;
+                        for p in vec {
+                            init.borrow().get(i).set_key(&p.0);
+                            init.borrow().get(i).set_val(&p.1);
+                            i += 1;
+                        }
+                        init.borrow().get(i).set_key("order");
+                        init.borrow().get(i).set_val(&place);
                     }
                 }
                 try!(self.ports.send("output", ip));
