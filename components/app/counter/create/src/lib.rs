@@ -6,10 +6,10 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    app_counter_create, contracts(app_counter, js_tag)
+    app_counter_create, contracts(app_counter, js_create)
     inputs(input: app_counter),
     inputs_array(),
-    outputs(label: js_tag, delta: js_tag, plus:js_tag, minus:js_tag, td: js_tag, lr: js_tag),
+    outputs(label: js_create, delta: js_create, plus:js_create, minus:js_create, td: js_create, lr: js_create),
     outputs_array(),
     option(),
     acc(),
@@ -24,9 +24,9 @@ component! {
         let mut ip = IP::new();
         // Plus button
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("button");
-            builder.set_content("+");
+            builder.set_text("+");
         }
         ip.action = "create".into();
         try!(self.ports.send("plus", ip));
@@ -34,9 +34,9 @@ component! {
         // Minus button
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("button");
-            builder.set_content("-");
+            builder.set_text("-");
         }
         ip.action = "create".into();
         try!(self.ports.send("minus", ip));
@@ -44,14 +44,14 @@ component! {
         // td
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("div");
             {
-                let mut css = builder.borrow().init_css(2);
+                let mut css = builder.borrow().init_style(2);
                 css.borrow().get(0).set_key("display");
-                css.borrow().get(0).set_value("flex");
+                css.borrow().get(0).set_val("flex");
                 css.borrow().get(1).set_key("flex-direction");
-                css.borrow().get(1).set_value("column");
+                css.borrow().get(1).set_val("column");
             }
         }
         ip.action = "create".into();
@@ -60,12 +60,12 @@ component! {
         // lr
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("div");
             {
-                let mut css = builder.borrow().init_css(1);
+                let mut css = builder.borrow().init_style(1);
                 css.borrow().get(0).set_key("display");
-                css.borrow().get(0).set_value("flex");
+                css.borrow().get(0).set_val("flex");
             }
         }
         ip.action = "create".into();
@@ -74,13 +74,13 @@ component! {
         // label
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("span");
-            builder.set_content(&format!("{}", number));
+            builder.set_text(&format!("{}", number));
             {
-                let mut css = builder.borrow().init_css(1);
+                let mut css = builder.borrow().init_style(1);
                 css.borrow().get(0).set_key("margin");
-                css.borrow().get(0).set_value("0 10px");
+                css.borrow().get(0).set_val("0 10px");
             }
         }
         ip.action = "create".into();
@@ -88,12 +88,12 @@ component! {
 
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.init_root::<js_tag::Builder>();
+            let mut builder = new_ip.init_root::<js_create::Builder>();
             builder.set_type("input");
             {
-                let mut attr = builder.borrow().init_attributes(1);
+                let mut attr = builder.borrow().init_property(1);
                 attr.borrow().get(0).set_key("value");
-                attr.borrow().get(0).set_value(&format!("{}", delta));
+                attr.borrow().get(0).set_val(&format!("{}", delta));
             }
         }
         new_ip.action = "create".into();
