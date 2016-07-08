@@ -95,6 +95,11 @@ component! {
                 attr.borrow().get(0).set_key("value");
                 attr.borrow().get(0).set_val(&format!("{}", delta));
             }
+            {
+                let mut style = builder.borrow().init_style(1);
+                style.borrow().get(0).set_key("width");
+                style.borrow().get(0).set_val("90px");
+            }
         }
         new_ip.action = "create".into();
         try!(self.ports.send("delta", new_ip));

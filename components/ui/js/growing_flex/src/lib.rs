@@ -6,7 +6,7 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    ui_js_growing_flex, contracts(js_create, js_tag, generic_text, fbp_action)
+    ui_js_growing_flex, contracts(js_create, generic_text, fbp_action)
     inputs(input: any),
     inputs_array(),
     outputs(output: any, scheduler: fbp_action),
@@ -52,7 +52,7 @@ component! {
             }
             "remove" => {
                 if self.portal > 0 {
-                    let name = format!("{}", self.portal);
+                    let name = format!("i{}", self.portal);
 
                     // Send the delete IP
                     let mut send_ip = IP::new();
@@ -86,7 +86,7 @@ component! {
                 // Add link
                 let mut ip_opt = self.recv_option();
                 let mut reader: generic_text::Reader = try!(ip_opt.get_root());
-                let name = format!("{}", self.portal);
+                let name = format!("i{}", self.portal);
                 // Send the create comp IP
                 let mut send_ip = IP::new();
                 {

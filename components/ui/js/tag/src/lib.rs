@@ -285,6 +285,15 @@ pub fn handle_ip(mut comp: &mut ui_js_tag, mut ip_input: IP) -> Result<()> {
             let _ = comp.ports.send_action("output", ip_input);
 
         }
+        "delete" => {
+            {
+                let mut builder: js_create::Builder = ip_input.init_root();
+                builder.set_name(&comp.name);
+                builder.set_remove(true);
+            }
+            ip_input.action = "forward".into();
+            let _ = comp.ports.send_action("output", ip_input);
+        }
         _ => { let _ = comp.ports.send_action("output", ip_input); }
     }
 

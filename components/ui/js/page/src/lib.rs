@@ -72,7 +72,6 @@ component! {
             match &act[..] {
                 "create" => {
                     // Add append to main
-                    println!("Create!");
                     {
                         let mut builder = try!(ip.init_root_from_reader::<js_create::Builder, js_create::Reader>());
                         builder.set_append("main");
@@ -90,7 +89,6 @@ component! {
                     }
                     // Create d3
                     let d3 = try!(create_d3(ip));
-                    println!("d3 => \n{}", d3);
                     out.send(d3);
                 },
                 "forward_create" => {
@@ -104,7 +102,6 @@ component! {
                         }
                     }
                     let d3 = try!(create_d3(ip));
-                    println!("d3 => \n{}", d3);
                     out.send(d3);
                 },
                 // "delete" => {
@@ -112,7 +109,6 @@ component! {
                 // }
                 "forward" => {
                     let d3 = try!(create_d3(ip));
-                    println!("d3 => \n{}", d3);
                     out.send(d3);
                 }
                 "intern_msg" => {

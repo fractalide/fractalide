@@ -3,7 +3,6 @@
   , app_counter_create
   , io_print
   , ip_action
-  , ip_clone
   , ip_dispatcher
   , ui_js_flex
   , ui_js_tag
@@ -47,11 +46,7 @@
    create() td -> input td()
    create() lr -> input lr()
 
-   in_dispatch() output[delete] -> input create_clone(${ip_clone})
-   create_clone() clone[1] -> input button()
-   create_clone() clone[2] -> input button2()
-   create_clone() clone[3] -> input text()
-   create_clone() clone[4] -> input input()
+   in_dispatch() output[delete] -> input td()
    '';
 
    meta = with stdenv.lib; {
