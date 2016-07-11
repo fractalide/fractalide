@@ -6,10 +6,10 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    ui_js_edit_create, contracts(generic_text, js_tag)
+    ui_js_edit_create, contracts(generic_text, js_create)
     inputs(input: generic_text),
     inputs_array(),
-    outputs(ph: js_tag, text: js_tag, input: js_tag),
+    outputs(ph: js_create, text: js_create, input: js_create),
     outputs_array(),
     option(),
     acc(),
@@ -24,7 +24,7 @@ component! {
         // ph
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("div");
         }
         ip.action = "create".into();
@@ -33,9 +33,9 @@ component! {
         // text
         let mut ip = IP::new();
         {
-            let mut builder = ip.init_root::<js_tag::Builder>();
+            let mut builder = ip.init_root::<js_create::Builder>();
             builder.set_type("span");
-            builder.set_content(&format!("{}", text));
+            builder.set_text(&format!("{}", text));
         }
         ip.action = "create".into();
         try!(self.ports.send("text", ip));
@@ -46,12 +46,12 @@ component! {
         // input
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.init_root::<js_tag::Builder>();
+            let mut builder = new_ip.init_root::<js_create::Builder>();
             builder.set_type("input");
             {
-                let mut attr = builder.borrow().init_attributes(1);
+                let mut attr = builder.borrow().init_property(1);
                 attr.borrow().get(0).set_key("value");
-                attr.borrow().get(0).set_value(text);
+                attr.borrow().get(0).set_val(text);
             }
         }
         new_ip.action = "create".into();

@@ -27,12 +27,12 @@
       conn.send(e.type + "#" + e.target.id);
     });
 
-    d3.select("#main").on("keyup", function(e) {
+    d3.select("#main").on("keyup", function() {
       e = d3.event;
       conn.send(e.type + "#" + e.target.id + "#" + e.keyCode);
     });
 
-    d3.select("#main").on("input", function(e) {
+    d3.select("#main").on("input", function() {
       e = d3.event;
       conn.send(e.type + "#" + e.target.id + "#" + e.target.value);
     });

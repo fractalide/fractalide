@@ -7,10 +7,10 @@ use std::thread;
 
 // TODO : add ctrl-maj-meta information
 component! {
-    ui_js_edit_keyfilter, contracts(generic_text)
+    ui_js_edit_keyfilter, contracts(generic_text, generic_tuple_text)
     inputs(input: generic_text),
     inputs_array(),
-    outputs(validate: generic_text, escape: generic_text, display: any),
+    outputs(validate: generic_tuple_text, escape: generic_text, display: any),
     outputs_array(),
     option(),
     acc(),
@@ -33,10 +33,11 @@ component! {
             new_ip.action = "display".into();
             try!(self.ports.send("display", new_ip))
         } else if res == "13" { // Enter
-            ip_input.action="get_val".into();
+            ip_input.action="get_property".into();
             {
-                let mut builder: generic_text::Builder = ip_input.init_root();
-                builder.set_text("content_edited");
+                let mut builder: generic_tuple_text::Builder = ip_input.init_root();
+                builder.set_key("content_edited");
+                builder.set_value("value");
             }
             try!(self.ports.send("validate", ip_input));
             let mut new_ip = IP::new();

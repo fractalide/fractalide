@@ -23,13 +23,13 @@
    create_clone() clone[2] -> input model()
 
    in_dispatch() output[delete] -> input view()
-   in_dispatch() output[set_val] -> input view()
+   in_dispatch() output[set_property] -> input view()
 
    view() output[get_model] -> input model()
    view() output[content_edited] -> input model()
 
    model() compute[content_edited] -> input ce(${ui_js_edit_contentedited}) output -> result model()
-   model() compute[set_val] -> input ce()
+   model() compute[set_property] -> input ce()
    '';
 
    meta = with stdenv.lib; {
