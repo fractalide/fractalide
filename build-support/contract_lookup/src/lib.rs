@@ -3,14 +3,6 @@ extern crate capnp;
 #[macro_use]
 extern crate rustfbp;
 
-mod contracts {
-    include!("path.rs");
-    include!("option_path.rs");
-}
-
-use self::contracts::path;
-use self::contracts::option_path;
-
 fn get(name: &str) -> Option<&str> {
     match name {
         nix-replace-me
@@ -18,7 +10,7 @@ fn get(name: &str) -> Option<&str> {
     }
 }
 component! {
-    contract_lookup,
+    contract_lookup, contracts(path, option_path)
     inputs(input: path),
     inputs_array(),
     outputs(output: option_path),
