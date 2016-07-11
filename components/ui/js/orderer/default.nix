@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["js_create"];
-  depsSha256 = "0h7r5r3c1nvqkd4jf01ycwn4zsssrdvkzy6s1rlb54vyk1xjsadv";
+  depsSha256 = "1wd0gqd7sbjpgyxcgpdwkl0w8p634lb66lqxzn9pxczrq752ff3x";
 
   meta = with stdenv.lib; {
     description = "Component: manage the inside of a js block";

@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["generic_text" "generic_tuple_text"];
-  depsSha256 = "17g2mjw2c7iwb5fdnh6382pjhxy02xnd4k7gnban1ac2c6j959mm";
+  depsSha256 = "1dn89bm45mnqmyh8smbkxkxswjzp0y20s1i0fhxvbw1d7na4bvsw";
 
   meta = with stdenv.lib; {
     description = "Component: split the fbp_graph in different ui_js components";
