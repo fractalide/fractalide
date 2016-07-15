@@ -6,6 +6,7 @@ fvm  = support.buildRustPackage rec {
     src = ./.;
     depsSha256 = "0g6d0ik4f6qscqph7z2flb84c0yymcddcxp617h9mslfkpa640nh";
     configurePhase = ''
+    runHook preConfigure
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_semantic.so" "${components.development_fbp_parser_semantic}/lib/libcomponent.so"
@@ -22,6 +23,10 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace Cargo.toml --replace "fvm" "${name}"
     substituteInPlace src/main.rs --replace "fvm" "${name}"
     substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
+    '';
+
+    installPhase = ''
+      runHook preInstall
     '';
 
     meta = with pkgs.stdenv.lib; {

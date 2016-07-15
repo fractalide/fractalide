@@ -23,14 +23,14 @@
   type = if debug == "true" then "" else "--release";
   directory = if debug == "true" then "debug" else "release";
 
-  in stdenv.mkDerivation (args // {
+  in stdenv.mkCachedDerivation (args // {
     inherit cargoDeps rustRegistry;
 
     patchRegistryDeps = ./patch-registry-deps;
 
     buildInputs = [ git cargo rustc ] ++ buildInputs;
 
-    configurePhase = args.configurePhase or "true";
+    configurePhase = args.configurePhase or "runHook preConfigure";
 
     postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
@@ -109,9 +109,10 @@ cargo test
 doCheck = args.doCheck or true;
 
 installPhase = ''
+runHook preInstall
 mkdir -p $out/bin
 for f in $(find target/${directory} -maxdepth 1 -type f); do
 cp $f $out/bin
 done;
-'' + (args.installPhase or '''');
+'' + (args.installPhase or ''runHook preInstall'');
 })

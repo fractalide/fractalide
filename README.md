@@ -90,6 +90,17 @@ Run the command below as a user other than root (you will need `sudo`). Quite po
 Happy Hacking!
 
 
+### Incremental Builds
+Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
+The cache folder can be created from an old result by the buildCache.sh script. Per default the cache folder is saved in the /tmp folder of your system.
+
+Here is an example how you can build with the Incremental Build System:
+
+```
+nix-build --argstr debug true --argstr cache $(./buildCache.sh) --argstr subnet test_sjm
+```
+
+
 ### Contributing to Fractalide
 
 The contributors are listed in `fractalide/build-support/upkeepers.nix` (add yourself).
