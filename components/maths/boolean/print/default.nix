@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["maths_boolean"];
-  depsSha256 = "08q4xp35gpa2lbsci2jlg3n2bfjlc6l9vabcg7glnwyiikym40k3";
+  depsSha256 = "0cs99fnr2qz1v691ykzh3ar0xz89h63wla8r7fbb8pa77xch1lj6";
 
   meta = with stdenv.lib; {
     description = "Component: Print the content of the contract maths_boolean";
