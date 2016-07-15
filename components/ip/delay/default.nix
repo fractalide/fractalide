@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [];
-  depsSha256 = "1vd76ggpxb0pz5mhll2sz0drysr12bkspn06vrscsd2i2kwnvarb";
+  depsSha256 = "1z8sqilfh2y84n4pad4hvjylsd9m1q3ns9d2gw040vww6g4lggmd";
 
   meta = with stdenv.lib; {
     description = "Component: Delay by 1 sec the IPs coming in";

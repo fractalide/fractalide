@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["js_create"];
-  depsSha256 = "0bhc7hg1q6h5hqzv80p36jm0zhmcpk8qq28pb3yr1ilpx7x4qn2z";
+  depsSha256 = "0wpz03wza7yqa7gbj86gs0wg63n312bnlfzn7br3f9qlbs2c66dv";
   meta = with stdenv.lib; {
     description = "Component: draw a place holder";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
