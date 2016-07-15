@@ -234,7 +234,7 @@ impl Scheduler {
         if let Some(comp) = self.components.get(&comp) {
             if let Some(port) = comp.inputs_array.get(&port) {
                 if let Some(_) = port.get(&selection) {
-                    res = true;
+                    res = false;
                 }
             }
         }

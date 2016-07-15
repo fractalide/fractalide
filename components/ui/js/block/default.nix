@@ -1,14 +1,20 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideSubnet, upkeepers
+  , ui_js_tag
+  , ui_js_inserter
+  , ...}:
+  let
+  doc = import ../../../doc {};
+  in
+  buildFractalideSubnet rec {
+   src = ./.;
+   subnet = ''
+   input => input div(${ui_js_tag}) output => output
+   places => input inserter(${ui_js_inserter}) output -> input div()
+   '';
 
-buildFractalideComponent rec {
-  name = genName ./.;
-  src = ./.;
-  filteredContracts = filterContracts ["js_create" "js_block"];
-  depsSha256 = "1fqwsbp1az5q1i9yqjk9ywp2m4pslmw71iq3gh40iig38x1mga08";
-
-  meta = with stdenv.lib; {
-    description = "Component: draw a conrod button";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/print;
+   meta = with stdenv.lib; {
+    description = "Subnet: editor card";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

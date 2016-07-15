@@ -69,7 +69,7 @@ pub extern "C" fn run(path_fbp: &str) {
 
     // With Graph print
     // sched.connect("fvm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
-    // sched.connect("graph_print".into(), "output".into(), "sched".into(), "input".into()).expect("cannot connect");
+    // sched.connect("graph_print".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");
 
     // Without Graph print
     sched.connect("fvm".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");

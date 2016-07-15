@@ -96,7 +96,7 @@ ${if local-rustfbp == "true" then
 else ""}
 ${stdenv.lib.concatMapStringsSep "\n"
 (contract:
-  "cp ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
+  "cp ${contract.outPath}/src/contract_capnp.rs ./${contract.name}.rs;")
 (stdenv.lib.flatten filteredContracts)}
 echo "*********************************************************************"
 echo "****** building: ${name} "

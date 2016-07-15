@@ -21,7 +21,7 @@ component! {
             let mut builder: generic_text::Builder = ip_input.init_root();
             builder.set_text("content_edited");
         }
-        ip_input.action = "get_label".into();
+        ip_input.action = "get_val".into();
         try!(self.ports.send("validate", ip_input));
 
         let mut new_ip = IP::new();

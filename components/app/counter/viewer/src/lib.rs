@@ -6,7 +6,7 @@ extern crate rustfbp;
 use std::thread;
 
 component! {
-    app_counter_viewer, contracts(generic_text, app_counter)
+    app_counter_viewer, contracts(generic_text, app_counter, generic_tuple_text)
     inputs(input: app_counter),
     inputs_array(),
     outputs(label: generic_text, delta: generic_text),
@@ -24,15 +24,16 @@ component! {
             let mut builder = ip_input.init_root::<generic_text::Builder>();
             builder.set_text(&format!("{}", number));
         }
-        ip_input.action = "set_label".into();
+        ip_input.action = "set_text".into();
         try!(self.ports.send("label", ip_input));
 
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.init_root::<generic_text::Builder>();
-            builder.set_text(&format!("{}", delta));
+            let mut builder = new_ip.init_root::<generic_tuple_text::Builder>();
+            builder.set_key("value");
+            builder.set_value(&format!("{}", delta));
         }
-        new_ip.action = "set_label".into();
+        new_ip.action = "set_property".into();
         try!(self.ports.send("delta", new_ip));
 
 
