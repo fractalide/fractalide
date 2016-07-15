@@ -29,7 +29,6 @@ Our design requirements are:
 - [x] Component Oriented Language built on Rust (completed)
 - [ ] HyperCard implementation (in progress)
 - [ ] Name Data Networking implementation (in progress)
-- [ ] Crypto-contract implementation
 
 ### Basic concepts
 * **Components**: A component is a Rust library with a C ABI.
