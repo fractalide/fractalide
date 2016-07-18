@@ -98,6 +98,7 @@ Here is an example how you can build with the Incremental Build System:
 ```
 nix-build --argstr debug true --argstr cache $(./buildCache.sh) --argstr subnet test_sjm
 ```
+If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
 
 ### Contributing to Fractalide
