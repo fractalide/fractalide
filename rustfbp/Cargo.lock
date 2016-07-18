@@ -1,6 +1,6 @@
 [root]
 name = "rustfbp"
-version = "0.3.14"
+version = "0.3.15"
 dependencies = [
  "capnp 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "capnpc 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
