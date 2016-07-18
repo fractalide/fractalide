@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["generic_text"];
-  depsSha256 = "1dn89bm45mnqmyh8smbkxkxswjzp0y20s1i0fhxvbw1d7na4bvsw";
+  depsSha256 = "12xq209lh0dy90b8xig0ha3p56vd9l593j406hs4lmn3r2ddmz8i";
 
   meta = with stdenv.lib; {
     description = "Component: app general atomic model";
