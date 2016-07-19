@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["maths_boolean"];
-  depsSha256 = "0gsak8rvnz11ij8lr0rmd85xp5rdna1vga03dzsd6lpx2bliw3vy";
+  depsSha256 = "1yprld6bwwlknbblxig3xlzb93czsm6ncnnyrhwgm1lsjmyppj70";
 
   meta = with stdenv.lib; {
     description = "Component: NAND logic gate";

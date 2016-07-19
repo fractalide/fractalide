@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["js_create" "generic_tuple_text" "generic_text" "generic_bool"];
-  depsSha256 = "001h5z41vj8600pvpj2hr6w1xi9r4l2a1bjjw22lix2ynjb0z3zp";
+  depsSha256 = "01yp5rbzprk4676mgw1yi0bq7pgb63bv00q045bdsx0j9zxnmb61";
 
   meta = with stdenv.lib; {
     description = "Component: draw a http tag";

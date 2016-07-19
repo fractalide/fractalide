@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["list_triple"];
-  depsSha256 = "05nr5ky6avk3wif3q90fzkwmkc70438ninrd8486bqh9k0v4jp61";
+  depsSha256 = "1w8gq9f3mzm52l4ymwxvjs2xcz3ngbh37cxih9ckpays9w3kb9ws";
 
   meta = with stdenv.lib; {
     description = "Component: Aggregate the triples from all the chunks such that

@@ -31,4 +31,3 @@ component! {
     Ok(())
   }
 }
-
