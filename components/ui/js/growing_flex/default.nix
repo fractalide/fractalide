@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["js_create" "generic_text" "fbp_action"];
-  depsSha256 = "0wpz03wza7yqa7gbj86gs0wg63n312bnlfzn7br3f9qlbs2c66dv";
+  depsSha256 = "1czwhlfz4j5gd9c3nx7lbm28kvsyci3pc9cxg8hfplif0wzx994a";
   configurePhase = ''
       substituteInPlace src/lib.rs --replace "ui_js_flex" "${ui_js_flex}"
   '';
