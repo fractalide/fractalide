@@ -1,4 +1,4 @@
-// TODO : remove the expect...
+#![feature(question_mark)]
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -46,13 +46,13 @@ component! {
 
         match literal {
             fbp_lexical::Start(path) => {
-                match handle_stream(&self) {
-                    Ok(graph) => { try!(send_graph(&self, try!(path), &graph)) },
+                match handle_stream(&self)? {
+                    Ok(graph) => { send_graph(&self, try!(path), &graph)? },
                     Err(errors) => {
                         let mut new_ip = IP::new();
                         {
                             let mut ip = new_ip.init_root::<fbp_semantic_error::Builder>();
-                            ip.set_path(try!(path));
+                            ip.set_path(path?);
                             {
                                 let mut nodes = ip.init_parsing(errors.len() as u32);
                                 let mut i = 0;
@@ -72,7 +72,7 @@ component! {
     }
 }
 
-fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<Graph, Vec<String>> {
+fn handle_stream(comp: &development_fbp_parser_semantic) -> Result<std::result::Result<Graph, Vec<String>>> {
     let mut state = Break;
     let mut stack: Vec<Literal> = vec![];
     let mut graph = Graph {
@@ -87,15 +87,15 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
 
     loop {
 
-        let mut ip = comp.ports.recv("input").expect("development_fbp_parser_semantic : unable to receive");
-        let literal: fbp_lexical::Reader = ip.get_root().expect("development_fbp_parser_semantic : not a literal");
-        let literal = literal.which().expect("development_fbp_parser_semantic : cannot which");
+        let mut ip = comp.ports.recv("input")?;
+        let literal: fbp_lexical::Reader = ip.get_root()?;
+        let literal = literal.which()?;
         match literal {
             fbp_lexical::End(_) => {
                 break;
             },
             fbp_lexical::Token(t) => {
-                let token = t.which().expect("cannot which token");
+                let token = t.which()?;
                 match token {
                     fbp_lexical::token::Bind(_) => {
                         state = match state {
@@ -120,14 +120,14 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
                         };
                     },
                     fbp_lexical::token::Port(port) => {
-                        stack.push(Literal::Port(port.get_name().unwrap().to_string(), port.get_selection().unwrap().to_string()));
+                        stack.push(Literal::Port(port.get_name()?.to_string(), port.get_selection()?.to_string()));
                         state = match state {
                             Comp => { CompPort },
                             CompPortBind => { CompPortBindPort },
                             CompPortExternal => {
-                                let in_p = stack.pop().unwrap();
-                                let out_p = stack.pop().unwrap();
-                                let out_c = stack.pop().unwrap();
+                                let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let out_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let out_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 {
                                     let (in_p_n, _) = if let Literal::Port(n, s) = in_p { (n, s) } else { unreachable!() };
                                     let (out_c_n, _) = if let Literal::Comp(ref n, ref s) = out_c { (n, s) } else { unreachable!() };
@@ -140,22 +140,22 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
                             ErrorS => { ErrorS },
                             IIPBind => { IIPBindPort },
                             _ => {
-                                errors.push(format!("line {} : Port {}[{}] found, one of {} expected", line, port.get_name().unwrap(), port.get_selection().unwrap(), get_expected(&state)));
+                                errors.push(format!("line {} : Port {}[{}] found, one of {} expected", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
                                 ErrorS
                             },
                         };
                     },
                     fbp_lexical::token::Comp(comp) => {
-                        if comp.get_sort().unwrap() != "" {
-                            graph.nodes.push((comp.get_name().unwrap().to_string(), comp.get_sort().unwrap().to_string()));
+                        if comp.get_sort()? != "" {
+                            graph.nodes.push((comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
                         }
-                        stack.push(Literal::Comp(comp.get_name().unwrap().to_string(), comp.get_sort().unwrap().to_string()));
+                        stack.push(Literal::Comp(comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
                         state = match state {
                             CompPortBindPort => {
-                                let in_c = stack.pop().unwrap();
-                                let in_p = stack.pop().unwrap();
-                                let out_p = stack.pop().unwrap();
-                                let out_c = stack.pop().unwrap();
+                                let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let out_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let out_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 {
                                     let (in_c_n, _) = if let Literal::Comp(ref n, ref s) = in_c { (n, s) } else { unreachable!() };
                                     let (in_p_n, in_p_s) = if let Literal::Port(n, s) = in_p { (n, s) } else { unreachable!() };
@@ -167,9 +167,9 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
                                 Comp
                             },
                             PortExternalPort => {
-                                let in_c = stack.pop().unwrap();
-                                let in_p = stack.pop().unwrap();
-                                let out_p = stack.pop().unwrap();
+                                let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let out_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 {
                                     let (in_c_n, _) = if let Literal::Comp(ref n, ref s) = in_c { (n, s) } else { unreachable!() };
                                     let (in_p_n, in_p_s) = if let Literal::Port(n, s) = in_p { (n, s) } else { unreachable!() };
@@ -180,9 +180,9 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
                                 Comp
                             }
                             IIPBindPort => {
-                                let in_c = stack.pop().unwrap();
-                                let in_p = stack.pop().unwrap();
-                                let iip = stack.pop().unwrap();
+                                let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let iip = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 {
                                     let (in_c_n, _) = if let Literal::Comp(ref n, ref s) = in_c { (n, s) } else { unreachable!() };
                                     let (in_p_n, in_p_s) = if let Literal::Port(n, s) = in_p { (n, s) } else { unreachable!() };
@@ -193,15 +193,15 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
                                 Comp
                             }
                             Break => { Comp },
-                            ErrorS => { stack = vec![stack.pop().unwrap()]; Comp },
+                            ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Comp },
                             _ => {
-                                errors.push(format!("line {} : Comp {}({}) found, one of {} expected", line, comp.get_name().unwrap(), comp.get_sort().unwrap(), get_expected(&state)));
+                                errors.push(format!("line {} : Comp {}({}) found, one of {} expected", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
                                 ErrorS
                             },
                         }
                     },
                     fbp_lexical::token::Iip(iip) => {
-                        let iip = iip.expect("no iip");
+                        let iip = iip?;
                         stack.push(Literal::IIP(iip.to_string()));
                         state = match state {
                             ErrorS => { IIP },
@@ -233,9 +233,9 @@ fn handle_stream(comp: &development_fbp_parser_semantic) -> std::result::Result<
         }
     }
     if errors.len() > 0 {
-        Err(errors)
+        Ok(Err(errors))
     } else {
-        Ok(graph)
+        Ok(Ok(graph))
     }
 }
 
