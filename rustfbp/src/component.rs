@@ -1,13 +1,63 @@
+//! This module helps to create a Component
+//!
+//! It provides a macro `component` which take the high level view of the component, and create the code for the scheduler.
+//!
+//! It also declare the Trait Component. It's the common methods between all components, needed by the scheduler.
+
+
 extern crate capnp;
 use ports::Ports;
 use result::Result;
 
+/// Provide the generic functions of components
+///
+/// These three functions are used by the scheduler
 pub trait Component {
+    /// Return a muttable borrow to the Ports object.
     fn get_ports(&mut self) -> &mut Ports;
+    /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
+    /// Run the method of the component, his personal logic
     fn run(&mut self) -> Result<()>;
 }
 
+
+/// The component macro.
+///
+/// It helps to define a component, by defining the input and output ports, if there is an option or an acc port, ...
+/// 
+/// `contracts()` and `portal()` are optional.
+/// 
+/// Example :
+///
+/// ```rust,ignore
+/// component! {
+///    display, contract(generic_text)
+///    inputs(input: any),
+///    inputs_array(),
+///    outputs(output: any),
+///    outputs_array(),
+///    option(generic_text),
+///    acc()
+///    fn run(&mut self) -> Result<()> {
+///        // Receive an IP
+///        let ip = try!(self.ports.recv("input"));
+///
+///        // Received an IP from the option port (a generic_text)
+///        let opt = self.recv_opt();
+///
+///        // Get the capn'p reader
+///        let reader: generic_text::Reader = try!(opt.get_root());
+///        // Print the option
+///        println!("{}", try!(reader.get_text()));
+///
+///        // Send the received IP outside, but don't care about the success (drop on fail)
+///        let _ = self.ports.send("output", ip);
+///
+///        Ok(())
+///    }
+/// }
+/// ```
 #[macro_export]
 macro_rules! component {
     (
@@ -140,7 +190,7 @@ macro_rules! component {
                 $(
                     stringify!($input_field_name)=> Ok(stringify!($input_contract_name).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -150,7 +200,7 @@ macro_rules! component {
                 $(
                     stringify!($input_array_name) => Ok(stringify!($input_contract_array).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -160,7 +210,7 @@ macro_rules! component {
                 $(
                     stringify!($output_field_name)=> Ok(stringify!($output_contract_name).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -170,7 +220,7 @@ macro_rules! component {
                 $(
                     stringify!($output_array_name) => Ok(stringify!($output_contract_array).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
     }

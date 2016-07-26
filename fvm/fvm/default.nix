@@ -13,6 +13,7 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/lib.rs --replace "development_fbp_fvm.so" "${components.development_fbp_fvm}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_errors.so" "${components.development_fbp_errors}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_print_graph.so" "${components.development_fbp_parser_print_graph}/lib/libcomponent.so"
+    substituteInPlace src/lib.rs --replace "development_fbp_parser_check_graph.so" "${components.development_fbp_parser_check_graph}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_scheduler.so" "${components.development_fbp_scheduler}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_capnp_encode.so" "${components.development_capnp_encode}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "halter.so" "${components.halter}/lib/libcomponent.so"

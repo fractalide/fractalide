@@ -32,6 +32,7 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("fvm", "development_fbp_fvm.so");
     sched.add_component("errors", "development_fbp_errors.so");
     sched.add_component("graph_print", "development_fbp_parser_print_graph.so");
+    sched.add_component("graph_check", "development_fbp_parser_check_graph.so");
     sched.add_component("sched", "development_fbp_scheduler.so");
     sched.add_component("iip", "development_capnp_encode.so");
     sched.add_component("contract_lookup", "contract_lookup.so");
@@ -58,7 +59,9 @@ pub extern "C" fn run(path_fbp: &str) {
     p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
-    sched.connect("sem".into(), "output".into(), "fvm".into(), "input".into()).expect("cannot connect");
+    sched.connect("sem".into(), "output".into(), "graph_check".into(), "input".into()).expect("cannot connect");
+    sched.connect("graph_check".into(), "output".into(), "fvm".into(), "input".into()).expect("cannot connect");
+    sched.connect("graph_check".into(), "error".into(), "errors".into(), "semantic_error".into()).expect("cannot connect");
 
     sched.connect("open".into(), "error".into(), "errors".into(), "file_error".into()).expect("cannot connect");
     sched.connect("sem".into(), "error".into(), "errors".into(), "semantic_error".into()).expect("cannot connect");
@@ -91,7 +94,7 @@ pub extern "C" fn run(path_fbp: &str) {
     {
         let mut builder: fbp_action::Builder = start_ip.init_root();
         let mut add = builder.init_add();
-        add.set_name("hello");
+        add.set_name("main");
         add.set_comp(&path_fbp);
     }
     p.send("add".into(), start_ip).expect("add");
