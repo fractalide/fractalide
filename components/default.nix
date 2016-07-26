@@ -24,6 +24,7 @@ self = rec {
   development_fbp_errors = callPackage ./development/fbp/errors {};
   development_fbp_fvm = callPackage ./development/fbp/fvm {};
   development_fbp_parser_lexical = callPackage ./development/fbp/parser/lexical {};
+  development_fbp_parser_check_graph = callPackage ./development/fbp/parser/check_graph {};
   development_fbp_parser_print_graph = callPackage ./development/fbp/parser/print_graph {};
   development_fbp_parser_semantic = callPackage ./development/fbp/parser/semantic {};
   development_fbp_scheduler = callPackage ./development/fbp/scheduler {};

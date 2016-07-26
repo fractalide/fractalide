@@ -5,6 +5,7 @@
   , development_fbp_fvm
   , development_fbp_errors
   , development_fbp_parser_print_graph
+  , development_fbp_parser_check_graph
   , development_fbp_scheduler
   , development_capnp_encode
   , contract_lookup
@@ -18,10 +19,12 @@
    // Basic output
    open(${fs_file_open}) output -> input lex(${development_fbp_parser_lexical})
    lex() output -> input sem(${development_fbp_parser_semantic})
-   sem() output -> input fvm(${development_fbp_fvm})
+   sem() output -> input check(${development_fbp_parser_check_graph})
+   check() output -> input fvm(${development_fbp_fvm})
 
    open() error -> file_error errors(${development_fbp_errors})
-   open() error -> semantic_error errors()
+   sem() error -> semantic_error errors()
+   check() error -> semantic_error errors()
 
    errors() output -> input fvm()
 

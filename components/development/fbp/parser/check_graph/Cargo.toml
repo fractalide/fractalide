@@ -1,0 +1,12 @@
+[package]
+name = "development_fbp_parser_print_graph"
+version = "0.1.0"
+authors = ["test <test@test.com>"]
+
+[lib]
+name = "development_fbp_parser_print_graph"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"

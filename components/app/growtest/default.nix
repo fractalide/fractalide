@@ -21,8 +21,10 @@
 
    button_add(${ui_js_tag}) output -> places[1] lr()
    button_remove(${ui_js_tag}) output -> places[2] lr()
-   'js_create:(type="button", text="add")~create' -> input button_add(${ui_js_tag})
-   'js_create:(type="button", text="remove")~create' -> input button_remove(${ui_js_tag})
+   'js_create:(type="button", text="add")~create' -> input button_add()
+   'js_create:(type="button", text="remove")~create' -> input button_remove()
+
+   dummy()
 
    gflex(${ui_js_growing_flex}) output -> places[2] td()
    gflex() scheduler -> action sched(${development_fbp_subnet})
