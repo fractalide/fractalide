@@ -175,7 +175,7 @@ impl Scheduler {
         let (comp, senders) = self.cache.create_comp(sort, name.clone(), self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
         self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
-        let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound)).clone();
+        let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound(name.clone(), "acc".into()))).clone();
         self.components.insert(name.clone(),
                                Comp {
                                    inputs: senders,
@@ -212,7 +212,7 @@ impl Scheduler {
     /// try!(sched.start_if_needed("add"));
     /// ```
     pub fn start_if_needed(&self, name: &str) -> Result<()> {
-        self.components.get(name).ok_or(result::Error::ComponentNotFound)
+        self.components.get(name).ok_or(result::Error::ComponentNotFound(name.into()))
             .and_then(|comp| {
                 if comp.start {
                     self.sender.send(CompMsg::Start(name.into())).expect("start_if_needed");
@@ -244,10 +244,10 @@ impl Scheduler {
         let response = try!(r.recv());
         match response {
             SyncMsg::Remove(boxed_comp) => {
-                Ok((boxed_comp, try!(self.components.remove(&name).ok_or(result::Error::ComponentNotFound))))
+                Ok((boxed_comp, try!(self.components.remove(&name).ok_or(result::Error::ComponentNotFound(name.into())))))
             },
             SyncMsg::CannotRemove => {
-                Err(result::Error::CannotRemove)
+                Err(result::Error::CannotRemove(name.into()))
             },
         }
     }
@@ -328,25 +328,25 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.add_input_array_selection("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()>{
+    pub fn add_input_array_selection(&mut self, comp_name: String, port: String, selection: String) -> Result<()>{
         let (s, r) = sync_channel(25);
         let s = IPSender {
             sender: s,
-            dest: comp.clone(),
+            dest: comp_name.clone(),
             sched: self.sender.clone(),
         };
-        try!(self.components.get_mut(&comp).ok_or(result::Error::ComponentNotFound)
+        try!(self.components.get_mut(&comp_name).ok_or(result::Error::ComponentNotFound(comp_name.clone()))
             .and_then(|mut comp| {
                 if !comp.inputs_array.contains_key(&port) {
                     comp.inputs_array.insert(port.clone(), HashMap::new());
                 }
-                comp.inputs_array.get_mut(&port).ok_or(result::Error::SelectionNotFound)
+                comp.inputs_array.get_mut(&port).ok_or(result::Error::SelectionNotFound(comp_name.clone(), port.clone(), selection.clone()))
                     .and_then(|mut port| {
                         port.insert(selection.clone(), s);
                         Ok(())
                     })
             }));
-        self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, r)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
+        self.sender.send(CompMsg::AddInputArraySelection(comp_name, port, selection, r)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
         Ok(())
     }
 
@@ -420,9 +420,9 @@ impl Scheduler {
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
     pub fn get_sender(&self, comp: &str, port: &str) -> Result<IPSender> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
-                c.inputs.get(port).ok_or(result::Error::PortNotFound)
+                c.inputs.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
                     .map(|s| { s.clone() })
             })
     }
@@ -434,11 +434,11 @@ impl Scheduler {
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
     pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<IPSender> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
-                c.inputs_array.get(port).ok_or(result::Error::PortNotFound)
+                c.inputs_array.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
                     .and_then(|p| {
-                        p.get(selection).ok_or(result::Error::SelectionNotFound)
+                        p.get(selection).ok_or(result::Error::SelectionNotFound(comp.into(), port.into(), selection.into()))
                             .map(|s| { s.clone() })
                     })
             })
@@ -451,7 +451,7 @@ impl Scheduler {
     /// let contract = try!(sched.get_contract_input("add", "input"));
     /// ```
     pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
                 self.cache.get_contract_input(&c.sort, port)
             })
@@ -464,7 +464,7 @@ impl Scheduler {
     /// let contract = try!(sched.get_contract_input_array("add", "inputs"));
     /// ```
     pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
                 self.cache.get_contract_input_array(&c.sort, port)
             })
@@ -477,7 +477,7 @@ impl Scheduler {
     /// let contract = try!(sched.get_contract_output("add", "output"));
     /// ```
     pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
                 self.cache.get_contract_output(&c.sort, port)
             })
@@ -490,7 +490,7 @@ impl Scheduler {
     /// let contract = try!(sched.get_contract_output_array("add", "outputs"));
     /// ```
     pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .and_then(|c| {
                 self.cache.get_contract_output_array(&c.sort, port)
             })
@@ -783,7 +783,7 @@ impl ComponentCache {
     /// cc.get_contract_input("add", "input");
     /// ```
     pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .map(|comp| {
                 (comp.get_contract_input)(port).expect("cannot get")
             })
@@ -796,7 +796,7 @@ impl ComponentCache {
     /// cc.get_contract_input_array("add", "inputs");
     /// ```
     pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .map(|comp| {
                 (comp.get_contract_input_array)(port).expect("cannot get")
             })
@@ -809,7 +809,7 @@ impl ComponentCache {
     /// cc.get_contract_output("add", "output");
     /// ```
     pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .map(|comp| {
                 (comp.get_contract_output)(port).expect("cannot get")
             })
@@ -822,7 +822,7 @@ impl ComponentCache {
     /// cc.get_contract_output_array("add", "outputs");
     /// ```
     pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound)
+        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
             .map(|comp| {
                 (comp.get_contract_output_array)(port).expect("cannot get")
             })

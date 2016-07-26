@@ -190,7 +190,7 @@ macro_rules! component {
                 $(
                     stringify!($input_field_name)=> Ok(stringify!($input_contract_name).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -200,7 +200,7 @@ macro_rules! component {
                 $(
                     stringify!($input_array_name) => Ok(stringify!($input_contract_array).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -210,7 +210,7 @@ macro_rules! component {
                 $(
                     stringify!($output_field_name)=> Ok(stringify!($output_contract_name).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
 
@@ -220,7 +220,7 @@ macro_rules! component {
                 $(
                     stringify!($output_array_name) => Ok(stringify!($output_contract_array).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound) }
+                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
             }
         }
     }

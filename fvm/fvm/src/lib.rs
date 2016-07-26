@@ -91,7 +91,7 @@ pub extern "C" fn run(path_fbp: &str) {
     {
         let mut builder: fbp_action::Builder = start_ip.init_root();
         let mut add = builder.init_add();
-        add.set_name("hello");
+        add.set_name("main");
         add.set_comp(&path_fbp);
     }
     p.send("add".into(), start_ip).expect("add");

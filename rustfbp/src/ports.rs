@@ -235,7 +235,7 @@ impl Ports {
     /// try!(sender.send(ip));
     /// ```
     pub fn get_sender(&self, port_in: &str) -> Result<IPSender> {
-        self.senders.get(port_in).ok_or(result::Error::PortNotFound)
+        self.senders.get(port_in).ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .map(|sender| {
                 sender.clone()
             })
@@ -249,12 +249,12 @@ impl Ports {
     /// let ip = IP::new();
     /// try!(sender.send(ip));
     /// ```
-    pub fn get_array_sender(&self, port: &str, selection: &str) -> Result<IPSender> {
-        self.outputs_array.get(port).ok_or(result::Error::PortNotFound)
+    pub fn get_array_sender(&self, port_name: &str, selection: &str) -> Result<IPSender> {
+        self.outputs_array.get(port_name).ok_or(result::Error::PortNotFound(self.name.clone(), port_name.into()))
             .and_then(|port|{
-                port.get(selection).ok_or(result::Error::SelectionNotFound)
+                port.get(selection).ok_or(result::Error::SelectionNotFound(self.name.clone(), port_name.into(), selection.into()))
                     .and_then(|recv| {
-                        recv.as_ref().ok_or(result::Error::Misc("selection Not connected".into()))
+                        recv.as_ref().ok_or(result::Error::ArrayOutputPortNotConnected(self.name.clone(), port_name.into(), selection.into()))
                             .and_then(|sender| {
                                 Ok(sender.clone())
                             })
@@ -277,7 +277,7 @@ impl Ports {
     /// // Produce `1 2`
     /// ```
     pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
-        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .map(|port| {
                 port.keys().cloned().collect()
             })
@@ -298,7 +298,7 @@ impl Ports {
     /// // Produce `1 2`
     /// ```
     pub fn get_output_selections(&self, port_out: &'static str) -> Result<Vec<String>> {
-        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
+        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound(self.name.clone(), port_out.into()))
             .map(|port| {
                 port.keys().cloned().collect()
             })
@@ -320,7 +320,7 @@ impl Ports {
             }
             Ok(ip)
         } else {
-            Err(result::Error::PortNotFound)
+            Err(result::Error::PortNotFound(self.name.clone(), port_in.into()))
         }
     }
 
@@ -340,7 +340,7 @@ impl Ports {
             }
             Ok(ip)
         } else {
-            Err(result::Error::PortNotFound)
+            Err(result::Error::PortNotFound(self.name.clone(), port_in.into()))
         }
     }
 
@@ -352,9 +352,9 @@ impl Ports {
     /// println!("{}", ip.action);
     /// ```
     pub fn recv_array(&self, port_in: &str, selection_in: &str) -> Result<IP> {
-        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .and_then(|port|{
-                port.get(selection_in).ok_or(result::Error::SelectionNotFound)
+                port.get(selection_in).ok_or(result::Error::SelectionNotFound(self.name.clone(), port_in.into(), selection_in.into()))
                     .and_then(|recv| {
                         let ip = try!(recv.recv());
                         if port_in != "acc" && port_in != "option" {
@@ -374,9 +374,9 @@ impl Ports {
     /// }
     /// ```
     pub fn try_recv_array(&self, port_in: &str, selection_in: &str) -> Result<IP> {
-        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound)
+        self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .and_then(|port|{
-                port.get(selection_in).ok_or(result::Error::SelectionNotFound)
+                port.get(selection_in).ok_or(result::Error::SelectionNotFound(self.name.clone(), port_in.into(), selection_in.into()))
                     .and_then(|recv| {
                         let ip = try!(recv.try_recv());
                         if port_in != "acc" && port_in != "option" {
@@ -395,9 +395,9 @@ impl Ports {
     ///    try!(ports.send("output", ip));
     /// ```
     pub fn send(&self, port_out: &str, ip: IP) -> Result<()> {
-        self.outputs.get(port_out).ok_or(result::Error::PortNotFound)
+        self.outputs.get(port_out).ok_or(result::Error::PortNotFound(self.name.clone(), port_out.into()))
             .and_then(|port|{
-                port.as_ref().ok_or(result::Error::OutputPortNotConnected)
+                port.as_ref().ok_or(result::Error::OutputPortNotConnected(self.name.clone(), port_out.into()))
                     .and_then(|sender| {
                         sender.send(ip)
                     })
@@ -412,11 +412,11 @@ impl Ports {
     ///    try!(ports.send_array("output", "1", ip));
     /// ```
     pub fn send_array(&self, port_out: &str, selection_out: &str, ip: IP) -> Result<()> {
-        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound)
+        self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound(self.name.clone(), port_out.into()))
             .and_then(|port| {
-                port.get(selection_out).ok_or(result::Error::SelectionNotFound)
+                port.get(selection_out).ok_or(result::Error::SelectionNotFound(self.name.clone(), port_out.into(), selection_out.into()))
                     .and_then(|sender| {
-                        sender.as_ref().ok_or(result::Error::OutputPortNotConnected)
+                        sender.as_ref().ok_or(result::Error::ArrayOutputPortNotConnected(self.name.clone(), port_out.into(), selection_out.into()))
                             .and_then(|sender| {
                                 sender.send(ip)
                             })
@@ -455,7 +455,7 @@ impl Ports {
     ///
     pub fn connect(&mut self, port_out: String, sender: IPSender) -> Result<()> {
         if !self.outputs.contains_key(&port_out) {
-            return Err(result::Error::PortNotFound);
+            return Err(result::Error::PortNotFound(self.name.clone(), port_out.into()));
         }
         self.outputs.insert(port_out, Some(sender));
         Ok(())
@@ -468,13 +468,14 @@ impl Ports {
     /// ```
     ///
     pub fn connect_array(&mut self, port_out: String, selection_out: String, sender: IPSender) -> Result<()> {
+        let name = self.name.clone();
         if !self.outputs_array.contains_key(&port_out) {
-            return Err(result::Error::PortNotFound);
+            return Err(result::Error::PortNotFound(name, port_out.into()));
         }
-        self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound)
+        self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound(name.clone(), port_out.clone()))
             .and_then(|port| {
                 if !port.contains_key(&selection_out) {
-                    return Err(result::Error::SelectionNotFound);
+                    return Err(result::Error::SelectionNotFound(name, port_out.into(), selection_out.into()));
                 }
                 port.insert(selection_out, Some(sender));
                 Ok(())
@@ -489,7 +490,7 @@ impl Ports {
     ///
     pub fn disconnect(&mut self, port_out: String) -> Result<Option<IPSender>> {
         if !self.outputs.contains_key(&port_out) {
-            return Err(result::Error::PortNotFound);
+            return Err(result::Error::PortNotFound(self.name.clone(), port_out.into()));
         }
         let old = self.outputs.insert(port_out, None);
         match old {
@@ -508,12 +509,13 @@ impl Ports {
     ///
     pub fn disconnect_array(&mut self, port_out: String, selection_out: String) -> Result<Option<IPSender>> {
         if !self.outputs_array.contains_key(&port_out) {
-            return Err(result::Error::PortNotFound);
+            return Err(result::Error::PortNotFound(self.name.clone(), port_out.into()));
         }
-        self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound)
+        let name = self.name.clone();
+        self.outputs_array.get_mut(&port_out).ok_or(result::Error::PortNotFound(name.clone(), port_out.clone()))
             .and_then(|port| {
                 if !port.contains_key(&selection_out) {
-                    return Err(result::Error::SelectionNotFound);
+                    return Err(result::Error::SelectionNotFound(name, port_out, selection_out));
                 }
                 let old = port.insert(port_out, None);
                 match old {
@@ -544,7 +546,7 @@ impl Ports {
     /// let receiver = try!(ports.remove_receiver("input"));
     /// ```
     pub fn remove_receiver(&mut self, port: &str) -> Result<Receiver<IP>> {
-        self.inputs.remove(port).ok_or(result::Error::PortNotFound)
+        self.inputs.remove(port).ok_or(result::Error::PortNotFound(self.name.clone(), port.into()))
             .map(|recv| { recv })
     }
 
@@ -555,10 +557,11 @@ impl Ports {
     /// ```rust,ignore
     /// let receiver = try!(ports.remove_array_receiver("inputs", "1"));
     /// ```
-    pub fn remove_array_receiver(&mut self, port: &str, selection: &str) -> Result<Receiver<IP>> {
-        self.inputs_array.get_mut(port).ok_or(result::Error::PortNotFound)
+    pub fn remove_array_receiver(&mut self, port_name: &str, selection: &str) -> Result<Receiver<IP>> {
+        let name = self.name.clone();
+        self.inputs_array.get_mut(port_name).ok_or(result::Error::PortNotFound(name.clone(), port_name.into()))
             .and_then(|port| {
-                port.remove(selection).ok_or(result::Error::SelectionNotFound)
+                port.remove(selection).ok_or(result::Error::SelectionNotFound(name, port_name.into(), selection.into()))
                     .map(|recv| { recv })
             })
     }
@@ -576,7 +579,7 @@ impl Ports {
             sched: self.sched.clone(),
         };
         self.inputs_array.get_mut(port_in)
-            .ok_or(result::Error::PortNotFound)
+            .ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .map(|port| {
                 port.insert(selection_in, r);
                 s
@@ -592,7 +595,7 @@ impl Ports {
     /// ```
     pub fn add_input_receiver(&mut self, port_in: &str, selection_in: String, r: Receiver<IP>) -> Result<()> {
         self.inputs_array.get_mut(port_in)
-            .ok_or(result::Error::PortNotFound)
+            .ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .map(|port| {
                 port.insert(selection_in, r);
                 ()
@@ -608,7 +611,7 @@ impl Ports {
     /// ```
     pub fn add_output_selection(&mut self, port_out: &str, selection_out: String) -> Result<()> {
         self.outputs_array.get_mut(port_out)
-            .ok_or(result::Error::PortNotFound)
+            .ok_or(result::Error::PortNotFound(self.name.clone(), port_out.into()))
             .map(|port| {
                 if !port.contains_key(&selection_out) {
                     port.insert(selection_out, None);
