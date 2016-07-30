@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = "contract_lookup";
   src = ./.;
   filteredContracts = filterContracts ["path" "option_path"];
-  depsSha256 = "0mhcw3q4ags4bdxcksjl67d6lqzyzk2c9xj1h7h8qmnqq48zy7jw";
+  depsSha256 = "1kcka7x26z0cjyz35rgz2dsxwnld0lsxxknyij9k16jvs1kjyq2g";
   configurePhase = ''
 runHook preConfigure
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"

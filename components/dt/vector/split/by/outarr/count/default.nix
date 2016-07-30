@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts [ "file_list" ];
-  depsSha256 = "106n9q41v6z5p2ys27m0ylzyfimna9981v5x12zs9947s5kc4haj";
+  depsSha256 = "0j77rchbfz3jy89jf1w5k0wqpbly64p9wqh9yqi9sjdnvc0fz4vc";
 
   meta = with stdenv.lib; {
     description = "Component: Split a vector into multiple vectors one for each element in the output array port";

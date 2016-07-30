@@ -4,7 +4,7 @@ let
 fvm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "0hbv0syhpprdss5jpcj6kqpzmf4jgiiwvvjnxj59rj364d80ixg2";
+    depsSha256 = "05ajvsqdn8abrs9si9vy36ghcyqm8ppgip4v98d5ql5vj7fd6ayz";
     configurePhase = ''
     runHook preConfigure
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
