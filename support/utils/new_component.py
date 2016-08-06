@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#! nix-shell -i python -p python pythonPackages.configobj
+#! nix-shell -i python -p python rustUnstable.cargo pythonPackages.configobj
 
 # this script sets up a new rustfbp component
 # by reading the utils/component.ini which you have configured
@@ -10,6 +10,10 @@
 # * then runs `cargo generate-lockfile` on the component to create the lockfile
 # * inserting the component into components/default.nix
 
+import os.path
+import sys
+import shlex
+import subprocess
 from configobj import ConfigObj
 config = ConfigObj("component.ini")
 
@@ -19,7 +23,7 @@ def write_cargo_deps(deps):
         toml += crate + " = \"" + deps[crate] + "\"\n"
     return toml
 
-def cargo_toml (component_name, cargo_deps):
+def create_cargo_toml (component_name, cargo_deps):
     cargo_toml_template = """
 [package]
 name = \"""" + component_name + """\"
@@ -46,7 +50,7 @@ def write_contracts(ports, nix):
         contracts += ", ".join(contract_set)
     return contracts
 
-def default_nix (component_description, ports):
+def create_default_nix (component_description, ports):
     default_nix = """
 { stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
 
@@ -196,7 +200,7 @@ def write_sends(ports):
             sends += write_outputs_array_sends(ports[port_type])
     return sends
 
-def lib_rs(component_name, ports, cargo_deps, extra_ports):
+def create_lib_rs(component_name, ports, cargo_deps, extra_ports):
     lib_rs = write_externs(cargo_deps) + """
 component! {
   """ + component_name + """, contracts(""" + write_contracts(ports, False) + """)
@@ -209,6 +213,81 @@ component! {
     """
     return lib_rs
 
-print cargo_toml(config['component_name'], config['cargo dependencies'])
-print default_nix(config['component_description'], config['ports'])
-print lib_rs(config['component_name'], config['ports'], config['cargo dependencies'], config['extra ports'])
+def create_paths(component_name):
+    folders_list = os.path.split(component_name.replace("_","/"))
+    folders = component_name.replace("_","/")
+    root = "../../components"
+    path = root + "/" + folders
+    if os.path.exists(path + "/default.nix"):
+        sys.exit("*** Aborted: component already exists. ***")
+    else:
+        for folder in folders_list:
+            try:
+                os.mkdir(os.path.join(root,folder))
+            except Exception:
+                pass
+            root += "/" + folder
+    try:
+        os.mkdir(os.path.join(path, "src"))
+    except Exception:
+        pass
+    return folders
+
+def write_file(path, contents):
+    file = open(path, "w")
+    for line in contents:
+        file.write(line)
+
+def insert_component_into_filesystem(component_name, cargo_toml, default_nix, lib_rs):
+    path = create_paths(component_name)
+    write_file("../../components/" + path + "/" + "default.nix", default_nix)
+    write_file("../../components/" + path + "/" + "Cargo.toml", cargo_toml)
+    write_file("../../components/" + path + "/src/lib.rs", lib_rs)
+    return path
+
+def insert_component_into_default_nix(component_name, path):
+    header = []
+    components = []
+    footer = []
+    with open('../../components/default.nix') as f:
+        lines = f.read().splitlines()
+        mode = "header"
+        for line in lines:
+            if mode == "header":
+                header.append(line)
+                if line == "self = rec { # use one line only to insert a component (utils/new_component.py sorts this list)":
+                    mode = "components"
+                    continue
+            if mode == "components":
+                if line == "}; # use one line only to insert a component (utils/new_component.py sorts this list)":
+                    mode = "footer"
+                    footer.append(line)
+                    continue
+                components.append(line)
+            if mode == "footer":
+                footer.append(line)
+        components.append("  " + component_name + " = callPackage ./" + path + " {};")
+    components.sort()
+    with open('../../components/default.nix', 'r+') as f:
+        f.seek(0)
+        for line in header:
+            f.write(line + "\n")
+        for line in components:
+            f.write(line + "\n")
+        for line in footer:
+            f.write(line + "\n")
+        f.truncate()
+
+def generate_lockfile(path):
+      cmd = "cargo generate-lockfile --manifest-path " + "../../components/" + path + "/Cargo.toml"
+      args = shlex.split(cmd)
+      output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
+
+cargo_toml = create_cargo_toml(config['component_name'], config['cargo dependencies'])
+default_nix = create_default_nix(config['component_description'], config['ports'])
+lib_rs = create_lib_rs(config['component_name'], config['ports'], config['cargo dependencies'], config['extra ports'])
+path = insert_component_into_filesystem(config['component_name'], cargo_toml, default_nix, lib_rs)
+insert_component_into_default_nix(config['component_name'], path)
+generate_lockfile(path)
+
+print "*** Created component: " + config['component_name'] + " ***"

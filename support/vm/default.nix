@@ -1,16 +1,16 @@
 {pkgs, components, contracts, support, exeSubnet, ...}:
 
 let
-fvm  = support.buildRustPackage rec {
+vm  = support.buildRustPackage rec {
     name = exeSubnet.name;
     src = ./.;
-    depsSha256 = "05ajvsqdn8abrs9si9vy36ghcyqm8ppgip4v98d5ql5vj7fd6ayz";
+    depsSha256 = "1cn9ln24cr6dvxhl3f5kp0qpjrv4w2lwhhy1b23g3plbfipvarnd";
     configurePhase = ''
     runHook preConfigure
     substituteInPlace src/lib.rs --replace "fs_file_open.so" "${components.fs_file_open}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_lexical.so" "${components.development_fbp_parser_lexical}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_semantic.so" "${components.development_fbp_parser_semantic}/lib/libcomponent.so"
-    substituteInPlace src/lib.rs --replace "development_fbp_fvm.so" "${components.development_fbp_fvm}/lib/libcomponent.so"
+    substituteInPlace src/lib.rs --replace "development_fbp_vm.so" "${components.development_fbp_vm}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_errors.so" "${components.development_fbp_errors}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_print_graph.so" "${components.development_fbp_parser_print_graph}/lib/libcomponent.so"
     substituteInPlace src/lib.rs --replace "development_fbp_parser_check_graph.so" "${components.development_fbp_parser_check_graph}/lib/libcomponent.so"
@@ -21,8 +21,8 @@ fvm  = support.buildRustPackage rec {
 
     substituteInPlace src/lib.rs --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
     substituteInPlace src/lib.rs --replace "fbp_action.rs" "${contracts.fbp_action}/src/contract_capnp.rs"
-    substituteInPlace Cargo.toml --replace "fvm" "${name}"
-    substituteInPlace src/main.rs --replace "fvm" "${name}"
+    substituteInPlace Cargo.toml --replace "vm" "${name}"
+    substituteInPlace src/main.rs --replace "vm" "${name}"
     substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
@@ -38,4 +38,4 @@ fvm  = support.buildRustPackage rec {
   };
 };
 in
-fvm
+vm

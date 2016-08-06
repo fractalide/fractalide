@@ -1,10 +1,10 @@
 [package]
-name = "development_fbp_fvm"
+name = "development_fbp_vm"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "development_fbp_fvm"
+name = "development_fbp_vm"
 crate-type = ["dylib"]
 
 [dependencies]

@@ -96,14 +96,14 @@ The cache folder can be created from an old result by the buildCache.sh script. 
 Here is an example how you can build with the Incremental Build System:
 
 ```
-nix-build --argstr debug true --argstr cache $(./buildCache.sh) --argstr subnet test_sjm
+nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet test_sjm
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
 
 ### Contributing to Fractalide
 
-The contributors are listed in `fractalide/build-support/upkeepers.nix` (add yourself).
+The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
 
 Please read this document BEFORE you send a patch:
 

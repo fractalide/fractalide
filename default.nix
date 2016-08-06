@@ -16,16 +16,16 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
     # if the old cache variable is set to the output created earlier it uses the old target folder
     # this helps to speed up the build process since cargo does not have to build everything from scratch.
 
-    # the MD5SUMs are needed to find files that have been changed. 
- 
-    # if your using this make sure that you correctly call the preConfiguration and the 
+    # the MD5SUMs are needed to find files that have been changed.
+
+    # if your using this make sure that you correctly call the preConfiguration and the
     # preInstall Hook!
-    mkCachedDerivation = 
+    mkCachedDerivation =
      if isNull cache || debug != "true" then
-      super.stdenv.mkDerivation 
-      else 
+      super.stdenv.mkDerivation
+      else
       args:
-       let        
+       let
         #extend the old arguments
         preCon = if args ? preConfigure && lib.isString args.preConfigure  then args.preConfigure else "";
         preIn = if args ? preInstall && lib.isString args.preInstall then args.preInstall else " ";
@@ -42,11 +42,11 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
           # We will output to $out as normal, but also to $cache
           outputs = [ "out" "cache"] ++ lib.remove "out" outp;
 
-          preConfigure = ''  
+          preConfigure = ''
              # Before we do anything, capture the MD5 sums of all source files.
              # We will compare against this in subsequent builds.
-            mkdir -p $cache   
-            mkdir -p $cache/$name  
+            mkdir -p $cache
+            mkdir -p $cache/$name
             touch $cache/$name/MD5SUMS
             find . -type f | xargs md5sum | sort > $cache/$name/MD5SUMS
 
@@ -65,7 +65,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
                 echo "$filename" has changed
                 touch "$filename" || true
               done
-            
+
               # Touch all target/ files to be 2 hours in the past.
               # Note that source code will be last modified in 1970 *by default*
               # but changed to the current time by the loop above.
@@ -81,7 +81,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
           preInstall = ''
             #copy all target/* files into the new cache
             mkdir -p $cache
-            mkdir -p $out 
+            mkdir -p $out
             mkdir -p $cache/$name
             if [ -d ./target  ]; then
                 cp -R ./target $cache/$name/
@@ -104,11 +104,10 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 
 exeSubnet = (builtins.head (lib.attrVals [subnet] components));
 components = import ./components {inherit pkgs support;};
-support = import ./build-support {inherit pkgs debug local-rustfbp contracts components;};
+support = import ./support {inherit pkgs debug local-rustfbp contracts components;};
 contracts = import ./contracts {inherit pkgs support;};
-fvm-android = import ./fvm/fvm-android {inherit pkgs support;};
 in
 {
   inherit components support contracts;
-  fvm = import ./fvm/fvm { inherit pkgs components contracts support exeSubnet;};
+  vm = import ./support/vm { inherit pkgs components contracts support exeSubnet;};
 }

@@ -48,7 +48,7 @@ def generate_component_name( path ):
 
 # update all the components via cargo
 print "\n[*] Updating every Cargo.toml via cargo"
-paths = ('../components', '../fvm', '../rustfbp', '../build-support')
+paths = ('../../components', '../../support')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
   cmd = "cargo generate-lockfile --manifest-path " + root + "/Cargo.toml"
   args = shlex.split(cmd)
@@ -65,7 +65,7 @@ head_rev = head_blob.split('\t')[0]
 
 # update rust-packages
 print "[*] Inserting new crates.io HEAD revision into rustRegistry"
-rustRegistry = "../build-support/rust-packages.nix"
+rustRegistry = "../rust-packages.nix"
 find = r"^.*rev = .*$";
 replace = "rev = \"%s\";" % head_rev
 subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
@@ -99,7 +99,7 @@ if error:
 
 
 print "[*] Checking Rust components for new depsSha256"
-for root, dirs, files in os.walk("../components"):
+for root, dirs, files in os.walk("../../components"):
   if "Cargo.toml" in files:
     name = generate_component_name(root)
     cmd =  "nix-build --argstr debug true -A components." + name
@@ -125,12 +125,12 @@ for root, dirs, files in os.walk("../components"):
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
 
-paths = ('../build-support/contract_lookup', '../fvm')
+paths = ('../contract_lookup', '../vm')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
       name = os.path.basename(root)
-      if name == "fvm":
-        cmd = "nix-build --argstr debug true -A fvm"
+      if name == "vm":
+        cmd = "nix-build --argstr debug true -A vm"
       else:
         cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root)
       print "[ ] - " + name
@@ -147,7 +147,7 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
           print "[!] -- found new depsSha256... building "
           found = m.group(1)
           find = r"^.*depsSha256 = .*$";
-          if name == "fvm":
+          if name == "vm":
             space = "    "
           else:
             space = "  "

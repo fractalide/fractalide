@@ -8,11 +8,8 @@ in
 rec {
   inherit upkeepers rustc cargo;
   rustRegistry = callPackage ./rust-packages.nix {};
-  apk-builder = callPackage ./apk-builder.nix{inherit rustRegistry buildRustPackage;};
-  ndk-standalone-toolchain = callPackage ./ndk-standalone-toolchain.nix {};
   ncurses_32bit = callPackage ./pkgs/ncurses.nix {};
   zlib_32bit = callPackage ./pkgs/zlib.nix {};
-  rust-android = callPackage ./rust-android.nix {inherit rustc ndk-standalone-toolchain ncurses_32bit zlib_32bit;};
   buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug local-rustfbp capnpc-rust rustRegistry rustc cargo;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit lib local-rustfbp debug rustc rustRegistry;};

@@ -2,7 +2,7 @@
 
 stdenv.mkCachedDerivation {
   name = "rustfbp";
-  src = lib.cleanSource ../rustfbp;
+  src = lib.cleanSource ./rustfbp;
 
   buildPhase = ''
   mkdir -p $out/src
