@@ -2,7 +2,7 @@
 let
 callPackage = pkgs.lib.callPackageWith (pkgs // support // self);
 # insert in alphabetical order to reduce conflicts
-self = rec {
+self = rec { # use one line only to insert a component (utils/new_component.py sorts this list)
   accumulate_keyvalues = callPackage ./accumulate/keyvalues {};
   app_counter_add = callPackage ./app/counter/add {};
   app_counter_card = callPackage ./app/counter/card {};
@@ -97,6 +97,6 @@ self = rec {
   ui_js_tag = callPackage ./ui/js/tag {};
   ui_js_visible = callPackage ./ui/js/visible {};
   web_server = callPackage ./web/server {};
-};
+}; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
 self
