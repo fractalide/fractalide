@@ -4,11 +4,11 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   filteredContracts = filterContracts ["fbp_graph" "path" "option_path"];
-  depsSha256 = "05m2v16xm5b097h23iv11fn50r4fzrq9bdh40n3hnaak0bmnjzj8";
+  depsSha256 = "136p5mzm4s0vrzh34m1vvx32piqisrp7yak83s2v2301p03an9mm";
 
   meta = with stdenv.lib; {
     description = "Component: Fractalide Virtual Machine";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/fvm;
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/vm;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels ];
   };

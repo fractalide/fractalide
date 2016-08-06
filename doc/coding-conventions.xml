@@ -45,7 +45,7 @@
   <literal>"Maths_Boolean_NOT"</literal>.</para></listitem>
 
   <listitem><para>Components have no versions.
-   Only <literal>fvm</literal> has a version.</para></listitem>
+   Only <literal>vm</literal> has a version.</para></listitem>
 
   <listitem><para>Do not use <literal>_</literal> in the component/subnet/contract name.</para></listitem>
 

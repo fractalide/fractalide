@@ -15,7 +15,7 @@ struct Graph {
 }
 
 component! {
-    development_fbp_fvm, contracts(path, fbp_graph)
+    development_fbp_vm, contracts(path, fbp_graph)
     inputs(input: fbp_graph, error: any),
     inputs_array(),
     outputs(output: fbp_graph, ask_graph: path),
@@ -41,7 +41,7 @@ component! {
     }
 }
 
-fn add_graph(component: &development_fbp_fvm, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
+fn add_graph(component: &development_fbp_vm, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
 
     if try!(new_graph.get_path()) == "error" { graph.errors = true; }
 
@@ -125,7 +125,7 @@ fn add_graph(component: &development_fbp_fvm, mut graph: &mut Graph, new_graph: 
     Ok(())
 }
 
-fn send_graph(comp: &development_fbp_fvm, graph: &Graph) -> Result<()> {
+fn send_graph(comp: &development_fbp_vm, graph: &Graph) -> Result<()> {
     let mut new_ip = IP::new();
     {
         let mut ip = new_ip.init_root::<fbp_graph::Builder>();

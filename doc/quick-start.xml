@@ -18,7 +18,7 @@ $ cd fractalide</screen>
 
 <listitem>
   <para>
-Insert your name and email address into <filename>build-support/upkeepers.nix</filename>:
+Insert your name and email address into <filename>support/upkeepers.nix</filename>:
 <screen>
 {
 /* Add your name and email address here.
@@ -60,7 +60,7 @@ buildFractalideContract rec {
   };
 }
 </screen>
-Your github name inserted in <filename>build-support/upkeepers.nix</filename> is used on this line: <screen>maintainers = with upkeepers; [ githubname ];</screen>
+Your github name inserted in <filename>support/upkeepers.nix</filename> is used on this line: <screen>maintainers = with upkeepers; [ githubname ];</screen>
 Example: <link xlink:href="https://github.com/fractalide/fractalide/tree/master/contracts/maths/boolean"><filename>contracts/maths/boolean</filename></link>.
     </para>
   </listitem>

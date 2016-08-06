@@ -8,7 +8,7 @@ buildFractalideComponent rec {
 
   meta = with stdenv.lib; {
     description = "Component: Fractalide scheduler";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/fvm;
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/vm;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels ];
   };

@@ -1,5 +1,5 @@
 [root]
-name = "fvm"
+name = "vm"
 version = "0.2.0"
 dependencies = [
  "capnp 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",

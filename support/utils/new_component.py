@@ -216,7 +216,7 @@ component! {
 def create_paths(component_name):
     folders_list = os.path.split(component_name.replace("_","/"))
     folders = component_name.replace("_","/")
-    root = "../components"
+    root = "../../components"
     path = root + "/" + folders
     if os.path.exists(path + "/default.nix"):
         sys.exit("*** Aborted: component already exists. ***")
@@ -240,16 +240,16 @@ def write_file(path, contents):
 
 def insert_component_into_filesystem(component_name, cargo_toml, default_nix, lib_rs):
     path = create_paths(component_name)
-    write_file("../components/" + path + "/" + "default.nix", default_nix)
-    write_file("../components/" + path + "/" + "Cargo.toml", cargo_toml)
-    write_file("../components/" + path + "/src/lib.rs", lib_rs)
+    write_file("../../components/" + path + "/" + "default.nix", default_nix)
+    write_file("../../components/" + path + "/" + "Cargo.toml", cargo_toml)
+    write_file("../../components/" + path + "/src/lib.rs", lib_rs)
     return path
 
 def insert_component_into_default_nix(component_name, path):
     header = []
     components = []
     footer = []
-    with open('../components/default.nix') as f:
+    with open('../../components/default.nix') as f:
         lines = f.read().splitlines()
         mode = "header"
         for line in lines:
@@ -268,7 +268,7 @@ def insert_component_into_default_nix(component_name, path):
                 footer.append(line)
         components.append("  " + component_name + " = callPackage ./" + path + " {};")
     components.sort()
-    with open('../components/default.nix', 'r+') as f:
+    with open('../../components/default.nix', 'r+') as f:
         f.seek(0)
         for line in header:
             f.write(line + "\n")
@@ -279,7 +279,7 @@ def insert_component_into_default_nix(component_name, path):
         f.truncate()
 
 def generate_lockfile(path):
-      cmd = "cargo generate-lockfile --manifest-path " + "../components/" + path + "/Cargo.toml"
+      cmd = "cargo generate-lockfile --manifest-path " + "../../components/" + path + "/Cargo.toml"
       args = shlex.split(cmd)
       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
 

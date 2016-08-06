@@ -13,7 +13,7 @@ substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapS
   '';
   meta = with stdenv.lib; {
     description = "Component: Looks up the versioned name, after given the common contract name";
-    homepage = https://github.com/fractalide/fractalide/tree/master/build-support/contract-lookup;
+    homepage = https://github.com/fractalide/fractalide/tree/master/support/contract-lookup;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

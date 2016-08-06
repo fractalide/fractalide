@@ -2,7 +2,7 @@
   , fs_file_open
   , development_fbp_parser_lexical
   , development_fbp_parser_semantic
-  , development_fbp_fvm
+  , development_fbp_vm
   , development_fbp_errors
   , development_fbp_parser_print_graph
   , development_fbp_parser_check_graph
@@ -20,22 +20,22 @@
    open(${fs_file_open}) output -> input lex(${development_fbp_parser_lexical})
    lex() output -> input sem(${development_fbp_parser_semantic})
    sem() output -> input check(${development_fbp_parser_check_graph})
-   check() output -> input fvm(${development_fbp_fvm})
+   check() output -> input vm(${development_fbp_vm})
 
    open() error -> file_error errors(${development_fbp_errors})
    sem() error -> semantic_error errors()
    check() error -> semantic_error errors()
 
-   errors() output -> input fvm()
+   errors() output -> input vm()
 
-   fvm() ask_graph -> input open()
+   vm() ask_graph -> input open()
 
    // Send to sched
-   fvm() output -> graph sched(${development_fbp_scheduler})
+   vm() output -> graph sched(${development_fbp_scheduler})
    sched() ask_path -> input contract_lookup(${contract_lookup})
    contract_lookup() output -> contract_path sched()
 
-   sched() ask_graph -> input fvm()
+   sched() ask_graph -> input vm()
 
    // IIP
    sched() iip_path -> path iip(${development_capnp_encode})
