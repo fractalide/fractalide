@@ -214,8 +214,8 @@ component! {
     return lib_rs
 
 def create_paths(component_name):
-    folders_list = os.path.split(component_name.replace("_","/"))
     folders = component_name.replace("_","/")
+    folders_list = folders.split(os.sep)
     root = "../../components"
     path = root + "/" + folders
     if os.path.exists(path + "/default.nix"):
