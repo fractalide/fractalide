@@ -101,6 +101,13 @@ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
+## Consulting and Support
+Name | Email | Info
+-----|-------|-----
+Stewart Mackenzie | setori88@gmail.com | Founder and maintainer of Fractalide.
+Denis Michiels | dmichiels@gmail.com | Founder and maintainer of Fractalide.
+
+Consulting not limited to just Fractalide work, but Rust gigs in general.
 
 ### Contributing to Fractalide
 
