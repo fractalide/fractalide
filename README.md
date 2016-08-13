@@ -26,7 +26,8 @@ Lastly, the strict contracts on inputs and outputs, whilst the component's logic
 - [x] Component Oriented Language built on Rust; components are implemented in Rust.
 - [ ] HyperCard implementation; easy to learn, hard to master. Essentially creating a fun minecraft-esque programming environment.
 - [ ] Cryptocurrency; gives programmers an incentive to build and support subnets. Noteworthy, this cryptocurrency is open to evolving at a much higher rate than other cryptocurrencies. Due to granular components it's much easier to create blockchain hard forks, whilst still sharing components. A fix to one component propagates to all cryptocurrencies sharing that component. Indeed we'll actively encourage blockchain hard forks, thus incorporating the best ideas of the community. May the best ideas win!
-- [ ] Whatever you want, this is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html).
+- [ ] Browser for a Named Data Network
+- [ ] Whatever you want to build, this is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html).
 
 ### Basic concepts
 * **Components**: A component is a Rust library with a C ABI.
@@ -133,3 +134,7 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 The project license is specified in LICENSE.
 
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
+
+### The Mozilla Manifesto
+
+This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet. 
