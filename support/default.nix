@@ -8,8 +8,6 @@ in
 rec {
   inherit upkeepers rustc cargo;
   rustRegistry = callPackage ./rust-packages.nix {};
-  ncurses_32bit = callPackage ./pkgs/ncurses.nix {};
-  zlib_32bit = callPackage ./pkgs/zlib.nix {};
   buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug local-rustfbp capnpc-rust rustRegistry rustc cargo;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
