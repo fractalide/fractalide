@@ -1,10 +1,11 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
+{ stdenv, buildFractalideComponent, genName, upkeepers
+  , js_create
   , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["js_create"];
+  contracts = [ js_create ];
   depsSha256 = "1aa8l879in0v39gznf4wl1c191hphs98nvzn0662zq0h4f2dz9gx";
   meta = with stdenv.lib; {
     description = "Component: draw a place holder";

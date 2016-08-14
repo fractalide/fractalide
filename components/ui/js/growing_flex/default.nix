@@ -1,12 +1,15 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
+{ stdenv, buildFractalideComponent, genName, upkeepers
   , ui_js_flex
-  , ...}:
+  , js_create
+  , generic_text
+  , fbp_action
+  , ... }:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["js_create" "generic_text" "fbp_action"];
-  depsSha256 = "1byhh6phmpg0j85bd8r5rck8s1b7sbsg27m3dpnyzd2981bc0325";
+  contracts = [ js_create generic_text fbp_action ];
+  depsSha256 = "1aa8l879in0v39gznf4wl1c191hphs98nvzn0662zq0h4f2dz9gx";
   configurePhase = ''
       substituteInPlace src/lib.rs --replace "ui_js_flex" "${ui_js_flex}"
   '';

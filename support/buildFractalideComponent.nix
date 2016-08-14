@@ -7,7 +7,7 @@
   , srcs ? null
   , sourceRoot ? null
   , buildInputs ? []
-  , filteredContracts ? []
+  , contracts ? []
   , cargoUpdateHook ? ""
   , ... } @ args:
 
@@ -97,7 +97,7 @@ else ""}
 ${stdenv.lib.concatMapStringsSep "\n"
 (contract:
   "ln -s ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
-(stdenv.lib.flatten filteredContracts)}
+(stdenv.lib.flatten contracts)}
 echo "*********************************************************************"
 echo "****** building: ${name} "
 echo "*********************************************************************"
