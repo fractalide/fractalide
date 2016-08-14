@@ -1,10 +1,11 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
+{ stdenv, buildFractalideComponent, genName, upkeepers
+  , protocol_domain_port
   ,...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [ "protocol_domain_port" ];
+  contracts = [ protocol_domain_port ];
   depsSha256 = "1wj5630x1kc5kbnb4504m7iv5387c7gvxmrlcnpf85s302gjz453";
   meta = with stdenv.lib; {
     description = "Component: Socket input";

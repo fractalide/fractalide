@@ -1,5 +1,6 @@
 #!/usr/bin/env nix-shell
 #! nix-shell -i python -p python rustUnstable.cargo pythonPackages.configobj
+#! nix-shell -I nixpkgs=/home/stewart/dev/fractalide/nixpkgs
 
 # this script sets up a new rustfbp component
 # by reading the utils/component.ini which you have configured
@@ -38,28 +39,58 @@ crate-type = ["dylib"]
 """ + write_cargo_deps(cargo_deps)
     return cargo_toml_template
 
-def write_contracts(ports, nix):
+def write_contracts(ports, include_type):
     contracts = ""
     contract_set = set()
     for port_type in ports:
         for port in ports[port_type]:
             contract_set.add(ports[port_type][port])
-    if nix:
-        contracts += ' '.join(map("\"{0}\"".format, contract_set))
-    else:
+    if include_type == "nix_contracts":
+        contracts += ' '.join(map("{0}".format, contract_set))
+    elif include_type == "rust_contracts":
         contracts += ", ".join(contract_set)
+    elif include_type == "nix_header":
+        if len(contract_set) > 0:
+            contracts += "# contracts:\n, "
+        contracts += ', '.join(map("{0}".format, contract_set))
     return contracts
 
-def create_default_nix (component_description, ports):
+def write_external_dependencies(external_dependencies):
+    externs = ""
+    externs_set = set()
+    for deps in external_dependencies:
+        for extern in external_dependencies[deps]:
+            externs_set.add(extern)
+    if len(externs_set) > 0:
+        externs = "# external dependencies:\n, "
+        externs += ', '.join(map("{0}".format, externs_set))
+    return externs
+
+def write_builtins(external_dependencies):
+    externs = ""
+    externs_set = set()
+    for deps in external_dependencies:
+        for extern in external_dependencies[deps]:
+            externs_set.add(extern)
+    if len(externs_set) > 0:
+        externs = "buildInputs = [ "
+        externs += ' '.join(map("{0}".format, externs_set))
+        externs += " ];\n"
+    return externs
+
+def create_default_nix (component_description, ports, external_dependencies):
     default_nix = """
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers
+""" + write_contracts(ports, "nix_header")  + """
+""" + write_external_dependencies(external_dependencies) + """
+, ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [""" + write_contracts(ports, True) + """];
+  contracts = [""" + write_contracts(ports, "nix_contracts") + """];
   depsSha256 = "1m6n74fm7k99pp13j5d5yyp4j0znc0s10958hhyyh3shq9rj8862";
-
+  """ + write_builtins(external_dependencies) + """
   meta = with stdenv.lib; {
     description = "Component: """ + component_description + """";
     homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
@@ -203,7 +234,7 @@ def write_sends(ports):
 def create_lib_rs(component_name, ports, cargo_deps, extra_ports):
     lib_rs = write_externs(cargo_deps) + """
 component! {
-  """ + component_name + """, contracts(""" + write_contracts(ports, False) + """)
+  """ + component_name + """, contracts(""" + write_contracts(ports, "rust_contracts") + """)
   """ + write_input_output_array_ports(ports) + "\n" + write_extra_ports(extra_ports) + """
   fn run(&mut self) -> Result<()> {
     """ + write_ip_extractors(ports) + write_sends(ports) + """
@@ -284,7 +315,7 @@ def generate_lockfile(path):
       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE).communicate()
 
 cargo_toml = create_cargo_toml(config['component_name'], config['cargo dependencies'])
-default_nix = create_default_nix(config['component_description'], config['ports'])
+default_nix = create_default_nix(config['component_description'], config['ports'], config['external dependencies'])
 lib_rs = create_lib_rs(config['component_name'], config['ports'], config['cargo dependencies'], config['extra ports'])
 path = insert_component_into_filesystem(config['component_name'], cargo_toml, default_nix, lib_rs)
 insert_component_into_default_nix(config['component_name'], path)

@@ -1,10 +1,11 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers
+{ stdenv, buildFractalideComponent, genName, upkeepers
+  , net_ndn_interest
   , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [ "net_ndn_interest" ];
+  contracts = [ net_ndn_interest ];
   depsSha256 = "1wrkvrfgff6cn8c0ci3b9zr4ii6qks4pzpqv7f1d1bcqy1dmc7gz";
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Forwarding Information Base";

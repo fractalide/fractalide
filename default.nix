@@ -103,7 +103,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 });
 
 exeSubnet = (builtins.head (lib.attrVals [subnet] components));
-components = import ./components {inherit pkgs support;};
+components = import ./components {inherit pkgs support contracts;};
 support = import ./support {inherit pkgs debug local-rustfbp contracts components;};
 contracts = import ./contracts {inherit pkgs support;};
 in

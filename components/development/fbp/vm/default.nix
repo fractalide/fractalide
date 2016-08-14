@@ -1,9 +1,13 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers
+  , fbp_graph
+  , path
+  , option_path
+  , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["fbp_graph" "path" "option_path"];
+  contracts = [ fbp_graph path option_path ];
   depsSha256 = "136p5mzm4s0vrzh34m1vvx32piqisrp7yak83s2v2301p03an9mm";
 
   meta = with stdenv.lib; {
