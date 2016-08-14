@@ -1,9 +1,13 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, openssl, ...}:
+{ stdenv, buildFractalideComponent, genName, openssl
+  , path
+  , domain_port
+  , url
+  , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["path" "domain_port" "url"];
+  contracts = [ path domain_port url ];
   buildInputs = [ openssl ];
   depsSha256 = "11brjanlp3gdk7g2a5bpjgx3wdzn3l7vwpph546yhm0wh6py5z78";
 

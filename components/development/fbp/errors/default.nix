@@ -1,9 +1,13 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers
+  , fbp_graph
+  , fbp_semantic_error
+  , file_error
+  , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["fbp_graph" "fbp_semantic_error" "file_error"];
+  contracts = [ fbp_graph fbp_semantic_error file_error ];
   depsSha256 = "1r6l6ck202d36id686xqv77irwkg2570awdkafslxl7fjkkn5km2";
 
   meta = with stdenv.lib; {

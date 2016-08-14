@@ -12,10 +12,9 @@ rec {
   zlib_32bit = callPackage ./pkgs/zlib.nix {};
   buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug local-rustfbp capnpc-rust rustRegistry rustc cargo;};
   buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
+  buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit lib local-rustfbp debug rustc rustRegistry;};
   genName = callPackage ./genName.nix {};
   capnpc-rust = callPackage ./capnpc-rust.nix {inherit rustRegistry rustc buildRustPackage;};
-  contract_lookup = callPackage ./contract_lookup { inherit contracts buildFractalideComponent filterContracts upkeepers; };
-  filterContracts = List: map (name: (lib.attrValues (lib.filterAttrs (n: v: n == name) contracts))) List;
-  buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
+  contract_lookup = callPackage ./contract_lookup { inherit buildFractalideComponent upkeepers; all_contracts = contracts;};
 }

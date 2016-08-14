@@ -1,9 +1,9 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers, ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts [];
+  contracts = [];
   depsSha256 = "0zdn96xxzqgkn7al4817pl0pyr2rs7lki78xbizf0zn328a4kwb9";
 
   meta = with stdenv.lib; {

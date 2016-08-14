@@ -1,9 +1,12 @@
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, capnproto, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers, capnproto
+  , generic_text
+  , path
+  , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["generic_text" "path"];
+  contracts = [ generic_text path ];
   depsSha256 = "0wwl33vh5phs79pm6d3hsipn29gnpw23dbnmnfgl317q5hrmfiw2";
   configurePhase = ''
     runHook preConfigure

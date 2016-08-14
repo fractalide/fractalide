@@ -168,12 +168,14 @@ touch components/maths/boolean/nand/default.nix
 </screen>
 Then insert this into the <filename>default.nix</filename>
 <screen>
-{ stdenv, buildFractalideComponent, filterContracts, genName, upkeepers, ...}:
+{ stdenv, buildFractalideComponent, genName, upkeepers,
+, maths_boolean
+, ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  filteredContracts = filterContracts ["maths_boolean"];
+  contracts = [ maths_boolean ];
   depsSha256 = "132bjwq6x1g3llvlsb0sg34mryry4my5d79qqmkh0cazmb23w4gm";
 
   meta = with stdenv.lib; {
@@ -184,7 +186,7 @@ buildFractalideComponent rec {
   };
 }
 </screen>
-Notice <filename>filteredContracts = filterContracts ["maths_boolean"];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
+Notice <filename>contracts = [ maths_boolean ];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
 </para>
   </listitem>
 
