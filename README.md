@@ -87,7 +87,7 @@ Navigate your browser to `file:///home/user/path/to/fractalide/support/utils/pag
 
 If you want to install a subnet into your environment directly, thus accessible from the command line:
 ```
-$ nix-env -i -f default.nix --argstr app_growtest
+$ nix-env -i -f default.nix --argstr subnet app_growtest
 $ app_growtest
 ```
 
@@ -137,4 +137,4 @@ Fractalide is free software; you can redistribute it and/or modify it under the 
 
 ### The Mozilla Manifesto
 
-This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet. 
+This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet.
