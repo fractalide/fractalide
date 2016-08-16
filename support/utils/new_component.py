@@ -1,6 +1,6 @@
-#!/usr/bin/env nix-shell
+#! /usr/bin/env nix-shell
 #! nix-shell -i python -p python rustUnstable.cargo pythonPackages.configobj
-#! nix-shell -I nixpkgs=/home/stewart/dev/fractalide/nixpkgs
+#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
 
 # this script sets up a new rustfbp component
 # by reading the utils/component.ini which you have configured
@@ -89,7 +89,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [""" + write_contracts(ports, "nix_contracts") + """];
-  depsSha256 = "1m6n74fm7k99pp13j5d5yyp4j0znc0s10958hhyyh3shq9rj8862";
+  depsSha256 = "2m6n74fm7k99pp13j5d5yyp4j0znc0s10958hhyyh3shq9rj8862";
   """ + write_builtins(external_dependencies) + """
   meta = with stdenv.lib; {
     description = "Component: """ + component_description + """";
