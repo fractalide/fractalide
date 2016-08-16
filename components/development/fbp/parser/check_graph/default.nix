@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ fbp_graph fbp_semantic_error ];
-  depsSha256 = "1nb481fxv0j0j15j5cn97kv7vf7892kbgb935wmc9h3mdnv7m9r8";
+  depsSha256 = "00b2f6cxa5syxbva4yv67343ik1slnvaq3wa8b1xvp3p436s1dwb";
 
   meta = with stdenv.lib; {
     description = "Component: Flow-based programming graph checker";

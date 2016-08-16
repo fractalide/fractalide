@@ -8,7 +8,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ file_list path value_string ];
-  depsSha256 = "02dbak1dvzbxxjwzx4fs3hqawwrajpzv7zb0yy30nm04jxfw6cf1";
+  depsSha256 = "1gs3x1ydy9grqxp8g7fppi6hnxk05ymdlxg492vd3v7bh4i8glmh";
 
   meta = with stdenv.lib; {
     description = "Component: Iterate over a list of 1000 file paths";
