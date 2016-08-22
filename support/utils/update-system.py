@@ -11,19 +11,7 @@ import time
 import getopt
 from itertools import chain
 
-repo = ""
-argv = sys.argv[1:]
-try:
-  opts, args = getopt.getopt(argv,"I:")
-except getopt.GetoptError:
-  print 'update_system.py [-I path/to/nixpkgs]'
-  sys.exit(2)
-for opt, arg in opts:
-  if opt == '-h':
-     print 'update_system.py [-I path/to/nixpkgs]'
-     sys.exit()
-  elif opt in ("-I"):
-    repo += " -I nixpkgs=" + arg
+repo = " -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz"
 
 def query_yes_no(question, default="no"):
     valid = {"yes": True, "y": True, "ye": True,
@@ -132,7 +120,7 @@ for root, dirs, files in os.walk("../../components"):
       m = re.search('.*hash.*(\w{52}).*when.*', error)
       if m:
         found = m.group(1)
-        print "[!] -- " + name + " has a new depsSha256: " + found
+        print "[!] -- " + name + " has a new depsSha256: "
         find = r"^.*depsSha256 = .*$";
         replace = "  depsSha256 = \"%s\";" % found
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
