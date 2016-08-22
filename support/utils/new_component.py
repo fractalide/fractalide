@@ -127,8 +127,8 @@ def write_simple_input_extractor(port, contract):
     ip = "ip_" + port
     reader = port + "_reader"
     return """
+    let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
         let """ + reader + """: """ + contract + """::Reader = """ + ip + """.get_root()?;
         """ + reader + """.get_XXX() // read contract: """ + contract + """ to replace XXX
     };"""
@@ -143,8 +143,8 @@ def write_inputs_array_extractor(port, contract):
     ip = "ip_" + port
     reader = port + "_reader"
     return """
+    let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
         let """ + reader + """: """ + contract + """::Reader = """ + ip + """.get_root()?;
         """ + reader + """.get_XXX() // read contract: """ + contract + """ to replace XXX
     };"""
