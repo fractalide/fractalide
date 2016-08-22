@@ -11,7 +11,7 @@ buildRustPackage rec {
     sha256 = "1zaf1gdwhvr8yl657s7zxnqam8679x3isqcjqgmzcxp829bm15fp";
   };
 
-  depsSha256 = "0f4qyvry70fvc6rwxgccxzvl2gggpg0qahij5l1pwq7p5w7gwgsg";
+  depsSha256 = "1hy9ynkg0fr52y9qxy5fzqiscmw545jqqz4sy3mprcvx6nwr1mrl";
 
   meta = with stdenv.lib; {
     description = "Cap'n Proto code generation for Rust.";

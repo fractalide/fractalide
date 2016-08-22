@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ fbp_graph ];
-  depsSha256 = "00b2f6cxa5syxbva4yv67343ik1slnvaq3wa8b1xvp3p436s1dwb";
+  depsSha256 = "13xlhgca49896354mk1lawjk6ywai3jwvqgkpsnd0miybmf600bd";
 
   meta = with stdenv.lib; {
     description = "Component: Flow-based programming graph printer";

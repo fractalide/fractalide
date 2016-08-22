@@ -7,15 +7,15 @@
 { runCommand, fetchFromGitHub, git }:
 
 let
-version = "2016-08-16";
-rev = "edfb6755e77042d9096c4b6419ae4e012888adde";
+version = "2016-08-21";
+rev = "c017b02d637a37f00e9c2607ab90435e689b8a8a";
 
 src = fetchFromGitHub {
   inherit rev;
 
   owner = "rust-lang";
   repo = "crates.io-index";
-  sha256 = "1zx6024hgbxpx9vmy5nswd8xxwg9w5vs2xf3v3g5c7wmxdsgsy6j";
+  sha256 = "14fvav774cvkzy5mrllfhvk51s434v0s01pq6wrf7h7z5pi9jgdv";
 };
 
 in

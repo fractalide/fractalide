@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ value_string list_triple];
-  depsSha256 = "1zball6b6pqj8jg9vc9qlnq96ncbwq6p5ykfk5jh75ms1kd6jlwi";
+  depsSha256 = "0lcplmcv9nb1rra1fc9jqif46c3daw0vvp1b2rmyzd1k62m9wxhm";
 
   meta = with stdenv.lib; {
     description = "Component: Opens files";
