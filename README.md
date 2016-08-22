@@ -2,6 +2,9 @@
 # Fractalide
  _**Exploding the design space**_
 
+ [![LICENSE](https://img.shields.io/badge/license-MPLv2-blue.svg)](LICENSE)
+ [![Join the chat at https://gitter.im/fractalide](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Welcome
 
 **Fractalide is a programming platform with an explosive design space**.
