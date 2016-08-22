@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ generic_text path ];
-  depsSha256 = "0wwl33vh5phs79pm6d3hsipn29gnpw23dbnmnfgl317q5hrmfiw2";
+  depsSha256 = "09piyjsd94gpc6hd8zv4hrs8kq807abzj855yvvc440q1pb51qb2";
   configurePhase = ''
     runHook preConfigure
     substituteInPlace src/lib.rs --replace "capnp_path" "${capnproto}/bin/capnp"

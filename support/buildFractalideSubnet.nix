@@ -1,14 +1,14 @@
 { stdenv, genName, writeTextFile}:
-{ src, subnet,... } @ args:
+{ src, subnet, name ? null, ... } @ args:
   let
-  name = genName src;
+  subnet-name = if name == null then genName src else name;
   subnet-txt = writeTextFile {
-    name = name;
+    name = subnet-name;
     text = subnet;
     executable = false;
   };
   in stdenv.mkCachedDerivation  (args // {
-    name = name;
+    name = subnet-name;
     unpackPhase = "true";
     installPhase = ''
     runHook preInstall

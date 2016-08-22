@@ -8,7 +8,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ list_tuple value_string list_triple ];
-  depsSha256 = "16qqdcq9bckx24s6w668bq5xvz9zi2vn1v3963gmmznkn79vhggh";
+  depsSha256 = "0sqp9vwy4xpmc6x1qrpfaix7f7nsxd6ygif1xar44n96834b8zd4";
 
   meta = with stdenv.lib; {
     description = "Component: aggregate a stream of tuples such that

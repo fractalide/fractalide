@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ list_triple ];
-  depsSha256 = "0ngscsz3jci9cvmqzqb09v22kw4l9xlxvxmlndvdzf70l84afsim";
+  depsSha256 = "0dbydai58z6npf8ws0dqp7xcbi5b3gbsc31d2x9hs79cvc1yk275";
 
   meta = with stdenv.lib; {
     description = "Component: Anonymize the data such that any triple that has a count of less than 6 is removed from the list";

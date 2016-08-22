@@ -2,6 +2,9 @@
 # Fractalide
  _**Exploding the design space**_
 
+ [![LICENSE](https://img.shields.io/badge/license-MPLv2-blue.svg)](LICENSE)
+ [![Join the chat at https://gitter.im/fractalide](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Welcome
 
 **Fractalide is a programming platform with an explosive design space**.
@@ -26,7 +29,8 @@ Lastly, the strict contracts on inputs and outputs, whilst the component's logic
 - [x] Component Oriented Language built on Rust; components are implemented in Rust.
 - [ ] HyperCard implementation; easy to learn, hard to master. Essentially creating a fun minecraft-esque programming environment.
 - [ ] Cryptocurrency; gives programmers an incentive to build and support subnets. Noteworthy, this cryptocurrency is open to evolving at a much higher rate than other cryptocurrencies. Due to granular components it's much easier to create blockchain hard forks, whilst still sharing components. A fix to one component propagates to all cryptocurrencies sharing that component. Indeed we'll actively encourage blockchain hard forks, thus incorporating the best ideas of the community. May the best ideas win!
-- [ ] Whatever you want, this is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html).
+- [ ] Browser for a Named Data Network
+- [ ] Whatever you want to build, this is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html).
 
 ### Basic concepts
 * **Components**: A component is a Rust library with a C ABI.
@@ -86,7 +90,7 @@ Navigate your browser to `file:///home/user/path/to/fractalide/support/utils/pag
 
 If you want to install a subnet into your environment directly, thus accessible from the command line:
 ```
-$ nix-env -i -f default.nix --argstr app_growtest
+$ nix-env -i -f default.nix --argstr subnet app_growtest
 $ app_growtest
 ```
 
@@ -133,3 +137,7 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 The project license is specified in LICENSE.
 
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
+
+### The Mozilla Manifesto
+
+This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet.

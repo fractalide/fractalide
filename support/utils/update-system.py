@@ -1,5 +1,6 @@
-#!/usr/bin/env nix-shell
-#! nix-shell -i python -p python cargo git
+#! /usr/bin/env nix-shell
+#! nix-shell -i python -p python rustUnstable.cargo git
+#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
 
 import os
 import subprocess
@@ -7,7 +8,10 @@ import shlex
 import sys
 import re
 import time
+import getopt
 from itertools import chain
+
+repo = " -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz"
 
 def query_yes_no(question, default="no"):
     valid = {"yes": True, "y": True, "ye": True,
@@ -33,17 +37,14 @@ def query_yes_no(question, default="no"):
                              "(or 'y' or 'n').\n")
 
 result = query_yes_no(
-"\n\
-Proceed with caution.\n\
-This script will update the dependencies of all your components and the rust registry.\n\
-Ensure you are running this on a clean fractalide repository with no changes otherwise it'll eat your laundry.\n\
+"This script will update the dependencies of all your components and the rust registry.\n\
 Proceed?")
 
 if result == False:
   exit()
 
 def generate_component_name( path ):
-  name_list = path[14:].split("/")
+  name_list = path[17:].split("/")
   return '_'.join(map(str, name_list))
 
 # update all the components via cargo
@@ -75,9 +76,9 @@ subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
 
 # build rustRegistry to get the sha256, then build it again...
 print "[*] Checking for new rustRegistry sha256"
-cmd =  "nix-build --argstr debug true -A support.rustRegistry"
+cmd =  "nix-build --argstr debug true -A support.rustRegistry" + repo
 args = shlex.split(cmd)
-output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 if error:
   if re.search('.*has wrong length for hash type.*', error):
     print error
@@ -93,19 +94,19 @@ if error:
     replace = "  sha256 = \"%s\";" % found
     subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",rustRegistry])
     print "[*] Building rustRegistry with latest sha256"
-    cmd =  "nix-build --argstr debug true -A support.rustRegistry"
+    cmd =  "nix-build --argstr debug true -A support.rustRegistry" + repo
     args = shlex.split(cmd)
-    output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+    output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
 
 print "[*] Checking Rust components for new depsSha256"
 for root, dirs, files in os.walk("../../components"):
   if "Cargo.toml" in files:
     name = generate_component_name(root)
-    cmd =  "nix-build --argstr debug true -A components." + name
+    cmd =  "nix-build --argstr debug true -A components." + name  + repo
     print "[ ] - " + name
     args = shlex.split(cmd)
-    output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+    output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
     if error:
       if re.search('.*not found', error):
         print error + "\nerror: folder hierarchy != attribute name in components/default.nix. Please fix it, commit it, then run again."
@@ -118,24 +119,24 @@ for root, dirs, files in os.walk("../../components"):
         exit()
       m = re.search('.*hash.*(\w{52}).*when.*', error)
       if m:
-        print "[!] -- found new depsSha256... building "
         found = m.group(1)
+        print "[!] -- " + name + " has a new depsSha256: "
         find = r"^.*depsSha256 = .*$";
         replace = "  depsSha256 = \"%s\";" % found
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
-        output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+        #output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
 paths = ('../contract_lookup', '../vm')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
       name = os.path.basename(root)
       if name == "vm":
-        cmd = "nix-build --argstr debug true -A vm"
+        cmd = "nix-build --argstr debug true -A vm" + repo
       else:
-        cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root)
+        cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root) + repo
       print "[ ] - " + name
       args = shlex.split(cmd)
-      output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+      output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
       if error:
         if re.search('.*has wrong length for hash type.*', error):
           print error
@@ -153,6 +154,6 @@ for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
             space = "  "
           replace = space + "depsSha256 = \"%s\";" % found
           subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
-          output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "..").communicate()
+          output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
 print "[*] Done"
