@@ -1,11 +1,10 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , shells_fsh_parse_pipe
-  , shells_fsh_build_names
+  , shells_fsh_parser_verify
   , ...}:
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   parse => parse parse(${shells_fsh_parse_pipe}) output -> input build(${shells_fsh_build_names}) output => output
+   input => input pipes(${shells_fsh_parser_verify}) output => output
    '';
 
    meta = with stdenv.lib; {

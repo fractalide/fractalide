@@ -1,13 +1,21 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , shells_fsh_prompt
-  , shells_fsh_parse
-  , io_print
+  , shells_fsh_lexer
+  , shells_fsh_parser
+  , io_print_list_text
   , ...}:
+
   buildFractalideSubnet rec {
    src = ./.;
    name = "fsh";
    subnet = ''
-   prompt(${shells_fsh_prompt}) output -> parse parse(${shells_fsh_parse}) output -> input print(${io_print})
+   'shell_commands:(commands=[ (key="cd", val="shells_commands_cd"),(key="ls", val="shells_commands_ls"),(key="pwd", val="shells_commands_pwd")])~create' ->
+   commands lexer(${shells_fsh_lexer})
+
+   prompt(${shells_fsh_prompt}) output ->
+      input lexer() output ->
+      input parser(${shells_fsh_parser}) output ->
+      input print_list_text(${io_print_list_text})
    '';
 
    meta = with stdenv.lib; {

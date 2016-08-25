@@ -1,15 +1,13 @@
-
 { stdenv, buildFractalideComponent, genName, upkeepers
 # contracts:
-, generic_text
-
+, list_text, shell_commands
 , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  contracts = [generic_text];
-  depsSha256 = "0gqh8bgzyq5ymmnslbpgyjic3iws6v9wmjsk3k84l6hgvda0x7q0";
+  contracts = [list_text shell_commands];
+  depsSha256 = "1zk12l8rxwsm3ivsjxh9s6x7nb4rl70b6k0pxz3z8ldyasbn4ji1";
 
   meta = with stdenv.lib; {
     description = "Component: shells_fsh_build_names: commands go in and flow script comes out.";

@@ -1,17 +1,16 @@
-
 { stdenv, buildFractalideComponent, genName, upkeepers
 # contracts:
-, generic_text
+, generic_text, list_text
 , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  contracts = [generic_text];
-  depsSha256 = "0wv25hibldyx9l5krjx8cicgvhixw28sn0mr0n0n13lz8psv4x3y";
+  contracts = [generic_text list_text];
+  depsSha256 = "0gsf9cl0s6yvhma8iidvksp5pk4lb169qk0f2slqhf09rgdarpak";
 
   meta = with stdenv.lib; {
-    description = "Component: shells_fsh_parse_pipe: create fipes.";
+    description = "Component: shells_fsh_parse_pipe: create pipes.";
     homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/shells/fsh/parse/pipe;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
