@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts =  [ list_triple quadruple ];
-  depsSha256 = "1gxqzfvanmh130xlmqhh9rbgs3fz43rhvqfsaj65s80d4ph17j7m";
+  depsSha256 = "0f816nlsfyvzzy2167sda0368kydgl37ppdnmzxkjlqps19mwy23";
 
   meta = with stdenv.lib; {
     description = "Component: Print average, mean, min and max to the terminal";
