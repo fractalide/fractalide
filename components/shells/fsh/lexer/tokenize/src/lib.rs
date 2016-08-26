@@ -48,22 +48,24 @@ component! {
                 let mut i: u32 = 0;
                 for cmd in input?.iter() {
                     match get_command(cmd?.as_bytes()) {
+                        IResult::Incomplete(x) => println!("incomplete: {:?}", x),
+                        IResult::Error(e) => println!("error: {:?}", e),
                         IResult::Done(_, out) => {
                             match command_lookup.get(to_string(out)) {
                                 Some(command_location) => {commands.borrow().set(i, command_location);},
                                 None => {unknown_commands.insert(cmd?);},
                             }
                         },
-                        IResult::Incomplete(x) => panic!("incomplete: {:?}", x),
-                        IResult::Error(e) => panic!("error: {:?}", e),
                     }
                     i += 1;
                 }
             }
-            if unknown_commands.is_empty() {self.ports.send("output", out_ip_output)?;}
+            if unknown_commands.is_empty() {
+                self.ports.send("output", out_ip_output)?;
+            }
             else {
                 for cmd in unknown_commands {
-                    println!("{} not found.", cmd);
+                    println!("{}: command not found", cmd);
                 }
             }
         }
