@@ -3,7 +3,21 @@
 extern crate rustfbp;
 extern crate capnp;
 
+#[macro_use]
+pub mod parsers;
+use parsers::get_command;
+
+#[macro_use]
+extern crate nom;
+use nom::IResult;
+
 use std::collections::HashSet;
+
+use std::str::{from_utf8_unchecked};
+
+pub fn to_string(s: &[u8]) -> &str {
+    unsafe { from_utf8_unchecked(s) }
+}
 
 component! {
     shells_fsh_build_names, contracts(list_text, shell_commands)
@@ -33,9 +47,15 @@ component! {
                 let mut commands = ip.init_texts(input?.len() as u32);
                 let mut i: u32 = 0;
                 for cmd in input?.iter() {
-                    match command_lookup.get(cmd?) {
-                        Some(command_location) => {commands.borrow().set(i, command_location);},
-                        None => {unknown_commands.insert(cmd?);},
+                    match get_command(cmd?.as_bytes()) {
+                        IResult::Done(_, out) => {
+                            match command_lookup.get(to_string(out)) {
+                                Some(command_location) => {commands.borrow().set(i, command_location);},
+                                None => {unknown_commands.insert(cmd?);},
+                            }
+                        },
+                        IResult::Incomplete(x) => panic!("incomplete: {:?}", x),
+                        IResult::Error(e) => panic!("error: {:?}", e),
                     }
                     i += 1;
                 }

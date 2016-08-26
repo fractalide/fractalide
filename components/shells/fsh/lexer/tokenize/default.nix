@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [list_text shell_commands];
-  depsSha256 = "1zk12l8rxwsm3ivsjxh9s6x7nb4rl70b6k0pxz3z8ldyasbn4ji1";
+  depsSha256 = "1a5f8bygx4iz0dxclw25chjfvamfyw74hx4fw16n9g4r63gy96lf";
 
   meta = with stdenv.lib; {
     description = "Component: shells_fsh_build_names: commands go in and flow script comes out.";

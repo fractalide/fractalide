@@ -10,10 +10,10 @@
    name = "fsh";
    subnet = ''
    'shell_commands:(commands=[ (key="cd", val="shells_commands_cd"),(key="ls", val="shells_commands_ls"),(key="pwd", val="shells_commands_pwd")])~create' ->
-   commands lexer(${shells_fsh_lexer})
+   commands lexer()
 
    prompt(${shells_fsh_prompt}) output ->
-      input lexer() output ->
+      input lexer(${shells_fsh_lexer}) output ->
       input parser(${shells_fsh_parser}) output ->
       input print_list_text(${io_print_list_text})
    '';

@@ -3,6 +3,7 @@ name = "shells_fsh_build_tokenize"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nom 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustfbp 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -63,6 +64,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "nom"
+version = "1.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "num-traits"
 version = "0.1.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -116,3 +122,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum byteorder 0.4.2 (registry+https://github.com/rust-lang/crates.io-index)" = "96c8b41881888cc08af32d47ac4edd52bc7fa27fef774be47a92443756451304"
+"checksum capnp 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)" = "5d7114438269ff91f98dc20a66286398acd2650a38b6d09317180ac82fea07d6"
+"checksum capnpc 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)" = "8088d62962beb3d04a389245654fdbe49940e0a5e30b35a8c22e4e03911e62b6"
+"checksum dtoa 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "0dd841b58510c9618291ffa448da2e4e0f699d984d436122372f446dae62263d"
+"checksum itoa 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "ae3088ea4baeceb0284ee9eea42f591226e6beaecf65373e41b38d95a1b8e7a1"
+"checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
+"checksum lazy_static 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "49247ec2a285bb3dcb23cbd9c35193c025e7251bfce77c1d5da97e6362dffe7f"
+"checksum libloading 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "eceb2637ee9a27c7f19764048a9f377e40e3a70a322722f348e6bc7704d565f2"
+"checksum nom 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)" = "a5b8c256fd9471521bcb84c3cdba98921497f1a331cbc15b8030fc63b82050ce"
+"checksum num-traits 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "8359ea48994f253fa958b5b90b013728b06f54872e5a58bce39540fcdd0f2527"
+"checksum rustfbp 0.3.17 (registry+https://github.com/rust-lang/crates.io-index)" = "6ba4f356b4da24361a44e53d8eabbec0c1e589497e542e94fa8ce39de423228e"
+"checksum serde 0.8.4 (registry+https://github.com/rust-lang/crates.io-index)" = "b1dfda9ebb31d29fa8b94d7eb3031a86a8dcec065f0fe268a30f98867bf45775"
+"checksum serde_json 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0e10f8a9d94b06cf5d3bef66475f04c8ff90950f1be7004c357ff9472ccbaebc"
+"checksum target_build_utils 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "7a1be18d4d908e4e5697908de04fdd5099505463fc8eaf1ceb8133ae486936aa"
+"checksum threadpool 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "59f6d3eff89920113dac9db44dde461d71d01e88a5b57b258a0466c32b5d7fe1"
+"checksum winapi 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "167dc9d6949a9b857f3451275e911c3f44255842c1f7a76f33c55103a909087a"
+"checksum winapi-build 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "2d315eee3b34aca4797b2da6b13ed88266e6d612562a0c46390af8299fc699bc"

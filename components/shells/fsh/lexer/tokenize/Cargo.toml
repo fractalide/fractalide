@@ -11,3 +11,4 @@ crate-type = ["dylib"]
 [dependencies]
 rustfbp = "*"
 capnp = "*"
+nom = "*"
