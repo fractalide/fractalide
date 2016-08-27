@@ -7,9 +7,7 @@
   , ui_js_flex
   , ui_js_tag
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''

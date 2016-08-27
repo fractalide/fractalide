@@ -6,9 +6,7 @@
   , ip_dispatcher
   , debug
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''

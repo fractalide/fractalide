@@ -10,9 +10,7 @@
   , development_capnp_encode
   , contract_lookup
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''

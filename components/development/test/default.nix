@@ -12,9 +12,7 @@
   , web_server
   , io_print
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
