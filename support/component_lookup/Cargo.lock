@@ -1,5 +1,5 @@
 [root]
-name = "contract_lookup"
+name = "component_lookup"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
