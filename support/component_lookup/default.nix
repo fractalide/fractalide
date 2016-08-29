@@ -8,9 +8,9 @@ buildFractalideComponent rec {
   configurePhase = ''
 runHook preConfigure
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"
-(pkg: ''\"${pkg.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" pkg.outPath))}\")},'')
+(pkg: ''\"${pkg.name}\" => { Some (\"${pkg.outPath}\")},'')
 (stdenv.lib.attrValues components)}"
-  cat src/lib.rs'';
+  '';  
   meta = with stdenv.lib; {
     description = "Component: Looks up the versioned name, after given the common component name";
     homepage = https://github.com/fractalide/fractalide/tree/master/support/component-lookup;
