@@ -2,6 +2,7 @@
 extern crate rustfbp;
 use rustfbp::scheduler::{Comp, Scheduler};
 use std::mem;
+use std::str;
 
 extern crate capnp;
 
@@ -214,8 +215,21 @@ fn add_graph(mut component: &mut development_fbp_scheduler, name: &str) -> Resul
         let contract_path: path::Reader = try!(contract_path_ip.get_root());
 
         let c_path = try!(contract_path.get_path());
-        let c_path = format!("/nix/store/{}/src/contract.capnp", c_path);
-        let contract_camel_case = to_camel_case(&contract);
+        let c_path = format!("{}/src/contract.capnp", c_path);
+
+        let mut contract_list: Vec<&str>;
+        if contract.contains('-') {
+            contract_list = contract.split('-').collect();
+        } else {
+            contract_list = Vec::new();
+            contract_list.push(contract.as_str());
+        }
+        let c_name = match contract_list.last() {
+            Some(c) => { c },
+            None => {"failed_to_find_contract"},
+        };
+
+        let contract_camel_case = to_camel_case(&c_name);
 
         if try!(iip.get_selection()) == "" {
             try!(p.connect("s".into(), try!(component.portal.sched.get_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into()))));

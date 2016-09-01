@@ -8,7 +8,7 @@ buildFractalideComponent rec {
   configurePhase = ''
 runHook preConfigure
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"
-(pkg: ''\"${pkg.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" pkg.outPath))}\")},'')
+(pkg: ''\"${pkg.name}\" => { Some (\"${pkg.outPath}\")},'')
 (stdenv.lib.attrValues all_contracts)}"
   '';
   meta = with stdenv.lib; {
