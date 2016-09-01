@@ -52,7 +52,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 
             # check if cache directory exists
             if [ ! -h "${cache}/$name" ]; then
-              echo "Warning: ${cache}/$name does not exist. proceeding without cache. A new cache will be created under $cache ."
+              echo "Warning: ${cache}/$name does not exist, proceeding without cache. A new cache will be created here: $cache."
             else if [ -d ${cache}/$name/target ] && [ -f ${cache}/$name/MD5SUMS ]; then
               echo "CACHE HIT for $name"
               # Restore the old target/ directory, with its MD5SUMS from the cache
