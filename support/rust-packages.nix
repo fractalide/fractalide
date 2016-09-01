@@ -8,8 +8,8 @@
 
 let
 version = "2016-08-24";
-rev = "e0ff0e24af4ee3cae89752a1be9f30e6ea5a7f2b";
-  sha256 = "15si3p61nrc180g21gs54rgsd3dn7hai0f2cwhv696fxavj2amaf";
+rev = "be82443652b67a4ee8249f2d88f11fbb2ca61297";
+  sha256 = "0lan1f1sjklx05v468wy2195c27zqm19rlzhfjpv9zqwalgblcbg";
 
   src = fetchFromGitHub {
       inherit rev;
@@ -46,8 +46,5 @@ runCommand "rustRegistry-${version}-${builtins.substring 0 7 rev}" { inherit src
   $git add .
   $git commit -m 'Rust registry commit'
 
-  echo "-----------------"
-  ls $out/
   touch $out/touch . "$out/.cargo-index-lock"
-  cat $out/.cargo-index-lock
 ''
