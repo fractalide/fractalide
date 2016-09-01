@@ -14,6 +14,4 @@ rec {
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit lib local-rustfbp debug rustc rustRegistry;};
   genName = callPackage ./genName.nix {};
   capnpc-rust = callPackage ./capnpc-rust.nix {inherit rustRegistry rustc buildRustPackage;};
-  contract_lookup = callPackage ./contract_lookup { inherit buildFractalideComponent upkeepers; all_contracts = contracts;};
-  component_lookup = callPackage ./component_lookup { inherit buildFractalideComponent upkeepers components; all_contracts = contracts;};
 }

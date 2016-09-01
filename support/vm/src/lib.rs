@@ -27,16 +27,16 @@ pub extern "C" fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
     sched.add_component("open", "fs_file_open.so");
-    sched.add_component("lex", "development_fbp_parser_lexical.so");
-    sched.add_component("sem", "development_fbp_parser_semantic.so");
-    sched.add_component("vm", "development_fbp_vm.so");
-    sched.add_component("errors", "development_fbp_errors.so");
-    sched.add_component("graph_print", "development_fbp_parser_print_graph.so");
-    sched.add_component("graph_check", "development_fbp_parser_check_graph.so");
-    sched.add_component("sched", "development_fbp_scheduler.so");
-    sched.add_component("iip", "development_capnp_encode.so");
-    sched.add_component("contract_lookup", "contract_lookup.so");
-    sched.add_component("component_lookup", "component_lookup.so");
+    sched.add_component("lex", "nucleus_flow_parser_lexical.so");
+    sched.add_component("sem", "nucleus_flow_parser_semantic.so");
+    sched.add_component("vm", "nucleus_flow_vm.so");
+    sched.add_component("errors", "nucleus_flow_errors.so");
+    sched.add_component("graph_print", "nucleus_flow_parser_graph_print.so");
+    sched.add_component("graph_check", "nucleus_flow_parser_graph_check.so");
+    sched.add_component("sched", "nucleus_flow_scheduler.so");
+    sched.add_component("iip", "nucleus_capnp_encode.so");
+    sched.add_component("nucleus_find_contract", "nucleus_find_contract.so");
+    sched.add_component("nucleus_find_component", "nucleus_find_component.so");
     sched.add_component("halter", "halter.so");
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
@@ -78,11 +78,11 @@ pub extern "C" fn run(path_fbp: &str) {
     // Without Graph print
     sched.connect("vm".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");
 
-    sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
-    sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
+    sched.connect("sched".into(), "ask_path".into(), "nucleus_find_contract".into(), "input".into()).expect("cannot connect");
+    sched.connect("nucleus_find_contract".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
 
-    sched.connect("vm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
-    sched.connect("component_lookup".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
+    sched.connect("vm".into(), "ask_path".into(), "nucleus_find_component".into(), "input".into()).expect("cannot connect");
+    sched.connect("nucleus_find_component".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
 
     // IIP part
     sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");

@@ -1,0 +1,12 @@
+[package]
+name = "nucleus_flow_vm"
+version = "0.1.0"
+authors = ["test <test@test.com>"]
+
+[lib]
+name = "nucleus_flow_vm"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"
