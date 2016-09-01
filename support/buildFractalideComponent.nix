@@ -7,6 +7,7 @@
   , srcs ? null
   , sourceRoot ? null
   , buildInputs ? []
+  , logLevel ? ""
   , contracts ? []
   , cargoUpdateHook ? ""
   , ... } @ args:
@@ -26,13 +27,16 @@
   type = if debug == "true" then "" else "--release";
   directory = if debug == "true" then "debug" else "release";
 
-  in stdenv.mkCachedDerivation (args // {
-    inherit cargoDeps rustRegistry capnproto capnpc-rust;
+in stdenv.mkCachedDerivation (args // {
+  inherit cargoDeps rustRegistry capnproto capnpc-rust;
 
-    patchRegistryDeps = ./patch-registry-deps;
-    buildInputs = [ git cargo rustc ] ++ buildInputs;
+  patchRegistryDeps = ./patch-registry-deps;
+
+  buildInputs = [ git cargo rustc ] ++ buildInputs;
+
     #Don't forget to runHook, else the incremental builds wont work
     configurePhase = (args.configurePhase or "runHook preConfigure");
+
     postUnpack = ''
     echo "Using cargo deps from $cargoDeps"
 
@@ -49,16 +53,18 @@
     EOF
 
     export CARGO_HOME="$(realpath deps)"
+    export RUST_LOG=${logLevel}
+    export SSL_CERT_FILE=${cacert}/etc/ssl/certs/ca-bundle.crt
 
     # Let's find out which $indexHash cargo uses for file:///dev/null
     (cd $sourceRoot && cargo fetch &>/dev/null) || true
     cd deps
-    indexHash="$(basename $(echo registry/index/*))" #*/
+    indexHash="$(basename $(echo registry/index/*))"
 
     echo "Using indexHash '$indexHash'"
 
     rm -rf -- "registry/cache/$indexHash" \
-    "registry/index/$indexHash"
+              "registry/index/$indexHash"
 
     mv registry/cache/HASH "registry/cache/$indexHash"
 
@@ -78,7 +84,7 @@ prePatch = ''
 # Patch registry dependencies, using the scripts in $patchRegistryDeps
 (
   set -euo pipefail
-  cd ../deps/registry/src/*
+  cd $NIX_BUILD_TOP/deps/registry/src/*
 
   for script in $patchRegistryDeps/*; do
   # Run in a subshell so that directory changes and shell options don't
