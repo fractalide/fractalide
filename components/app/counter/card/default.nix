@@ -7,6 +7,8 @@
   , debug
   , ip_clone
   , ip_dispatcher
+  # contracts
+  , generic_i64
   , ...}:
 
   buildFractalideSubnet rec {
@@ -17,7 +19,7 @@
    model(${app_model}) output -> input view(${app_counter_view}) output -> input out_dispatch()
 
 
-   'generic_i64:(number=0)' -> acc model()
+   '${generic_i64}:(number=0)' -> acc model()
    out_dispatch() output[add] -> input model()
    out_dispatch() output[minus] -> input model()
    out_dispatch() output[delta] -> input model()

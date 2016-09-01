@@ -1,5 +1,7 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , net_ndn
+  # contracts
+  , net_ndn_interest
   , ...}:
 
 buildFractalideSubnet rec {
@@ -7,7 +9,7 @@ buildFractalideSubnet rec {
   subnet = ''
   // receiver receives packets coming from the ndn network
   // sender "sends" packets onto the ndn network
-  'net_ndn_interest:(name="interest",nonce=888)' -> interest ndn(${net_ndn})
+  '${net_ndn_interest}:(name="interest",nonce=888)' -> interest ndn(${net_ndn})
 
   '';
 

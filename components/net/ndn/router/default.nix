@@ -4,6 +4,8 @@
   , net_ndn_router_fib
   , net_ndn_router_pit
   , drop_ip
+  # contracts
+  , protocol_domain_port
   , ...}:
 
 buildFractalideSubnet rec {
@@ -95,8 +97,8 @@ buildFractalideSubnet rec {
 //    <--  DOWNSTREAM                                   UPSTREAM -->
 //                  hit = lookup hit - miss = lookup miss
 
-'protocol_domain_port:(protocol="ws://",domain="127.0.0.1",port=8888)' -> start faces(${net_ndn_router_faces})
-'protocol_domain_port:(protocol="ws://",domain="127.0.0.1",port=8888)' -> option faces(${net_ndn_router_faces})
+'${protocol_domain_port}:(protocol="ws://",domain="127.0.0.1",port=8888)' -> start faces(${net_ndn_router_faces})
+'${protocol_domain_port}:(protocol="ws://",domain="127.0.0.1",port=8888)' -> option faces(${net_ndn_router_faces})
 
 // Interest path
   faces(${net_ndn_router_faces}) interest -> lookup_interest cs(${net_ndn_router_cs}) interest_hit ->

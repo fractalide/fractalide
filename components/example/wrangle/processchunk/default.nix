@@ -5,13 +5,16 @@
   , example_wrangle_processchunk_convert_json_vector
   , example_wrangle_processchunk_agg_chunk_triples
   , print_file_with_feedback
+  # contracts
+  , value_string
+  , list_triple
   ,...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'value_string:(value="airline")' -> option extract_kvs(${example_wrangle_processchunk_extract_keyvalue})
-   'list_triple:(triples = [])' -> acc aggregate_tuples(${example_wrangle_processchunk_agg_chunk_triples})
+   '${value_string}:(value="airline")' -> option extract_kvs(${example_wrangle_processchunk_extract_keyvalue})
+   '${list_triple}:(triples = [])' -> acc aggregate_tuples(${example_wrangle_processchunk_agg_chunk_triples})
 
    input => input iterate_paths(${example_wrangle_processchunk_iterate_paths}) output ->
       input open_file(${example_wrangle_processchunk_file_open}) output ->
