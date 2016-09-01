@@ -111,7 +111,8 @@ echo "Running cargo build ${type}"
 cargo build ${type}
 '';
 
-checkPhase = args.checkPhase or ''
+checkPhase = if debug == "true" then "echo skipping tests in debug mode"
+else args.checkPhase or ''
 echo "Running cargo test"
 cargo test
 '';
