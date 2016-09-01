@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xad6ca52dabb3c4fd;
+
+  struct Path {
+          path @0 :Text;
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple path of type string";

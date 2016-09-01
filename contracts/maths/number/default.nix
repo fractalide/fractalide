@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xbde554c96bf60f25;
+
+  struct MathsNumber {
+    number @0 :Int64;
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple Int64 data type";

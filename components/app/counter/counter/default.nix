@@ -2,16 +2,16 @@
   , app_counter_card
   , ui_js_page
   , debug
+  # contracts
+  , app_counter
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
 
    counter(${app_counter_card}) output -> input page(${ui_js_page})
-   'app_counter:(value=42)~create' -> input counter()
+   '${app_counter}:(value=42)~create' -> input counter()
 
    '';
 

@@ -5,10 +5,10 @@
   , ip_clone
   , ip_dispatcher
   , debug
+  # contracts
+  , generic_text
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
@@ -16,7 +16,7 @@
 
    model(${app_model}) output -> input view(${ui_js_edit_view}) output -> input out_dispatch()
 
-   'generic_text:(text="")' -> acc model()
+   '${generic_text}:(text="")' -> acc model()
 
    in_dispatch() output[create] -> input create_clone(${ip_clone})
    create_clone() clone[1] -> input view()

@@ -8,6 +8,9 @@
   , example_wrangle_anonymize
   , example_wrangle_stats
   , example_wrangle_print
+  # contracts
+  , list_triple
+  , path
   ,...}:
 
   let
@@ -28,9 +31,9 @@
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-    'list_triple:(triples = [])' -> acc aggr_triples(${example_wrangle_aggregate})
+    '${list_triple}:(triples = [])' -> acc aggr_triples(${example_wrangle_aggregate})
 
-   'path:(path="${example-data}/data")' -> input list_dir(${fs_dir_list}) output ->
+   '${path}:(path="${example-data}/data")' -> input list_dir(${fs_dir_list}) output ->
         input split(${dt_vector_split_by_outarr_count}) output[0] ->
             input procchunk0(${example_wrangle_processchunk}) output -> input[0] aggr_triples()
             // better to daisy chain, it's unfair allocation but better fits the programming paradigm
@@ -97,4 +100,3 @@
     maintainers = with upkeepers; [ sjmackenzie];
   };
 }
-

@@ -7,33 +7,47 @@
 { runCommand, fetchFromGitHub, git }:
 
 let
-version = "2016-08-21";
-rev = "c017b02d637a37f00e9c2607ab90435e689b8a8a";
+version = "2016-08-24";
+rev = "e0ff0e24af4ee3cae89752a1be9f30e6ea5a7f2b";
+  sha256 = "15si3p61nrc180g21gs54rgsd3dn7hai0f2cwhv696fxavj2amaf";
 
-src = fetchFromGitHub {
-  inherit rev;
+  src = fetchFromGitHub {
+      inherit rev;
+      inherit sha256;
 
-  owner = "rust-lang";
-  repo = "crates.io-index";
-  sha256 = "14fvav774cvkzy5mrllfhvk51s434v0s01pq6wrf7h7z5pi9jgdv";
-};
+      owner = "rust-lang";
+      repo = "crates.io-index";
+  };
 
 in
 
-runCommand "rustRegistry-${version}-${builtins.substring 0 7 rev}" {} ''
-mkdir -p $out
+runCommand "rustRegistry-${version}-${builtins.substring 0 7 rev}" { inherit src; } ''
+  # For some reason, cargo doesn't like fetchgit's git repositories, not even
+  # if we set leaveDotGit to true, set the fetchgit branch to 'master' and clone
+  # the repository (tested with registry rev
+  # 965b634156cc5c6f10c7a458392bfd6f27436e7e), failing with the message:
+  #
+  # "Target OID for the reference doesn't exist on the repository"
+  #
+  # So we'll just have to create a new git repository from scratch with the
+  # contents downloaded with fetchgit...
 
-cp -r ${src}/* $out/
+  mkdir -p $out
 
-cd $out
+  cp -r ${src}/* $out/
 
-git="${git}/bin/git"
+  cd $out
 
-$git init
-$git config --local user.email "example@example.com"
-$git config --local user.name "example"
-$git add .
-$git commit -m 'Rust registry commit'
+  git="${git}/bin/git"
 
-touch $out/touch . "$out/.cargo-index-lock"
+  $git init
+  $git config --local user.email "example@example.com"
+  $git config --local user.name "example"
+  $git add .
+  $git commit -m 'Rust registry commit'
+
+  echo "-----------------"
+  ls $out/
+  touch $out/touch . "$out/.cargo-index-lock"
+  cat $out/.cargo-index-lock
 ''

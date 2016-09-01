@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ generic_text generic_tuple_text ];
-  depsSha256 = "07wyl35nnbgjrrfr199znqakksc8xxp2i8gvq1ksp4ak7p227y0n";
+  depsSha256 = "00dnpk3ickx0njnr2n51vv46jj0hrs2svy15gy48rczcgz1lm3fh";
 
   meta = with stdenv.lib; {
     description = "Component: filter enter and escape keyup";

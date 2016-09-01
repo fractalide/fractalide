@@ -1,12 +1,14 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , maths_boolean_not
   , maths_boolean_print
+  # contracts
+  , maths_boolean
   , ...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
-   'maths_boolean:(boolean=false)' -> input not(${maths_boolean_not}) output -> input disp(${maths_boolean_print})
+   '${maths_boolean}:(boolean=false)' -> input not(${maths_boolean_not}) output -> input disp(${maths_boolean_print})
    '';
 
    meta = with stdenv.lib; {

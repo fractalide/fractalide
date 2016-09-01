@@ -36,6 +36,7 @@ pub extern "C" fn run(path_fbp: &str) {
     sched.add_component("sched", "development_fbp_scheduler.so");
     sched.add_component("iip", "development_capnp_encode.so");
     sched.add_component("contract_lookup", "contract_lookup.so");
+    sched.add_component("component_lookup", "component_lookup.so");
     sched.add_component("halter", "halter.so");
 
     let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
@@ -79,6 +80,9 @@ pub extern "C" fn run(path_fbp: &str) {
 
     sched.connect("sched".into(), "ask_path".into(), "contract_lookup".into(), "input".into()).expect("cannot connect");
     sched.connect("contract_lookup".into(), "output".into(), "sched".into(), "contract_path".into()).expect("cannot connect");
+
+    sched.connect("vm".into(), "ask_path".into(), "component_lookup".into(), "input".into()).expect("cannot connect");
+    sched.connect("component_lookup".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
 
     // IIP part
     sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");

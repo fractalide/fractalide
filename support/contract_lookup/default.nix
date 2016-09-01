@@ -1,15 +1,14 @@
-{ stdenv, buildFractalideComponent, upkeepers, all_contracts
-  , ...}:
+{ stdenv, buildFractalideComponent, upkeepers, all_contracts, ...}:
 
 buildFractalideComponent rec {
   name = "contract_lookup";
   src = ./.;
   contracts = [ all_contracts.path all_contracts.option_path ];
-  depsSha256 = "1xj84m395qciws90g8n03715819lilb1am34pq9xv0ghyhly6v9k";
+  depsSha256 = "1j634grsyc9hd4f7majfs7382rv4x4l29i6c21rsnmrlwzfby50v";
   configurePhase = ''
 runHook preConfigure
 substituteInPlace src/lib.rs --replace "nix-replace-me" "${stdenv.lib.concatMapStringsSep "\n"
-(pkg: ''\"${pkg.name}\" => { Some (\"${(stdenv.lib.last (stdenv.lib.splitString "/" pkg.outPath))}\")},'')
+(pkg: ''\"${pkg.name}\" => { Some (\"${pkg.outPath}\")},'')
 (stdenv.lib.attrValues all_contracts)}"
   '';
   meta = with stdenv.lib; {

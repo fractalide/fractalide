@@ -10,10 +10,10 @@
   , ui_js_placeholder
   , ui_js_tag
   , debug
+  # contracts
+  , generic_text
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
@@ -25,7 +25,7 @@
    input(${ui_js_tag}) output -> places[2] ph()
 
    text() output[dblclick] -> input disp_input(${ip_action}) output -> input input()
-   'generic_text:(text="display")' -> option disp_input()
+   '${generic_text}:(text="display")' -> option disp_input()
 
    input() output[keyup] -> input key_filter(${ui_js_edit_keyfilter})
    key_filter() validate -> input input()

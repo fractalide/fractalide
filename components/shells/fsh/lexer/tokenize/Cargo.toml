@@ -1,0 +1,14 @@
+
+[package]
+name = "shells_fsh_build_tokenize"
+version = "0.1.0"
+authors = ["test <test@test.com>"]
+
+[lib]
+name = "shells_fsh_build_tokenize"
+crate-type = ["dylib"]
+
+[dependencies]
+rustfbp = "*"
+capnp = "*"
+nom = "*"

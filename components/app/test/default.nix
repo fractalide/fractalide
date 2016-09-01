@@ -8,16 +8,19 @@
   , ui_js_flex
   , ui_js_placeholder
   , ui_js_edit
+  # contracts 
+  , js_create
+  , generic_text
   , ...}:
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
 
-   'js_create:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td(${ui_js_flex}) output -> input page(${ui_js_page})
+   '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td(${ui_js_flex}) output -> input page(${ui_js_page})
 
-   'generic_text:(text="initial")~create' -> input edit(${ui_js_edit}) output -> places[1] td()
+   '${generic_text}:(text="initial")~create' -> input edit(${ui_js_edit}) output -> places[1] td()
 
-   'js_create:(type="span", text="hello")~create' -> input t(${ui_js_tag}) output -> places[2] td()
+   '${js_create}:(type="span", text="hello")~create' -> input t(${ui_js_tag}) output -> places[2] td()
    '';
 
    meta = with stdenv.lib; {

@@ -23,6 +23,7 @@ rec {
   key_value = callPackage ./key/value {};
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
+  list_text = callPackage ./list/text {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_ndn_data = callPackage ./net/ndn/data {};
@@ -31,8 +32,8 @@ rec {
   path = callPackage ./path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};
   quadruple = callPackage ./quadruple {};
+  shell_commands = callPackage ./shell/commands {};
   url = callPackage ./url {};
   value_int64 = callPackage ./value/int64 {};
   value_string = callPackage ./value/string {};
 }
-

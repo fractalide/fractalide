@@ -6,10 +6,10 @@
   , ip_dispatcher
   , ui_js_flex
   , ui_js_tag
+  # contracts
+  , generic_text
   , ...}:
-  let
-  doc = import ../../../doc {};
-  in
+
   buildFractalideSubnet rec {
    src = ./.;
    subnet = ''
@@ -27,14 +27,14 @@
 
    button() output[click] -> input minus(${ip_action}) output -> input out_dispatch()
    button2() output[click] -> input add(${ip_action}) output -> input out_dispatch()
-   'generic_text:(text="minus")' -> option minus()
-   'generic_text:(text="add")' -> option add()
+   '${generic_text}:(text="minus")' -> option minus()
+   '${generic_text}:(text="add")' -> option add()
 
 
    input(${ui_js_tag}) output -> places[1] td()
 
    input() output[input] -> input delta(${ip_action}) output -> input out_dispatch()
-   'generic_text:(text="delta")' -> option delta()
+   '${generic_text}:(text="delta")' -> option delta()
 
    viewer() delta -> input input()
 

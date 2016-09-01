@@ -67,6 +67,9 @@ component! {
   fn run(&mut self) -> Result<()> {
     let mut prompt = Prompt::new();
     let mut input_buffer = Copperline::new();
+    println!("Copyright - Noware Ltd. Hong Kong");
+    println!("License - Mozilla Public License v2");
+    println!("Fractalide Shell - 0.1.0 - All your base are belong to us");
     loop {
         let line = input_buffer.read_line_utf8(&prompt.get_user_prompt()).ok();
         if line.is_none(){
@@ -86,8 +89,8 @@ component! {
           let mut variable = out_ip_output.init_root::<generic_text::Builder>();
           variable.set_text(command.as_str());
         }
-        prompt.print();
         self.ports.send("output", out_ip_output)?;
+        prompt.print();
     }
     Ok(())
   }
