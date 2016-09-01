@@ -19,7 +19,7 @@ pub struct Prompt {
 impl Prompt {
     pub fn new() -> Prompt {
         let mut object = Prompt {
-            user_prompt: "fsh > ".to_owned(),
+            user_prompt: "lain > ".to_owned(),
             cwd: "~/".to_owned(),
         };
         object.update_cwd();
@@ -57,7 +57,7 @@ impl Prompt {
 }
 
 component! {
-  shells_fsh_prompt, contracts(generic_text)
+  shells_lain_prompt, contracts(generic_text)
   inputs(),
   inputs_array(),
   outputs(output: generic_text),
@@ -69,7 +69,7 @@ component! {
     let mut input_buffer = Copperline::new();
     println!("Copyright - Noware Ltd. Hong Kong");
     println!("License - Mozilla Public License v2");
-    println!("Fractalide Shell - 0.1.0 - All your base are belong to us");
+    println!("Welcome to the Fractalide Shell.");
     loop {
         let line = input_buffer.read_line_utf8(&prompt.get_user_prompt()).ok();
         if line.is_none(){

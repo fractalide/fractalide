@@ -1,5 +1,5 @@
 { debug ? "--release"
-, subnet ? "fsh"
+, subnet ? "lain"
 , local-rustfbp ? ""
 , cache ? null
 , ...} @argsInput:

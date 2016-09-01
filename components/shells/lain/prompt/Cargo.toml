@@ -1,11 +1,11 @@
 
 [package]
-name = "shells_fsh_prompt"
+name = "shells_lain_prompt"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "shells_fsh_prompt"
+name = "shells_lain_prompt"
 crate-type = ["dylib"]
 
 [dependencies]
