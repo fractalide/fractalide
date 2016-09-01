@@ -9,6 +9,7 @@
   , development_fbp_scheduler
   , development_capnp_encode
   , contract_lookup
+  , component_lookup
   , ...}:
 
   buildFractalideSubnet rec {
@@ -32,6 +33,9 @@
    vm() output -> graph sched(${development_fbp_scheduler})
    sched() ask_path -> input contract_lookup(${contract_lookup})
    contract_lookup() output -> contract_path sched()
+
+   vm() ask_path -> input component_lookup(${component_lookup})
+   component_lookup() output -> new_path vm()
 
    sched() ask_graph -> input vm()
 

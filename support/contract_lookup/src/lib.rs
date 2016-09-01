@@ -20,7 +20,8 @@ component! {
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
         } else {
-            lookup_path(is_path)
+            //lookup_path(is_path)
+            Some(is_path)
         };
         let mut new_ip = IP::new();
         {
@@ -36,9 +37,17 @@ component! {
 
 }
 
-fn lookup_path(name: &str) -> Option<&str> {
-    match name {
-        nix-replace-me
-        _ => None,
-    }
-}
+// fn build_component(name: &str) //-> Option<&str>
+// {
+//     let output = Command::new("nix-build")
+//                      .arg("--argstr debug true")
+//                      .arg("--argstr cache $(./support/buildCache.sh)")
+//                      .arg("-I nixpkgs=/home/stewart/dev/fractalide/nixpkgs/")
+//                      .arg(format!("--argstr subnet {}", name))
+//                       .output()
+//                      .expect("failed to execute process");
+//
+//     println!("status: {}", output.status);
+//     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+//     println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+// }
