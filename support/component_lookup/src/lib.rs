@@ -3,6 +3,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 use std::fs;
+use std::process::Command;
 
 component! {
     component_lookup, contracts(path, option_path)
@@ -16,11 +17,11 @@ component! {
         let mut ip = try!(self.ports.recv("input"));
         let name: path::Reader = try!(ip.get_root());
         let is_path = try!(name.get_path());
-        // check if input is a name, i.e. maths_boolean_nand or path i.e. /nix/store/...
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
         } else {
-            lookup_path(is_path)
+            Some(is_path)
+            //lookup_path(is_path)
         };
         let mut new_ip = IP::new();
         {
@@ -36,9 +37,25 @@ component! {
 
 }
 
-fn lookup_path(name: &str) -> Option<&str> {
-    match name {
-        nix-replace-me
-        _ => None,
-    }
-}
+// fn build_component(name: &str) //-> Option<&str>
+// {
+//     //let output = Command::new(format!("nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) -I nixpkgs=/home/stewart/dev/fractalide/nixpkgs/ --argstr subnet {}", name))
+//     let output = Command::new("nix-build")
+//                      .arg("--argstr debug true")
+//                      .arg("--argstr cache $(./support/buildCache.sh)")
+//                      .arg("-I nixpkgs=/home/stewart/dev/fractalide/nixpkgs/")
+//                      .arg(format!("--argstr subnet {}", name))
+//                       .output()
+//                      .expect("failed to execute process");
+//
+//     println!("status: {}", output.status);
+//     println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+//     println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+// }
+
+// fn lookup_path(name: &str) -> Option<&str> {
+//     match name {
+//         nix-replace-me
+//         _ => None,
+//     }
+// }
