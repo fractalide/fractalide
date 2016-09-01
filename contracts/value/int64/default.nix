@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xd9a3ed03c95db4cc;
+
+   struct ValueInt64 {
+       value @0 :Text;
+   }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple value of type Int 64";

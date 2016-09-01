@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xd1376f2c4c24bf8b;
+
+  struct GenericListText {
+          listText @0 :List(Text);
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple list with text elements";

@@ -1,12 +1,11 @@
 { stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
-{ src, ... } @ args:
+{ src, contract, ... } @ args:
 
 let
 name = genName src;
-text = src + "/contract.capnp";
 contractText = writeTextFile {
   name = name;
-  text = builtins.readFile text;
+  text = contract;
   executable = false;
 };
 
@@ -21,5 +20,3 @@ in stdenv.mkCachedDerivation  (args // {
   ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp
   '';
 })
-
-

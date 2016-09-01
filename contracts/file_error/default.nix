@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0x9deaa106a95c1af8;
+
+  struct FileError {
+      notFound @0 :Text;
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes file errors";

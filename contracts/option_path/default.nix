@@ -2,6 +2,16 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xb547a1eef762172e;
+
+  struct OptionPath {
+      union {
+          path @0 :Text;
+          none @1 :Void;
+      }
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple path of type string";

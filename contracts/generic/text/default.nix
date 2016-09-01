@@ -2,6 +2,13 @@
 
 buildFractalideContract rec {
   src = ./.;
+  contract = ''
+  @0xb1fc090ed4d12aee;
+
+  struct GenericText {
+          text @0 :Text;
+  }
+  '';
 
   meta = with stdenv.lib; {
     description = "Contract: Describes a simple text field";
