@@ -70,6 +70,7 @@ component! {
     println!("Copyright - Noware Ltd. Hong Kong");
     println!("License - Mozilla Public License v2");
     println!("Welcome to the Fractalide Shell.");
+    println!("Type 'exit' then <ctl>-c to quit.");
     loop {
         let line = input_buffer.read_line_utf8(&prompt.get_user_prompt()).ok();
         if line.is_none(){
