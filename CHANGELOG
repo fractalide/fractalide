@@ -1,2 +1,6 @@
+01st Sept 2016
+- lazy evaluation contracts now supported in subnets
+- contracts are composable 
+
 16th July 2016
 - incremental recompilation - Paul Seitz
