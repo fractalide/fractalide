@@ -67,10 +67,10 @@ component! {
   fn run(&mut self) -> Result<()> {
     let mut prompt = Prompt::new();
     let mut input_buffer = Copperline::new();
+    println!("A shell for today, for tomorrow, for forever.");
     println!("Copyright - Noware Ltd. Hong Kong");
     println!("License - Mozilla Public License v2");
-    println!("Welcome to the Fractalide Shell.");
-    println!("Type 'exit' then <ctl>-c to quit.");
+    println!("Type 'exit' then <ctl>-c to quit.\n");
 
     loop {
         let line = input_buffer.read_line_utf8(&prompt.get_user_prompt()).ok();
