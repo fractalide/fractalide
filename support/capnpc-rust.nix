@@ -7,11 +7,11 @@ buildRustPackage rec {
   src = fetchFromGitHub {
     owner = "fractalide";
     repo = "capnpc-rust";
-    rev = "f096d38668512b1ce84e306b227e91a2ede174fe";
-    sha256 = "1ksfhwl695441wgcmpsgl3rmqpaf8d7yv53a9pjyjj3312kbjh7x";
+    rev = "de38049b5ec7342dc27a3ed388ecc6c2dda032a5";
+    sha256 = "185jmjxc6fzidjcidcryc6dw5vlbsv5yr4azhlz4nzpp241hn53m";
   };
 
-  depsSha256 = "10i91ljqsy70l57ccgffiq9nf42kcvjg1gy1pc7scjj2r66maha6";
+  depsSha256 = "10zqi7w5v2xpydxy2nqqr9j9n9w29k6fzfx3wy1qd3sk1wh3jglx";
 
   meta = with stdenv.lib; {
     description = "Cap'n Proto code generation for Rust.";
