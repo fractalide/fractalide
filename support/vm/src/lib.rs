@@ -9,20 +9,16 @@ extern crate capnp;
 use self::rustfbp::scheduler::{Scheduler, Comp};
 use self::rustfbp::ports::{IP, Ports};
 
-use std::thread;
-use std::env;
-use std::path::Path;
-
 use std::collections::HashMap;
 
 mod contract_capnp {
     include!("path_capnp.rs");
     include!("fbp_action.rs");
 }
-use contract_capnp::path;
 use contract_capnp::fbp_action;
 
 #[no_mangle]
+#[allow(unused_must_use)]
 pub extern "C" fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
@@ -96,7 +92,7 @@ pub extern "C" fn run(path_fbp: &str) {
     p.connect("add".into(), sched.get_sender("sched".into(), "action".into()).unwrap()).expect("unable to connect");
     let mut start_ip = IP::new();
     {
-        let mut builder: fbp_action::Builder = start_ip.init_root();
+        let builder: fbp_action::Builder = start_ip.init_root();
         let mut add = builder.init_add();
         add.set_name("main");
         add.set_comp(&path_fbp);

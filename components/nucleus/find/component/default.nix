@@ -7,6 +7,7 @@ buildFractalideComponent rec {
   src = ./.;
   contracts = [ path option_path ];
   depsSha256 = "0fcqiqgl36sy6iqmln1jpqwhk62sn0l6ilg3lvcayi8p2hbd5yrb";
+  buildInputs = [ nix ];
 
   meta = with stdenv.lib; {
     description = "Component: Looks up the versioned name, given the common component name";

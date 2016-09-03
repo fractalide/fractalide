@@ -1,7 +1,8 @@
 { stdenv, buildFractalideSubnet, upkeepers
-  , shells_fsh_prompt
-  , shells_fsh_lexer
-  , shells_fsh_generator
+  , shells_lain_prompt
+  , shells_lain_pipe
+  , shells_lain_parse
+  , shells_lain_nix
   , io_print
   # contracts
   , shell_commands
@@ -9,14 +10,15 @@
 
   buildFractalideSubnet rec {
    src = ./.;
-   name = "fsh";
+   name = "lain";
    subnet = ''
    '${shell_commands}:(commands=[ (key="cd", val="shells_commands_cd"),(key="ls", val="shells_commands_ls"),(key="pwd", val="shells_commands_pwd")])~create' ->
-   commands lexer()
+   option parse()
 
-   prompt(${shells_fsh_prompt}) output ->
-   input lexer(${shells_fsh_lexer}) output ->
-   input parser(${shells_fsh_generator}) output ->
+   prompt(${shells_lain_prompt}) output ->
+   input pipe(${shells_lain_pipe}) output ->
+   input parse(${shells_lain_parse}) output ->
+   input nix(${shells_lain_nix}) output ->
    input print_list_text(${io_print})
    '';
 

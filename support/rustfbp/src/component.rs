@@ -25,9 +25,9 @@ pub trait Component {
 /// The component macro.
 ///
 /// It helps to define a component, by defining the input and output ports, if there is an option or an acc port, ...
-/// 
+///
 /// `contracts()` and `portal()` are optional.
-/// 
+///
 /// Example :
 ///
 /// ```rust,ignore
@@ -150,6 +150,7 @@ macro_rules! component {
         /* Global component */
 
         #[allow(dead_code)]
+        #[allow(non_camel_case_types)]
         pub struct $name {
             name: String,
             pub ports: Ports,
