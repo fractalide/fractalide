@@ -12,7 +12,7 @@
     unpackPhase = "true";
     installPhase = ''
     runHook preInstall
-    echo "SUBNET"
+    #echo "SUBNET"
     mkdir -p $out/lib
     cp  ${subnet-txt} $out/lib/lib.subnet
     '';

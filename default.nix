@@ -54,7 +54,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
             if [ ! -h "${cache}/$name" ]; then
               echo "Warning: ${cache}/$name does not exist, proceeding without cache. A new cache will be created here: $cache."
             else if [ -d ${cache}/$name/target ] && [ -f ${cache}/$name/MD5SUMS ]; then
-              echo "CACHE HIT for $name"
+              #echo "CACHE HIT for $name"
               # Restore the old target/ directory, with its MD5SUMS from the cache
               cp -r ${cache}/$name/target ./
               chmod +w -R ./target
@@ -62,7 +62,7 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 
               # Touch any files whose MD5SUM has changed since the last build
               join $cache/$name/MD5SUMS MD5SUMS -v 1 | cut -d' ' -f 2 | while read filename; do
-                echo "$filename" has changed
+                #echo "$filename" has changed
                 touch "$filename" || true
               done
 
@@ -72,8 +72,8 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
               find ./target -print | while read filename; do
                 touch -d "$(date -R -r "$filename") - 2 hours" "$filename"
               done
-            else
-              echo "CACHE NOT HIT for $name "
+            #else
+              #echo "CACHE NOT HIT for $name "
             fi
            fi
           '' + preCon;
@@ -85,8 +85,8 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
             mkdir -p $cache/$name
             if [ -d ./target  ]; then
                 cp -R ./target $cache/$name/
-            else
-                echo "Warning: ./target NOT COPIED $name"
+            #else
+                #echo "Warning: ./target NOT COPIED $name"
             fi
             if [ ! -h $out/buildCache ]; then
               ln -s $cache/ $out/buildCache

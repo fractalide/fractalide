@@ -33,7 +33,7 @@
     configurePhase = args.configurePhase or "runHook preConfigure";
 
     postUnpack = ''
-    echo "Using cargo deps from $cargoDeps"
+    #echo "Using cargo deps from $cargoDeps"
 
     cp -r "$cargoDeps" deps
     chmod +w deps -R
@@ -54,14 +54,14 @@
     cd deps
     indexHash="$(basename $(echo registry/index/*))"
 
-    echo "Using indexHash '$indexHash'"
+    #echo "Using indexHash '$indexHash'"
 
     rm -rf -- "registry/cache/$indexHash" \
     "registry/index/$indexHash"
 
     mv registry/cache/HASH "registry/cache/$indexHash"
 
-    echo "Using rust registry from $rustRegistry"
+    #echo "Using rust registry from $rustRegistry"
     ln -s "$rustRegistry" "registry/index/$indexHash"
 
     # Retrieved the Cargo.lock file which we saved during the fetch
