@@ -4,7 +4,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    shells_fsh_generator_nix, contracts(generic_text, list_text)
+    shells_lain_flow, contracts(generic_text, list_text)
     inputs(input: list_text),
     inputs_array(),
     outputs(output: generic_text),

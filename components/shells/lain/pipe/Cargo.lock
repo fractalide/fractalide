@@ -1,5 +1,5 @@
 [root]
-name = "shells_fsh_parse_pipe"
+name = "shells_lain_pipe"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",

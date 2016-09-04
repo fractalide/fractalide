@@ -1,11 +1,11 @@
 
 [package]
-name = "shells_fsh_generator_nix"
+name = "shells_lain_flow"
 version = "0.1.0"
 authors = ["test <test@test.com>"]
 
 [lib]
-name = "shells_fsh_generator_nix"
+name = "shells_lain_flow"
 crate-type = ["dylib"]
 
 [dependencies]
