@@ -10,8 +10,8 @@ buildFractalideComponent rec {
   depsSha256 = "1a5f8bygx4iz0dxclw25chjfvamfyw74hx4fw16n9g4r63gy96lf";
 
   meta = with stdenv.lib; {
-    description = "Component: shells_fsh_build_names: commands go in and flow script comes out.";
-    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
+    description = "Component: shells_lain_parse: commands go in and flow script comes out.";
+    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/shells/lain/parse;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

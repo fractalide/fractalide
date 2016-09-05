@@ -1,5 +1,5 @@
 [root]
-name = "shells_fsh_generator_nix"
+name = "shells_lain_flow"
 version = "0.1.0"
 dependencies = [
  "capnp 0.7.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -116,4 +116,3 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-

@@ -10,7 +10,7 @@ buildFractalideComponent rec {
   depsSha256 = "0gsf9cl0s6yvhma8iidvksp5pk4lb169qk0f2slqhf09rgdarpak";
 
   meta = with stdenv.lib; {
-    description = "Component: shells_lain_parse_pipe: create pipes.";
+    description = "Component: shells_lain_pipe: create pipes.";
     homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/shells/lain/parse/pipe;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];

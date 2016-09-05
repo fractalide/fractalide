@@ -12,7 +12,7 @@ buildFractalideComponent rec {
 
   meta = with stdenv.lib; {
     description = "Component: shells_fsh: a shell prompt.";
-    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
+    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/shell/lain/pipe;
     license = with licenses; [ mpl20 ];
     maintainers = with upkeepers; [ dmichiels sjmackenzie];
   };

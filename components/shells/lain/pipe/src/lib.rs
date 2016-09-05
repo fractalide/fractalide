@@ -6,7 +6,7 @@ extern crate capnp;
 use std::str;
 
 component! {
-    shells_fsh_parse_pipe, contracts(generic_text, list_text)
+    shells_lain_pipe, contracts(generic_text, list_text)
     inputs(input: generic_text),
     inputs_array(),
     outputs(output: list_text),

@@ -2,7 +2,7 @@
   , shells_lain_prompt
   , shells_lain_pipe
   , shells_lain_parse
-  , shells_lain_nix
+  , shells_lain_flow
   , io_print
   # contracts
   , shell_commands
@@ -18,8 +18,8 @@
    prompt(${shells_lain_prompt}) output ->
    input pipe(${shells_lain_pipe}) output ->
    input parse(${shells_lain_parse}) output ->
-   input nix(${shells_lain_nix}) output ->
-   input print_list_text(${io_print})
+   input flow(${shells_lain_flow}) output ->
+   input print(${io_print})
    '';
 
    meta = with stdenv.lib; {

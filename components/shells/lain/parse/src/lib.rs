@@ -20,7 +20,7 @@ pub fn to_string(s: &[u8]) -> &str {
 }
 
 component! {
-    shells_fsh_build_names, contracts(list_text, shell_commands)
+    shells_lain_parse, contracts(list_text, shell_commands)
     inputs(input: list_text),
     inputs_array(),
     outputs(output: list_text),
