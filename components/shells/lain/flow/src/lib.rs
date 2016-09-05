@@ -20,15 +20,15 @@ component! {
         let mut i :usize = 0;
         for cmd in cmd_iterator.iter() {
             if count == 1 {
-                flow.push_str(format!("{}({})", cmd?, cmd?).as_str());
+                flow.push_str(format!("{}_{}({})", cmd?, i, cmd?).as_str());
             } else {
                 if count > 1 && i == 0 {
-                    flow.push_str(format!("{}({}) output -> ", cmd?, cmd?).as_str());
+                    flow.push_str(format!("{}_{}({}) output -> ", cmd?, i, cmd?).as_str());
                 } else {
                     if (count - 1) == i {
-                        flow.push_str(format!("input {}({})", cmd?, cmd?).as_str());
+                        flow.push_str(format!("input {}_{}({})", cmd?, i, cmd?).as_str());
                     } else {
-                        flow.push_str(format!("input {}({}) output -> ", cmd?, cmd?).as_str());
+                        flow.push_str(format!("input {}_{}({}) output -> ", cmd?, i, cmd?).as_str());
                     }
                 }
             }
