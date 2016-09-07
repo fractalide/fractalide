@@ -31,7 +31,7 @@ component! {
         match self.ports.try_recv("file_error") {
             Ok(mut ip) => {
                 let error: file_error::Reader = try!(ip.get_root());
-                println!("Subnet not exist at : {}\n", try!(error.get_not_found()));
+                println!("Subnet doesn't exist at file location : {}\n", try!(error.get_not_found()));
             }
             _ => {}
         };

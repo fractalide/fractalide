@@ -44,13 +44,10 @@ fn build_component(name: &str) -> String {
                             .args(&["--argstr", "debug", "true"
                             , "--argstr", "cache", "$(./support/buildCache.sh)"
                             , "-I", "nixpkgs=/home/stewart/dev/fractalide/nixpkgs/"
-                            , "--argstr", "subnet", format!("{}", name).as_str()])
+                            , "-A", format!("components.{}", name).as_str()])
                             .output()
                             .expect("failed to execute process");
 
-    println!("status: {}", output.status);
-    println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-    println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
     match String::from_utf8(output.stdout) {
         Ok(v) => v,
         Err(e) => panic!("Name of component contains invalid UTF-8 characters: {}", e),

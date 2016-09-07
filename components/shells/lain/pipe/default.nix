@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [generic_text list_text];
-  depsSha256 = "0gsf9cl0s6yvhma8iidvksp5pk4lb169qk0f2slqhf09rgdarpak";
+  depsSha256 = "1600c5mwyp3v8cnr9rrnjbmlwgn93vch8yhmid5z5fwjqx4dgw1a";
 
   meta = with stdenv.lib; {
     description = "Component: shells_lain_pipe: create pipes.";

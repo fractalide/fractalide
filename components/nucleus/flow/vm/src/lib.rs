@@ -114,12 +114,12 @@ fn add_graph(component: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_
         let mut is_subnet = true;
         let path = match new_path {
             Some(hash_name) => {
-                let path = format!("{}{}", hash_name, "/lib/libcomponent.so");
+                let path = format!("{}{}", hash_name.trim(), "/lib/libcomponent.so");
                 if fs::metadata(&path).is_ok() {
                     is_subnet = false;
                     path
                 } else {
-                    format!("{}{}", hash_name, "/lib/lib.subnet")
+                    format!("{}{}", hash_name.trim(), "/lib/lib.subnet")
                 }
             },
             None => {

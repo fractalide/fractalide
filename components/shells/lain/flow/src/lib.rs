@@ -4,10 +4,10 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    shells_lain_flow, contracts(generic_text, list_text)
+    shells_lain_flow, contracts(list_text, file_desc)
     inputs(input: list_text),
     inputs_array(),
-    outputs(output: generic_text),
+    outputs(output: file_desc),
     outputs_array(),
     option(),
     acc(),
@@ -34,12 +34,29 @@ component! {
             }
             i += 1;
         }
-        let mut out_ip_output = IP::new();
+
+        // Send start
+        let mut new_ip = IP::new();
         {
-            let mut variable = out_ip_output.init_root::<generic_text::Builder>();
-            variable.set_text(flow.as_str());
+            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            ip.set_start("flowscript");
         }
-        self.ports.send("output", out_ip_output)?;
+        self.ports.send("output", new_ip)?;
+
+        let mut new_ip = IP::new();
+        {
+            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            ip.set_text(&flow.as_str());
+        }
+        self.ports.send("output", new_ip)?;
+
+        // Send stop
+        let mut new_ip = IP::new();
+        {
+            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            ip.set_end("flowscript");
+        }
+        self.ports.send("output", new_ip)?;
         Ok(())
     }
 }
