@@ -5,7 +5,7 @@ extern crate capnp;
 
 #[macro_use]
 pub mod parsers;
-use parsers::get_command;
+use parsers::{parse_pipe_section, PipeSection, ParserError, Command};
 
 #[macro_use]
 extern crate nom;
@@ -20,10 +20,10 @@ pub fn to_string(s: &[u8]) -> &str {
 }
 
 component! {
-    shells_lain_parse, contracts(list_text, shell_commands)
+    shells_lain_parse, contracts(list_text, shell_commands, list_tuple)
     inputs(input: list_text),
     inputs_array(),
-    outputs(output: list_text),
+    outputs(output: list_tuple),
     outputs_array(),
     option(shell_commands),
     acc(),
@@ -47,15 +47,18 @@ component! {
                 let mut commands = ip.init_texts(input?.len() as u32);
                 let mut i: u32 = 0;
                 for cmd in input?.iter() {
-                    match get_command(cmd?.as_bytes()) {
-                        IResult::Incomplete(x) => println!("incomplete: {:?}", x),
-                        IResult::Error(e) => println!("error: {:?}", e),
-                        IResult::Done(_, out) => {
-                            match command_lookup.get(to_string(out)) {
-                                Some(command_location) => {commands.borrow().set(i, command_location);},
-                                None => {unknown_commands.insert(cmd?);},
+                    match parse_pipe_section(cmd?) {
+                        Ok(parsed) => {
+                            match parsed.command {
+                                Command::Named(cow) => { println!("{:?}", cow.into_owned().as_str());}
+                                // match command_lookup.get(cow.into_owned().as_str()) {
+                                //     Some(command_location) => {println!("{:?}", command_location);commands.borrow().set(i, command_location);},
+                                //     None => {unknown_commands.insert(cmd?);},
+                                // },
+                                Command::Numeric(_) => {},
                             }
                         },
+                        Err(error) => {println!("an error occurred: {}", error)},
                     }
                     i += 1;
                 }
