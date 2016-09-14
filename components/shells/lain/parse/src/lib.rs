@@ -3,21 +3,12 @@
 extern crate rustfbp;
 extern crate capnp;
 
-#[macro_use]
-pub mod parsers;
-use parsers::{parse_pipe_section, PipeSection, ParserError, Command};
+use std::collections::HashSet;
 
 #[macro_use]
 extern crate nom;
-use nom::IResult;
 
-use std::collections::HashSet;
-
-use std::str::{from_utf8_unchecked};
-
-pub fn to_string(s: &[u8]) -> &str {
-    unsafe { from_utf8_unchecked(s) }
-}
+mod parsers;
 
 component! {
     shells_lain_parse, contracts(list_text, shell_commands, list_tuple)
@@ -47,19 +38,20 @@ component! {
                 let mut commands = ip.init_texts(input?.len() as u32);
                 let mut i: u32 = 0;
                 for cmd in input?.iter() {
-                    match parse_pipe_section(cmd?) {
-                        Ok(parsed) => {
-                            match parsed.command {
-                                Command::Named(cow) => { println!("{:?}", cow.into_owned().as_str());}
-                                // match command_lookup.get(cow.into_owned().as_str()) {
-                                //     Some(command_location) => {println!("{:?}", command_location);commands.borrow().set(i, command_location);},
-                                //     None => {unknown_commands.insert(cmd?);},
-                                // },
-                                Command::Numeric(_) => {},
-                            }
-                        },
-                        Err(error) => {println!("an error occurred: {}", error)},
-                    }
+                    println!("{:?}", cmd?);
+                    // match parse_pipe_section(cmd?) {
+                    //     Ok(parsed) => {
+                    //         match parsed.command {
+                    //             Command::Named(cow) => { println!("{:?}", cow.into_owned().as_str());}
+                    //             // match command_lookup.get(cow.into_owned().as_str()) {
+                    //             //     Some(command_location) => {println!("{:?}", command_location);commands.borrow().set(i, command_location);},
+                    //             //     None => {unknown_commands.insert(cmd?);},
+                    //             // },
+                    //             Command::Numeric(_) => {},
+                    //         }
+                    //     },
+                    //     Err(error) => {println!("an error occurred: {}", error)},
+                    // }
                     i += 1;
                 }
             }
