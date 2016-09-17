@@ -1,14 +1,14 @@
 
 { stdenv, buildFractalideComponent, genName, upkeepers
 # contracts:
-, file_desc, list_text
+, file_desc, list_list_list_text
 
 , ...}:
 
 buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
-  contracts = [file_desc list_text];
+  contracts = [file_desc list_list_list_text];
   depsSha256 = "0xvma0riaqbiya9lqf31lf12d7pg39q23vnnrxjr06j5633lampa";
 
   meta = with stdenv.lib; {

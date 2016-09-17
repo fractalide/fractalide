@@ -9,7 +9,6 @@ use self::error::{
     SizeError,
 };
 
-
 mod error;
 use std::str;
 
@@ -25,7 +24,7 @@ fn is_not_cell_end(c: u8) -> bool {
 macro_rules! separated_list2 (
   ($i:expr, $sep:ident!( $($args:tt)* ), $submac:ident!( $($args2:tt)* )) => (
     {
-      let mut res   = ::std::vec::Vec::new();
+      let mut res = ::std::vec::Vec::new();
       let mut input = $i;
 
       // get the first element
@@ -205,6 +204,7 @@ fn check_get_cell() {
 
     match get_cell(f) {
         IResult::Done(_, out) => assert_eq!(out, b"cd"),
+        //IResult::Done(_, out) => assert_eq!(out, vec!("cd".to_owned(), "key1=val1".to_owned(), "key2=val2".to_owned())),
         IResult::Incomplete(x) => panic!("incomplete: {:?}", x),
         IResult::Error(e) => panic!("error: {:?}", e),
     }
@@ -259,7 +259,6 @@ fn check_get_lines_values() {
                        vec!("ps".to_owned(), "pwd".to_owned()),
                        vec!("grep".to_owned(), "nc".to_owned()))));
 }
-
 
 #[test]
 fn check_parse_lain_lang() {

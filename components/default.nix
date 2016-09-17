@@ -73,7 +73,6 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   print_with_feedback = callPackage ./print/with/feedback {};
   shells_lain_flow = callPackage ./shells/lain/flow {};
   shells_lain_parse = callPackage ./shells/lain/parse {};
-  shells_lain_pipe = callPackage ./shells/lain/pipe {};
   shells_lain_prompt = callPackage ./shells/lain/prompt {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};

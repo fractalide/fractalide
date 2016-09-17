@@ -1,6 +1,6 @@
-{ pkgs, support, ... }:
+{ pkgs, support, contracts, ... }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // support);
+callPackage = pkgs.lib.callPackageWith (pkgs // contracts // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
@@ -24,6 +24,7 @@ rec {
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
   list_text = callPackage ./list/text {};
+  list_list_list_text = callPackage ./list/list/list/text {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_ndn_data = callPackage ./net/ndn/data {};

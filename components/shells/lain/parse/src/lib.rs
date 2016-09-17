@@ -9,61 +9,70 @@ use std::collections::HashSet;
 extern crate nom;
 
 mod parsers;
+use parsers::parse_lain_lang;
 
 component! {
-    shells_lain_parse, contracts(list_text, shell_commands, list_tuple)
-    inputs(input: list_text),
+    shells_lain_parse, contracts(generic_text, list_list_list_text)
+    inputs(input: generic_text),
     inputs_array(),
-    outputs(output: list_tuple),
+    outputs(output: list_list_list_text),
     outputs_array(),
-    option(shell_commands),
+    option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip_option = self.recv_option();
-        let mut commands_reader: shell_commands::Reader = ip_option.get_root()?;
-        let mut command_lookup = HashMap::new();
-        for cmd in commands_reader.get_commands()?.iter() {
-            command_lookup.insert(cmd.get_key()?.clone(), cmd.get_val()?.clone());
-        }
-        loop {
-            let mut ip_input = self.ports.recv("input")?;
-            let input = {
-                let input_reader: list_text::Reader = ip_input.get_root()?;
-                input_reader.get_texts()
-            };
-            let mut unknown_commands: HashSet<&str> = HashSet::new();
-            let mut out_ip_output = IP::new();
-            {
-                let ip = out_ip_output.init_root::<list_text::Builder>();
-                let mut commands = ip.init_texts(input?.len() as u32);
-                let mut i: u32 = 0;
-                for cmd in input?.iter() {
-                    println!("{:?}", cmd?);
-                    // match parse_pipe_section(cmd?) {
-                    //     Ok(parsed) => {
-                    //         match parsed.command {
-                    //             Command::Named(cow) => { println!("{:?}", cow.into_owned().as_str());}
-                    //             // match command_lookup.get(cow.into_owned().as_str()) {
-                    //             //     Some(command_location) => {println!("{:?}", command_location);commands.borrow().set(i, command_location);},
-                    //             //     None => {unknown_commands.insert(cmd?);},
-                    //             // },
-                    //             Command::Numeric(_) => {},
-                    //         }
-                    //     },
-                    //     Err(error) => {println!("an error occurred: {}", error)},
-                    // }
-                    i += 1;
+        let mut ip_input = self.ports.recv("input")?;
+        let raw_command = {
+            let input_reader: generic_text::Reader = ip_input.get_root()?;
+            input_reader.get_text()
+        };
+        let parsed_commands = parse_lain_lang(raw_command?);
+        let mock_commands =
+            vec![ // file
+                vec![ // line
+                    vec![ // pipes
+                        vec![ "ls1", "-l", "-a" ], // command + args
+                        vec![ "ls1", "-l", "-a" ],
+                    ],
+                    vec![
+                        vec![ "ls1", "-l", "-a" ],
+                        vec![ "ls1", "-l", "-a" ],
+                    ],
+                ],
+                vec![
+                    vec![
+                        vec![ "ls1", "-l", "-a" ],
+                        vec![ "ls1", "-l", "-a" ],
+                    ],
+                    vec![
+                        vec![ "ls1", "-l", "-a" ],
+                        vec![ "ls1", "-l", "-a" ],
+                    ],
+                ],
+            ];
+        //println!("{:?}", parsed_commands );
+        let mut out_ip = IP::new();
+        {
+            let mut ip = out_ip.init_root::<list_list_list_text::Builder>();
+            for file in mock_commands {
+                let mut line_count: u32 = 0;
+                let mut list_0 = ip.borrow().init_list(file.len() as u32);
+                for line in file {
+                    let mut pipe_count: u32 = 0;
+                    let mut list_1 = list_0.borrow().get(line_count).init_list(line.len() as u32);
+                    for pipes in line {
+                        let mut argument_count: u32 = 0;
+                        let mut list_of_texts = list_1.borrow().get(pipe_count).init_texts(pipes.len() as u32);
+                        for argument in pipes {
+                            list_of_texts.borrow().set(argument_count, argument);
+                            argument_count += 1;
+                        }
+                        pipe_count += 1;
+                    }
+                    line_count += 1;
                 }
             }
-            if unknown_commands.is_empty() {
-                self.ports.send("output", out_ip_output)?;
-            }
-            else {
-                for cmd in unknown_commands {
-                    println!("{}: command not found", cmd);
-                }
-            }
         }
+        self.ports.send("output", out_ip)?;
         Ok(())
     }
 }
