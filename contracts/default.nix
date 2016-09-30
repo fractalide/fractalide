@@ -24,7 +24,7 @@ rec {
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
   list_text = callPackage ./list/text {};
-  list_list_list_text = callPackage ./list/list/list/text {};
+  list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_ndn_data = callPackage ./net/ndn/data {};

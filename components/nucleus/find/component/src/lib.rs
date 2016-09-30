@@ -49,7 +49,7 @@ fn build_component(name: &str) -> String {
                             .expect("failed to execute process");
 
     match String::from_utf8(output.stdout) {
-        Ok(v) => v,
+        Ok(v) => String::from(v.trim()),
         Err(e) => panic!("Name of component contains invalid UTF-8 characters: {}", e),
     }
 }

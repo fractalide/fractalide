@@ -3,7 +3,6 @@
   , shells_lain_parse
   , shells_lain_flow
   , nucleus_flow_subnet
-  , io_print
   , ...}:
 
   buildFractalideSubnet rec {
@@ -13,8 +12,7 @@
      prompt(${shells_lain_prompt}) output ->
      input parse(${shells_lain_parse}) output ->
      input flow(${shells_lain_flow}) output ->
-     flowscript scheduler(${nucleus_flow_subnet}) outputs ->
-     input print(${io_print})
+     flowscript scheduler(${nucleus_flow_subnet})
    '';
 
    meta = with stdenv.lib; {

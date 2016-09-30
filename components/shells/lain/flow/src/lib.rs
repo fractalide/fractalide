@@ -4,8 +4,8 @@ extern crate rustfbp;
 extern crate capnp;
 
 component! {
-    shells_lain_flow, contracts(list_list_list_text, file_desc)
-    inputs(input: list_list_list_text),
+    shells_lain_flow, contracts(list_command, file_desc)
+    inputs(input: list_command),
     inputs_array(),
     outputs(output: file_desc),
     outputs_array(),
@@ -13,40 +13,34 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip_input = self.ports.recv("input")?;
+        let input_reader: list_command::Reader = ip_input.get_root()?;
+        let mut cmds = input_reader.borrow().get_commands()?;
         let mut flow = String::from("");
-        let input_reader: list_list_list_text::Reader = ip_input.get_root()?;
-        let mut row_iterator = input_reader.borrow().get_list()?;
-        let mut row_count :usize = 0;
-        for row in row_iterator.iter() {
-            let mut column_count :usize = 0;
-            let mut column_iterator = row.borrow().get_list()?;
-            for column in column_iterator.iter() {
-                let mut arg_count :usize = 0;
-                let mut arg_iterator = column.borrow().get_texts()?;
-                for arg in arg_iterator.iter() {
-                    println!("{:?}", arg? );
+        let mut args: Vec<String> = Vec::new();
+        let mut cmd_count :usize = 0;
+        let cmd_len :usize = cmds.iter().len();
+        for cmd in cmds.iter() {
+            let mut formatted_args = String::from("");
+            formatted_args.push_str(format!("'generic_text:(text=\"initial{1}\")' -> option {0}_{1}()", cmd.get_name()?, cmd_count).as_str());
+            args.push(formatted_args);
+            if cmd_len == 1 { // only one command in the list
+                flow.push_str(format!("{0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
+                args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
+            } else { // more than one command
+                if cmd_len > 1 && cmd_count == 0 { // the first command
+                    flow.push_str(format!("{0}_{1}({0}) output -> ", cmd.get_name()?, cmd_count).as_str());
+                    args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
+                } else { // check if the last command or not
+                    if (cmd_len - 1) == cmd_count { // last command
+                        flow.push_str(format!("input {0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
+                    } else { // not the first command, and not the last command
+                        flow.push_str(format!("input {0}_{1}({0}) output -> ", cmd.get_name()?, cmd_count).as_str());
+                    }
                 }
-                column_count += 1;
             }
-            row_count += 1;
+            cmd_count += 1;
         }
-        //
-        // for row in row_iterator.iter() {
-        //     if count == 1 {
-        //         flow.push_str(format!("{0}_{1}({0})", row?, i).as_str());
-        //     } else {
-        //         if count > 1 && i == 0 {
-        //             flow.push_str(format!("{0}_{1}({0}) output -> ", row?, i).as_str());
-        //         } else {
-        //             if (count - 1) == i {
-        //                 flow.push_str(format!("input {0}_{1}({0})", row?, i).as_str());
-        //             } else {
-        //                 flow.push_str(format!("input {0}_{1}({0}) output -> ", row?, i).as_str());
-        //             }
-        //         }
-        //     }
-        //     i += 1;
-        // }
+        println!("{:?}", flow);
 
         // Send start
         let mut new_ip = IP::new();
@@ -62,6 +56,16 @@ component! {
             ip.set_text(&flow.as_str());
         }
         self.ports.send("output", new_ip)?;
+
+        for arg in args {
+            println!("{:?}", arg);
+            let mut new_ip = IP::new();
+            {
+                let mut ip = new_ip.init_root::<file_desc::Builder>();
+                ip.set_text(&arg.as_str());
+            }
+            self.ports.send("output", new_ip)?;
+        }
 
         // Send stop
         let mut new_ip = IP::new();

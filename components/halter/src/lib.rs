@@ -4,7 +4,7 @@ extern crate capnp;
 extern crate rustfbp;
 
 component! {
-    hatler,
+    halter,
     inputs(input: any),
     inputs_array(),
     outputs(),

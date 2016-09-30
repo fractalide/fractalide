@@ -1,4 +1,5 @@
 #![feature(question_mark)]
+
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -8,14 +9,20 @@ use std::collections::HashSet;
 #[macro_use]
 extern crate nom;
 
-mod parsers;
-use parsers::parse_lain_lang;
+//mod parsers;
+//use parsers::parse_lain_lang;
+
+struct Command {
+    name: String,
+    singles: Vec<String>,
+    kvs: Vec<(String, String)>,
+}
 
 component! {
-    shells_lain_parse, contracts(generic_text, list_list_list_text)
+    shells_lain_parse, contracts(generic_text, list_command)
     inputs(input: generic_text),
     inputs_array(),
-    outputs(output: list_list_list_text),
+    outputs(output: list_command),
     outputs_array(),
     option(),
     acc(),
@@ -25,51 +32,69 @@ component! {
             let input_reader: generic_text::Reader = ip_input.get_root()?;
             input_reader.get_text()
         };
-        let parsed_commands = parse_lain_lang(raw_command?);
-        let mock_commands =
-            vec![ // file
-                vec![ // line
-                    vec![ // pipes
-                        vec![ "ls1", "-l", "-a" ], // command + args
-                        vec![ "ls1", "-l", "-a" ],
-                    ],
-                    vec![
-                        vec![ "ls1", "-l", "-a" ],
-                        vec![ "ls1", "-l", "-a" ],
-                    ],
-                ],
-                vec![
-                    vec![
-                        vec![ "ls1", "-l", "-a" ],
-                        vec![ "ls1", "-l", "-a" ],
-                    ],
-                    vec![
-                        vec![ "ls1", "-l", "-a" ],
-                        vec![ "ls1", "-l", "-a" ],
-                    ],
-                ],
-            ];
-        //println!("{:?}", parsed_commands );
+        //let parsed_commands = parse_lain_lang(raw_command?);
+        let commands =
+        vec![
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 0")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 1")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 2")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 3")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+        ];
         let mut out_ip = IP::new();
         {
-            let mut ip = out_ip.init_root::<list_list_list_text::Builder>();
-            for file in mock_commands {
-                let mut line_count: u32 = 0;
-                let mut list_0 = ip.borrow().init_list(file.len() as u32);
-                for line in file {
-                    let mut pipe_count: u32 = 0;
-                    let mut list_1 = list_0.borrow().get(line_count).init_list(line.len() as u32);
-                    for pipes in line {
-                        let mut argument_count: u32 = 0;
-                        let mut list_of_texts = list_1.borrow().get(pipe_count).init_texts(pipes.len() as u32);
-                        for argument in pipes {
-                            list_of_texts.borrow().set(argument_count, argument);
-                            argument_count += 1;
-                        }
-                        pipe_count += 1;
+            let mut ip = out_ip.init_root::<list_command::Builder>();
+            let mut cmd_count: u32 = 0;
+            let mut list = ip.borrow().init_commands(commands.len() as u32);
+            for command in commands {
+                list.borrow().get(cmd_count).set_name(command.name.as_str());
+                {
+                    let mut slist = list.borrow().get(cmd_count).init_singles(command.singles.len() as u32);
+                    let mut singles_count: u32 = 0;
+                    for single in command.singles {
+                        slist.borrow().set(singles_count, single.as_str());
+                        singles_count += 1;
                     }
-                    line_count += 1;
                 }
+                let mut kvlist = list.borrow().get(cmd_count).init_kvs(command.kvs.len() as u32);
+                let mut kv_count: u32 = 0;
+                for kv in command.kvs {
+                    kvlist.borrow().get(kv_count).set_first(kv.0.as_str());
+                    kvlist.borrow().get(kv_count).set_second(kv.1.as_str());
+                    kv_count += 1;
+                }
+                cmd_count += 1;
             }
         }
         self.ports.send("output", out_ip)?;
