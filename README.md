@@ -7,7 +7,7 @@
 
 ## Welcome
 
-**Fractalide is a programming platform with Nix, the functional package manager, at its heart. All presented via a simple shell, with familiar syntax, called Lain**.
+**Fractalide is a rolling release programming platform, with the aim of making software distribution cheaper and easier, yet forcing the programmer to implement high quality, modular, message passing components; all presented via familiar shell, called Lain.**
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
@@ -21,14 +21,8 @@ The Lain shell makes use of [Nix](http://nixos.org/nix) as its package manager, 
 Applications today do not compose very well, nor pipe data from one application to another easily.
 
 ## Solution
-Lain comes with its own actor oriented programming language called Flowscript, implemented in Rust. Flowscript makes the concept of data flowing through a system to be a first class citizen, thus easily manipulable by the programmer/designer.
-At a top level, component hierarchies are exposed to Lain, who knows how to compose and pipe data between components. The goal is to allow for piping and manipulation of structured data, much like PowerShell does.
-
-example:
-
-```
-lain > cat text.json | filter name date | print
-```
+Lain comes with its own actor oriented dataflow programming language (Flow-based programming) called Flowscript, implemented in Rust. Flowscript makes the concept of data flowing through a system to be a first class citizen, thus easily manipulable by the programmer/designer.
+At a top level, component hierarchies are exposed to Lain (the shell), they know how to compose and pipe data between components. The goal is to allow users to easily transition between a fully expressive graph language and the shell type environment, thus giving a strong ability to compose components together is a fast and effective manner.
 
 ## Problem 3
 Security and business interests rarely align these days.
