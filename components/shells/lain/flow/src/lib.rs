@@ -27,7 +27,7 @@ component! {
                 flow.push_str(format!("{0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
                 args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
             } else { // more than one command
-                if cmd_len > 1 && cmd_count == 0 { // the first command
+                if cmd_len > 1 && cmd_count == 0 { // the first command of many in a list
                     flow.push_str(format!("{0}_{1}({0}) output -> ", cmd.get_name()?, cmd_count).as_str());
                     args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
                 } else { // check if the last command or not

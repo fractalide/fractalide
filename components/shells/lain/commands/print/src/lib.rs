@@ -5,9 +5,9 @@ extern crate capnp;
 
 component! {
     io_print, contracts(generic_text)
-    inputs(input: generic_text),
+    inputs(stdin: generic_text),
     inputs_array(),
-    outputs(output: generic_text),
+    outputs(stdout: generic_text),
     outputs_array(),
     option(generic_text),
     acc(),
@@ -17,16 +17,16 @@ component! {
             let reader: generic_text::Reader = opt.get_root()?;
             let option = reader.get_text();
 
-            println!("{}", option?);
+            //println!("{}", option?);
         }
-        let mut ip_a = try!(self.ports.recv("input"));
+        let mut ip_a = try!(self.ports.recv("stdin"));
         {
             let a_reader: generic_text::Reader = try!(ip_a.get_root());
             let a = a_reader.get_text();
 
-            println!("{}", a?);
+            println!("{:?}", a?);
         }
-        self.ports.send("output", ip_a);
+        self.ports.send("stdout", ip_a);
         Ok(())
     }
 }
