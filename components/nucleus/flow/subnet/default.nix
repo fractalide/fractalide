@@ -49,6 +49,9 @@
 
    action => action sched()
    sched() outputs => outputs
+
+   // used to send in a flow string.
+   flowscript => input lex()
    '';
 
    meta = with stdenv.lib; {

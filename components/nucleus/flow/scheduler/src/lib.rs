@@ -38,10 +38,10 @@ impl Portal {
 
 component! {
     nucleus_flow_scheduler, contracts(fbp_graph, path, generic_text, fbp_action)
-        inputs(action: fbp_action,
-               graph: fbp_graph,
-               contract_path: path,
-               iip: any),
+    inputs(action: fbp_action,
+           graph: fbp_graph,
+           contract_path: path,
+           iip: any),
     inputs_array(),
     outputs(error: error,
             ask_graph: path,

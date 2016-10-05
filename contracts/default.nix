@@ -1,10 +1,11 @@
-{ pkgs, support, ... }:
+{ pkgs, support, contracts, ... }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // support);
+callPackage = pkgs.lib.callPackageWith (pkgs // contracts // support);
 in
 # insert in alphabetical order to reduce conflicts
 rec {
   app_counter = callPackage ./app/counter {};
+  command = callPackage ./command {};
   domain_port = callPackage ./domain_port {};
   fbp_action = callPackage ./fbp/action {};
   fbp_graph = callPackage ./fbp/graph {};
@@ -24,6 +25,7 @@ rec {
   list_tuple = callPackage ./list/tuple {};
   list_triple = callPackage ./list/triple {};
   list_text = callPackage ./list/text {};
+  list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_ndn_data = callPackage ./net/ndn/data {};
@@ -33,6 +35,7 @@ rec {
   protocol_domain_port = callPackage ./protocol_domain_port {};
   quadruple = callPackage ./quadruple {};
   shell_commands = callPackage ./shell/commands {};
+  tuple = callPackage ./tuple {};
   url = callPackage ./url {};
   value_int64 = callPackage ./value/int64 {};
   value_string = callPackage ./value/string {};

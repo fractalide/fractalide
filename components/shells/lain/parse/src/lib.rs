@@ -1,74 +1,103 @@
 #![feature(question_mark)]
+
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
 
-#[macro_use]
-pub mod parsers;
-use parsers::get_command;
+use std::collections::HashSet;
 
 #[macro_use]
 extern crate nom;
-use nom::IResult;
 
-use std::collections::HashSet;
+//mod parsers;
+//use parsers::parse_lain_lang;
 
-use std::str::{from_utf8_unchecked};
-
-pub fn to_string(s: &[u8]) -> &str {
-    unsafe { from_utf8_unchecked(s) }
+struct Command {
+    name: String,
+    singles: Vec<String>,
+    kvs: Vec<(String, String)>,
 }
 
 component! {
-    shells_lain_parse, contracts(list_text, shell_commands)
-    inputs(input: list_text),
+    shells_lain_parse, contracts(generic_text, list_command)
+    inputs(input: generic_text),
     inputs_array(),
-    outputs(output: list_text),
+    outputs(output: list_command),
     outputs_array(),
-    option(shell_commands),
+    option(),
     acc(),
     fn run(&mut self) -> Result<()> {
-        let mut ip_option = self.recv_option();
-        let mut commands_reader: shell_commands::Reader = ip_option.get_root()?;
-        let mut command_lookup = HashMap::new();
-        for cmd in commands_reader.get_commands()?.iter() {
-            command_lookup.insert(cmd.get_key()?.clone(), cmd.get_val()?.clone());
-        }
-        loop {
-            let mut ip_input = self.ports.recv("input")?;
-            let input = {
-                let input_reader: list_text::Reader = ip_input.get_root()?;
-                input_reader.get_texts()
-            };
-            let mut unknown_commands: HashSet<&str> = HashSet::new();
-            let mut out_ip_output = IP::new();
-            {
-                let ip = out_ip_output.init_root::<list_text::Builder>();
-                let mut commands = ip.init_texts(input?.len() as u32);
-                let mut i: u32 = 0;
-                for cmd in input?.iter() {
-                    match get_command(cmd?.as_bytes()) {
-                        IResult::Incomplete(x) => println!("incomplete: {:?}", x),
-                        IResult::Error(e) => println!("error: {:?}", e),
-                        IResult::Done(_, out) => {
-                            match command_lookup.get(to_string(out)) {
-                                Some(command_location) => {commands.borrow().set(i, command_location);},
-                                None => {unknown_commands.insert(cmd?);},
-                            }
-                        },
+        let mut ip_input = self.ports.recv("input")?;
+        let raw_command = {
+            let input_reader: generic_text::Reader = ip_input.get_root()?;
+            input_reader.get_text()
+        };
+        //let parsed_commands = parse_lain_lang(raw_command?);
+        let commands =
+        vec![
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 0")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 1")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 2")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+            Command{
+                name: String::from("shells_lain_commands_print"),
+                singles: vec![String::from("hello")
+                            , String::from("single")
+                            , String::from("world 3")
+                            ],
+                kvs: vec![(String::from("key"), String::from("value"))
+                        , (String::from("key"), String::from("value") )]
+            },
+        ];
+        let mut out_ip = IP::new();
+        {
+            let mut ip = out_ip.init_root::<list_command::Builder>();
+            let mut cmd_count: u32 = 0;
+            let mut list = ip.borrow().init_commands(commands.len() as u32);
+            for command in commands {
+                list.borrow().get(cmd_count).set_name(command.name.as_str());
+                {
+                    let mut slist = list.borrow().get(cmd_count).init_singles(command.singles.len() as u32);
+                    let mut singles_count: u32 = 0;
+                    for single in command.singles {
+                        slist.borrow().set(singles_count, single.as_str());
+                        singles_count += 1;
                     }
-                    i += 1;
                 }
-            }
-            if unknown_commands.is_empty() {
-                self.ports.send("output", out_ip_output)?;
-            }
-            else {
-                for cmd in unknown_commands {
-                    println!("{}: command not found", cmd);
+                let mut kvlist = list.borrow().get(cmd_count).init_kvs(command.kvs.len() as u32);
+                let mut kv_count: u32 = 0;
+                for kv in command.kvs {
+                    kvlist.borrow().get(kv_count).set_first(kv.0.as_str());
+                    kvlist.borrow().get(kv_count).set_second(kv.1.as_str());
+                    kv_count += 1;
                 }
+                cmd_count += 1;
             }
         }
+        self.ports.send("output", out_ip)?;
         Ok(())
     }
 }

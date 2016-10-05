@@ -1,25 +1,18 @@
 { stdenv, buildFractalideSubnet, upkeepers
   , shells_lain_prompt
-  , shells_lain_pipe
   , shells_lain_parse
   , shells_lain_flow
-  , io_print
-  # contracts
-  , shell_commands
+  , nucleus_flow_subnet
   , ...}:
 
   buildFractalideSubnet rec {
    src = ./.;
    name = "lain";
    subnet = ''
-   '${shell_commands}:(commands=[ (key="cd", val="shells_commands_cd"),(key="ls", val="shells_commands_ls"),(key="pwd", val="shells_commands_pwd")])~create' ->
-   option parse()
-
-   prompt(${shells_lain_prompt}) output ->
-   input pipe(${shells_lain_pipe}) output ->
-   input parse(${shells_lain_parse}) output ->
-   input flow(${shells_lain_flow}) output ->
-   input print(${io_print})
+     prompt(${shells_lain_prompt}) output ->
+     input parse(${shells_lain_parse}) output ->
+     input flow(${shells_lain_flow}) output ->
+     flowscript scheduler(${nucleus_flow_subnet})
    '';
 
    meta = with stdenv.lib; {

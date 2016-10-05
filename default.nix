@@ -2,6 +2,7 @@
 , subnet ? "lain"
 , local-rustfbp ? ""
 , cache ? null
+, test ? null
 , ...} @argsInput:
 let
 #get the old pkgs if given from an parameter, else import it
@@ -104,8 +105,8 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 
 exeSubnet = (builtins.head (lib.attrVals [subnet] components));
 components = import ./components {inherit pkgs support contracts;};
-support = import ./support {inherit pkgs debug local-rustfbp contracts components;};
-contracts = import ./contracts {inherit pkgs support;};
+support = import ./support {inherit pkgs debug test local-rustfbp contracts components;};
+contracts = import ./contracts {inherit pkgs contracts support;};
 in
 {
   inherit components support contracts;

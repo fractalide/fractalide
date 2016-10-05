@@ -1,6 +1,6 @@
 {lib, stdenv, cacert, git, rustc, cargo
   , capnproto, capnpc-rust, rustRegistry
-  , debug, local-rustfbp}:
+  , debug, test, local-rustfbp}:
 
 { name, depsSha256
   , src ? null
@@ -111,7 +111,7 @@ echo "Running cargo build ${type}"
 cargo build ${type}
 '';
 
-checkPhase = if debug == "true" then "echo skipping tests in debug mode"
+checkPhase = if test == null then "echo skipping tests in debug mode"
 else args.checkPhase or ''
 echo "Running cargo test"
 cargo test
