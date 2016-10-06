@@ -45,29 +45,20 @@ component! {
                         , (String::from("key"), String::from("value") )]
             },
             Command{
-                name: String::from("shells_lain_commands_print"),
-                singles: vec![String::from("hello")
-                            , String::from("single")
-                            , String::from("world 1")
-                            ],
+                name: String::from("shells_lain_commands_dirname"),
+                singles: vec![String::from("-z")],
                 kvs: vec![(String::from("key"), String::from("value"))
                         , (String::from("key"), String::from("value") )]
             },
             Command{
                 name: String::from("shells_lain_commands_print"),
-                singles: vec![String::from("hello")
-                            , String::from("single")
-                            , String::from("world 2")
-                            ],
+                singles: vec![String::from("hello")],
                 kvs: vec![(String::from("key"), String::from("value"))
                         , (String::from("key"), String::from("value") )]
             },
             Command{
-                name: String::from("shells_lain_commands_print"),
-                singles: vec![String::from("hello")
-                            , String::from("single")
-                            , String::from("world 3")
-                            ],
+                name: String::from("shells_lain_commands_dirname"),
+                singles: vec![String::from("--zero")],
                 kvs: vec![(String::from("key"), String::from("value"))
                         , (String::from("key"), String::from("value") )]
             },
