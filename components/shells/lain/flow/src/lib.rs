@@ -21,20 +21,34 @@ component! {
         let cmd_len :usize = cmds.iter().len();
         for cmd in cmds.iter() {
             let mut formatted_args = String::from("");
-            formatted_args.push_str(format!("'generic_text:(text=\"initial{1}\")' -> option {0}_{1}()", cmd.get_name()?, cmd_count).as_str());
+            let mut formatted_singles = String::from("singles=[");
+            let singles_csv = cmd.get_singles()?
+                .iter()
+                .map(|O| {
+                    match O {
+                        Ok(x) => {let out = format!("\"{}\"", x); out},
+                        Err(e) => String::from(""),
+                    }
+                }).collect::<Vec<_>>().join(",");
+            formatted_singles.push_str(format!("{}]", singles_csv.as_str()).as_str());
+            formatted_args.push_str(
+                format!("'command:({0})' -> option {1}_{2}()"
+                    , formatted_singles
+                    , cmd.get_name()?
+                    , cmd_count).as_str());
             args.push(formatted_args);
             if cmd_len == 1 { // only one command in the list
                 flow.push_str(format!("{0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
-                args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
+                args.push(format!("'generic_text:(text=\"/2/1/\")' -> stdin {0}_{1}()", cmd.get_name()?, cmd_count));
             } else { // more than one command
                 if cmd_len > 1 && cmd_count == 0 { // the first command of many in a list
-                    flow.push_str(format!("{0}_{1}({0}) output -> ", cmd.get_name()?, cmd_count).as_str());
-                    args.push(format!("'generic_text:(text=\"start\")' -> input {0}_{1}()", cmd.get_name()?, cmd_count));
+                    flow.push_str(format!("{0}_{1}({0}) stdout -> ", cmd.get_name()?, cmd_count).as_str());
+                    args.push(format!("'generic_text:(text=\"start\")' -> stdin {0}_{1}()", cmd.get_name()?, cmd_count));
                 } else { // check if the last command or not
                     if (cmd_len - 1) == cmd_count { // last command
-                        flow.push_str(format!("input {0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
+                        flow.push_str(format!("stdin {0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
                     } else { // not the first command, and not the last command
-                        flow.push_str(format!("input {0}_{1}({0}) output -> ", cmd.get_name()?, cmd_count).as_str());
+                        flow.push_str(format!("stdin {0}_{1}({0}) stdout -> ", cmd.get_name()?, cmd_count).as_str());
                     }
                 }
             }
