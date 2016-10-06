@@ -14,7 +14,7 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip_input = self.ports.recv("input")?;
         let input_reader: list_command::Reader = ip_input.get_root()?;
-        let mut cmds = input_reader.borrow().get_commands()?;
+        let cmds = input_reader.borrow().get_commands()?;
         let mut flow = String::from("");
         let mut switches: Vec<String> = Vec::new();
         let mut cmd_count :usize = 0;
@@ -22,34 +22,34 @@ component! {
         for cmd in cmds.iter() {
             let mut formatted_args = String::from("");
             let mut command_contents: Vec<String> = Vec::new();
-            let mut formatted_name = String::from(format!("name=\"{}\"",cmd.get_name()?));
+            let formatted_name = String::from(format!("name=\"{}\"",cmd.get_name()?));
             command_contents.push(formatted_name);
             let mut formatted_singles = String::from("singles=[");
             let singles_csv = cmd.get_singles()?
                 .iter()
-                .map(|O| {
-                    match O {
+                .map(|o| {
+                    match o {
                         Ok(x) => {let out = format!("\"{}\"", x); out},
-                        Err(e) => String::new(),
+                        Err(_) => String::new(),
                     }
                 }).collect::<Vec<_>>().join(", ");
             formatted_singles.push_str(format!("{}]", singles_csv.as_str()).as_str());
             command_contents.push(formatted_singles);
             let mut formatted_kvs = String::from("kvs=[");
             let kvs_csv = cmd.get_kvs()?
-            .iter()
-            .map(|O| {
-                let first = match O.get_first() {
-                    Ok(x) => x,
-                    Err(e) => "",
-                };
-                let second = match O.get_second() {
-                    Ok(x) => x,
-                    Err(e) => "",
-                };
-                let out = format!("(first=\"{}\", second=\"{}\")", first, second);
-                out
-            }).collect::<Vec<String>>().join(", ");
+                .iter()
+                .map(|o| {
+                    let first = match o.get_first() {
+                        Ok(x) => x,
+                        Err(_) => "",
+                    };
+                    let second = match o.get_second() {
+                        Ok(x) => x,
+                        Err(_) => "",
+                    };
+                    let out = format!("(first=\"{}\", second=\"{}\")", first, second);
+                    out
+                }).collect::<Vec<String>>().join(", ");
             formatted_kvs.push_str(format!("{}]", kvs_csv.as_str()).as_str());
             command_contents.push(formatted_kvs);
             formatted_args.push_str(
