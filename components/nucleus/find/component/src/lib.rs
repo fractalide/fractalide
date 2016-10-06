@@ -40,10 +40,12 @@ component! {
 }
 
 fn build_component(name: &str) -> String {
+    println!("please wait a few minutes");
+    let nixpkgs = "nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz";
     let output = Command::new("nix-build")
                             .args(&["--argstr", "debug", "true"
                             , "--argstr", "cache", "$(./support/buildCache.sh)"
-                            , "-I", "nixpkgs=/home/stewart/dev/fractalide/nixpkgs/"
+                            , "-I", nixpkgs
                             , "-A", format!("components.{}", name).as_str()])
                             .output()
                             .expect("failed to execute process");
