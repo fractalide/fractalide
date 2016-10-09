@@ -37,35 +37,16 @@ component! {
         let commands =
         vec![
         Command{
-            name: String::from("shells_lain_commands_print"),
-            singles: vec![String::from("hello")
-            , String::from("single")
-            , String::from("world 0")
-            ],
-            kvs: vec![(String::from("key"), String::from("value"))
-            , (String::from("key"), String::from("value") )],
-            iips: vec![String::from("iips"), String::from("iips")],
-        },
-        Command{
             name: String::from("shells_lain_commands_dirname"),
             singles: vec![String::from("-z")],
-            kvs: vec![(String::from("key"), String::from("value"))
-            , (String::from("key"), String::from("value") )],
-            iips: vec![String::from("iips"), String::from("iips")],
+            kvs: vec![],
+            iips: vec![String::from("/2/1")],
         },
         Command{
             name: String::from("shells_lain_commands_print"),
-            singles: vec![String::from("hello")],
-            kvs: vec![(String::from("key"), String::from("value"))
-            , (String::from("key"), String::from("value") )],
-            iips: vec![String::from("iips"), String::from("iips")],
-        },
-        Command{
-            name: String::from("shells_lain_commands_dirname"),
-            singles: vec![String::from("--zero")],
-            kvs: vec![(String::from("key"), String::from("value"))
-            , (String::from("key"), String::from("value") )],
-            iips: vec![String::from("iips"), String::from("iips")],
+            singles: vec![],
+            kvs: vec![],
+            iips: vec![],
         },
         ];
         let mut out_ip = IP::new();

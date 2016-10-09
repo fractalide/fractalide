@@ -1,3 +1,4 @@
+#![feature(question_mark)]
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -23,7 +24,7 @@ component! {
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
         } else {
-            stdout = build_component(is_path);
+            stdout = find_component_path(is_path);
             Some(stdout.as_str())
         };
         let mut new_ip = IP::new();
@@ -39,19 +40,18 @@ component! {
     }
 }
 
-fn build_component(name: &str) -> String {
-    println!("please wait a few minutes");
-    let nixpkgs = "nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz";
+fn find_component_path(name: &str) -> String {
+    let nixpkgs = "nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz";
     let output = Command::new("nix-build")
                             .args(&["--argstr", "debug", "true"
-                            , "--argstr", "cache", "$(./support/buildCache.sh)"
-                            , "-I", nixpkgs
-                            , "-A", format!("components.{}", name).as_str()])
+                                , "--argstr", "cache", "$(./support/buildCache.sh)"
+                                , "-I", nixpkgs
+                                , "-A", format!("components.{}", name).as_str()])
                             .output()
                             .expect("failed to execute process");
 
     match String::from_utf8(output.stdout) {
         Ok(v) => String::from(v.trim()),
-        Err(e) => panic!("Name of component contains invalid UTF-8 characters: {}", e),
+        Err(e) => panic!("Name of contract contains invalid UTF-8 characters: {}", e),
     }
 }

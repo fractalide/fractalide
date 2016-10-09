@@ -8,8 +8,8 @@
 
 let
 version = "2016-10-09";
-rev = "bf2804de6b9c321b899968188c0b4cb8fcb27a7b";
-  sha256 = "1l6ypqbk4m6nzj50f2hlmx15wmy12gqgyskhdflc6b8zrhfdrkn0";
+rev = "054dbc3bff6bed04829cdc589a7f420e1d52765e";
+  sha256 = "055pj7x48qrl5v0198yd7dwlfy0d6acsvghvsra9nyj4nmsc7d7r";
 
   src = fetchFromGitHub {
       inherit rev;

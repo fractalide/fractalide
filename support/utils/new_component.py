@@ -1,6 +1,6 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python -p python rustUnstable.cargo pythonPackages.configobj
-#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
+#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
 
 # this script sets up a new rustfbp component
 # by reading the utils/component.ini which you have configured

@@ -9,7 +9,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [file_desc list_command];
-  depsSha256 = "0xvma0riaqbiya9lqf31lf12d7pg39q23vnnrxjr06j5633lampa";
+  depsSha256 = "0rm9yca3h76bi29xhjrx5m5ppyc5qhl9r64106hmr37mpdiz3cnj";
 
   meta = with stdenv.lib; {
     description = "Component: shells_fsh_generator_nix";
