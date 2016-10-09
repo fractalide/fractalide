@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ quadruple ];
-  depsSha256 = "0180kzcks62jlzfak5k26svb29wn3xj1wc2bfgihkk61aya0829a";
+  depsSha256 = "14i240z0piqv58356525mk1axwkb98d0crpllc7x6chsvjdljhmv";
 
   meta = with stdenv.lib; {
     description = "Component: Print raw unanonymized and anonymized statistics to the terminal";

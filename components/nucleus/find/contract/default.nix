@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = "nucleus_find_contract";
   src = ./.;
   contracts = [ path option_path ];
-  depsSha256 = "1hxaxq57rnjli8d89wxfrsbd7vv56sckl4nz1zn5xvr6l740xf2m";
+  depsSha256 = "04j2gz0iap1hwbmlhjkxsqdcr039jz9dav667ax8n9dj83na4lnf";
 
   meta = with stdenv.lib; {
     description = "Component: Looks up the versioned name, after given the common contract name";

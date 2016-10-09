@@ -9,7 +9,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ js_create generic_text fbp_action ];
-  depsSha256 = "00vm4bzyd59xfqhm66pmmaxml3lmgzkph7xgwyfc42ahcy4bal8k";
+  depsSha256 = "0dqwqi7jxnnhk1rj829f45h6v4j3sqgs6cyjzaxhmgd6miv5jg0g";
   configurePhase = ''
       substituteInPlace src/lib.rs --replace "ui_js_flex" "${ui_js_flex}"
   '';

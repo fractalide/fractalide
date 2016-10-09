@@ -9,7 +9,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ js_create generic_tuple_text generic_text generic_bool ];
-  depsSha256 = "1mhvp4i5n4c7dma6lp9m2cjpjp4cqblrya4di1y857ydk6bsj7yz";
+  depsSha256 = "1lzw9aj8fybxf4s9wl4fy3p55khl1bqvqpx9jwif75y4vs2z8k80";
 
   meta = with stdenv.lib; {
     description = "Component: draw a http tag";
