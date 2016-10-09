@@ -16,6 +16,7 @@ struct Command {
     name: String,
     singles: Vec<String>,
     kvs: Vec<(String, String)>,
+    iips: Vec<String>,
 }
 
 component! {
@@ -35,33 +36,18 @@ component! {
         //let parsed_commands = parse_lain_lang(raw_command?);
         let commands =
         vec![
-            Command{
-                name: String::from("shells_lain_commands_print"),
-                singles: vec![String::from("hello")
-                            , String::from("single")
-                            , String::from("world 0")
-                            ],
-                kvs: vec![(String::from("key"), String::from("value"))
-                        , (String::from("key"), String::from("value") )]
-            },
-            Command{
-                name: String::from("shells_lain_commands_dirname"),
-                singles: vec![String::from("-z")],
-                kvs: vec![(String::from("key"), String::from("value"))
-                        , (String::from("key"), String::from("value") )]
-            },
-            Command{
-                name: String::from("shells_lain_commands_print"),
-                singles: vec![String::from("hello")],
-                kvs: vec![(String::from("key"), String::from("value"))
-                        , (String::from("key"), String::from("value") )]
-            },
-            Command{
-                name: String::from("shells_lain_commands_dirname"),
-                singles: vec![String::from("--zero")],
-                kvs: vec![(String::from("key"), String::from("value"))
-                        , (String::from("key"), String::from("value") )]
-            },
+        Command{
+            name: String::from("shells_lain_commands_dirname"),
+            singles: vec![String::from("-z")],
+            kvs: vec![],
+            iips: vec![String::from("/2/1")],
+        },
+        Command{
+            name: String::from("shells_lain_commands_print"),
+            singles: vec![],
+            kvs: vec![],
+            iips: vec![],
+        },
         ];
         let mut out_ip = IP::new();
         {
@@ -78,12 +64,22 @@ component! {
                         singles_count += 1;
                     }
                 }
-                let mut kvlist = list.borrow().get(cmd_count).init_kvs(command.kvs.len() as u32);
-                let mut kv_count: u32 = 0;
-                for kv in command.kvs {
-                    kvlist.borrow().get(kv_count).set_first(kv.0.as_str());
-                    kvlist.borrow().get(kv_count).set_second(kv.1.as_str());
-                    kv_count += 1;
+                {
+                    let mut kvlist = list.borrow().get(cmd_count).init_kvs(command.kvs.len() as u32);
+                    let mut kv_count: u32 = 0;
+                    for kv in command.kvs {
+                        kvlist.borrow().get(kv_count).set_first(kv.0.as_str());
+                        kvlist.borrow().get(kv_count).set_second(kv.1.as_str());
+                        kv_count += 1;
+                    }
+                }
+                {
+                    let mut iiplist = list.borrow().get(cmd_count).init_iips(command.iips.len() as u32);
+                    let mut iips_count: u32 = 0;
+                    for iip in command.iips {
+                        iiplist.borrow().set(iips_count, iip.as_str());
+                        iips_count += 1;
+                    }
                 }
                 cmd_count += 1;
             }

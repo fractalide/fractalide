@@ -21,7 +21,7 @@ Fractalide can be likened to a box of Lego, and the default application to be bu
 
 `subnet_input => input_port_name var_name(component_name) output_port_name -> ... => subnet_output`
 
-It is much more inconvenient for users to achieve fast results by typing in the above expressive FBP code.
+It is inconvenient for users to achieve fast results by typing in the above expressive FBP code.
 
 So Lain compiles this `$ dirname -z | print` to:
 ```
@@ -50,13 +50,15 @@ $ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh) --arg
 $ ./result/bin/test_sjm
 ```
 
+Having a shell like this means users can easily communicate over, share, reuse, and pipe data into and out of other people's components.
+
 ## Problem 2
 Devops today leans towards distributing software via container technologies, making silos that do not interact easily (see problem 1).
 
 ## Solution
 Fractalide makes use of [Nix](http://nixos.org/nix) as its language level package manager, which properly solves an entire class of errors, that being "dependency hell". Yes, Nix isn't a silver bullet, but it makes dependencies absolutely clear.
 
-Next bold step is to distribute components via Named Data Networking (NDN) where NDN is a reimplementation of NDN in Fractalide.
+Next bold step is to distribute components via Named Data Networking, implemented using Fractalide components.
 
 ## Problem 3
 Security and business interests rarely align these days.

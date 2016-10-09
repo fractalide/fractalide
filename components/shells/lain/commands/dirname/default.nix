@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ command generic_text];
-  depsSha256 = "1ymg478c66qckdldyqys2ing615zg09mmgn99y5qigw26kdi3aqy";
+  depsSha256 = "1vcwm1sfqjm2a27a4l9rw2sjk7a9p38bm0s16x9ifcx62wxd7qqv";
 
   meta = with stdenv.lib; {
     description = "Component: dirname is a standard UNIX computer program.

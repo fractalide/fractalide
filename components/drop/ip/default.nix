@@ -5,7 +5,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [];
-  depsSha256 = "1javgnsmckyi3lbw6gjnl7gdm8bkwcvjwb5yfdacqqz12g9h3l03";
+  depsSha256 = "1nk2yz5lzp1bjqa8q7mlj9pdijzhylkinz4qlnij0y318989ps6d";
 
   meta = with stdenv.lib; {
     description = "Component: Drop an Information Packet";

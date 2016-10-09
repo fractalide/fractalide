@@ -15,7 +15,7 @@ component! {
         let mut ip_input = self.ports.recv("input")?;
         let input_reader: list_command::Reader = ip_input.get_root()?;
         let cmds = input_reader.borrow().get_commands()?;
-        let mut flow = String::from("");
+        let mut flow = String::new();
         let mut switches: Vec<String> = Vec::new();
         let mut cmd_count :usize = 0;
         let cmd_len :usize = cmds.iter().len();
@@ -35,6 +35,16 @@ component! {
                 }).collect::<Vec<_>>().join(", ");
             formatted_singles.push_str(format!("{}]", singles_csv.as_str()).as_str());
             command_contents.push(formatted_singles);
+            let mut formatted_iips = String::from("text=");
+            let iips_csv = cmd.get_iips()?
+                .iter()
+                .map(|o| {
+                    match o {
+                        Ok(x) => {let out = format!("\"{}\"", x); out},
+                        Err(_) => String::new(),
+                    }
+                }).collect::<Vec<_>>().join(", ");
+            formatted_iips.push_str(format!("{}", iips_csv.as_str()).as_str());
             let mut formatted_kvs = String::from("kvs=[");
             let kvs_csv = cmd.get_kvs()?
                 .iter()
@@ -60,11 +70,11 @@ component! {
             switches.push(formatted_args);
             if cmd_len == 1 { // only one command in the list
                 flow.push_str(format!("{0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
-                switches.push(format!("'generic_text:(text=\"/2/1/\")' -> stdin {0}_{1}()", cmd.get_name()?, cmd_count));
+                switches.push(format!("'generic_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
             } else { // more than one command
                 if cmd_len > 1 && cmd_count == 0 { // the first command of many in a list
                     flow.push_str(format!("{0}_{1}({0}) stdout -> ", cmd.get_name()?, cmd_count).as_str());
-                    switches.push(format!("'generic_text:(text=\"/2/1/\")' -> stdin {0}_{1}()", cmd.get_name()?, cmd_count));
+                    switches.push(format!("'generic_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
                 } else { // check if the last command or not
                     if (cmd_len - 1) == cmd_count { // last command
                         flow.push_str(format!("stdin {0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());

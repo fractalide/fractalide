@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ list_text ];
-  depsSha256 = "1nsmmp5lgw43jbgrg3vcxzckr382s94alh4lpxr1pp3p21mxavka";
+  depsSha256 = "0rzsjqxmzplwrbkhgf2m8m4myr0dqnaq3qrhsbassz50aadhbfy3";
 
   meta = with stdenv.lib; {
     description = "Component: Print a list of texts to the terminal";

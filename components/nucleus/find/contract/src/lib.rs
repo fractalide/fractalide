@@ -21,7 +21,7 @@ component! {
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
         } else {
-            stdout = build_contract(is_path);
+            stdout = find_contract_path(is_path);
             Some(stdout.as_str())
         };
         let mut new_ip = IP::new();
@@ -37,9 +37,8 @@ component! {
     }
 }
 
-fn build_contract(name: &str) -> String {
-    println!("please wait a few minutes");
-    let nixpkgs = "nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz";
+fn find_contract_path(name: &str) -> String {
+    let nixpkgs = "nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz";
     let output = Command::new("nix-build")
                             .args(&["--argstr", "debug", "true"
                             , "--argstr", "cache", "$(./support/buildCache.sh)"

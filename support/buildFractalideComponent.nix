@@ -1,5 +1,5 @@
 {lib, stdenv, cacert, git, rustc, cargo
-  , capnproto, capnpc-rust, rustRegistry
+  , capnproto, rustRegistry
   , debug, test, local-rustfbp}:
 
 { name, depsSha256
@@ -28,7 +28,7 @@
   directory = if debug == "true" then "debug" else "release";
 
 in stdenv.mkCachedDerivation (args // {
-  inherit cargoDeps rustRegistry capnproto capnpc-rust;
+  inherit cargoDeps rustRegistry capnproto;
 
   patchRegistryDeps = ./patch-registry-deps;
 

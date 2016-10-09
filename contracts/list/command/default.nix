@@ -15,6 +15,7 @@ buildFractalideContract rec {
       name @0 : Text;
       singles @1 : List(Text);
       kvs @2 : List(Tuple);
+      iips @3 : List(Text);
     }
 
     struct ListCommand {

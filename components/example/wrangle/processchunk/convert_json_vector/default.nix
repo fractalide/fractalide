@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ value_string list_tuple ];
-  depsSha256 = "1s4bd7njvzym5s6mfi5izcm4sjhxkszzckgxy8qxpfmh41y9pvsn";
+  depsSha256 = "06skm8inhsw2wgzanw6iwlqwbhp6ifqbw3x7cwhxbhzfjahb6nkp";
 
   meta = with stdenv.lib; {
     description = "Component: convert each JSON file into a vector of tuples";

@@ -1,6 +1,6 @@
 #! /usr/bin/env nix-shell
 #! nix-shell -i python -p python rustUnstable.cargo git
-#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
+#! nix-shell -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz
 
 import os
 import subprocess
@@ -11,7 +11,7 @@ import time
 import getopt
 from itertools import chain
 
-repo = " -I nixpkgs=https://github.com/NixOS/nixpkgs-channels/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz"
+repo = " -I nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz"
 
 def query_yes_no(question, default="no"):
     valid = {"yes": True, "y": True, "ye": True,
@@ -126,7 +126,7 @@ for root, dirs, files in os.walk("../../components"):
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         #output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
-paths = ('../contract_lookup', '../vm')
+paths = ('../vm')
 for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
     if "Cargo.toml" in files:
       name = os.path.basename(root)
