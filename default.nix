@@ -110,6 +110,6 @@ support = import ./support {inherit pkgs debug test local-rustfbp contracts comp
 contracts = import ./contracts {inherit pkgs contracts support;};
 in
 {
-  inherit components support contracts;
+  inherit components support contracts pkgs;
   vm = import ./support/vm { inherit pkgs components contracts support exeSubnet;};
 }
