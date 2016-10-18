@@ -8,10 +8,8 @@
   , maths_boolean
   , ...}:
   let
-  #repo = https://github.com/fractalide/fractalide_external_closesource_example/archive/5cbbd09d67212c90800646defa601dc3bd172e9b.tar.gz;
-  repo = ../../../../../../fractalide_external_closesource_example;
-  #external_closesource_nand_gate = import (fetchTarball repo)  {inherit pkgs support contracts components;};
-  external_closesource_nand_gate = import repo {inherit pkgs support contracts components;};
+  repo = https://github.com/fractalide/fractalide_external_closesource_example/archive/4948180edab0593895cae225197cc43d0101fccc.tar.gz;
+  external_closesource_nand_gate = import (fetchTarball repo)  {inherit pkgs support contracts components;};
   in
   buildFractalideSubnet rec {
     src = ./.;

@@ -8,7 +8,7 @@
   , maths_boolean
   , ...}:
   let
-  repo = https://github.com/fractalide/fractalide_external_opensource_example/archive/5cbbd09d67212c90800646defa601dc3bd172e9b.tar.gz;
+  repo = https://github.com/fractalide/fractalide_external_opensource_example/archive/c94d812f5acb0f9317d62f51cd7363c3f4deb2f0.tar.gz;
   external_opensource_nand_gate = import (fetchTarball repo)  {inherit pkgs support contracts components;};
   in
   buildFractalideSubnet rec {
