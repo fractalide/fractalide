@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts =  [ app_counter js_create];
-  depsSha256 = "0llwv8pxsv0mfgzapwc1jzrg9llydnfg8h40l88dmzh5f8pbfcr5";
+  depsSha256 = "0745h7nwq1v5f8d8325pq9kkkhkxn4rpxbr7psndrsbg6w7606k2";
 
   meta = with stdenv.lib; {
     description = "Component: draw a conrod text";

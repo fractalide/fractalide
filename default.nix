@@ -7,7 +7,8 @@
 let
 #get the old pkgs if given from an parameter, else import it
 pkgsOld = if argsInput ? pkgs then argsInput.pkgs
-else import (fetchTarball https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz) {};
+/*else import (fetchTarball https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz) {};*/
+else import <nixpkgs> {};
 lib = pkgs.lib;
 #expand the old pkgs with mkCachedDerivation
 pkgs = pkgsOld.overridePackages(self: super: rec {

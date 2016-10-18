@@ -3,7 +3,7 @@
   , contracts
   , components
   , stdenv
-  , buildFractalideSubnet, genName
+  , buildFractalideSubnet
   , maths_boolean_print
   , maths_boolean
   , ...}:
@@ -14,7 +14,7 @@
   buildFractalideSubnet rec {
     src = ./.;
     subnet = ''
-    '${maths_boolean}:(boolean=true)' -> a nand(${external_opensource_nand_gate}) output -> input io_print(${maths_boolean_print})
+    '${maths_boolean}:(boolean=true)' -> a nand(external_opensource_nand_gate:${keybase_user}) output -> input io_print(${maths_boolean_print})
     '${maths_boolean}:(boolean=true)' -> b nand()
     '';
 

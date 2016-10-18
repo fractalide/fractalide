@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ net_ndn_interest net_ndn_data ];
-  depsSha256 = "1hg9s5l6f3kf66nj6pjgi1xvc24nf4xc2lwnsrc5542dfaxzw61f";
+  depsSha256 = "1gam9zjpq7xwij3jpgx2s9nbyv1k05qjjr6bfzqgprhza8d2dzhr";
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Pending Interest Table";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn/pit;

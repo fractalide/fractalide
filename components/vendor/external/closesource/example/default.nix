@@ -3,12 +3,12 @@
   , contracts
   , components
   , stdenv
-  , buildFractalideSubnet, genName
+  , buildFractalideSubnet
   , maths_boolean_print
   , maths_boolean
   , ...}:
   let
-  repo = https://github.com/fractalide/fractalide_external_closesource_example/archive/4948180edab0593895cae225197cc43d0101fccc.tar.gz;
+  repo = https://github.com/fractalide/fractalide_external_closesource_example/archive/79399165a41b26c4c69a015a7d473322a69ae81c.tar.gz;
   external_closesource_nand_gate = import (fetchTarball repo)  {inherit pkgs support contracts components;};
   in
   buildFractalideSubnet rec {
