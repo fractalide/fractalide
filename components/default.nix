@@ -96,6 +96,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   ui_js_tag = callPackage ./ui/js/tag {};
   ui_js_visible = callPackage ./ui/js/visible {};
   vendor_external_opensource_example = callPackage ./vendor/external/opensource/example {inherit pkgs support contracts; components = self;};
+  vendor_external_closesource_example = callPackage ./vendor/external/closesource/example {inherit pkgs support contracts; components = self;};
   web_server = callPackage ./web/server {};
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
