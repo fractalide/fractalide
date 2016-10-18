@@ -22,10 +22,10 @@ component! {
             let reader: command::Reader = opt.get_root()?;
             let singles = reader.get_singles()?
                 .iter()
-                .map(|O| {
-                    match O {
+                .map(|o| {
+                    match o {
                         Ok(x) => x,
-                        Err(e) => "",
+                        Err(_) => "",
                     }
                 }).collect::<Vec<_>>();
             let sep = if singles.contains(&"--zero") || singles.contains(&"-z") {"\0"} else {"\n"};
