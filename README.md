@@ -78,6 +78,8 @@ Flowscript allows for a separation of business logic and component implementatio
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` package, please check first.
 For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 ```
+$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
+$ export NIX_PATH
 $ git clone https://gitlab.com/fractalide/fractalide.git
 $ cd fractalide
 $ nix-build
