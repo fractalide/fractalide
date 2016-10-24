@@ -1,3 +1,6 @@
+25th Oct 2016
+- support of external satellite repos
+
 01st Sept 2016
 - lazy evaluation contracts now supported in subnets
 - capnproto contracts are now composable
