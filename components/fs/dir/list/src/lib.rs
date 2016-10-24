@@ -18,8 +18,6 @@ component! {
 
         let mut ip = try!(self.ports.recv("input"));
         let path: path::Reader = try!(ip.get_root());
-        let paths = try!(fs::read_dir(try!(path.get_path())));
-
         let mut new_ip = IP::new();
         {
             let ip = new_ip.init_root::<file_list::Builder>();

@@ -13,11 +13,9 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
         let list: file_list::Reader = try!(ip.get_root());
-        //let list = try!(ip.get_reader());
-        //let list: file_list::Reader = try!(list.get_root());
         let list = try!(list.get_files());
 
-        let mut v =Vec::with_capacity(list.len() as usize);
+        let mut v = Vec::with_capacity(list.len() as usize);
         for path in 0..list.len()
         {
             v.push(try!(list.get(path)));
