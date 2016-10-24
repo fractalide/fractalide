@@ -13,6 +13,6 @@
     };
   example_wrangle = import repo {inherit pkgs support contracts components; fractalide = null;};
   /*repo = ../../../../frac_example_wrangle;
-  /*example_wrangle = import repo {inherit pkgs support contracts components; fractalide = null;};*/
+  example_wrangle = import repo {inherit pkgs support contracts components; fractalide = null;};*/
   in
   example_wrangle

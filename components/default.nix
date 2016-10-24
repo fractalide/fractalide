@@ -19,6 +19,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
   example_wrangle = callPackage ./example/wrangle {inherit pkgs support contracts; components = self;};
+  example_satellite_repo = callPackage ./example/satellite/repo {inherit pkgs support contracts; components = self;};
   fs_dir_list = callPackage ./fs/dir/list {};
   fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {}; # special name for the main build product
@@ -85,8 +86,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   ui_js_placeholder = callPackage ./ui/js/placeholder {};
   ui_js_tag = callPackage ./ui/js/tag {};
   ui_js_visible = callPackage ./ui/js/visible {};
-  vendor_external_opensource_example = callPackage ./vendor/external/opensource/example {inherit pkgs support contracts; components = self;};
-  #vendor_external_closesource_example = callPackage ./vendor/external/closesource/example {inherit pkgs support contracts; components = self;};
+  vendor_noware_service_encrypt = callPackage ./vendor/noware/service/encrypt {inherit pkgs support contracts; components = self;};
   web_server = callPackage ./web/server {};
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
