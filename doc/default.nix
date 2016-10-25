@@ -5,7 +5,7 @@ let
 
 in
 stdenv.mkDerivation {
-  name = "fractalide-manual";
+  name = "fractalide_manual";
 
 
   buildInputs = [ pkgs.pandoc pkgs.libxml2 pkgs.libxslt ];
