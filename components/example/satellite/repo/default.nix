@@ -12,8 +12,8 @@
   repo = fetchFromGitHub {
       owner = "fractalide";
       repo = "frac_example_satellite_repo";
-      rev = "6417219cfaf7d2fe450e19f52839aca5eb6c81de";
-      sha256 = "1gj3inlmg7rb2fbwajn7xln23lfbgahg333mcn3iczjfw1bfk0jn";
+      rev = "c8fdc3869e50cfe413c73b57425cc3de84cb87dc";
+      sha256 = "1l2nyx931vnyq1hdni6ny63zw5mk6yw56l3ppgkfgjrvhwviw40f";
     };
   /*repo = ../../../../../frac_example_satellite_repo;*/
   external_nand_gate = import repo {inherit pkgs support contracts components; fractalide = null;};
