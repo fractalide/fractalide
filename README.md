@@ -13,6 +13,9 @@ Where [simple is made easy](https://www.infoq.com/presentations/Simple-Made-Easy
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
+### Donations
+Help keep us strong by donating Bitcoin to [15g3WQqYtcrqrno3oxGPi8nNe3hP6rJHo6](https://keybase.io/fractalide).
+
 ## Problem 1
 Non-trivial applications today do not compose very well, nor pipe data from one application/microservice to another simply and easily.
 
@@ -123,8 +126,6 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 The project license is specified in LICENSE.
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
 
-### Donations
-Help keep the lights on by donating Bitcoin to `19njauHnbST9aL7m7QL89BDedrPMSrG92e`.
 
 ### The Mozilla Manifesto
 This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet.
