@@ -19,7 +19,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
   example_wrangle = callPackage ./example/wrangle {inherit pkgs support contracts; components = self;};
-  example_satellite_repo = callPackage ./example/satellite/repo {inherit pkgs support contracts; components = self;};
+  example_workspace = callPackage ./example/workspace {inherit pkgs support contracts; components = self;};
   fs_dir_list = callPackage ./fs/dir/list {};
   fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {}; # special name for the main build product

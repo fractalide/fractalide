@@ -11,11 +11,11 @@
   let
   repo = fetchFromGitHub {
       owner = "fractalide";
-      repo = "frac_example_satellite_repo";
-      rev = "c8fdc3869e50cfe413c73b57425cc3de84cb87dc";
-      sha256 = "1l2nyx931vnyq1hdni6ny63zw5mk6yw56l3ppgkfgjrvhwviw40f";
+      repo = "frac_example_workspace";
+      rev = "e07293a2d1c500305a8828ac2228ba79e26152d2";
+      sha256 = "113xh2cfj71s9wiya76jp0715pmhbc7r39g82n1gg72a2q7dhby8";
     };
-  /*repo = ../../../../../frac_example_satellite_repo;*/
+  /*repo = ../../../../frac_example_workspace;*/
   external_nand_gate = import repo {inherit pkgs support contracts components; fractalide = null;};
   in
   buildFractalideSubnet rec {
