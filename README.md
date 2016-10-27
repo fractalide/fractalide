@@ -70,9 +70,8 @@ $ cd frac_workbench
 $ nix-env -i -f default.nix
 $ workbench
 ```
-### Developing your own application:
 
----
+### Developing your own application:
 ```
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
 $ export NIX_PATH
@@ -92,7 +91,7 @@ $ git init
 $ cd /path/to/fractalide/clone
 $ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
----
+
 ### Incremental Builds
 Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
 The cache folder can be created from an old result by the buildCache.sh script. Per default the cache folder is saved in the /tmp folder of your system.
