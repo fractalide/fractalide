@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ app_counter ];
-  depsSha256 = "0745h7nwq1v5f8d8325pq9kkkhkxn4rpxbr7psndrsbg6w7606k2";
+  depsSha256 = "0p3jny79z8vz322qny86f31rbwmcxdfdlmzy8f75h8w8dvawkswp";
 
   meta = with stdenv.lib; {
     description = "Component: increase by one the number";

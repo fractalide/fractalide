@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [];
-  depsSha256 = "15vx3n1c9mlflbabmi8l4hdy24jhaq9lydcr8kra7va8hdcyxk75";
+  depsSha256 = "0xm9nqmswrdjpgmsl1l8azplni8x77jhga1s690m0nrnnqvy0xnc";
 
   meta = with stdenv.lib; {
     description = "Component: Dispatch the IPs coming in";

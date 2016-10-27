@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ file_desc fbp_lexical ];
-  depsSha256 = "1c57jx2d5mmgrbjcz2pphs33kq9fh9y95m3gzxywv6sx7f6j25j0";
+  depsSha256 = "1p93f37wlzfsxlgb6n1cr15iiccg968hm9nr08dzd43m3k6mfdq8";
 
   meta = with stdenv.lib; {
     description = "Component: Flow-based programming lexical parser";

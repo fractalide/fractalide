@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ net_ndn_interest ];
-  depsSha256 = "1d8zk5d5mb11hscwvz1mahfam5qk9wwwp0rcdakmkiryifh4yvmq";
+  depsSha256 = "1wx3aikslr7ag0xjf3mmg3bwf0ii47xpskw1ilrjpkimgcxaz07h";
   meta = with stdenv.lib; {
     description = "Component: Prints NDN Interests";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn/print/interest;

@@ -37,6 +37,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_print = callPackage ./maths/boolean/print {};
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
+  net_http = callPackage ./net/http {inherit pkgs support contracts; components = self;};
   net_ndn = callPackage ./net/ndn {};
   net_ndn_relay = callPackage ./net/ndn/relay {};
   net_ndn_relay_filter = callPackage ./net/ndn/relay/filter {};

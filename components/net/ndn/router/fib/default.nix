@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ net_ndn_interest ];
-  depsSha256 = "1prayqw71dc2xbcpzdm0lhdlimdz7w9hg1zsw3s8swiqyj7znyjm";
+  depsSha256 = "0v7mrm2f93q72h3w4454xw18qgsaijd16qmncf1vl1dvqsx4h316";
   meta = with stdenv.lib; {
     description = "Component: A Named Data Networking Forwarding Information Base";
     homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn/fib;
