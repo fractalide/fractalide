@@ -44,7 +44,7 @@ Flowscript allows for a separation of business logic and component implementatio
 
 ### Layers
 - [x] Actor based coordination language that coordinates Rust components, which pass Cap'n Proto contract messages.
-- [x] Specialization satellite [repositories](https://github.com/fractalide/frac_example_satellite_repo). Allowing you to create your own applications outside of the canonical Fractalide repository.
+- [x] Specialization satellite [repositories](https://github.com/fractalide/frac_workbench). Allowing you to create your own applications outside of the canonical Fractalide repository.
 - [ ] HTTP finite state machine implementation, needed for a decent microservice setup.
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
@@ -55,19 +55,20 @@ For the most efficient way forward, ensure you're using [NixOS](http://nixos.org
 ```
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
 $ export NIX_PATH
-$ git clone https://gitlab.com/fractalide/frac_example_wrangle.git
-$ cd frac_example_wrangle
+$ git clone https://gitlab.com/fractalide/frac_workbench.git
+$ cd frac_workbench
 $ nix-build
 ```
 * The first build will make you wait a long time. Thereafter only components that change will be recompiled.
+* Build times will improve as soon as these two issues [1](https://github.com/rust-lang/cargo/issues/3215) [2](https://github.com/NixOS/nixpkgs/issues/18111) are fixed, and cargo on nixpkgs supports the [official mechanism](http://doc.crates.io/source-replacement.html) for using pre-downloaded dependencies. It means Fractalide can use a version of nixpkgs where dependencies have been built by Hydra, and can benefit from binary package distribution.
 ```
-$ ./result/bin/example_wrangle
+$ ./result/bin/workbench
 ```
-If you want to install `example_wrangle` into your environment directly, thus accessible from the command line:
+If you want to install `workbench` into your environment directly, thus accessible from the command line:
 ```
-$ cd frac_example_wrangle
+$ cd frac_workbench
 $ nix-env -i -f default.nix
-$ example_wrangle
+$ workbench
 ```
 ### Developing your own application:
 
@@ -75,24 +76,21 @@ $ example_wrangle
 ```
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
 $ export NIX_PATH
-$ git clone https://github.com/fractalide/frac_example_satellite_repo.git
-$ cd frac_example_satellite_repo
+$ git clone https://github.com/fractalide/frac_workbench.git
+$ cd frac_workbench
 $ nix-build
 ```
-* see how it works, then
+* read the `frac_workbench` README.md file
 * delete the `.git` folder
 ```
 $ git init
 ```
 * Start adding components and subnets to the `components` and `contracts` folders.
-* ensure you [expose](https://github.com/fractalide/frac_example_satellite_repo/blob/master/default.nix#L7-L8) the correct toplevel component in your root folder `default.nix`
-```
-$ nix-build
-```
-* [expose](https://github.com/fractalide/fractalide/blob/master/components/example/satellite/repo/default.nix#L18-L19) your subnet to your clone of fractalide if you want to take advantage of Incremental Compilation.
+* ensure you [expose](https://github.com/fractalide/frac_workbench/blob/master/default.nix#L7-L8) the correct top-level component in your root folder `default.nix`
+* [expose](https://github.com/fractalide/fractalide/blob/master/components/workbench/default.nix#L18-L19) your subnet to your clone of fractalide if you want to take advantage of Incremental Compilation.
 ```
 $ cd /path/to/fractalide/clone
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet your_amazing_app
+$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
 ---
 ### Incremental Builds
@@ -102,7 +100,7 @@ The cache folder can be created from an old result by the buildCache.sh script. 
 Here is an example how you can build with the Incremental Build System:
 
 ```
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet example_satellite_repo
+$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
@@ -118,7 +116,7 @@ Consulting not limited to just Fractalide work, but Rust gigs in general.
 The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
 
 Please read this document BEFORE you send a patch:
-* Fractalide uses the [C4.2 (Collective Code Construction Contract)](http://rfc.zeromq.org/spec:42/C4/) process for contributions. Please read this if you are unfamiliar with it.
+* Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
 Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people. Some people seem to not understand this. So in case of doubt:
 * Each patch defines one clear and agreed problem, and one clear, minimal, plausible solution. If you come with a large, complex problem and a large, complex solution, you will provoke a negative reaction from Fractalide maintainers and users.
 * We will usually merge patches aggressively, without a blocking review. If you send us bad patches, without taking the care to read and understand our rules, that reflects on you. Do NOT expect us to do your homework for you.
@@ -128,7 +126,3 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 ### License
 The project license is specified in LICENSE.
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
-
-
-### The Mozilla Manifesto
-This project supports the [Mozilla Manifesto](https://www.mozilla.org/en-US/about/manifesto/). These principles guide our mission to promote openness, innovation & opportunity on the Internet.
