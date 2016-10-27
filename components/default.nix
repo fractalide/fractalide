@@ -38,17 +38,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
   net_http = callPackage ./net/http {inherit pkgs support contracts; components = self;};
-  net_ndn = callPackage ./net/ndn {};
-  net_ndn_relay = callPackage ./net/ndn/relay {};
-  net_ndn_relay_filter = callPackage ./net/ndn/relay/filter {};
-  net_ndn_relay_sort = callPackage ./net/ndn/relay/sort {};
-  net_ndn_router = callPackage ./net/ndn/router {};
-  net_ndn_router_cs = callPackage ./net/ndn/router/cs {};
-  net_ndn_router_faces = callPackage ./net/ndn/router/faces {};
-  net_ndn_router_fib = callPackage ./net/ndn/router/fib {};
-  net_ndn_router_pit = callPackage ./net/ndn/router/pit {};
-  net_ndn_router_print_interest = callPackage ./net/ndn/router/print/interest {};
-  net_ndn_test = callPackage ./net/ndn/test {};
+  net_ndn = callPackage ./net/ndn {inherit pkgs support contracts; components = self;};
   nucleus_capnp_encode = callPackage ./nucleus/capnp/encode {};
   nucleus_find_component = callPackage ./nucleus/find/component {};
   nucleus_find_contract = callPackage ./nucleus/find/contract {};

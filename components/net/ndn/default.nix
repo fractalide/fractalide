@@ -1,27 +1,17 @@
-{ stdenv, buildFractalideSubnet, upkeepers
-  , net_ndn_relay
+{ pkgs
+  , support
+  , contracts
+  , components
+  , fetchFromGitHub
   , ...}:
-
-buildFractalideSubnet rec {
-  src = ./.;
-  subnet = ''
-    // when an interest arrives your app needs to satisfy it if possible with data
-    relay(${net_ndn_relay}) interest => interest
-
-    // responding to the above interest
-    data => data relay()
-
-    // when your app has an interest
-    interest => interest relay()
-
-    // the response to the interest your app just expressed
-    relay() data => data
-  '';
-
-  meta = with stdenv.lib; {
-    description = "Subnet: net_ndn; Named Data Networking";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/net/ndn;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
-}
+  let
+  repo = fetchFromGitHub {
+      owner = "fractalide";
+      repo = "frac_net_ndn";
+      rev = "360c929e159999a23771a4f64d38a22e3c676b6c";
+      sha256 = "09vgj242x20yaxcmi78yaign9m4jnzl2ycgzdbxmfx1siy39fzkg";
+    };
+  /*repo = ../../../../frac_net_ndn;*/
+  net_ndn = import repo {inherit pkgs support contracts components; fractalide = null;};
+  in
+  net_ndn
