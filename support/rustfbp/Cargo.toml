@@ -1,11 +1,11 @@
 [package]
 name = "rustfbp"
-version = "0.3.18"
+version = "0.3.19"
 authors = ["Denis Michiels <dmichiels@gmail.com>","Stewart Mackenzie <setori88@gmail.com>"]
 license = "MPL-2.0"
-homepage = "https://gitlab.com/fractalide/fractalide/tree/master/rustfbp"
-repository = "https://gitlab.com/fractalide/fractalide/tree/master/rustfbp"
-description = "Fractalide, a Flow-based programming environment in Rust"
+homepage = "https://gitlab.com/fractalide/fractalide"
+repository = "https://gitlab.com/fractalide/fractalide/tree/master/support/rustfbp"
+description = "Rustfbp provides a simple, composable, clearly defined API, with a C ABI for every component within a Fractalide microservice deployment."
 
 [dependencies]
 capnp = "^0.7.4"
