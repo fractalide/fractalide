@@ -64,11 +64,11 @@ component! {
 
                 for (k, v) in &edges {
                     if v.len() > 1 {
-                        let mut error: String = "There is a one 2 many connection :\n".into();
+                        let mut error: String = "There is a forbidden one-2-many simple port connection :\n".into();
                         for e in v {
                             error = format!("{}{} -> {}\n", error, k, e);
                         }
-                        error = format!("{}Please use the clone component\n", error);
+                        error = format!("{}Please use the ip_clone component\n", error);
                         errors.push(error);
                     }
                 }
