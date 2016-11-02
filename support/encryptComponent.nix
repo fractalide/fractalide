@@ -1,10 +1,10 @@
 { pkgs, fetchFromGitHub, writeTextFile, buildGoPackage, debug }:
-{ encrypt_for_keybase_user, using_my_keybase_config_file }:
+{ fractalide_user, keybase_config_file }:
 component:
 let
 config_file = writeTextFile {
   name = "keybase_config_file";
-  text = builtins.readFile using_my_keybase_config_file;
+  text = builtins.readFile keybase_config_file;
   executable = false;
 };
 keybase = buildGoPackage rec {
@@ -24,14 +24,21 @@ keybase = buildGoPackage rec {
 };
 directory = if debug == "true" then "debug" else "release";
 fractalideComponent = pkgs.stdenv.lib.overrideDerivation component (oldAttrs : {
-  name = oldAttrs.name + "-" + encrypt_for_keybase_user;
+  name = oldAttrs.name + "-" + fractalide_user;
   impureEnvVars = ["http_proxy" "https_proxy" "ftp_proxy" "all_proxy" "no_proxy"];
   installPhase = ''
     runHook preInstall
     mkdir -p $out/lib
-    for f in $(find target/${directory} -maxdepth 1 -type f); do
-    cp $f $out/lib
-    done;
+    touch /tmp/keybase.pid
+    exe="/bin/keybase"
+    keybase=$(<${keybase}/nix-support/propagated-native-build-inputs)$exe
+
+    $keybase \
+    --socket-file=.keybase.pid \
+    --log-file=./keybase.log \
+    --config-file=${config_file} \
+    encrypt ${fractalide_user} -i target/${directory}/libcomponent.so -b -o $out/lib/libcomponent.so.encrypted
+    ls -la $out/lib/
     '' ;
   });
   in
@@ -47,10 +54,8 @@ fractalideComponent = pkgs.stdenv.lib.overrideDerivation component (oldAttrs : {
   --config-file=${config_file} \
   ping*/
 
-
-  /*$keybase \
-  --socket-file=.keybase.pid \
-  --log-file=./keybase.log \
-  --config-file=${config_file} \
-  encrypt ${encrypt_for_keybase_user} -i target/${directory}/libcomponent.so -b -o $out/lib/libcomponent.so.encrypted
-  ls -la $out/lib/*/
+  /*runHook preInstall
+  mkdir -p $out/lib
+  for f in $(find target/${directory} -maxdepth 1 -type f); do
+  cp $f $out/lib
+  done;*/
