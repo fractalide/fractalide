@@ -27,7 +27,7 @@ component! {
                         if v == "" { true }
                         else {
                             if sort != "" {
-                                errors.push(format!("The node \"{}()\" has its type declared more than once : {} and {}", name, v, sort));
+                                errors.push(format!("The node \"{}()\" has been declared more than once : {} and {}", name, v, sort));
                             }
                             false
                         }
