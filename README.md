@@ -9,7 +9,7 @@
 
 **Fractalide is a programming platform that intends to make efficient microservices simple to reason about.**
 
-Where [simple is made easy](https://www.infoq.com/presentations/Simple-Made-Easy).
+The word *simple* in "Simple Rust Microservices" means *simple* to reason about, though we aim higher, we'd like [simplicity to be made easy](https://www.infoq.com/presentations/Simple-Made-Easy).
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
@@ -26,6 +26,7 @@ Non-trivial applications today do not compose very well, nor pipe data from one 
 Fractalide comes with its own actor oriented dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
 
 * Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about.
+* These components are black boxes which are only dependent on data and not any other component.
 * Fractalide [components](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI. The components have a standardized API that forbids state leakage.
 * This standardized API is key to component composition and is achieved via a coordination layer called a `subnet` or a sub-network of components, which describes how components are connected and compose together. A `subnet`, from an interface perspective, is indistinguishable from a Rust component, this, neatly, allows for layers of abstraction which fall away at runtime.
 * Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. This is thanks to [Nix](http://nixos.org/nix)'s declarative abilities and rich package set which can be explored [here](http://nixos.org/nixos/packages.html). Declarative dependencies are more simple to reason about.
