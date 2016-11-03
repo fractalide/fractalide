@@ -10,12 +10,12 @@
   repo = fetchFromGitHub {
     owner = "fractalide";
     repo = "frac_net_http";
-    rev = "04292f7a020a9f700a48fb805536b8b05da3267b";
-    sha256 = "03m7mr3j27msk3jnnb317kymw6v1b3gm1131mpx20lb9q6rg8rkz";
+    rev = "6bb7246d18d420b57a7c8e1f67bd7bafbfb7b19f";
+    sha256 = "14z603f2g2niphsqhclnzkr7i6nx8f3db1dci9h7vy5dq5fmb27j";
   };
   /*
   repo = /home/denis/dev/frac/frac_net_hyper;
-    */
+  */
   external_net_http = import repo {inherit pkgs support contracts components; fractalide = null;};
   in
   external_net_http.test
