@@ -4,7 +4,7 @@ version = "0.1.0"
 dependencies = [
  "capnp 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 1.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustfbp 0.3.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustfbp 0.3.20 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -72,33 +72,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "phf"
-version = "0.7.17"
+version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "phf_shared 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf_shared 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "phf_codegen"
-version = "0.7.17"
+version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "phf_generator 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "phf_shared 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf_generator 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf_shared 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "phf_generator"
-version = "0.7.17"
+version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "phf_shared 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf_shared 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.3.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "phf_shared"
-version = "0.7.17"
+version = "0.7.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -111,7 +111,7 @@ dependencies = [
 
 [[package]]
 name = "rustfbp"
-version = "0.3.19"
+version = "0.3.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "capnp 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "0.8.16"
+version = "0.8.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -132,7 +132,7 @@ dependencies = [
  "dtoa 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "itoa 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "num-traits 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 0.8.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 0.8.17 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -140,8 +140,8 @@ name = "target_build_utils"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "phf 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
- "phf_codegen 0.7.17 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "phf_codegen 0.7.19 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde_json 0.8.3 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

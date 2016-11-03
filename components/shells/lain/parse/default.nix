@@ -7,7 +7,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ generic_text list_command ];
-  depsSha256 = "1275aaqqswkd53szg4pr9lsyx084cbll5pxyyqvxpyf9mic7fk27";
+  depsSha256 = "1nlh9a4lvq1qvnb8fvagvp3amasahyf4ns687z1aca3kgd50nhdr";
 
   meta = with stdenv.lib; {
     description = "Component: shells_lain_parse: commands go in and flow script comes out.";
