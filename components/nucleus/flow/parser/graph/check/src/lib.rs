@@ -27,7 +27,7 @@ component! {
                         if v == "" { true }
                         else {
                             if sort != "" {
-                                errors.push(format!("The node {} have is type declared more than once : {} and {}", name, v, sort));
+                                errors.push(format!("The node \"{}()\" has been declared more than once : {} and {}", name, v, sort));
                             }
                             false
                         }
@@ -42,10 +42,10 @@ component! {
             let mut edges: HashMap<String, Vec<String>> = HashMap::new();
             for n in try!(graph.borrow().get_edges()).iter() {
                 if !nodes.contains_key(try!(n.get_o_name())) {
-                    errors.push(format!("Use the node {}, but it is not declared", try!(n.get_o_name())));
+                    errors.push(format!("Uninstantiated node \"{}()\"", try!(n.get_o_name())));
                 }
                 if !nodes.contains_key(try!(n.get_i_name())) {
-                    errors.push(format!("Use the node {}, but it is not declared", try!(n.get_i_name())));
+                    errors.push(format!("Uninstantiated node \"{}()\"", try!(n.get_i_name())));
                 }
                 let sender = if try!(n.get_o_selection()) == "" {
                     format!("{}() {}", try!(n.get_o_name()), try!(n.get_o_port()))
@@ -64,11 +64,11 @@ component! {
 
                 for (k, v) in &edges {
                     if v.len() > 1 {
-                        let mut error: String = "There is a one 2 many connection :\n".into();
+                        let mut error: String = "There is a forbidden one-2-many simple port connection :\n".into();
                         for e in v {
                             error = format!("{}{} -> {}\n", error, k, e);
                         }
-                        error = format!("{}Please use the clone component\n", error);
+                        error = format!("{}Please use the ip_clone component\n", error);
                         errors.push(error);
                     }
                 }
@@ -87,11 +87,11 @@ component! {
                 }
                 for (k, v) in &inputs {
                     if v.len() > 1 {
-                        let mut error: String = "There is a one 2 many connection :\n".into();
+                        let mut error: String = "There is a forbidden one-2-many simple port connection :\n".into();
                         for e in v {
                             error = format!("{}{} => {}\n", error, k, e);
                         }
-                        error = format!("{}Please use the clone component\n", error);
+                        error = format!("{}Please use the ip_clone component\n", error);
                         errors.push(error);
                     }
                 }
