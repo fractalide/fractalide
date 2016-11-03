@@ -276,7 +276,7 @@ impl Ports {
     /// }
     /// // Produce `1 2`
     /// ```
-    pub fn get_input_selections(&self, port_in: &'static str) -> Result<Vec<String>> {
+    pub fn get_input_selections(&self, port_in: &str) -> Result<Vec<String>> {
         self.inputs_array.get(port_in).ok_or(result::Error::PortNotFound(self.name.clone(), port_in.into()))
             .map(|port| {
                 port.keys().cloned().collect()
@@ -297,7 +297,7 @@ impl Ports {
     /// }
     /// // Produce `1 2`
     /// ```
-    pub fn get_output_selections(&self, port_out: &'static str) -> Result<Vec<String>> {
+    pub fn get_output_selections(&self, port_out: &str) -> Result<Vec<String>> {
         self.outputs_array.get(port_out).ok_or(result::Error::PortNotFound(self.name.clone(), port_out.into()))
             .map(|port| {
                 port.keys().cloned().collect()
@@ -439,7 +439,7 @@ impl Ports {
     /// ip.action = "1".to_string();
     /// try!(send_action("output", ip)); // Send on the array output port "output", selection "1"
     /// ```
-    pub fn send_action(&self, port_out: &'static str, ip: IP) -> Result<()> {
+    pub fn send_action(&self, port_out: &str, ip: IP) -> Result<()> {
         if try!(self.get_output_selections(&port_out)).contains(&ip.action) {
             self.send_array(&port_out, &ip.action.clone(), ip)
         } else {
