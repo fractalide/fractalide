@@ -28,6 +28,9 @@ rec {
   list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
+  net_http_address = callPackage ./net/http/address {};
+  net_http_request = callPackage ./net/http/request {};
+  net_http_response = callPackage ./net/http/response {};
   net_ndn_data = callPackage ./net/ndn/data {};
   net_ndn_interest = callPackage ./net/ndn/interest {};
   option_path = callPackage ./option_path {};
