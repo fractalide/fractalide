@@ -60,7 +60,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   shells_lain_prompt = callPackage ./shells/lain/prompt {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};
-  ui_js = callPackage ./ui/js {inherit pkgs support contracts; components = self;};
+  ui_js_components = fractals.ui_js.components;
   web_server = callPackage ./web/server {};
   workbench = fractals.workbench.components.workbench;
   workbench_encrypt = fractals.workbench.components.workbench_encrypt;

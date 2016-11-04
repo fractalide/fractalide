@@ -4,7 +4,7 @@
   , io_print
   , ip_action
   , ip_dispatcher
-  , ui_js
+  , ui_js_components
   # contracts
   , generic_text
   , ...}:
@@ -14,13 +14,13 @@
    subnet = ''
    input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
 
-   td(${ui_js.flex}) output -> input out_dispatch()
+   td(${ui_js_components.flex}) output -> input out_dispatch()
 
-   lr(${ui_js.flex}) output -> places[0] td()
+   lr(${ui_js_components.flex}) output -> places[0] td()
 
-   button(${ui_js.tag}) output -> places[0] lr()
-   button2(${ui_js.tag}) output -> places[2] lr()
-   text(${ui_js.tag}) output -> places[1] lr()
+   button(${ui_js_components.tag}) output -> places[0] lr()
+   button2(${ui_js_components.tag}) output -> places[2] lr()
+   text(${ui_js_components.tag}) output -> places[1] lr()
 
    in_dispatch() output[model] -> input viewer(${app_counter_viewer}) label -> input text()
 
@@ -30,7 +30,7 @@
    '${generic_text}:(text="add")' -> option add()
 
 
-   input(${ui_js.tag}) output -> places[1] td()
+   input(${ui_js_components.tag}) output -> places[1] td()
 
    input() output[input] -> input delta(${ip_action}) output -> input out_dispatch()
    '${generic_text}:(text="delta")' -> option delta()
