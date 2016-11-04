@@ -1,4 +1,4 @@
-{ pkgs, support, contracts, ... }:
+{ pkgs, support, contracts, fractals, ... }:
 let
 callPackage = pkgs.lib.callPackageWith (pkgs // support // contracts // self);
 # insert in alphabetical order to reduce conflicts
@@ -37,7 +37,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_print = callPackage ./maths/boolean/print {};
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
-  net_http = callPackage ./net/http {inherit pkgs support contracts; components = self;};
+  net_http_components = fractals.net_http.components;
   net_ndn = callPackage ./net/ndn {inherit pkgs support contracts; components = self;};
   nucleus_capnp_encode = callPackage ./nucleus/capnp/encode {};
   nucleus_find_component = callPackage ./nucleus/find/component {};
