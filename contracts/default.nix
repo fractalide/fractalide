@@ -1,4 +1,4 @@
-{ pkgs, support, contracts, ... }:
+{ pkgs, support, contracts, fractals, ... }:
 let
 callPackage = pkgs.lib.callPackageWith (pkgs // contracts // support);
 in
@@ -28,9 +28,7 @@ rec {
   list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
-  net_http_address = callPackage ./net/http/address {};
-  net_http_request = callPackage ./net/http/request {};
-  net_http_response = callPackage ./net/http/response {};
+  net_http_contracts = fractals.net_http.contracts;
   net_ndn_data = callPackage ./net/ndn/data {};
   net_ndn_interest = callPackage ./net/ndn/interest {};
   option_path = callPackage ./option_path {};
