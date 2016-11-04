@@ -62,8 +62,8 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   test_sjm = callPackage ./test/sjm {};
   ui_js = callPackage ./ui/js {inherit pkgs support contracts; components = self;};
   web_server = callPackage ./web/server {};
-  workbench = fractals.workbench.components.demo;
-  workbench_encrypt = fractals.workbench.components.demo_encrypt;
+  workbench = fractals.workbench.components.workbench;
+  workbench_encrypt = fractals.workbench.components.workbench_encrypt;
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
 self

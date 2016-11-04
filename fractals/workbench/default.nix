@@ -8,8 +8,8 @@ let
   fractal = fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_workbench";
-    rev = "3098eb66924b4150054fdbdcf08e0036bb6d6ae2";
-    sha256 = "12k2hjlpmd4z5may6876a6zgb2qyb3cnwq50wiaaxncnplwah15i";
+    rev = "4bdcdefb2691e86397b627acef587be5940fe795";
+    sha256 = "1wfnd7h8ramiw69xds4ilz25czqcqgl2rbv7svzz50y5fh2pbbf9";
   };
   /*fractal = ../../../fractals/fractal_workbench;*/
 in
