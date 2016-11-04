@@ -18,7 +18,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   docs = callPackage ./docs {};
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
-  example_wrangle = callPackage ./example/wrangle {inherit pkgs support contracts; components = self;};
+  example_wrangle = fractals.example_wrangle.components.example_wrangle;
   fs_dir_list = callPackage ./fs/dir/list {};
   fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {}; # special name for the main build product
