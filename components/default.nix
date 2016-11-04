@@ -38,7 +38,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
   net_http_components = fractals.net_http.components;
-  net_ndn = callPackage ./net/ndn {inherit pkgs support contracts; components = self;};
+  net_ndn = fractals.net_ndn.components.net_ndn;
   nucleus_capnp_encode = callPackage ./nucleus/capnp/encode {};
   nucleus_find_component = callPackage ./nucleus/find/component {};
   nucleus_find_contract = callPackage ./nucleus/find/contract {};
