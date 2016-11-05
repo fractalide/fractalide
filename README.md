@@ -56,7 +56,7 @@ For the most efficient way forward, ensure you're using [NixOS](http://nixos.org
 ```
 $ cd <your/development/directory>
 $ mkdir fractals && cd fractals
-$ git clone https://gitlab.com/fractalide/fractal_workbench.git
+$ git clone https://github.com/fractalide/fractal_workbench.git
 $ cd fractal_workbench
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
 $ nix-build
@@ -89,9 +89,9 @@ $ cd <your/development/directory>
 $ git clone https://gitlab.com/fractalide/fractalide.git
 $  NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/your/development/directory/fractalide" && export NIX_PATH
 $ mkdir fractals && cd fractals
-$ git clone https://gitlab.com/fractalide/fractal_workbench.git
+$ git clone https://github.com/fractalide/fractal_workbench.git
 ```
-* uncomment this line in your `fractalide` repo: [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14), and comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13): if you followed the folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
+* uncomment [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14) line in your `fractalide` repo, then comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13) lines. If you followed the folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
 ```
 $ cd fractalide
 $ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench
@@ -110,7 +110,7 @@ $ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --args
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
-Go ahead and add components, rename the repo and make useful subnets we can all use!
+Go ahead and add components to your newly cloned `fractal_workbench`, rename the repo and make useful subnets we can all use!
 
 ## Consulting and Support
 Name | Email | Info
