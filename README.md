@@ -50,14 +50,15 @@ Flowscript allows for a separation of business logic and component implementatio
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
 
-### Setup
+### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
 For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution. (Do help out with NixOS and Rust, they're both doing [really well](https://octoverse.github.com/)!)
 ```
-$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
-$ export NIX_PATH
-$ git clone https://gitlab.com/fractalide/frac_workbench.git
-$ cd frac_workbench
+$ cd <your/development/directory>
+$ mkdir fractals && cd fractals
+$ git clone https://github.com/fractalide/fractal_workbench.git
+$ cd fractal_workbench
+$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
 $ nix-build
 ```
 * The first build will make you wait a long time. Thereafter only components that change will be recompiled.
@@ -65,37 +66,42 @@ $ nix-build
 ```
 $ ./result/bin/workbench
 ```
-If you want to install `workbench` into your environment directly, thus accessible from the command line:
-```
-$ cd frac_workbench
-$ nix-env -i -f default.nix
-$ workbench
-```
+navigate to:
+* [localhost:8000](http://localhost:8000/)
+* [localhost:8000/fractalide](http://localhost:8000/fractalide)
+* [localhost:8000/fractalide/hello](http://localhost:8000/fractalide/hello)
 
-### Developing your own application:
+### Building your own fractals
+A `fractal` is a fractalide 3rd party library.
+The folder structure looks like this:
 ```
-$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz"
-$ export NIX_PATH
-$ git clone https://github.com/fractalide/frac_workbench.git
-$ cd frac_workbench
-$ nix-build
+dev
+├── fractalide
+└── fractals
+    ├── fractal_example_wrangle
+    ├── fractal_net_http
+    ├── fractal_workbench
+    └── ... more fractals you've cloned
 ```
-* read the `frac_workbench` README.md file
-* delete the `.git` folder
+* Take note when setting the `NIX_PATH` environment variable below please, it's different from above!
 ```
-$ git init
+$ cd <your/development/directory>
+$ git clone https://gitlab.com/fractalide/fractalide.git
+$  NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/your/development/directory/fractalide" && export NIX_PATH
+$ mkdir fractals && cd fractals
+$ git clone https://github.com/fractalide/fractal_workbench.git
 ```
-* Start adding components and subnets to the `components` and `contracts` folders.
-* ensure you [expose](https://github.com/fractalide/frac_workbench/blob/master/default.nix#L7-L8) the correct top-level component in your root folder `default.nix`
-* [expose](https://github.com/fractalide/fractalide/blob/master/components/workbench/default.nix#L18-L19) your subnet to your clone of fractalide if you want to take advantage of Incremental Compilation.
+* uncomment [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14) line in your `fractalide` repo, then comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13) lines. If you followed the folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
 ```
-$ cd /path/to/fractalide/clone
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
+$ cd fractalide
+$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench
+$ ./result/bin/workbench
 ```
+* Why do the above!?
 
-### Incremental Builds
+#### Incremental Builds!
 Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
-The cache folder can be created from an old result by the buildCache.sh script. Per default the cache folder is saved in the /tmp folder of your system.
+The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system.
 
 Here is an example how you can build with the Incremental Build System:
 
@@ -103,6 +109,8 @@ Here is an example how you can build with the Incremental Build System:
 $ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
+
+Go ahead and add components to your newly cloned `fractal_workbench`, rename the repo and make useful subnets we can all use!
 
 ## Consulting and Support
 Name | Email | Info

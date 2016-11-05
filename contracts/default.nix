@@ -29,8 +29,7 @@ rec {
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   net_http_contracts = fractals.net_http.contracts;
-  net_ndn_data = callPackage ./net/ndn/data {};
-  net_ndn_interest = callPackage ./net/ndn/interest {};
+  net_ndn_contracts = fractals.net_ndn.contracts;
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};

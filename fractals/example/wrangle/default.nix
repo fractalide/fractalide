@@ -7,10 +7,10 @@
 let
   fractal = fetchFromGitHub {
     owner = "fractalide";
-    repo = "fractal_net_http";
-    rev = "bb5e7c1f0883d467c6df7b1f4169b3af71b594e0";
-    sha256 = "1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b";
+    repo = "fractal_example_wrangle";
+    rev = "1624322af132d638373d4bd2283eba213e903a6d";
+    sha256 = "1n84g09k0rh4v9spr3bac0vn79wnrcgbmmxni3mc7banyx31mqql";
   };
-  /*fractal = ../../../../fractals/fractal_net_http;*/
+  /*fractal = ../../../../fractals/fractal_example_wrangle;*/
 in
   import fractal {inherit pkgs support contracts components; fractalide = null;}

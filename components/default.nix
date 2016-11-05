@@ -18,7 +18,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   docs = callPackage ./docs {};
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
-  example_wrangle = callPackage ./example/wrangle {inherit pkgs support contracts; components = self;};
+  example_wrangle = fractals.example_wrangle.components.example_wrangle;
   fs_dir_list = callPackage ./fs/dir/list {};
   fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {}; # special name for the main build product
@@ -38,7 +38,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
   net_http_components = fractals.net_http.components;
-  net_ndn = callPackage ./net/ndn {inherit pkgs support contracts; components = self;};
+  net_ndn = fractals.net_ndn.components.net_ndn;
   nucleus_capnp_encode = callPackage ./nucleus/capnp/encode {};
   nucleus_find_component = callPackage ./nucleus/find/component {};
   nucleus_find_contract = callPackage ./nucleus/find/contract {};
@@ -60,10 +60,10 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   shells_lain_prompt = callPackage ./shells/lain/prompt {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};
-  ui_js = callPackage ./ui/js {inherit pkgs support contracts; components = self;};
-  vendor_noware_service_encrypt = callPackage ./vendor/noware/service/encrypt {inherit pkgs support contracts; components = self;};
+  ui_js_components = fractals.ui_js.components;
   web_server = callPackage ./web/server {};
-  workbench = callPackage ./workbench {inherit pkgs support contracts; components = self;};
+  workbench = fractals.workbench.components.workbench;
+  workbench_encrypt = fractals.workbench.components.workbench_encrypt;
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
 self
