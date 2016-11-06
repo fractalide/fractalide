@@ -42,10 +42,10 @@ component! {
             let mut edges: HashMap<String, Vec<String>> = HashMap::new();
             for n in try!(graph.borrow().get_edges()).iter() {
                 if !nodes.contains_key(try!(n.get_o_name())) {
-                    errors.push(format!("Uninstantiated node \"{}()\"", try!(n.get_o_name())));
+                    errors.push(format!("Uninstantiated node \"{0}()\"\n  Ensure you have included the type of the component in this manner: \"{0}(${{component_name}})\"", try!(n.get_o_name())));
                 }
                 if !nodes.contains_key(try!(n.get_i_name())) {
-                    errors.push(format!("Uninstantiated node \"{}()\"", try!(n.get_i_name())));
+                    errors.push(format!("Uninstantiated node \"{0}()\"\n  Ensure you have included the type of the component in this manner: \"{0}(${{component_name}})\"", try!(n.get_i_name())));
                 }
                 let sender = if try!(n.get_o_selection()) == "" {
                     format!("{}() {}", try!(n.get_o_name()), try!(n.get_o_port()))
