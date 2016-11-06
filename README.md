@@ -87,11 +87,11 @@ dev
 ```
 $ cd <your/development/directory>
 $ git clone https://gitlab.com/fractalide/fractalide.git
-$  NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/your/development/directory/fractalide" && export NIX_PATH
+$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/your/development/directory/fractalide" && export NIX_PATH
 $ mkdir fractals && cd fractals
 $ git clone https://github.com/fractalide/fractal_workbench.git
 ```
-* uncomment [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14) line in your `fractalide` repo, then comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13) lines. If you followed the folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
+* uncomment [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14) line in your `fractalide` repo, then comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13) lines. If you followed the above folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
 ```
 $ cd fractalide
 $ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench

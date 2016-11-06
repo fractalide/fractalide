@@ -102,7 +102,7 @@ impl IP {
         Ok(try!(self.builder.as_mut().unwrap().get_root()))
     }
 
-    /// Write the capnp `Builer` to the `Vec`
+    /// Write a capnp `Builder` to a `Vec`
     ///
     /// # Example
     ///
@@ -136,9 +136,9 @@ impl Clone for IP {
     }
 }
 
-/// An wrapper around `SyncSender<IP>`
+/// A wrapper around `SyncSender<IP>`
 ///
-/// A specific `SyncSender` for the IP object. It also send information to the scheduler.
+/// A specific `SyncSender` for the IP object. It also sends information to the scheduler.
 #[derive(Clone)]
 pub struct IPSender {
     /// The SyncSender, connected to a receiver in another component
@@ -163,7 +163,7 @@ impl IPSender {
 
 /// Represents all the ports of a component
 ///
-/// It provides help to send and receive IP, and to create ports.
+/// Provides help to send and receive IPs, and to create ports.
 pub struct Ports {
     /// The name of the component owning this structure
     name: String,
@@ -182,7 +182,7 @@ pub struct Ports {
 }
 
 impl Ports {
-    /// Create a new Ports
+    /// Create new Ports
     ///
     /// # Example
     /// ```rust,ignore
@@ -226,7 +226,7 @@ impl Ports {
         Ok((ports, senders))
     }
 
-    /// Get the sender of a input ports
+    /// Get the sender of an input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -241,7 +241,7 @@ impl Ports {
             })
     }
 
-    /// Get the sender of a input array ports
+    /// Get the sender of an input array port
     ///
     /// # Example
     /// ```rust,ignore
@@ -262,7 +262,7 @@ impl Ports {
             })
     }
 
-    /// Get the list of the current selections in a array input port
+    /// Get a list of the current selections in an array input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -283,7 +283,7 @@ impl Ports {
             })
     }
 
-    /// Get the list of the current selections in a array output port
+    /// Get a list of the current selections in an array output port
     ///
     /// # Example
     /// ```rust,ignore
@@ -304,7 +304,7 @@ impl Ports {
             })
     }
 
-    /// Receive an IP from an input ports
+    /// Receive an IP from an input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -324,7 +324,7 @@ impl Ports {
         }
     }
 
-    /// Try to receive an IP from an input ports
+    /// Try to receive an IP from an input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -344,7 +344,7 @@ impl Ports {
         }
     }
 
-    /// Receive an IP from an array input ports
+    /// Receive an IP from an array input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -365,7 +365,7 @@ impl Ports {
             })
     }
 
-    /// Try to receive an IP from an array input ports
+    /// Try to receive an IP from an array input port
     ///
     /// # Example
     /// ```rust,ignore
@@ -529,7 +529,7 @@ impl Ports {
 
     /// Change the receiver of a simple output ports
     ///
-    /// usefull if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a component, but keep the existing connection
     ///
     /// ```rust,ignore
     /// ports.set_receiver("input", receiver);
@@ -538,9 +538,9 @@ impl Ports {
         self.inputs.insert(port, recv);
     }
 
-    /// Get the receiver of a simple output ports
+    /// Get the receiver of a simple output port
     ///
-    /// usefull if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a component, but keep the existing connection
     ///
     /// ```rust,ignore
     /// let receiver = try!(ports.remove_receiver("input"));
@@ -550,9 +550,9 @@ impl Ports {
             .map(|recv| { recv })
     }
 
-    /// Get the receiver of a array output ports
+    /// Get the receiver of a array output port
     ///
-    /// usefull if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a component, but keep the existing connection
     ///
     /// ```rust,ignore
     /// let receiver = try!(ports.remove_array_receiver("inputs", "1"));
@@ -566,7 +566,7 @@ impl Ports {
             })
     }
 
-    /// Add a selection in an input array port, and retrieve the corresponding IPSender
+    /// Add a selection to an input array port, and retrieve the corresponding IPSender
     ///
     /// ```rust,ignore
     /// let sender = try!(ports.add_input_selection("inputs", "1"));
@@ -586,9 +586,9 @@ impl Ports {
             })
     }
 
-    /// Change the receiver of an array output ports
+    /// Change the receiver of an array output port
     ///
-    /// usefull if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a component, but keep the existing connection
     ///
     /// ```rust,ignore
     /// ports.add_input_receiver("input", receiver);
