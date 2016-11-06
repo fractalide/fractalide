@@ -112,7 +112,7 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 
 Go ahead and add components to your newly cloned `fractal_workbench`, rename the repo and make useful subnets we can all use!
 
-## Consulting and Support
+### Consulting and Support
 Name | Email | Info
 -----|-------|-----
 Stewart Mackenzie | setori88@gmail.com | Founder and maintainer of Fractalide.
@@ -130,6 +130,10 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 * We will usually merge patches aggressively, without a blocking review. If you send us bad patches, without taking the care to read and understand our rules, that reflects on you. Do NOT expect us to do your homework for you.
 * As rapidly we will merge poor quality patches, we will remove them again. If you insist on arguing about this and trying to justify your changes, we will simply ignore you and your patches. If you still insist, we will ban you.
 * Fractalide is not a sandbox where "anything goes until the next stable release". If you want to experiment, please work in your own projects.
+
+### Documentation
+
+* [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.
 
 ### License
 The project license is specified in LICENSE.
