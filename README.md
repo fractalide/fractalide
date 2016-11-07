@@ -134,6 +134,7 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 ### Documentation
 
 * [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.
+* [Creating Fractals](fractals/README.md) 
 
 ### License
 The project license is specified in LICENSE.
