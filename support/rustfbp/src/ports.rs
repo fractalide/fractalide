@@ -658,7 +658,7 @@ mod test_port {
         assert!(ok.is_ok());
 
         let ip = super::IP::new();
-        p1.send("out", ip).expect("cannot send second times");
+        p1.send("out", ip).expect("cannot send second time");
 
         let nip = p1.recv("in");
         assert!(nip.is_ok());
@@ -675,27 +675,27 @@ mod test_port {
         let nip = p1.recv_array("in_a", "1");
         assert!(nip.is_ok());
 
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
             );
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
             );
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
             );
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
             );
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Inc(ref name) = i { name == "unique" } else { false }
             );
-        let i = r.recv().expect("cannot received the sched");
+        let i = r.recv().expect("cannot receive scheduler");
         assert!(
             if let CompMsg::Dec(ref name) = i { name == "unique" } else { false }
             );
