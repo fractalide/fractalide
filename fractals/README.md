@@ -62,16 +62,15 @@ in
   import fractal {inherit pkgs support contracts components; fractalide = null;}
 ```
 
-* The `pkgs`, `support`, `components`, `contracts` and `fetchFromGitHub` are arguments passed into this closure.
-	* In the `let` expression you'll see details describing the location of the `fractal`.
-		* Namely the `owner` is the git repository,
-		* `repo` is the git repository in question
-		* `rev` indicates the git revision you want to import and
-		* `sha256` is a neat `nix` mechanism to assist in deterministic builds. To obtain the correct `sha256` try build your project with an incorrect `sha256` (change the first alpha-numeric character in `1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b` to a `2`). Nix will download the repository and check that the actual `sha256` matches against what you incorrectly inserted. Nix will tell you what the correct `sha256` is. Copy it and insert the correct `sha256`, replacing `2vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b`.
-		* Please notice the line:
-		`/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to clone a `fractal` to your local `/dev/fractals` folder then tell nix not to refer to the remote repo but your local clone. Comment out the `fetchFromGitHub` expression and uncomment the above local repo path clone.  Please ensure this line is commented out when you publish your `fractal` upstream! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
-		* The line:
-`import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making available your components to everyone.
+* Note about the above expression:
+  * The `pkgs`, `support`, `components`, `contracts` and `fetchFromGitHub` are arguments passed into this closure.
+  * The `let` expression contains a `fetchFromGitHub` expression describing the location of the `fractal`.
+  	* Namely the `owner` is the git repository,
+  	* `repo` is the git repository in question
+  	* `rev` indicates the git revision you want to import and
+  	* `sha256` is a neat `nix` mechanism to assist in deterministic builds. To obtain the correct `sha256` try build your project with an incorrect `sha256` (change the first alpha-numeric character in `1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b` to a `2`). Nix will download the repository and check that the actual `sha256` matches against what you incorrectly inserted. Nix will tell you what the correct `sha256` is. Copy it and insert the correct `sha256`, replacing `2vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b`.
+  * Please notice the line: `/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to clone a `fractal` to your local `/dev/fractals` folder then tell nix not to refer to the remote repo but your local clone. Comment out the `fetchFromGitHub` expression and uncomment the above local repo path clone.  Please ensure this line is commented out when you publish your `fractal` upstream! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
+  * The line: `import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making available your components to everyone.
 
 * The last step is to expose the exact components / contracts to `dev/fractalide/components/default.nix` and `dev/fractalide/contracts/default.nix`.
 This is done in this manner:
@@ -89,7 +88,8 @@ The cache folder can be created from an old result by the `buildCache.sh` script
 Here is an example how you can build with the Incremental Build System:
 
 ```
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet net_http
+$ cd dev/fractalide
+$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
