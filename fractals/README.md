@@ -62,7 +62,7 @@ in
   import fractal {inherit pkgs support contracts components; fractalide = null;}
 ```
 
-* Note about the above expression:
+* Notes on the above expression:
   * The `pkgs`, `support`, `components`, `contracts` and `fetchFromGitHub` are arguments passed into this closure.
   * The `let` expression contains a `fetchFromGitHub` expression describing the location of the `fractal`.
   	* `owner` of the git repository i.e.: `github.com/fractalide`
@@ -70,7 +70,7 @@ in
   	* `rev` indicates the git revision you want to import i.e.: `https://github.com/fractalide/fractal_net_http/commit/66ad3bf74b04627edc71227b3e5b944561854367`
   	* `sha256` is a neat `nix` mechanism to assist in deterministic builds. To obtain the correct `sha256` try build your project with an incorrect `sha256` (change the first alpha-numeric character in `1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b` to a `2`). Nix will download the repository and check that the actual `sha256` matches against what you incorrectly inserted. Nix will tell you what the correct `sha256` is. Copy it and insert the correct `sha256`, replacing `2vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b`.
   * Please notice the line: `/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to tell nix not to refer to the remote repo but your local clone of `fractal_net_http`. Comment out the `fetchFromGitHub` expression and uncomment the above local repo clone path. When you publish your `fractal` upstream, ensure this line is commented out! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
-  * The line: `import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making available your components to everyone.
+  * The line: `import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making your components available to everyone.
 
 * The last step is to expose the exact components / contracts to `dev/fractalide/components/default.nix` and `dev/fractalide/contracts/default.nix`.
 This is done in this manner:
