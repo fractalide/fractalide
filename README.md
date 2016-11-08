@@ -65,6 +65,7 @@ $ nix-build
 * Build times will improve as soon as these two issues [1](https://github.com/rust-lang/cargo/issues/3215) [2](https://github.com/NixOS/nixpkgs/issues/18111) are fixed, and cargo on nixpkgs supports the [official mechanism](http://doc.crates.io/source-replacement.html) for using pre-downloaded dependencies. It means Fractalide can use a version of nixpkgs where dependencies have been built by Hydra, and can benefit from binary package distribution.
 ```
 $ ./result/bin/workbench
+
 ```
 navigate to:
 * [localhost:8000](http://localhost:8000/)
@@ -73,7 +74,7 @@ navigate to:
 
 ### Building your own fractals
 
-A `fractal` is a fractalide 3rd party library. [Learn more](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
+A `fractal` is a fractalide 3rd party library. [Learn more](fractals/README.md)
 
 ### Consulting and Support
 Name | Email | Info
