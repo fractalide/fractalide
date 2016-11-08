@@ -86,18 +86,13 @@ Consulting not limited to just Fractalide work, but Rust gigs in general.
 ### Contributing to Fractalide
 The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
 
-Please read this document BEFORE you send a patch:
+Please read this document before you send a patch:
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
-Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people. Some people seem to not understand this. So in case of doubt:
-* Each patch defines one clear and agreed problem, and one clear, minimal, plausible solution. If you come with a large, complex problem and a large, complex solution, you will provoke a negative reaction from Fractalide maintainers and users.
-* We will usually merge patches aggressively, without a blocking review. If you send us bad patches, without taking the care to read and understand our rules, that reflects on you. Do NOT expect us to do your homework for you.
-* As rapidly we will merge poor quality patches, we will remove them again. If you insist on arguing about this and trying to justify your changes, we will simply ignore you and your patches. If you still insist, we will ban you.
-* Fractalide is not a sandbox where "anything goes until the next stable release". If you want to experiment, please work in your own projects.
+Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
 ### Documentation
-
 * [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.
-* [Create your own Fractal](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
+* [Build your own Fractal](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
 
 ### License
 The project license is specified in LICENSE.

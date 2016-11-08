@@ -69,7 +69,7 @@ in
   	* `repo` is the git repository in question i.e.: `github.com/fractalide/fractal_net_http`
   	* `rev` indicates the git revision you want to import i.e.: `https://github.com/fractalide/fractal_net_http/commit/66ad3bf74b04627edc71227b3e5b944561854367`
   	* `sha256` is a neat `nix` mechanism to assist in deterministic builds. To obtain the correct `sha256` try build your project with an incorrect `sha256` (change the first alpha-numeric character in `1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b` to a `2`). Nix will download the repository and check that the actual `sha256` matches against what you incorrectly inserted. Nix will tell you what the correct `sha256` is. Copy it and insert the correct `sha256`, replacing `2vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b`.
-  * Please notice the line: `/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to tell nix not to refer to the remote repo but your local clone of `fractal_net_http`. Comment out the `fetchFromGitHub` expression and uncomment the above local repo clone path.  Please ensure this line is commented out when you publish your `fractal` upstream! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
+  * Please notice the line: `/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to tell nix not to refer to the remote repo but your local clone of `fractal_net_http`. Comment out the `fetchFromGitHub` expression and uncomment the above local repo clone path. When you publish your `fractal` upstream, ensure this line is commented out! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
   * The line: `import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making available your components to everyone.
 
 * The last step is to expose the exact components / contracts to `dev/fractalide/components/default.nix` and `dev/fractalide/contracts/default.nix`.
@@ -78,12 +78,12 @@ This is done in this manner:
 `net_http_components = fractals.net_http.components;`
 In this case there is no specific top level component you'd wish to expose so the convention `*_components` is used to indicate this. Whereas if you have a specific component you'd wish to expose then you'd name it as such:
 `net_http = fractals.net_http.components.http`. Why the `*.http`? well that's what the component is named in the namespace [here](https://github.com/fractalide/fractal_net_http/blob/master/components/default.nix#L5). Please notice the lack of the `*_components` when exporting a single component.
-	* Regarding importing contracts, typically you don't need to import contracts, but there are times when you need a special contract which must operate on the public side of the `fractal` and thus useable across a number of `fractals`, say the [`net_http_contracts.request`](https://github.com/fractalide/fractal_net_http/blob/master/contracts/default.nix#L8)
+	* Regarding importing contracts, typically you don't need to import contracts, but there are times when you need a special contract which must operate on the public side of the `fractal` and thus usable across a number of `fractals`, say the [`net_http_contracts.request`](https://github.com/fractalide/fractal_net_http/blob/master/contracts/default.nix#L8)
 You'd use a [similar mechanism](https://github.com/fractalide/fractalide/blob/2312ac77fbb09f7a6cb2d29b79496a83aade3852/contracts/default.nix#L31) as above when exposing your contracts.
 
 ### Incremental Builds
 Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
-The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system.
+The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system. Incremental Builds permit you to compile a crate without having to recompiled the crate dependency tree.
 
 Here is an example how you can build with the Incremental Build System:
 
