@@ -73,7 +73,7 @@ navigate to:
 
 ### Building your own fractals
 
-A `fractal` is a fractalide 3rd party library. [Learn more](../fractals/README.md)
+A `fractal` is a fractalide 3rd party library. [Learn more](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
 
 ### Consulting and Support
 Name | Email | Info
