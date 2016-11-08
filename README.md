@@ -72,47 +72,10 @@ navigate to:
 * [localhost:8000/fractalide/hello](http://localhost:8000/fractalide/hello)
 
 ### Building your own fractals
-A `fractal` is a fractalide 3rd party library.
-The folder structure looks like this:
-```
-dev
-├── fractalide
-└── fractals
-    ├── fractal_example_wrangle
-    ├── fractal_net_http
-    ├── fractal_workbench
-    └── ... more fractals you've cloned
-```
-* Take note when setting the `NIX_PATH` environment variable below please, it's different from above!
-```
-$ cd <your/development/directory>
-$ git clone https://gitlab.com/fractalide/fractalide.git
-$  NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/your/development/directory/fractalide" && export NIX_PATH
-$ mkdir fractals && cd fractals
-$ git clone https://github.com/fractalide/fractal_workbench.git
-```
-* uncomment [this](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L14) line in your `fractalide` repo, then comment out [these](https://github.com/fractalide/fractalide/blob/master/fractals/workbench/default.nix#L8-L13) lines. If you followed the folder structure above, `fractalide` should be referring to your local `fractals/fractal_workbench` repo.
-```
-$ cd fractalide
-$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench
-$ ./result/bin/workbench
-```
-* Why do the above!?
 
-#### Incremental Builds!
-Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
-The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system.
+A `fractal` is a fractalide 3rd party library. [Learn more](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
 
-Here is an example how you can build with the Incremental Build System:
-
-```
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
-```
-If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
-
-Go ahead and add components to your newly cloned `fractal_workbench`, rename the repo and make useful subnets we can all use!
-
-## Consulting and Support
+### Consulting and Support
 Name | Email | Info
 -----|-------|-----
 Stewart Mackenzie | setori88@gmail.com | Founder and maintainer of Fractalide.
@@ -130,6 +93,11 @@ Fractalide grows by the slow and careful accretion of simple, minimal solutions 
 * We will usually merge patches aggressively, without a blocking review. If you send us bad patches, without taking the care to read and understand our rules, that reflects on you. Do NOT expect us to do your homework for you.
 * As rapidly we will merge poor quality patches, we will remove them again. If you insist on arguing about this and trying to justify your changes, we will simply ignore you and your patches. If you still insist, we will ban you.
 * Fractalide is not a sandbox where "anything goes until the next stable release". If you want to experiment, please work in your own projects.
+
+### Documentation
+
+* [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.
+* [Create your own Fractal](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
 
 ### License
 The project license is specified in LICENSE.

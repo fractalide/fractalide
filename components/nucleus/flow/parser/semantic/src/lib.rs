@@ -103,7 +103,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             ErrorS => { ErrorS },
                             IIP => { IIPBind },
                             _ => {
-                                errors.push(format!("line {} : -> found, one of {} expected", line, get_expected(&state)));
+                                errors.push(format!("line {} : Found a \"->\", when \"{}\" was expected.", line, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -114,7 +114,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             Port => { PortExternal },
                             ErrorS => { ErrorS },
                             _ => {
-                                errors.push(format!("line {} : => found, one of {} expected", line, get_expected(&state)));
+                                errors.push(format!("line {} : Found a \"=>\", when \"{}\" was expected.", line, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -140,7 +140,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             ErrorS => { ErrorS },
                             IIPBind => { IIPBindPort },
                             _ => {
-                                errors.push(format!("line {} : Port {}[{}] found, one of {} expected", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -195,7 +195,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             Break => { Comp },
                             ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Comp },
                             _ => {
-                                errors.push(format!("line {} : Comp {}({}) found, one of {} expected", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found component \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
                                 ErrorS
                             },
                         }
@@ -207,7 +207,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             ErrorS => { IIP },
                             Break => { IIP },
                             _ => {
-                                errors.push(format!("line {} : IIP '{}' found, one of {} expected", line, iip, get_expected(&state)));
+                                errors.push(format!("line {} : Found an IIP \"{}\", when \"{}\" was expected.", line, iip, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -222,7 +222,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             Break => { Break },
                             ErrorS => { ErrorS },
                             _ => {
-                                errors.push(format!("line {} : NewLine found, one of {} expected", line, get_expected(&state)));
+                                errors.push(format!("line {} : Found a \"\n\" or (new line), when \"{}\" was expected.", line, get_expected(&state)));
                                 ErrorS
                             },
                         };
