@@ -14,6 +14,7 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   app_growtest = callPackage ./app/growtest {};
   app_model = callPackage ./app/model {};
   app_test = callPackage ./app/test {};
+  app_todo_components = fractals.app_todo.components;
   debug = callPackage ./debug {};
   docs = callPackage ./docs {};
   drop_ip = callPackage ./drop/ip {};
