@@ -9,7 +9,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ fbp_graph path generic_text fbp_action ];
-  depsSha256 = "1zg4xqngg3blvscz0zp77j5xgp42ppxavwflcgxfrk5v8p1pzscs";
+  depsSha256 = "0f8mhd9l7zsxa8rc8xajww2x47n2iz82pa952iz16v4qk8zw1aaq";
 
   meta = with stdenv.lib; {
     description = "Component: Fractalide scheduler";
