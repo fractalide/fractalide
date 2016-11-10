@@ -86,11 +86,9 @@ Denis Michiels | dmichiels@gmail.com | Founder and maintainer of Fractalide.
 Consulting not limited to just Fractalide work, but Rust gigs in general.
 
 ### Contributing to Fractalide
-The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
-
-Please read this document before you send a patch:
+* The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
-Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
+* Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
 ### Documentation
 * [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.

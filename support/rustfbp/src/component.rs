@@ -1,8 +1,8 @@
-//! This module helps to create a Component
+//! This crate helps to create a Fractalide component
 //!
-//! It provides a macro `component` which take the high level view of the component, and create the code for the scheduler.
+//! It provides the macro `component` which takes the high level view of the component, and creates the code for the scheduler.
 //!
-//! It also declare the Trait Component. It's the common methods between all components, needed by the scheduler.
+//! It also declare the Trait Component and the shared methods needed by every component and the scheduler.
 
 
 extern crate capnp;
@@ -32,13 +32,13 @@ pub trait Component {
 ///
 /// ```rust,ignore
 /// component! {
-///    display, contract(generic_text)
+///    display, contracts(generic_text)
 ///    inputs(input: any),
 ///    inputs_array(),
 ///    outputs(output: any),
 ///    outputs_array(),
 ///    option(generic_text),
-///    acc()
+///    acc(), portal()
 ///    fn run(&mut self) -> Result<()> {
 ///        // Receive an IP
 ///        let ip = try!(self.ports.recv("input"));
