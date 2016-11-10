@@ -5,6 +5,7 @@ in
 # insert in alphabetical order to reduce conflicts
 rec {
   app_counter = callPackage ./app/counter {};
+  app_todo_contracts = fractals.app_todo.contracts;
   command = callPackage ./command {};
   domain_port = callPackage ./domain_port {};
   fbp_action = callPackage ./fbp/action {};
