@@ -48,7 +48,7 @@ Flowscript allows for a separation of business logic and component implementatio
 
 ### Steps towards stable release.
 - [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
-- [x] [Fractals](https://github.com/fractalide/fractal_workbench) - allowing you to create your own repositories outside the canonical Fractalide repository.
+- [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
 - [ ] Service composition
 - [ ] Working, deployable example of a simple microservices setup - please give feedback!
