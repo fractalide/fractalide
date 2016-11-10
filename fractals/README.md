@@ -39,6 +39,7 @@ Take note when setting the `NIX_PATH` environment variable, it must include the 
 * when you start a new shell just type `<ctrl>-r` then type `125ff` this will search your command history for this command, or just persist it in you `~/.bashrc` file.
 * `$ mkdir dev/fractals && cd dev/fractals`
 * `$ git clone git://github.com/fractalide/fractal_workbench.git fractal_net_http`
+* `$ git remote set-url origin git://new.url.you.control.here`
 The `fractal_workbench` repo provides a minimum correct structure for your `fractal`.  Keep the repo naming convention `fractal_*` for your repo as it'll be easy for the community to see this is a `fractalide` related project.
 * `$ cd dev/fractalide/fractals`
 * create your needed directory hierarchy `dev/fractalide/fractals/net/http/default.nix`.
