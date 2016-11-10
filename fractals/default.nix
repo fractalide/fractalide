@@ -5,6 +5,7 @@ callPackage = pkgs.lib.callPackageWith (pkgs // support // contracts // componen
 self = rec {
   example_wrangle = callPackage ./example/wrangle {inherit pkgs support contracts components;};
   app_todo = callPackage ./app/todo {inherit pkgs support contracts components;};
+  nanomsg = callPackage ./nanomsg {inherit pkgs support contracts components;};
   net_http = callPackage ./net/http {inherit pkgs support contracts components;};
   net_ndn = callPackage ./net/ndn {inherit pkgs support contracts components;};
   ui_js = callPackage ./ui/js {inherit pkgs support contracts components;};
