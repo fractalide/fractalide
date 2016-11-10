@@ -82,6 +82,9 @@ In this case there is no specific top level component you'd wish to expose so th
 You'd use a [similar mechanism](https://github.com/fractalide/fractalide/blob/2312ac77fbb09f7a6cb2d29b79496a83aade3852/contracts/default.nix#L31) as above when exposing your contracts.
 
 ### Incremental Builds
+
+Incremental Builds speed up the development process, so that one doesn't have to compile the entire crate from scratch each time you make a change to the source code.
+
 Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
 The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system. Incremental Builds permit you to compile a crate without having to recompiled the crate dependency tree.
 
