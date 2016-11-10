@@ -46,10 +46,14 @@ Fractalide's components are very strict about accepting data. Strongly inspired 
 ##### Business
 Flowscript allows for a separation of business logic and component implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse components and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
 
-### Layers
-- [x] Flowscript - a declarative dataflow language more suitable for distributed computing.
-- [x] [Fractals](https://github.com/fractalide/frac_workbench). Allowing you to create your own repositories outside of the canonical Fractalide repository.
-- [ ] HTTP support, needed for a decent microservice setup.
+### Steps towards stable release.
+- [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
+- [x] [Fractals](https://github.com/fractalide/fractal_workbench) - allowing you to create your own repositories outside the canonical Fractalide repository.
+- [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
+- [ ] Service composition
+- [ ] Working, deployable example of a simple microservices setup - please give feedback!
+- [ ] Documentation - please give feedback!
+- [ ] Remove cargo
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
 
