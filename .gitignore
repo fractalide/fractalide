@@ -14,3 +14,4 @@ target/
 **/result
 
 core
+*.swp

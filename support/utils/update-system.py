@@ -104,7 +104,7 @@ for root, dirs, files in os.walk("../../components"):
   if "Cargo.toml" in files:
     name = generate_component_name(root)
     cmd =  "nix-build --argstr debug true -A components." + name  + repo
-    print "[ ] - " + name
+    print "[ ] - " + name + " path: " + root
     args = shlex.split(cmd)
     output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
     if error:
@@ -120,40 +120,38 @@ for root, dirs, files in os.walk("../../components"):
       m = re.search('.*hash.*(\w{52}).*when.*', error)
       if m:
         found = m.group(1)
-        print "[!] -- " + name + " has a new depsSha256: "
+        print "[!] -- " + name + " has a new depsSha256"
         find = r"^.*depsSha256 = .*$";
         replace = "  depsSha256 = \"%s\";" % found
         subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
         #output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
-paths = ('../vm')
-for root, dirs, files in chain.from_iterable(os.walk(path) for path in paths):
-    if "Cargo.toml" in files:
-      name = os.path.basename(root)
-      if name == "vm":
-        cmd = "nix-build --argstr debug true -A vm" + repo
-      else:
-        cmd =  "nix-build --argstr debug true -A support." + os.path.basename(root) + repo
-      print "[ ] - " + name
-      args = shlex.split(cmd)
-      output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
-      if error:
-        if re.search('.*has wrong length for hash type.*', error):
-          print error
-          exit()
-        if re.search('.*invalid base-32 hash.*', error):
-          exit()
-        m = re.search('.*hash.*(\w{52}).*when.*', error)
-        if m:
-          print "[!] -- found new depsSha256... building "
-          found = m.group(1)
-          find = r"^.*depsSha256 = .*$";
-          if name == "vm":
-            space = "    "
-          else:
-            space = "  "
-          replace = space + "depsSha256 = \"%s\";" % found
-          subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
-          output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
+# for root, dirs, files in os.walk("../vm"):
+#     if "Cargo.toml" in files:
+#       name = os.path.basename(root)
+#       cmd = "nix-build --argstr debug true -A vm" + repo
+#       print "[ ] - " + name
+#       print cmd
+#       args = shlex.split(cmd)
+#       output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../vm").communicate()
+#       if error:
+#         print error
+#         if re.search('.*has wrong length for hash type.*', error):
+#           print error
+#           exit()
+#         if re.search('.*invalid base-32 hash.*', error):
+#           exit()
+#         m = re.search('.*hash.*(\w{52}).*when.*', error)
+#         if m:
+#           print "[!] -- found new depsSha256... building "
+#           found = m.group(1)
+#           find = r"^.*depsSha256 = .*$";
+#           if name == "vm":
+#             space = "    "
+#           else:
+#             space = "  "
+#           replace = space + "depsSha256 = \"%s\";" % found
+#           subprocess.call(["sed","-i","s/"+find+"/"+replace+"/g",root+"/default.nix"])
+#           output, error = subprocess.Popen(args, stdout = subprocess.PIPE, stderr= subprocess.PIPE, cwd = "../../").communicate()
 
 print "[*] Done"
