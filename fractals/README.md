@@ -35,11 +35,12 @@ dev
 * `$ cd <your/development/directory>` #hereafter called `dev`
 * `$ git clone https://gitlab.com/fractalide/fractalide.git`
 * `$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=/path/to/dev/fractalide" && export NIX_PATH`
-Take note when setting the `NIX_PATH` environment variable, it must include the path to your newly cloned `fractalide` repo i.e.: `NIX_PATH=...:fractalide=/path/to/dev/fractalide`
-* when you start a new shell just type `<ctrl>-r` then type `125ff` this will search your command history for this command, or just persist it in you `~/.bashrc` file.
+  * Take note when setting the `NIX_PATH` environment variable, it must include the path to your newly cloned `fractalide` repo i.e.: `NIX_PATH=...:fractalide=/path/to/dev/fractalide`
+* Should you start a new shell, type `<ctrl>-r` then type `125ff` this will search your command history for the above command, or just persist the command in your `~/.bashrc` file.
 * `$ mkdir dev/fractals && cd dev/fractals`
 * `$ git clone git://github.com/fractalide/fractal_workbench.git fractal_net_http`
-The `fractal_workbench` repo provides a minimum correct structure for your `fractal`.  Keep the repo naming convention `fractal_*` for your repo as it'll be easy for the community to see this is a `fractalide` related project.
+  * The `fractal_workbench` repo provides a minimum correct structure for your `fractal`.  Keep the repo naming convention `fractal_*` for your repo as it'll be easy for the community to see this is a `fractalide` related project.
+* `$ git remote set-url origin git://new.url.you.control.here`
 * `$ cd dev/fractalide/fractals`
 * create your needed directory hierarchy `dev/fractalide/fractals/net/http/default.nix`.
 * insert the below code into a file called `default.nix` which sits in the above folder.
