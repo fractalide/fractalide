@@ -20,24 +20,43 @@ Help keep us strong by donating Bitcoin to [15g3WQqYtcrqrno3oxGPi8nNe3hP6rJHo6](
 Follow us on [twitter](https://twitter.com/fractalide)
 
 ## Problem 1
-* Non-trivial applications today do not compose very well, nor pipe data from one application/microservice to another simply and easily.
-* Functions within an application compose well, but that same power of composition doesn't exist beyond the executable's boundary. In other words it's not easy to compose reusable executables.
+* Language level modules become tightly coupled with the rest of the code.
 
 ## Solution
-* Fractalide comes with its own actor oriented declarative dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
-* The programmer defines strict boundaries with an interface condusive to composition and abstraction so the same powers of composition can be expressed when composing reusable executables.
-
-More info:
-  * Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find much RPC here.
-  * These components are black boxes which are only dependent on data and not any other component.
-  * Fractalide [components](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI. The components have a standardized API that forbids state leakage.
-  * This standardized API is key to component composition and is achieved via a coordination layer called a `subnet` or a sub-network of components, which describes how components are connected and compose together. A `subnet`, from an interface perspective, is indistinguishable from a Rust component, this, neatly, allows for layers of abstraction which fall away at runtime.
-  * Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. This is thanks to [Nix](http://nixos.org/nix)'s declarative abilities and rich package set which can be explored [here](http://nixos.org/nixos/packages.html). Declarative dependencies are more simple to reason about.
-  * Components communicate using [Cap'n Proto](http://capnproto.org), which is *`a type system for distributed systems`*. Therefore unlike typical microservice platforms, Fractalide allows one to start off with a monolith type infrastructure, where the word "monolith", in this sense, describes a system without network barriers between components, yet, when you wish to introduce a networking boundary between components, the use of Cap'n Proto makes it simpler to achieve *than* having to wrap HTTP layers around each component in more traditional microservice setups.
-  * The Unix Pipe concept typically requires one to parse `stdin`, which can be troublesome, unless you're using Cap'n Proto contracts which conveniently hands structured data to you.
-  * Each Fractalide component draws from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built.
+* Fractalide comes with its own actor oriented, message passing, declarative dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
+* Flowscript (punishingly) enforces well-factored, independent components within a single process that have strict boundaries and standardized API.
+* This standardized API is key to component composition and is achieved via a coordination layer called a `subnet` or a sub-network of components, which describes how components are connected and compose together. A `subnet`, from an interface perspective, is indistinguishable from a Rust component, this, neatly, allows for layers of abstraction which fall away at runtime.
+* These components are black boxes which are only dependent on data and not any other component.
+* Fractalide [components](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
+* Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many 100 millisecond RPC here.
 
 ## Problem 2
+* Data exchange serialization between components aren't condusive to change, as components break.
+
+## Solution
+* The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto contracts which conveniently hands structured data to you.
+* Components communicate using `Cap'n Proto`, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protol buffers ([read the website](http://capnproto.org)). This serialization protocol can be extended without breaking older components. That would be a problem if we weren't in control of our deployed component versions.
+
+## Problem 3
+* Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when upgrading or rolling back.
+
+## Solution
+* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. We use nix to coordinate everything. Nix will become one of the next important polyglot languages, so you might as well start [learning](https://nixcloud.io/tour/?id=1) it now.
+* Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
+
+## Problem 4
+* Updating a single component in an entire cluster of nodes can be hard in many microservices setups.
+
+## Solution
+* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then use automatically use nixops to immediately deploy the components. The process could be manual too.
+
+## Problem 5
+* Test driven development?
+
+## Solution
+* Rust's type system allows you to do type driven development.
+
+## Problem 6
 Security and business interests rarely align these days.
 
 ## Solution
