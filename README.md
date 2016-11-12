@@ -31,30 +31,33 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many 100 millisecond RPC here.
 
 ## Problem 2
-* Data exchange serialization between components aren't condusive to change, as components break.
+* It's easy to disrespect API contracts in many microservices setups.
 
 ## Solution
 * The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto contracts which conveniently hands structured data to you.
-* Components communicate using `Cap'n Proto`, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protol buffers ([read the website](http://capnproto.org)). This serialization protocol can be extended without breaking older components. That would be a problem if we weren't in control of our deployed component versions.
+* A Fractalide upstream component `U` might use Contract `X` to send data to downstream component `D`, each component will reference exactly the same Contract `X` by name alone, hence guaranteeing the two components use the same contract. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same contract. Say you change Contract `X`'s schema, nix will lazily recompile Component `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to contracts will cause dependent components to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
+* Fractalide components communicate using `Cap'n Proto` contracts, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto contracts can be extended without breaking other components. That would be a problem if we weren't in control of our deployed component versions.
 
 ## Problem 3
 * Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when upgrading or rolling back.
 
 ## Solution
-* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. We use nix to coordinate everything. Nix will become one of the next important polyglot languages, so you might as well start [learning](https://nixcloud.io/tour/?id=1) it now.
+* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. Nix will become one of the next important polyglot languages, so you might as well start [learning](https://nixcloud.io/tour/?id=1) it now.
 * Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
 
 ## Problem 4
-* Updating a single component in an entire cluster of nodes can be hard in many microservices setups.
+* Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then use automatically use nixops to immediately deploy the components. The process could be manual too.
+* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then automatically use nixops to immediately deploy the components. The process could be manual too.
 
 ## Problem 5
 * Test driven development?
+* "Agile"?
 
 ## Solution
-* Rust's type system allows you to do type driven development.
+* Rust's type checker, in combination with Cap'n Proto's type system, allows you to do type driven development. It would be disrespectful not to at least hat tip Rust's borrow checker here. *tip*
+* C4 is orders of magnitude more evolved than what "Agile" has become.
 
 ## Problem 6
 Security and business interests rarely align these days.
