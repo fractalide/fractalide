@@ -36,20 +36,20 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ## Solution
 * The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto contracts which conveniently hands structured data to you.
 * A Fractalide upstream component `U` might use Contract `X` to send data to downstream component `D`, each component will reference exactly the same Contract `X` by name alone, hence guaranteeing the two components use the same contract. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same contract. Say you change Contract `X`'s schema, nix will lazily recompile Component `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to contracts will cause dependent components to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
-* Fractalide components communicate using `Cap'n Proto` contracts, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto contracts can be extended without breaking other components. That would be a problem if we weren't in control of our deployed component versions.
+* Fractalide components communicate using `Cap'n Proto` contracts, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto contracts can be extended without breaking components with a different version. That would be a problem if we weren't in complete control of versioning in a distributed system.
 
 ## Problem 3
-* Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when upgrading or rolling back.
+* Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
 
 ## Solution
-* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. Nix will become one of the next important polyglot languages, so you might as well start [learning](https://nixcloud.io/tour/?id=1) it now.
+* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. Nix will become one of the next important polyglot languages, so you might as well man up and start [learning](https://nixcloud.io/tour/?id=1) it now.
 * Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
 
 ## Problem 4
 * Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then automatically use nixops to immediately deploy the components. The process could be manual too.
+* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then automatically use nixops to deploy the entire cluster, again it'll only lazily swap out changed services and not touch unchanged ones. The process could be manual too, fear not OCDs.
 
 ## Problem 5
 * Test driven development?
