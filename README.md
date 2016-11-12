@@ -44,22 +44,15 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ## Solution
 * [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. Nix will become one of the next important polyglot languages, so you might as well man up and start [learning](https://nixcloud.io/tour/?id=1) it now.
 * Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
+* In other words, [Eelco Dolstra](http://nixos.org/~eelco/pubs/) the creator of Nix, has entirely solved this class of errors.
 
 ## Problem 4
 * Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* [Nix](http://nixos.org/nix) as the common language between [Nixops](http://nixos.org/nixops), [Hydra](http://nixos.org/hydra) and [NixOS](http://nixos.org/nixos) meaning we have Continuous Integration and Code Deployment solved for free. Nix will only updates a service that has changed. The process can be done automatically upon every commit. Hydra could compile the needed subnet hierarchies then automatically use nixops to deploy the entire cluster, again it'll only lazily swap out changed services and not touch unchanged ones. The process could be manual too, fear not OCDs.
+* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf)
 
 ## Problem 5
-* Test driven development?
-* "Agile"?
-
-## Solution
-* Rust's type checker, in combination with Cap'n Proto's type system, allows you to do type driven development. It would be disrespectful not to at least hat tip Rust's borrow checker here. *tip*
-* C4 is orders of magnitude more evolved than what "Agile" has become.
-
-## Problem 6
 Security and business interests rarely align these days.
 
 ## Solution
