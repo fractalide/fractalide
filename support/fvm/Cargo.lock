@@ -1,5 +1,5 @@
 [root]
-name = "vm"
+name = "fvm"
 version = "0.2.0"
 dependencies = [
  "capnp 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -153,4 +153,3 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "winapi-build"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-

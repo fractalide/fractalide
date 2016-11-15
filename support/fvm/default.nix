@@ -1,8 +1,8 @@
-{pkgs, components, contracts, support, exeSubnet, ...}:
+{pkgs, components, contracts, support, ...}:
 
 let
-vm  = support.buildRustPackage rec {
-    name = exeSubnet.name;
+fvm  = support.buildRustPackage rec {
+    name = "fvm";
     src = ./.;
     depsSha256 = "0rzfsv9aavlz7r65vmhsbsfb02y3r5rlw2vibabcnk2n06811rxz";
     configurePhase = ''
@@ -22,9 +22,6 @@ vm  = support.buildRustPackage rec {
 
     substituteInPlace src/lib.rs --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
     substituteInPlace src/lib.rs --replace "fbp_action.rs" "${contracts.fbp_action}/src/contract_capnp.rs"
-    substituteInPlace Cargo.toml --replace "vm" "${name}"
-    substituteInPlace src/main.rs --replace "vm" "${name}"
-    substituteInPlace src/main.rs --replace "nix-replace-me" "${exeSubnet}"
     '';
 
     installPhase = ''
@@ -39,4 +36,4 @@ vm  = support.buildRustPackage rec {
   };
 };
 in
-vm
+fvm

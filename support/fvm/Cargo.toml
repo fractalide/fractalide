@@ -1,19 +1,19 @@
 [package]
-name = "vm"
+name = "fvm"
 version = "0.2.0"
 authors = ["Denis Michiels <dmichiels@gmail.com>"]
 license = "MPL-2.0"
-homepage = "http://github.com/fractalide/vm"
-repository = "http://github.com/fractalide/vm"
+homepage = "http://github.com/fractalide/fvm"
+repository = "http://github.com/fractalide/fvm"
 description = "FVM, the Fractalide virtual machine"
 
 [lib]
-name = "vm"
+name = "fvm"
 path = "./src/lib.rs"
 crate-type = ["rlib", "dylib"]
 
 [[bin]]
-name = "vm"
+name = "fvm"
 path = "./src/main.rs"
 
 [dependencies]
