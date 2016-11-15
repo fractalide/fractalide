@@ -49,7 +49,7 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf)[pdf].
+* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf) [pdf].
 
 ## Problem 5
 * Security and business interests rarely align these days.
@@ -89,24 +89,18 @@ $ ./result
 ```
 * Open `firefox`:
 * Install and open the `resteasy` firefox plugin
-* Post : http://localhost:8000/todos/
-* Open "data"
-* Select "custom"
+* Post : `http://localhost:8000/todos/`
+* Open `"data"`
+* Select `"custom"`
 * Keep `Mime type` empty
 * Put `{ "title": "A new title" }` in the textbox.
 * Click `send`
+* Notice the `200` response, now be a cool hacker and make a nifty front end please.
 
 You can also mess around with
-* GET http://localhost:8000/todos/ID
-
-will respond with the above TODO
-* PUT http://localhost:8000/todos/ID
-
-{ "title": "changed title", "completed": true }
-Will change the TODO
-* DELETE HTTP://localhost:8000/todos/ID
-
-will delete the TODO
+* `GET http://localhost:8000/todos/ID`
+* `DELETE http://localhost:8000/todos/ID`
+* `PUT http://localhost:8000/todos/ID`
 
 ### Building your own fractals
 
