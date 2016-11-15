@@ -64,7 +64,7 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
-- [ ] Service composition
+- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix)
 - [ ] Working, deployable example of a simple microservices setup - please give feedback!
 - [ ] Documentation - please give feedback!
 - [ ] Remove cargo
