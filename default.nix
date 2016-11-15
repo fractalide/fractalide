@@ -1,5 +1,5 @@
 { debug ? "--release"
-, subnet ? "lain"
+, subnet ? null
 , local-rustfbp ? ""
 , cache ? null
 , test ? null
@@ -105,13 +105,20 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
   };
 });
 
-exeSubnet = (builtins.head (lib.attrVals [subnet] components));
-components = import ./components {inherit pkgs support contracts fractals;};
-support = import ./support {inherit pkgs debug test local-rustfbp contracts components;};
-contracts = import ./contracts {inherit pkgs contracts support fractals;};
-fractals = import ./fractals {inherit pkgs contracts support components;};
+isValidSubnet = (builtins.head (lib.attrVals [subnet] components));
+defaultSubnet = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
+support = import ./support { inherit pkgs debug test local-rustfbp components contracts; };
+fractals = import ./fractals { inherit pkgs support components contracts; };
+components = import ./components { inherit pkgs support fractals contracts; };
+contracts = import ./contracts { inherit pkgs support fractals contracts; };
+fvm = import ./support/fvm { inherit pkgs support components contracts; };
 in
 {
   inherit components support contracts pkgs;
-  vm = import ./support/vm { inherit pkgs components contracts support exeSubnet;};
+  result = if subnet == null
+  then fvm
+  else pkgs.writeTextFile {
+    name = defaultSubnet.name;
+    text = "${fvm}/bin/fvm ${defaultSubnet}";
+    executable = true;};
 }
