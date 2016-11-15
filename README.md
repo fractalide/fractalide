@@ -86,11 +86,28 @@ $ nix-build
 * The first build will make you wait a long time. Thereafter only components that change will be recompiled.
 * Build times will improve as soon as these two issues [1](https://github.com/rust-lang/cargo/issues/3215) [2](https://github.com/NixOS/nixpkgs/issues/18111) are fixed, and cargo on nixpkgs supports the [official mechanism](http://doc.crates.io/source-replacement.html) for using pre-downloaded dependencies. It means Fractalide can use a version of nixpkgs where dependencies have been built by Hydra, and can benefit from binary package distribution.
 ```
-$ ./result/bin/workbench
+$ ./result
 ```
-navigate to:
-* [localhost:8000](http://localhost:8000/)
-* [localhost:8000/fractalide](http://localhost:8000/fractalide)
+* Open `firefox`:
+* Install and open the `resteasy` firefox plugin
+* Post : http://localhost:8000/todos/
+* Open "data"
+* Select "custom"
+* Keep `Mime type` empty
+* Put `{ "title": "A new title" }` in the textbox.
+* Click `send`
+
+You can also mess around with
+* GET http://localhost:8000/todos/ID
+
+will respond with the above TODO
+* PUT http://localhost:8000/todos/ID
+
+{ "title": "changed title", "completed": true }
+Will change the TODO
+* DELETE HTTP://localhost:8000/todos/ID
+
+will delete the TODO
 
 ### Building your own fractals
 
