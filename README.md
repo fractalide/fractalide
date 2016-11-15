@@ -42,15 +42,14 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
 
 ## Solution
-* [Nix](http://nixos.org/nix) is a declarative lazy language. Nix will make the system reflect your system description exactly. Nix will become one of the next important polyglot languages, so you might as well man up and start [learning](https://nixcloud.io/tour/?id=1) it now.
-* Each component is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
-* In other words, [Eelco Dolstra](http://nixos.org/~eelco/pubs/) the creator of Nix, has entirely solved this class of errors.
+* [Nix](http://nixos.org/nix) is a declarative lazy language and will make the system reflect your system description exactly. Nix will become one of the next important languages in your polyglot toolbox, so you might as well man up and start learning it now with these fun [quizzes](https://nixcloud.io/tour/?id=1).
+* Each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
 
 ## Problem 4
 * Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf).
+* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf)[pdf].
 
 ## Problem 5
 * Security and business interests rarely align these days.
