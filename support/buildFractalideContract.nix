@@ -16,6 +16,6 @@ in stdenv.mkCachedDerivation  (args // {
   runHook preInstall
   mkdir -p $out/src
   cp ${contractText} $out/src/contract.capnp
-  ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp -I "/"
+  ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/contract.capnp --src-prefix $out/src/ -I "/"
   '';
 })
