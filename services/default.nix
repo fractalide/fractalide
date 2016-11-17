@@ -1,0 +1,4 @@
+{fractals}:
+[
+  fractals.workbench.service
+]
