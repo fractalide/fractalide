@@ -108,13 +108,14 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 isValidSubnet = (builtins.head (lib.attrVals [subnet] components));
 defaultSubnet = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
 support = import ./support { inherit pkgs debug test local-rustfbp components contracts; };
+services = import ./services { inherit fractals; };
 fractals = import ./fractals { inherit pkgs support components contracts; };
 components = import ./components { inherit pkgs support fractals contracts; };
 contracts = import ./contracts { inherit pkgs support fractals contracts; };
 fvm = import ./support/fvm { inherit pkgs support components contracts; };
 in
 {
-  inherit components support contracts pkgs;
+  inherit components support contracts services fractals pkgs;
   result = if subnet == null
   then fvm
   else pkgs.writeTextFile {
