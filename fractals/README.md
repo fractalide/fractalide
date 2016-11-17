@@ -97,6 +97,10 @@ $ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --args
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
+### There is a `service.nix` file! What is it?
+
+* Please read [this](../services/README.md).
+
 ### Two ways to execute your fractal
 
 * Executed directly from the `fractal`.

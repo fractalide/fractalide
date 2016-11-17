@@ -39,17 +39,19 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Fractalide components communicate using `Cap'n Proto` contracts, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto contracts can be extended without breaking components with a different version. That would be a problem if we weren't in complete control of versioning in a distributed system.
 
 ## Problem 3
-* Keeping track of deployed component versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
+* Knowing what versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
 
 ## Solution
-* [Nix](http://nixos.org/nix) is a declarative lazy language and will make the system reflect your system description exactly. Nix will become one of the next important languages in your polyglot toolbox, so you might as well man up and start learning it now with these fun [quizzes](https://nixcloud.io/tour/?id=1).
-* Each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
+* [Nix](http://nixos.org/nix) is a declarative lazy language and will make the system reflect your system description exactly.
+* [Nixops](http://nixos.org/nixops) provides the means to do code delivery, whilst ensuring the entire cluster is at the expected version.
+* Due to `nix`'s declarative behaviour, each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
+* You might want to start learning `nix` with these fun [quizzes](https://nixcloud.io/tour/?id=1).
 
 ## Problem 4
-* Updating a single service in an entire cluster of nodes can be hard in many microservices setups.
+* Updating a single or multiple service/s in an entire cluster of nodes can be hard in many microservices setups.
 
 ## Solution
-* Atomic upgrading of distributed systems is supported. [Learn more](http://nixos.org/~eelco/pubs/atomic-hotswup2008-final.pdf) [pdf].
+* `nixops` will only stop, update and start a service if there has been a change to it, otherwise the service will continue working as per normal.
 
 ## Problem 5
 * Security and business interests rarely align these days.
