@@ -15,6 +15,8 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   app_model = callPackage ./app/model {};
   app_test = callPackage ./app/test {};
   app_todo_components = fractals.app_todo.components;
+  app_todo_model_test = fractals.app_todo_model.components.test;
+  app_todo_controller_test = fractals.app_todo_controller.components.test;
   debug = callPackage ./debug {};
   docs = callPackage ./docs {};
   drop_ip = callPackage ./drop/ip {};
@@ -67,7 +69,6 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   ui_js_components = fractals.ui_js.components;
   web_server = callPackage ./web/server {};
   workbench = fractals.workbench.components.workbench;
-  workbench_encrypt = fractals.workbench.components.workbench_encrypt;
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
 self

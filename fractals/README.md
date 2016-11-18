@@ -111,7 +111,7 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 	* disadvantages
 		* no incremental recompilation
 * Executed from the `fractalide`.
-	* advatages
+	* advantages
 		* Incremental recompilation needed for development
 	* disadvantages
 		* wetware needed to plug into `dev/fractalide/fractals` to get incremental recompilation
@@ -121,9 +121,9 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 
 * `$ cd dev/fractalide`
 * `$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench`
-* `$ ./result/bin/workbench`
+* `$ ./result`
 
 #### Executing from with the Fractal
 * `$ cd /dev/fractals/fractal_workbench`
 * `$ nix-build`
-* `$ ./result/bin/workbench`
+* `$ ./result`
