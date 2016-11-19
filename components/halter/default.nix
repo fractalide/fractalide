@@ -4,7 +4,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [];
-  depsSha256 = "1lwc20psdf1pmlii0hx7vnmb69lihp1v14ragni7g3pk4vsv1l1w";
+  depsSha256 = "0w4dg60qpcgjmaraami2kf36rgnj4mvs9fv54n6dkx62ih26mpa7";
 
   meta = with stdenv.lib; {
     description = "Component: Keep the graph running";
