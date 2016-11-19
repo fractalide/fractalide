@@ -71,7 +71,7 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [ ] Working, deployable example of a simple microservices setup - please give feedback!
 - [ ] Documentation - please give feedback!
 - [ ] Remove cargo
-- [ ] Contract composition
+- [x] Contract composition
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
 
