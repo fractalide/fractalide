@@ -1,17 +1,16 @@
-{stdenv, buildFractalideContract, upkeepers, ...}:
+{stdenv, buildFractalideContract, upkeepers
+  , command
+  , ...}:
 
 buildFractalideContract rec {
   src = ./.;
+  importedContracts = [ command ];
   contract = ''
   @0xafd2d34a29d48dbd;
+  using Command = import "${command}/src/contract.capnp";
 
   struct ShellCommands {
-    commands @0 :List(Command);
-  }
-
-  struct Command {
-         key @0 :Text;
-         val @1 :Text;
+    commands @0 :List(Command.Command);
   }
   '';
 

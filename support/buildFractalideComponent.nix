@@ -100,10 +100,18 @@ sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
 ${if local-rustfbp == "true" then
 "sed -i 's@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g' Cargo.toml"
 else ""}
-${stdenv.lib.concatMapStringsSep "\n"
-(contract:
-  "ln -s ${contract.outPath}/src/contract_capnp.rs src/${contract.name}.rs;")
-(stdenv.lib.flatten contracts)}
+propagated=""
+for i in $contracts; do
+    findInputs $i propagated propagated-build-inputs
+done
+propagated1=""
+for i in $propagated; do
+    propagated1="$propagated1 $i/src/contract_capnp.rs"
+done
+touch src/contract_capnp.rs
+for i in $propagated1; do
+  cat $i >> src/contract_capnp.rs
+done
 echo "*********************************************************************"
 echo "****** building: ${name} "
 echo "*********************************************************************"

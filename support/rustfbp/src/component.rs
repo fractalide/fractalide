@@ -92,12 +92,9 @@ macro_rules! component {
 
         use std::io::{Read, Write};
 
-        $(
         mod contract_capnp {
-            $(
-                include!(concat!(stringify!($contract), ".rs"));
-            )*
-        })*
+                include!("contract_capnp.rs");
+        }
 
         $( $(
             use contract_capnp::$contract;
