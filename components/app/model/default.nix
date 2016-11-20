@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ generic_text ];
-  depsSha256 = "0zimrgfzashq065i4favg6lqh5ji1qmhccx9z6ap8f4damj8dzvw";
+  depsSha256 = "0yav2znjhqlqh6f17jn8sjdk7sf7wxjm5y6df8nxmgiv14x5ln1f";
 
   meta = with stdenv.lib; {
     description = "Component: app general atomic model";

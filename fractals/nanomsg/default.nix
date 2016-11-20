@@ -8,11 +8,9 @@ let
   fractal = fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_nanomsg";
-    rev = "4b3cdb53e62b7ad3aadf3a325335571096043aa2";
-    sha256 = "1vdxga7y9chl53ba63gdawd2qgzzrs9g7va7x8lvsz9flj7ss4vk";
+    rev = "68aeab22ccc609a457c021306a5785bd168f191a";
+    sha256 = "0v99gqjhcvxbff957ch9ghz37mm7fgy9wj2lzvq42gfxrb3fvzly";
   };
-  /*
-  fractal = ../../../fractals/fractal_nanomsg;
-  */
+  /*fractal = ../../../fractals/fractal_nanomsg;*/
 in
   import fractal {inherit pkgs support contracts components; fractalide = null;}
