@@ -8,9 +8,9 @@ let
   fractal = fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_net_http";
-    rev = "b9590b6648348503b5f2ff5f7f130ed79432c722";
-    sha256 = "0jz58mmax5n5nxrxpicn8jzica736gbl7qf87k4yycmzr26xwfqa";
+    rev = "c7879a6f985697f552648bfa95cfcd9a1616d69a";
+    sha256 = "01hz4zfys7mp6wfrsg6f2a9b9gq9k0qcfv7w772ybnhmapqc1afb";
   };
-  /*fractal = ../../../../fractals/frac_net_http;*/
+  /*fractal = ../../../../fractals/fractal_net_http;*/
 in
   import fractal {inherit pkgs support contracts components; fractalide = null;}

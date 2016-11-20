@@ -6,7 +6,7 @@ buildFractalideComponent rec {
   name = "nucleus_find_component";
   src = ./.;
   contracts = [ path option_path ];
-  depsSha256 = "1z0c2i4amwk5ipyl6jq2wni1n150xi76akyvil51w7vny7dggck8";
+  depsSha256 = "1q6s9b1ay8dam9wnrpdzny7gd0lava27b7brnijn6hyb8a3173rq";
   buildInputs = [ nix ];
 
   meta = with stdenv.lib; {

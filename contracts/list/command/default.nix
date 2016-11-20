@@ -1,28 +1,18 @@
 {stdenv, buildFractalideContract, upkeepers
+  , command
   , ...}:
 
 buildFractalideContract rec {
   src = ./.;
+  importedContracts = [ command ];
   contract = ''
   @0xf61e7fcd2b18d862;
+  using Command = import "${command}/src/contract.capnp";
 
-    struct Tuple {
-      first @0 : Text;
-      second @1 : Text;
-    }
-
-    struct Command {
-      name @0 : Text;
-      singles @1 : List(Text);
-      kvs @2 : List(Tuple);
-      iips @3 : List(Text);
-    }
-
-    struct ListCommand {
-        commands @0 :List(Command);
-    }
+  struct ListCommand {
+      commands @0 :List(Command.Command);
+  }
   '';
-
   meta = with stdenv.lib; {
     description = "Contract: Describes a list of commands";
     homepage = https://github.com/fractalide/fractalide/tree/master/contracts/list/commands;

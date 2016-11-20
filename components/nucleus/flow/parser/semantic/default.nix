@@ -8,7 +8,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [ fbp_semantic_error fbp_graph fbp_lexical ];
-  depsSha256 = "06nasv4cvlbb0iw4r5s8m7ylqdzk8ndnfqhy9l1pg23380pkbcvm";
+  depsSha256 = "0gx5d8cxk7mca9sj118302xww9vv6z59mxl4wbas3nfggip36fy6";
 
   meta = with stdenv.lib; {
     description = "Component: Flow-based programming semantics";

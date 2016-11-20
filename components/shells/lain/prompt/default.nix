@@ -8,7 +8,7 @@ buildFractalideComponent rec {
   name = genName ./.;
   src = ./.;
   contracts = [generic_text];
-  depsSha256 = "1vj7m8qqimipd3xah46szz4cphffc8axvapxbs4wgj6dfr504yzx";
+  depsSha256 = "19mfdmb0myajyryghhck7pqi5z6ri1yndl8kwwdx9w3wa3y142zv";
 
   meta = with stdenv.lib; {
     description = "Component: shells_fsh: a shell prompt.";
