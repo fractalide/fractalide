@@ -7,7 +7,7 @@
 
 ## Welcome
 
-**Fractalide is a programming platform that intends to make efficient microservices simple to reason about.**
+**Fractaclide provides an Interactive Data Language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
 
 Though, *simple to reason about* is not enough, we aim higher, we'd like [simplicity to be made easy](https://www.infoq.com/presentations/Simple-Made-Easy).
 
