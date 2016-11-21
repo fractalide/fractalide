@@ -64,11 +64,11 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Flowscript allows for a separation of business logic and component implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse components and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
 
 ### Steps towards stable release.
-- [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
+- [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
-- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
-- [ ] Working, deployable example of a simple microservices setup.
+- [ ] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
+- [ ] Deployable example of a simple microservices setup.
 - [ ] Documentation.
 - [ ] Remove cargo.
 - [x] Contract composition.
