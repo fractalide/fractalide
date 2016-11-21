@@ -86,8 +86,7 @@ $ cd fractal_workbench
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
 $ nix-build
 ```
-* The first build will make you wait a long time. Thereafter only components that change will be recompiled.
-* Build times will improve as soon as these two issues [1](https://github.com/rust-lang/cargo/issues/3215) [2](https://github.com/NixOS/nixpkgs/issues/18111) are fixed, and cargo on nixpkgs supports the [official mechanism](http://doc.crates.io/source-replacement.html) for using pre-downloaded dependencies. It means Fractalide can use a version of nixpkgs where dependencies have been built by Hydra, and can benefit from binary package distribution.
+* You will wait about 4~5 hours to compile rustc. We're working on it...
 ```
 $ ./result
 ```
