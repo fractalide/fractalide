@@ -87,6 +87,13 @@ $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c8
 $ nix-build
 ```
 * You will wait about 4~5 hours to compile rustc. We're working on it...
+* a neat hack you can do that'll persist your `rustc` between `nix-collect-garbage` runs is this:
+* `$ git clone github.com/nixos/nixpkgs`
+* `$ cd nixpkgs`
+* `$ git checkout 125ffff`
+* `$ nix-build -A rustUnstable.rustc  -o rust-125fff`
+* then do not delete the `rust-125fff` symlink.
+* this is a temporary hack, which should last about 1~2 weeks
 ```
 $ ./result
 ```
