@@ -67,17 +67,17 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
-- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix)
-- [ ] Working, deployable example of a simple microservices setup - please give feedback!
-- [ ] Documentation - please give feedback!
-- [ ] Remove cargo
-- [x] Contract composition
+- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
+- [ ] Working, deployable example of a simple microservices setup.
+- [ ] Documentation.
+- [ ] Remove cargo.
+- [x] Contract composition.
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
 
 ### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
-For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution. (Do help out with NixOS and Rust, they're both doing [really well](https://octoverse.github.com/)!)
+For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 ```
 $ cd <your/development/directory>
 $ mkdir fractals && cd fractals
