@@ -7,7 +7,7 @@
 
 ## Welcome
 
-**Fractalide is a programming platform that intends to make efficient microservices simple to reason about.**
+**Fractalide provides a Flow-based programming language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
 
 Though, *simple to reason about* is not enough, we aim higher, we'd like [simplicity to be made easy](https://www.infoq.com/presentations/Simple-Made-Easy).
 
@@ -64,20 +64,20 @@ Follow us on [twitter](https://twitter.com/fractalide)
 * Flowscript allows for a separation of business logic and component implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse components and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
 
 ### Steps towards stable release.
-- [x] Flowscript - a declarative dataflow language a little more suited to distributed computing.
+- [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
-- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix)
-- [ ] Working, deployable example of a simple microservices setup - please give feedback!
-- [ ] Documentation - please give feedback!
-- [ ] Remove cargo
-- [x] Contract composition
+- [ ] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
+- [ ] Deployable example of a simple microservices setup.
+- [ ] Documentation.
+- [ ] Remove cargo.
+- [x] Contract composition.
 - [ ] 1.0 Stabilization version.
 - [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
 
 ### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
-For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution. (Do help out with NixOS and Rust, they're both doing [really well](https://octoverse.github.com/)!)
+For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 ```
 $ cd <your/development/directory>
 $ mkdir fractals && cd fractals
@@ -86,8 +86,14 @@ $ cd fractal_workbench
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
 $ nix-build
 ```
-* The first build will make you wait a long time. Thereafter only components that change will be recompiled.
-* Build times will improve as soon as these two issues [1](https://github.com/rust-lang/cargo/issues/3215) [2](https://github.com/NixOS/nixpkgs/issues/18111) are fixed, and cargo on nixpkgs supports the [official mechanism](http://doc.crates.io/source-replacement.html) for using pre-downloaded dependencies. It means Fractalide can use a version of nixpkgs where dependencies have been built by Hydra, and can benefit from binary package distribution.
+* You will wait about 4~5 hours to compile rustc. We're working on it...
+* a neat hack you can do that'll persist your `rustc` between `nix-collect-garbage` runs is this:
+* `$ git clone github.com/nixos/nixpkgs`
+* `$ cd nixpkgs`
+* `$ git checkout 125ffff`
+* `$ nix-build -A rustUnstable.rustc  -o rust-125fff`
+* then do not delete the `rust-125fff` symlink.
+* this is a temporary hack, which should last about 1~2 weeks
 ```
 $ ./result
 ```
