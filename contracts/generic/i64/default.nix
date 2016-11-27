@@ -1,12 +1,13 @@
-{ buildFractalideContract}:
+{ contract, contracts }:
 
-buildFractalideContract rec {
+contract rec {
   src = ./.;
-  contract = ''
-  @0xcd25af61b5d6c76b;
+  importedContracts = with contracts; [];
+  schema = with contracts; ''
+    @0xcd25af61b5d6c76b;
 
-  struct GenericI64 {
-          number @0 :Int64;
-  }
+    struct GenericI64 {
+            number @0 :Int64;
+    }
   '';
 }

@@ -1,10 +1,9 @@
-{stdenv, buildFractalideContract, upkeepers
-  , ...}:
+{ contract, contracts }:
 
-buildFractalideContract rec {
+contract rec {
   src = ./.;
-  searchPaths = [];
-  contract = ''
+  importedContracts = with contracts; [];
+  schema = with contracts; ''
    @0xf6e41344bb789d96;
 
     struct Tuple {
@@ -12,11 +11,4 @@ buildFractalideContract rec {
       second @1 : Text;
     }
   '';
-
-  meta = with stdenv.lib; {
-    description = "Contract: Describes a tuple";
-    homepage = https://github.com/fractalide/fractalide/tree/master/contracts/tuple;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

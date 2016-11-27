@@ -1,11 +1,11 @@
 { stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
-{ src, contract, importedContracts ? [], ... } @ args:
+{ src, schema, importedContracts ? [], ... } @ args:
 
 let
 name = genName src;
 contractText = writeTextFile {
   name = name;
-  text = contract;
+  text = schema;
   executable = false;
 };
 

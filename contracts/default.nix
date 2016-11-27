@@ -1,43 +1,43 @@
-{ pkgs, support, contracts, fractals, ... }:
+{ support, contracts, fractals }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // contracts // support);
+  contract = support.contract;
 in
 # insert in alphabetical order to reduce conflicts
 rec {
-  app_counter = callPackage ./app/counter {};
+  app_counter = import ./app/counter { inherit contract contracts; };
   app_todo_contracts = fractals.app_todo.contracts;
-  command = callPackage ./command {};
-  domain_port = callPackage ./domain_port {};
-  fbp_action = callPackage ./fbp/action {};
-  fbp_graph = callPackage ./fbp/graph {};
-  fbp_lexical = callPackage ./fbp/lexical {};
-  fbp_semantic_error = callPackage ./fbp/semantic_error {};
-  file_desc = callPackage ./file/desc {};
-  file_error = callPackage ./file_error {};
-  file_list = callPackage ./file/list {};
-  generic_bool = callPackage ./generic/bool {};
-  generic_i64 = callPackage ./generic/i64 {};
-  generic_list_text = callPackage ./generic/list_text {};
-  generic_text = callPackage ./generic/text {};
-  generic_tuple_text = callPackage ./generic/tuple_text {};
-  generic_u64 = callPackage ./generic/u64 {};
-  js_create = callPackage ./js/create {};
-  key_value = callPackage ./key/value {};
-  list_tuple = callPackage ./list/tuple {};
-  list_triple = callPackage ./list/triple {};
-  list_text = callPackage ./list/text {};
-  list_command = callPackage ./list/command {};
-  maths_boolean = callPackage ./maths/boolean {};
-  maths_number = callPackage ./maths/number {};
+  command = import ./command { inherit contract contracts; };
+  domain_port = import ./domain_port { inherit contract contracts; };
+  fbp_action = import ./fbp/action { inherit contract contracts; };
+  fbp_graph = import ./fbp/graph { inherit contract contracts; };
+  fbp_lexical = import ./fbp/lexical { inherit contract contracts; };
+  fbp_semantic_error = import ./fbp/semantic_error { inherit contract contracts; };
+  file_desc = import ./file/desc { inherit contract contracts; };
+  file_error = import ./file_error { inherit contract contracts; };
+  file_list = import ./file/list { inherit contract contracts; };
+  generic_bool = import ./generic/bool { inherit contract contracts; };
+  generic_i64 = import ./generic/i64 { inherit contract contracts; };
+  generic_list_text = import ./generic/list_text { inherit contract contracts; };
+  generic_text = import ./generic/text { inherit contract contracts; };
+  generic_tuple_text = import ./generic/tuple_text { inherit contract contracts; };
+  generic_u64 = import ./generic/u64 { inherit contract contracts; };
+  js_create = import ./js/create { inherit contract contracts; };
+  key_value = import ./key/value { inherit contract contracts; };
+  list_tuple = import ./list/tuple { inherit contract contracts; };
+  list_triple = import ./list/triple { inherit contract contracts; };
+  list_text = import ./list/text { inherit contract contracts; };
+  list_command = import ./list/command { inherit contract contracts; };
+  maths_boolean = import ./maths/boolean { inherit contract contracts; };
+  maths_number = import ./maths/number { inherit contract contracts; };
   net_http_contracts = fractals.net_http.contracts;
   net_ndn_contracts = fractals.net_ndn.contracts;
-  option_path = callPackage ./option_path {};
-  path = callPackage ./path {};
-  protocol_domain_port = callPackage ./protocol_domain_port {};
-  quadruple = callPackage ./quadruple {};
-  shell_commands = callPackage ./shell/commands {};
-  tuple = callPackage ./tuple {};
-  url = callPackage ./url {};
-  value_int64 = callPackage ./value/int64 {};
-  value_string = callPackage ./value/string {};
+  option_path = import ./option_path { inherit contract contracts; };
+  path = import ./path { inherit contract contracts; };
+  protocol_domain_port = import ./protocol_domain_port { inherit contract contracts; };
+  quadruple = import ./quadruple { inherit contract contracts; };
+  shell_commands = import ./shell/commands { inherit contract contracts; };
+  tuple = import ./tuple { inherit contract contracts; };
+  url = import ./url { inherit contract contracts; };
+  value_int64 = import ./value/int64 { inherit contract contracts; };
+  value_string = import ./value/string { inherit contract contracts; };
 }

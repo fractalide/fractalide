@@ -15,7 +15,7 @@ rec {
   inherit upkeepers rustc cargo;
   rustRegistry = callPackage ./rust-packages.nix {};
   buildFractalideComponent = callPackage ./buildFractalideComponent.nix {inherit debug test local-rustfbp rustRegistry rustc cargo;};
-  buildFractalideContract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
+  contract = callPackage ./buildFractalideContract.nix {inherit capnpc-rust genName;};
   buildFractalideSubnet = callPackage ./buildFractalideSubnet.nix {inherit genName;};
   buildRustPackage = callPackage ./buildRustPackage.nix {inherit lib local-rustfbp debug test rustc rustRegistry;};
   genName = callPackage ./genName.nix {};

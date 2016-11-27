@@ -110,7 +110,7 @@ support = import ./support { inherit pkgs debug test local-rustfbp components co
 services = import ./services { inherit fractals; };
 fractals = import ./fractals { inherit pkgs support components contracts; };
 components = import ./components { inherit pkgs support fractals contracts; };
-contracts = import ./contracts { inherit pkgs support fractals contracts; };
+contracts = import ./contracts { inherit support fractals contracts; };
 fvm = import ./support/fvm { inherit pkgs support components contracts; };
 in
 {

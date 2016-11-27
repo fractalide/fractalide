@@ -1,27 +1,17 @@
-{stdenv, buildFractalideContract, upkeepers
-  , tuple
-  , ...}:
+{ contract, contracts }:
 
-buildFractalideContract rec {
+contract rec {
   src = ./.;
-  importedContracts = [ tuple ];
-  contract = ''
-  @0xdfa17455eb3bee21;
-  using Tuple = import "${tuple}/src/contract.capnp";
+  importedContracts = with contracts; [ tuple ];
+  schema = with contracts; ''
+    @0xdfa17455eb3bee21;
+    using Tuple = import "${tuple}/src/contract.capnp";
 
-  struct Command {
-    name @0 : Text;
-    singles @1 : List(Text);
-    kvs @2 : List(Tuple.Tuple);
-    iips @3 : List(Text);
-  }
-
+    struct Command {
+      name @0 : Text;
+      singles @1 : List(Text);
+      kvs @2 : List(Tuple.Tuple);
+      iips @3 : List(Text);
+    }
   '';
-
-  meta = with stdenv.lib; {
-    description = "Contract: A Command";
-    homepage = https://github.com/fractalide/fractalide/tree/master/contracts/commands;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

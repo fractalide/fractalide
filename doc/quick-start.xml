@@ -47,9 +47,9 @@ struct Boolean {
 }</screen>
 and <filename>default.nix</filename>
 <screen>
-{stdenv, buildFractalideContract, upkeepers, ...}:
+{stdenv, contract, upkeepers, ...}:
 
-buildFractalideContract rec {
+contract rec {
   src = ./.;
 
   meta = with stdenv.lib; {
