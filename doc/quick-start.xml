@@ -168,22 +168,12 @@ touch components/maths/boolean/nand/default.nix
 </screen>
 Then insert this into the <filename>default.nix</filename>
 <screen>
-{ stdenv, buildFractalideComponent, genName, upkeepers,
-, maths_boolean
-, ...}:
+{ component, contracts }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [ maths_boolean ];
+  contracts = with contracts; [ maths_boolean ];
   depsSha256 = "132bjwq6x1g3llvlsb0sg34mryry4my5d79qqmkh0cazmb23w4gm";
-
-  meta = with stdenv.lib; {
-    description = "Component: NAND logic gate";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ githubname ];
-  };
 }
 </screen>
 Notice <filename>contracts = [ maths_boolean ];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
@@ -229,9 +219,9 @@ touch default.nix
 </screen>
 Then insert the below into <filename>default.nix</filename>:
 <screen>
-{ stdenv, buildFractalideSubnet, upkeepers, ip_clone, maths_boolean_nand, ...}:
+{ stdenv, subnet, upkeepers, ip_clone, maths_boolean_nand, ...}:
 
-buildFractalideSubnet rec {
+subnet rec {
   src = ./.;
   subnet = ''
   input => input clone(${ip_clone})
@@ -292,12 +282,12 @@ $ nix-build --argstr debug true -A components.maths_boolean_not
 <para>Let us actually run our new <filename>NOT</filename> component.
 First, edit <filename>fractalide/components/development/test/default.nix</filename> so that it looks like this:
 <screen>
-{ stdenv, buildFractalideSubnet, upkeepers
+{ stdenv, subnet, upkeepers
   , maths_boolean_not
   , maths_boolean_print
   , ...}:
 
-buildFractalideSubnet rec {
+subnet rec {
   src = ./.;
   subnet = ''
 'maths_boolean:(boolean=true)' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)

@@ -1,8 +1,8 @@
 {lib, stdenv, cacert, git, rustc, cargo
-  , capnproto, rustRegistry
+  , capnproto, rustRegistry, genName
   , debug, test, local-rustfbp}:
 
-{ name, depsSha256
+{ name ? null, depsSha256
   , src ? null
   , srcs ? null
   , sourceRoot ? null
@@ -13,6 +13,7 @@
   , ... } @ args:
 
   let
+  compName = if name == null then genName src else name;
   rustfbp = import ./rustfbp.nix {inherit lib stdenv;};
 
   fetchDeps = import ./fetchcargo.nix {
@@ -20,7 +21,8 @@
   };
 
   cargoDeps = fetchDeps {
-    inherit name src srcs sourceRoot cargoUpdateHook;
+    inherit src srcs sourceRoot cargoUpdateHook;
+    name = compName;
     sha256 = depsSha256;
   };
 
@@ -29,7 +31,7 @@
 
 in stdenv.mkCachedDerivation (args // {
   inherit cargoDeps rustRegistry capnproto;
-
+  name = compName;
   patchRegistryDeps = ./patch-registry-deps;
 
   buildInputs = [ git cargo rustc ] ++ buildInputs;
@@ -113,7 +115,7 @@ for i in $propagated1; do
   cat $i >> src/contract_capnp.rs
 done
 echo "*********************************************************************"
-echo "****** building: ${name} "
+echo "****** building: ${compName} "
 echo "*********************************************************************"
 echo "Running cargo build ${type}"
 cargo build ${type}

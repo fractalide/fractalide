@@ -1,19 +1,7 @@
-{ stdenv, buildFractalideComponent, genName, upkeepers
-  , file_desc
-  , path
-  , file_error
-  , ...}:
+{ component, contracts }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [ file_desc path file_error ];
+  contracts = with contracts; [ file_desc path file_error ];
   depsSha256 = "1cq1bbrpznzkawi9pxpigxh5ykxrc427a43mrjg8dc636hxklvnk";
-
-  meta = with stdenv.lib; {
-    description = "Component: Opens files";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/file/open;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

@@ -1,20 +1,8 @@
-{ stdenv, buildFractalideSubnet, upkeepers
-  , fs_file_open
-  , nucleus_flow_parser_lexical
-  , nucleus_flow_parser_semantic
-  , nucleus_flow_vm
-  , nucleus_flow_errors
-  , nucleus_flow_parser_graph_print
-  , nucleus_flow_parser_graph_check
-  , nucleus_flow_scheduler
-  , nucleus_capnp_encode
-  , nucleus_find_contract
-  , nucleus_find_component
-  , ...}:
+{ subnet, contracts, components }:
 
-  buildFractalideSubnet rec {
-   src = ./.;
-   subnet = ''
+subnet {
+  src = ./.;
+  subnet = with contracts; with components; ''
    // Basic output
    open(${fs_file_open}) output -> input lex(${nucleus_flow_parser_lexical})
    lex() output -> input sem(${nucleus_flow_parser_semantic})
@@ -53,11 +41,4 @@
    // used to send in a flow string.
    flowscript => input lex()
    '';
-
-   meta = with stdenv.lib; {
-    description = "Subnet: development testing file";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

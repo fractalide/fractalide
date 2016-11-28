@@ -1,18 +1,8 @@
-{ stdenv, buildFractalideSubnet, upkeepers
-  , app_counter_card
-  , ip_action
-  , ip_delay
-  , ip_replace
-  , ui_js_components
-  , nucleus_flow_subnet
-  # contracts
-  , js_create
-  , generic_text
-  , app_counter
-  , ...}:
-  buildFractalideSubnet rec {
-   src = ./.;
-   subnet = ''
+{ subnet, contracts, components }:
+
+subnet {
+  src = ./.;
+  subnet = with contracts; with components; ''
 
    td(${ui_js_components.flex}) output -> input page(${ui_js_components.page})
    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
@@ -39,11 +29,4 @@
    '${app_counter}:(value=0)~add' -> option add()
 
    '';
-
-   meta = with stdenv.lib; {
-    description = "Subnet: Counter app";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

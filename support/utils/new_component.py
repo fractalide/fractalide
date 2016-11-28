@@ -80,23 +80,16 @@ def write_builtins(external_dependencies):
 
 def create_default_nix (component_description, ports, external_dependencies):
     default_nix = """
-{ stdenv, buildFractalideComponent, genName, upkeepers
+{ stdenv, component, genName, upkeepers
 """ + write_contracts(ports, "nix_header")  + """
 """ + write_external_dependencies(external_dependencies) + """
 , ...}:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [""" + write_contracts(ports, "nix_contracts") + """];
+  contracts = with contracts; [""" + write_contracts(ports, "nix_contracts") + """];
   depsSha256 = "2m6n74fm7k99pp13j5d5yyp4j0znc0s10958hhyyh3shq9rj8862";
   """ + write_builtins(external_dependencies) + """
-  meta = with stdenv.lib; {
-    description = "Component: """ + component_description + """";
-    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }
     """
     return default_nix

@@ -10,7 +10,7 @@ pkgsOld = if argsInput ? pkgs then argsInput.pkgs
 else import <nixpkgs> {};
 lib = pkgs.lib;
 #expand the old pkgs with mkCachedDerivation
-pkgs = pkgsOld.overridePackages(self: super: rec {
+pkgs = pkgsOld.overridePackages(self: super: {
   stdenv = super.stdenv // {
     # mkCachedDerivation is like a normal mkDerivation but it copies the target folder
     # and creates a MD5SUM for every file into the 'cache' output.
@@ -107,10 +107,18 @@ pkgs = pkgsOld.overridePackages(self: super: rec {
 isValidSubnet = (builtins.head (lib.attrVals [subnet] components));
 defaultSubnet = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
 support = import ./support { inherit pkgs debug test local-rustfbp components contracts; };
-services = import ./services { inherit fractals; };
 fractals = import ./fractals { inherit pkgs support components contracts; };
-components = import ./components { inherit pkgs support fractals contracts; };
-contracts = import ./contracts { inherit support fractals contracts; };
+components = import ./components { inherit buffet; };
+contracts = import ./contracts { inherit buffet; };
+services = import ./services { inherit fractals; };
+buffet = {
+  support = support;
+  contracts = contracts;
+  components = components;
+  services = services;
+  fractals = fractals;
+  pkgs = pkgs;
+};
 fvm = import ./support/fvm { inherit pkgs support components contracts; };
 in
 {
