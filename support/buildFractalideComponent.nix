@@ -6,7 +6,7 @@
   , src ? null
   , srcs ? null
   , sourceRoot ? null
-  , buildInputs ? []
+  , osdeps ? []
   , logLevel ? ""
   , contracts ? []
   , cargoUpdateHook ? ""
@@ -34,7 +34,7 @@ in stdenv.mkCachedDerivation (args // {
   name = compName;
   patchRegistryDeps = ./patch-registry-deps;
 
-  buildInputs = [ git cargo rustc ] ++ buildInputs;
+  buildInputs = [ git cargo rustc ] ++ osdeps;
 
     #Don't forget to runHook, else the incremental builds wont work
     configurePhase = (args.configurePhase or "runHook preConfigure");

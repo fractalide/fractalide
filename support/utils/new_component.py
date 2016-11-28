@@ -73,7 +73,7 @@ def write_builtins(external_dependencies):
         for extern in external_dependencies[deps]:
             externs_set.add(extern)
     if len(externs_set) > 0:
-        externs = "buildInputs = [ "
+        externs = "osdeps = [ "
         externs += ' '.join(map("{0}".format, externs_set))
         externs += " ];\n"
     return externs
