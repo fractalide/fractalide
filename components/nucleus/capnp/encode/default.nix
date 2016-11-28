@@ -1,8 +1,9 @@
-{ component, contracts, pkgs }:
+{ component, contracts, crates, pkgs }:
 
 component {
   src = ./.;
   contracts = with contracts; [ generic_text path ];
+  crates = with crates; [];
   depsSha256 = "0ahwp016qkfp2lmf9452hrhbb4zmlh9k1wz2aw3wi12qkhh0swsp";
   configurePhase = with pkgs; ''
     runHook preConfigure

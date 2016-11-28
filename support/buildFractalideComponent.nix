@@ -7,6 +7,7 @@
   , srcs ? null
   , sourceRoot ? null
   , osdeps ? []
+  , crates ? []
   , logLevel ? ""
   , contracts ? []
   , cargoUpdateHook ? ""

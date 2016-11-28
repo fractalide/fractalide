@@ -117,6 +117,7 @@ buffet = {
   components = components;
   services = services;
   fractals = fractals;
+  crates = "crates_to_come";
   pkgs = pkgs;
 };
 fvm = import ./support/fvm { inherit pkgs support components contracts; };
