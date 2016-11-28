@@ -49,7 +49,7 @@ and <filename>default.nix</filename>
 <screen>
 {stdenv, contract, upkeepers, ...}:
 
-contract rec {
+contract {
   src = ./.;
 
   meta = with stdenv.lib; {

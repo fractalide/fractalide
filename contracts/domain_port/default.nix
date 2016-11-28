@@ -1,6 +1,6 @@
 { contract, contracts }:
 
-contract rec {
+contract {
   src = ./.;
   importedContracts = with contracts; [ ];
   schema = with contracts; ''
