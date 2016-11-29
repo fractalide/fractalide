@@ -1,24 +1,12 @@
-{ stdenv, buildFractalideSubnet, upkeepers
-  , shells_lain_prompt
-  , shells_lain_parse
-  , shells_lain_flow
-  , nucleus_flow_subnet
-  , ...}:
+{ subnet, components, contracts }:
 
-  buildFractalideSubnet rec {
-   src = ./.;
-   name = "lain";
-   subnet = ''
-     prompt(${shells_lain_prompt}) output ->
-     input parse(${shells_lain_parse}) output ->
-     input flow(${shells_lain_flow}) output ->
-     flowscript scheduler(${nucleus_flow_subnet})
-   '';
-
-   meta = with stdenv.lib; {
-    description = "Subnet: Fractalide Shell";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
+subnet {
+ src = ./.;
+ name = "lain";
+ subnet = with components; with contracts; ''
+   prompt(${shells_lain_prompt}) output ->
+   input parse(${shells_lain_parse}) output ->
+   input flow(${shells_lain_flow}) output ->
+   flowscript scheduler(${nucleus_flow_subnet})
+ '';
 }

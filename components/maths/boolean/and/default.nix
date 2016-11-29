@@ -1,16 +1,9 @@
-{ stdenv, buildFractalideSubnet, upkeepers, maths_boolean_nand, maths_boolean_not, ...}:
+{ subnet, contracts, components }:
 
-buildFractalideSubnet rec {
+subnet {
   src = ./.;
-  subnet = ''
+  subnet = with contracts; with components; ''
   a => a nand(${maths_boolean_nand}) output -> input not(${maths_boolean_not}) output => output
   b => b nand()
   '';
-
-  meta = with stdenv.lib; {
-    description = "Subnet: AND logic gate";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/and;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

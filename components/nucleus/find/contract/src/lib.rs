@@ -15,7 +15,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let name: path::Reader = try!(ip.get_root());
+        let name: path::Reader = try!(ip.read_contract());
         let is_path = try!(name.get_path());
         let mut stdout: String = String::new();
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
@@ -26,7 +26,7 @@ component! {
         };
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<option_path::Builder>();
+            let mut ip = new_ip.build_contract::<option_path::Builder>();
             match new_path {
                 None => { ip.set_none(());},
                 Some(p) => { ip.set_path(p);}

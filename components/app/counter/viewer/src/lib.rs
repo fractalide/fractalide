@@ -17,11 +17,11 @@ component! {
         let mut ip_input = try!(self.ports.recv("input"));
 
         let (number, delta) = {
-            let mut reader: app_counter::Reader = try!(ip_input.get_root());
+            let mut reader: app_counter::Reader = try!(ip_input.read_contract());
             (reader.get_value(), reader.get_delta())
         };
         {
-            let mut builder = ip_input.init_root::<generic_text::Builder>();
+            let mut builder = ip_input.build_contract::<generic_text::Builder>();
             builder.set_text(&format!("{}", number));
         }
         ip_input.action = "set_text".into();
@@ -29,7 +29,7 @@ component! {
 
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.init_root::<generic_tuple_text::Builder>();
+            let mut builder = new_ip.build_contract::<generic_tuple_text::Builder>();
             builder.set_key("value");
             builder.set_value(&format!("{}", delta));
         }

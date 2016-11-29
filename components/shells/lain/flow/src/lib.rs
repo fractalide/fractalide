@@ -13,7 +13,7 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip_input = self.ports.recv("input")?;
-        let input_reader: list_command::Reader = ip_input.get_root()?;
+        let input_reader: list_command::Reader = ip_input.read_contract()?;
         let cmds = input_reader.borrow().get_commands()?;
         let mut flow = String::new();
         let mut switches: Vec<String> = Vec::new();
@@ -90,14 +90,14 @@ component! {
         // Send start
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            let mut ip = new_ip.build_contract::<file_desc::Builder>();
             ip.set_start("flowscript");
         }
         self.ports.send("output", new_ip)?;
 
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            let mut ip = new_ip.build_contract::<file_desc::Builder>();
             ip.set_text(&flow.as_str());
         }
         self.ports.send("output", new_ip)?;
@@ -106,7 +106,7 @@ component! {
             println!("{:?}", switch);
             let mut new_ip = IP::new();
             {
-                let mut ip = new_ip.init_root::<file_desc::Builder>();
+                let mut ip = new_ip.build_contract::<file_desc::Builder>();
                 ip.set_text(&switch.as_str());
             }
             self.ports.send("output", new_ip)?;
@@ -115,7 +115,7 @@ component! {
         // Send stop
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            let mut ip = new_ip.build_contract::<file_desc::Builder>();
             ip.set_end("flowscript");
         }
         self.ports.send("output", new_ip)?;

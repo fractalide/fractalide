@@ -14,14 +14,14 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut opt = self.recv_option();
         {
-            let reader: generic_text::Reader = opt.get_root()?;
+            let reader: generic_text::Reader = opt.read_contract()?;
             let option = reader.get_text();
 
             //println!("{}", option?);
         }
         let mut ip_a = try!(self.ports.recv("stdin"));
         {
-            let a_reader: generic_text::Reader = try!(ip_a.get_root());
+            let a_reader: generic_text::Reader = try!(ip_a.read_contract());
             let a = a_reader.get_text();
 
             println!("{:?}", a?);

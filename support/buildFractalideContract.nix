@@ -1,15 +1,15 @@
 { stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
-{ src, contract, importedContracts ? [], ... } @ args:
+{ src, schema, importedContracts ? [], ... } @ args:
 
 let
 name = genName src;
 contractText = writeTextFile {
   name = name;
-  text = contract;
+  text = schema;
   executable = false;
 };
 
-in stdenv.mkCachedDerivation  (args // {
+in stdenv.mkCachedDerivation (args // {
   name = name;
   unpackPhase = "true";
   propagatedBuildInputs = importedContracts;

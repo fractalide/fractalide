@@ -22,15 +22,15 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("www_dir"));
-        let www_dir: path::Reader = try!(ip.get_root());
+        let www_dir: path::Reader = try!(ip.read_contract());
         let www_dir = try!(www_dir.get_path());
 
         let mut url_ip = try!(self.ports.recv("url"));
-        let url: url::Reader = try!(url_ip.get_root());
+        let url: url::Reader = try!(url_ip.read_contract());
         let url = try!(url.get_url());
 
         let mut domain_ip = try!(self.ports.recv("domain_port"));
-        let domain_port: domain_port::Reader = try!(domain_ip.get_root());
+        let domain_port: domain_port::Reader = try!(domain_ip.read_contract());
         let domain_port = try!(domain_port.get_domain_port());
 
         let mut mount = Mount::new();

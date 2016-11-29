@@ -1,19 +1,8 @@
-{ stdenv, buildFractalideSubnet, upkeepers
-  , app_counter_add
-  , app_counter_delta
-  , app_counter_minus
-  , app_counter_view
-  , app_model
-  , debug
-  , ip_clone
-  , ip_dispatcher
-  # contracts
-  , generic_i64
-  , ...}:
+{ subnet, contracts, components }:
 
-  buildFractalideSubnet rec {
-   src = ./.;
-   subnet = ''
+subnet {
+  src = ./.;
+  subnet = with contracts; with components; ''
    input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
 
    model(${app_model}) output -> input view(${app_counter_view}) output -> input out_dispatch()
@@ -34,11 +23,4 @@
    model() compute[minus] -> input minus(${app_counter_minus}) output -> result model()
    model() compute[delta] -> input delta(${app_counter_delta}) output -> result model()
    '';
-
-   meta = with stdenv.lib; {
-    description = "Subnet: Counter app";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

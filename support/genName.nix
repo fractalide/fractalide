@@ -1,4 +1,4 @@
-{ lib}:
+{ lib }:
 location:
   let recurse = folders:
     let folder = builtins.head folders;

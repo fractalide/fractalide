@@ -13,7 +13,7 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut opt = self.recv_option();
         let mut ip_input = try!(self.ports.recv("input"));
-        let mut reader: generic_text::Reader = try!(opt.get_root());
+        let mut reader: generic_text::Reader = try!(opt.read_contract());
         ip_input.action = try!(reader.get_text()).into();
         try!(self.ports.send("output", ip_input));
         Ok(())

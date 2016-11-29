@@ -1,4 +1,4 @@
-{ stdenv, buildFractalideSubnet, upkeepers
+{ stdenv, subnet, upkeepers
   , app_counter_card
   , ui_js_page
   , debug
@@ -6,7 +6,7 @@
   , app_counter
   , ...}:
 
-  buildFractalideSubnet rec {
+  subnet rec {
    src = ./.;
    subnet = ''
 

@@ -55,7 +55,7 @@ component! {
     fn run(&mut self) -> Result<()> {
 
         let mut ip = try!(self.ports.recv("action"));
-        let mut reader: fbp_action::Reader = try!(ip.get_root());
+        let mut reader: fbp_action::Reader = try!(ip.read_contract());
 
         match try!(reader.which()) {
             fbp_action::Which::Add(add) => {
@@ -63,7 +63,7 @@ component! {
                 let name = try!(add.get_name());
                 let mut ask_ip = IP::new();
                 {
-                    let mut builder: fbp_graph::Builder = ask_ip.init_root();
+                    let mut builder: fbp_graph::Builder = ask_ip.build_contract();
                     builder.set_path(try!(add.get_comp()));
                     {
                         let mut nodes = builder.borrow().init_nodes(1);
@@ -149,7 +149,7 @@ component! {
 
 fn add_graph(mut component: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
     let mut ip = try!(component.ports.recv("graph"));
-    let i_graph: fbp_graph::Reader = try!(ip.get_root());
+    let i_graph: fbp_graph::Reader = try!(ip.read_contract());
 
     let mut subnet = Subnet::new();
     for n in try!(i_graph.borrow().get_nodes()).iter() {
@@ -206,13 +206,13 @@ fn add_graph(mut component: &mut nucleus_flow_scheduler, name: &str) -> Result<(
         // Get the real path
         let mut new_out = IP::new();
         {
-            let mut cont = new_out.init_root::<path::Builder>();
+            let mut cont = new_out.build_contract::<path::Builder>();
             cont.set_path(&contract);
         }
         try!(component.ports.send("ask_path", new_out));
 
         let mut contract_path_ip = try!(component.ports.recv("contract_path"));
-        let contract_path: path::Reader = try!(contract_path_ip.get_root());
+        let contract_path: path::Reader = try!(contract_path_ip.read_contract());
 
         let c_path = try!(contract_path.get_path());
         let c_path = format!("{}/src/contract.capnp", c_path);
@@ -239,21 +239,21 @@ fn add_graph(mut component: &mut nucleus_flow_scheduler, name: &str) -> Result<(
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.init_root::<path::Builder>();
+            let mut path = new_out.build_contract::<path::Builder>();
             path.set_path(&c_path);
         }
         try!(component.ports.send("iip_path", new_out));
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.init_root::<generic_text::Builder>();
+            let mut path = new_out.build_contract::<generic_text::Builder>();
             path.set_text(&contract_camel_case);
         }
         try!(component.ports.send("iip_contract", new_out));
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.init_root::<generic_text::Builder>();
+            let mut path = new_out.build_contract::<generic_text::Builder>();
             path.set_text(&input);
         }
         try!(component.ports.send("iip_input", new_out));

@@ -1,11 +1,11 @@
-{ pkgs, support, contracts, fractals, ... }:
+{ buffet }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // contracts // support);
+  callPackage = buffet.pkgs.lib.callPackageWith ( buffet.support // buffet );
 in
 # insert in alphabetical order to reduce conflicts
 rec {
   app_counter = callPackage ./app/counter {};
-  app_todo_contracts = fractals.app_todo.contracts;
+  app_todo_contracts = buffet.fractals.app_todo.contracts;
   command = callPackage ./command {};
   domain_port = callPackage ./domain_port {};
   fbp_action = callPackage ./fbp/action {};
@@ -29,8 +29,8 @@ rec {
   list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
-  net_http_contracts = fractals.net_http.contracts;
-  net_ndn_contracts = fractals.net_ndn.contracts;
+  net_http_contracts = buffet.fractals.net_http.contracts;
+  net_ndn_contracts = buffet.fractals.net_ndn.contracts;
   option_path = callPackage ./option_path {};
   path = callPackage ./path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};

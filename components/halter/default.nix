@@ -1,15 +1,8 @@
-{ stdenv, buildFractalideComponent, genName, upkeepers, ...}:
+{ component, contracts, crates }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [];
-  depsSha256 = "0w4dg60qpcgjmaraami2kf36rgnj4mvs9fv54n6dkx62ih26mpa7";
-
-  meta = with stdenv.lib; {
-    description = "Component: Keep the graph running";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/ip/clone;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
+  contracts = with contracts; [];
+  crates = with crates; [];
+  depsSha256 = "0gvr58pk14xiflicp4q33gpdr762a5hfvdzzmr35jld4685cdj3w";
 }

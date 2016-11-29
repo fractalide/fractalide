@@ -50,11 +50,11 @@ impl IP {
     /// ```rust,ignore
     /// let ip = an_initialized_ip;
     /// {
-    ///     let reader: generic_text::Reader = try!(ip.get_root());
+    ///     let reader: generic_text::Reader = try!(ip.read_contract());
     ///     let text = try!(reader.get_text());
     /// }
     /// ```
-    pub fn get_root<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
+    pub fn read_contract<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
         let msg = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
         self.reader = Some(msg);
         Ok(try!(self.reader.as_ref().unwrap().get_root()))
@@ -68,11 +68,11 @@ impl IP {
     /// let mut ip = IP::new();
     /// // Initialize the IP
     /// {
-    ///     let mut builder: generic_text::Builder = ip.init_root();
+    ///     let mut builder: generic_text::Builder = ip.build_contract();
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn init_root<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
+    pub fn build_contract<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
         let msg = capnp::message::Builder::new_default();
         self.builder = Some(msg);
         self.builder.as_mut().unwrap().init_root()
@@ -85,11 +85,11 @@ impl IP {
     /// ```rust,ignore
     /// let mut ip = an_initialized_ip;
     /// {
-    ///     let mut builder = try!(init_root_from_reader::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_contract::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn init_root_from_reader<'a, T: capnp::traits::FromPointerBuilder<'a>,
+    pub fn edit_contract<'a, T: capnp::traits::FromPointerBuilder<'a>,
                                  U: capnp::traits::FromPointerReader<'a> + capnp::traits::SetPointerBuilder<T>>
         (&'a mut self) -> Result<T> {
         let reader = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
@@ -109,7 +109,7 @@ impl IP {
     /// ```rust,ignore
     /// let mut ip = an_initialized_ip;
     /// {
-    ///     let mut builder = try!(init_root_from_reader::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_contract::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// try!(ip.before_send());

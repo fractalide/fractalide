@@ -1,6 +1,6 @@
-{ pkgs, support, contracts, fractals, ... }:
+{ buffet }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs // support // contracts // self);
+callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet );
 # insert in alphabetical order to reduce conflicts
 self = rec { # use one line only to insert a component (utils/new_component.py sorts this list)
   app_counter_add = callPackage ./app/counter/add {};
@@ -9,19 +9,19 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   app_counter_create = callPackage ./app/counter/create {};
   app_counter_delta = callPackage ./app/counter/delta {};
   app_counter_minus = callPackage ./app/counter/minus {};
-  app_counter_view = callPackage ./app/counter/view {};
+  app_counter_view = callPackage ./app/counter/view { };
   app_counter_viewer = callPackage ./app/counter/viewer {};
   app_growtest = callPackage ./app/growtest {};
   app_model = callPackage ./app/model {};
   app_test = callPackage ./app/test {};
-  app_todo_components = fractals.app_todo.components;
-  app_todo_model_test = fractals.app_todo_model.components.test;
-  app_todo_controller_test = fractals.app_todo_controller.components.test;
+  app_todo_components = buffet.fractals.app_todo.components;
+  app_todo_model_test = buffet.fractals.app_todo_model.components.test;
+  app_todo_controller_test = buffet.fractals.app_todo_controller.components.test;
   debug = callPackage ./debug {};
   docs = callPackage ./docs {};
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
-  example_wrangle = fractals.example_wrangle.components.example_wrangle;
+  example_wrangle = buffet.fractals.example_wrangle.components.example_wrangle;
   fs_dir_list = callPackage ./fs/dir/list {};
   fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {};
@@ -33,8 +33,8 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   ip_delay = callPackage ./ip/delay {};
   ip_dispatcher = callPackage ./ip/dispatcher {};
   ip_replace = callPackage ./ip/replace {};
-  nanomsg_components = fractals.nanomsg.components;
-  nanomsg_workbench = fractals.nanomsg.components.workbench;
+  nanomsg_components = buffet.fractals.nanomsg.components;
+  nanomsg_workbench = buffet.fractals.nanomsg.components.workbench;
   maths_boolean_and = callPackage ./maths/boolean/and {};
   maths_boolean_nand = callPackage ./maths/boolean/nand {};
   maths_boolean_not = callPackage ./maths/boolean/not {};
@@ -42,9 +42,9 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   maths_boolean_print = callPackage ./maths/boolean/print {};
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
   maths_number_add = callPackage ./maths/number/add {};
-  net_http_components = fractals.net_http.components;
-  net_ndn = fractals.net_ndn.components.ndn;
-  net_ndn_test_local = fractals.net_ndn.components.test_local;
+  net_http_components = buffet.fractals.net_http.components;
+  net_ndn = buffet.fractals.net_ndn.components.ndn;
+  net_ndn_test_local = buffet.fractals.net_ndn.components.test_local;
   nucleus_capnp_encode = callPackage ./nucleus/capnp/encode {};
   nucleus_find_component = callPackage ./nucleus/find/component {};
   nucleus_find_contract = callPackage ./nucleus/find/contract {};
@@ -66,9 +66,9 @@ self = rec { # use one line only to insert a component (utils/new_component.py s
   shells_lain_prompt = callPackage ./shells/lain/prompt {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};
-  ui_js_components = fractals.ui_js.components;
+  ui_js_components = buffet.fractals.ui_js.components;
   web_server = callPackage ./web/server {};
-  workbench = fractals.workbench.components.workbench;
+  workbench = buffet.fractals.workbench.components.workbench;
 }; # use one line only to insert a component (utils/new_component.py sorts this list)
 in
 self

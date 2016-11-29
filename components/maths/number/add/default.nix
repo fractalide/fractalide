@@ -1,17 +1,8 @@
-{ stdenv, buildFractalideComponent, genName, upkeepers
-  , maths_number
-  , ...}:
+{ component, contracts, crates }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [ maths_number ];
+  contracts = with contracts; [ maths_number ];
+  crates = with crates; [];
   depsSha256 = "028xyjzfbiz7mxhdmwb55dg5npr1flwhbjkzsrlj4f92cq8n7vr7";
-
-  meta = with stdenv.lib; {
-    description = "Component: Adds all inputs together";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/add;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }

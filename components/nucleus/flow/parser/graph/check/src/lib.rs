@@ -14,7 +14,7 @@ component! {
         let error;
         let mut ip = try!(self.ports.recv("input"));
         {
-            let graph: fbp_graph::Reader = try!(ip.get_root());
+            let graph: fbp_graph::Reader = try!(ip.read_contract());
 
             let mut errors: Vec<String> = Vec::new();
 
@@ -101,7 +101,7 @@ component! {
             if errors.len() > 0 {
                 let mut new_ip = IP::new();
                 {
-                    let mut new_ip = new_ip.init_root::<fbp_semantic_error::Builder>();
+                    let mut new_ip = new_ip.build_contract::<fbp_semantic_error::Builder>();
                     new_ip.set_path(try!(graph.get_path()));
                     {
                         let mut nodes = new_ip.init_parsing(errors.len() as u32);

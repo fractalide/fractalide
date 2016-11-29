@@ -73,30 +73,23 @@ def write_builtins(external_dependencies):
         for extern in external_dependencies[deps]:
             externs_set.add(extern)
     if len(externs_set) > 0:
-        externs = "buildInputs = [ "
+        externs = "osdeps = [ "
         externs += ' '.join(map("{0}".format, externs_set))
         externs += " ];\n"
     return externs
 
 def create_default_nix (component_description, ports, external_dependencies):
     default_nix = """
-{ stdenv, buildFractalideComponent, genName, upkeepers
+{ stdenv, component, genName, upkeepers
 """ + write_contracts(ports, "nix_header")  + """
 """ + write_external_dependencies(external_dependencies) + """
 , ...}:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [""" + write_contracts(ports, "nix_contracts") + """];
+  contracts = with contracts; [""" + write_contracts(ports, "nix_contracts") + """];
   depsSha256 = "2m6n74fm7k99pp13j5d5yyp4j0znc0s10958hhyyh3shq9rj8862";
   """ + write_builtins(external_dependencies) + """
-  meta = with stdenv.lib; {
-    description = "Component: """ + component_description + """";
-    homepage = https://gitlab.com/fractalide/fractalide/tree/master/components/maths/boolean/nand;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
 }
     """
     return default_nix
@@ -129,7 +122,7 @@ def write_simple_input_extractor(port, contract):
     return """
     let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let """ + reader + """: """ + contract + """::Reader = """ + ip + """.get_root()?;
+        let """ + reader + """: """ + contract + """::Reader = """ + ip + """.read_contract()?;
         """ + reader + """.get_XXX() // read contract: """ + contract + """ to replace XXX
     };"""
 
@@ -145,7 +138,7 @@ def write_inputs_array_extractor(port, contract):
     return """
     let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let """ + reader + """: """ + contract + """::Reader = """ + ip + """.get_root()?;
+        let """ + reader + """: """ + contract + """::Reader = """ + ip + """.read_contract()?;
         """ + reader + """.get_XXX() // read contract: """ + contract + """ to replace XXX
     };"""
 
@@ -160,7 +153,7 @@ def write_simple_outputs_extractor(port, contract):
     return """
     let mut """ + out_ip + """ = IP::new();
     {
-      let mut variable = """ + out_ip + """.init_root::<""" + contract + """::Builder>();
+      let mut variable = """ + out_ip + """.build_contract::<""" + contract + """::Builder>();
       variable.set_XXX(YYY); // read contract: """ + contract + """ to replace XXX
     }"""
 
@@ -175,7 +168,7 @@ def write_outputs_array_extractor(port, contract):
     return """
     let mut """ + out_ip + """ = IP::new();
     {
-      let mut variable = """ + out_ip + """.init_root::<""" + contract + """::Builder>();
+      let mut variable = """ + out_ip + """.build_contract::<""" + contract + """::Builder>();
       variable.set_XXX(YYY); // read contract: """ + contract + """ to replace XXX
     }"""
 

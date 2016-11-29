@@ -88,7 +88,7 @@ component! {
         }
         let mut out_ip_output = IP::new();
         {
-          let mut variable = out_ip_output.init_root::<generic_text::Builder>();
+          let mut variable = out_ip_output.build_contract::<generic_text::Builder>();
           variable.set_text(command.as_str());
         }
         self.ports.send("output", out_ip_output)?;

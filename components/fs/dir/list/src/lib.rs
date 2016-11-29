@@ -17,10 +17,10 @@ component! {
     fn run(&mut self) -> Result<()> {
 
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.get_root());
+        let path: path::Reader = try!(ip.read_contract());
         let mut new_ip = IP::new();
         {
-            let ip = new_ip.init_root::<file_list::Builder>();
+            let ip = new_ip.build_contract::<file_list::Builder>();
             let mut files = ip.init_files(try!(fs::read_dir(try!(path.get_path()))).count() as u32);
             let mut i: u32 = 0;
             for path in try!(fs::read_dir(try!(path.get_path()))) {

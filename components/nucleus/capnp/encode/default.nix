@@ -1,21 +1,12 @@
-{ stdenv, buildFractalideComponent, genName, upkeepers, capnproto
-  , generic_text
-  , path
-  , ...}:
+{ component, contracts, crates, pkgs }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [ generic_text path ];
+  contracts = with contracts; [ generic_text path ];
+  crates = with crates; [];
   depsSha256 = "0ahwp016qkfp2lmf9452hrhbb4zmlh9k1wz2aw3wi12qkhh0swsp";
-  configurePhase = ''
+  configurePhase = with pkgs; ''
     runHook preConfigure
     substituteInPlace src/lib.rs --replace "capnp_path" "${capnproto}/bin/capnp"
   '';
-  meta = with stdenv.lib; {
-    description = "Component: Fractalide Virtual Machine";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/vm;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels ];
-  };
 }

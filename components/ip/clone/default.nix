@@ -1,15 +1,8 @@
-{ stdenv, buildFractalideComponent, genName, upkeepers, ...}:
+{ component, contracts, crates }:
 
-buildFractalideComponent rec {
-  name = genName ./.;
+component {
   src = ./.;
-  contracts = [];
-  depsSha256 = "0fcsryl6d7sdgvjzlkfx77b4ayq9xqk5zqhq5ybwycdd3i8nlsy9";
-
-  meta = with stdenv.lib; {
-    description = "Component: Clone the IPs coming in";
-    homepage = https://github.com/fractalide/fractalide/tree/master/components/ip/clone;
-    license = with licenses; [ mpl20 ];
-    maintainers = with upkeepers; [ dmichiels sjmackenzie];
-  };
+  contracts = with contracts; [];
+  crates = with crates; [];
+  depsSha256 = "0jdh4a6zlh8yrmn1xapmzznv3lzrsjm6k000knvf6ga8hc0y4nc3";
 }

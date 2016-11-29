@@ -18,7 +18,7 @@ component! {
 
         // Get the path
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.get_root());
+        let path: path::Reader = try!(ip.read_contract());
 
         let path = try!(path.get_path());
 
@@ -29,7 +29,7 @@ component! {
                 let mut new_ip = IP::new();
 
                 {
-                    let mut ip = new_ip.init_root::<file_error::Builder>();
+                    let mut ip = new_ip.build_contract::<file_error::Builder>();
                     ip.set_not_found(&path);
                 }
                 let _ = self.ports.send("error", new_ip);
@@ -41,7 +41,7 @@ component! {
         // Send start
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            let mut ip = new_ip.build_contract::<file_desc::Builder>();
             ip.set_start(&path);
         }
         try!(self.ports.send("output", new_ip));
@@ -52,7 +52,7 @@ component! {
             let l = try!(line);
             let mut new_ip = IP::new();
             {
-                let mut ip = new_ip.init_root::<file_desc::Builder>();
+                let mut ip = new_ip.build_contract::<file_desc::Builder>();
                 ip.set_text(&l);
             }
             try!(self.ports.send("output", new_ip));
@@ -61,7 +61,7 @@ component! {
         // Send stop
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.init_root::<file_desc::Builder>();
+            let mut ip = new_ip.build_contract::<file_desc::Builder>();
             ip.set_end(&path);
         }
         try!(self.ports.send("output", new_ip));
