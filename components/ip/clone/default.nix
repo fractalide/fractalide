@@ -4,5 +4,5 @@ component {
   src = ./.;
   contracts = with contracts; [];
   crates = with crates; [];
-  depsSha256 = "0fcsryl6d7sdgvjzlkfx77b4ayq9xqk5zqhq5ybwycdd3i8nlsy9";
+  depsSha256 = "0jdh4a6zlh8yrmn1xapmzznv3lzrsjm6k000knvf6ga8hc0y4nc3";
 }
