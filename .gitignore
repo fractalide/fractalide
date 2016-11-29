@@ -3,6 +3,7 @@
 *.so
 *.rlib
 *.dll
+*.swp
 
 # Executables
 *.exe
@@ -14,4 +15,3 @@ target/
 **/result
 
 core
-*.swp
