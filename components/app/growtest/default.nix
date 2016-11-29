@@ -2,7 +2,7 @@
 
 subnet {
   src = ./.;
-  subnet = with contracts; with components; ''
+  flowscript = with contracts; with components; ''
 
    td(${ui_js_components.flex}) output -> input page(${ui_js_components.page})
    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()

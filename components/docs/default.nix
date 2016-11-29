@@ -5,7 +5,7 @@ let
 in
 subnet  {
   src = ./.;
-  subnet = ''
+  flowscript = with components; with contracts; ''
   '${path}:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
   '${domain_port}:(domainPort="localhost:8083")' -> domain_port www()
   '${url}:(url="/docs")' -> url www()

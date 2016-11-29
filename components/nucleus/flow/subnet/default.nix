@@ -2,7 +2,7 @@
 
 subnet {
   src = ./.;
-  subnet = with contracts; with components; ''
+  flowscript = with contracts; with components; ''
    // Basic output
    open(${fs_file_open}) output -> input lex(${nucleus_flow_parser_lexical})
    lex() output -> input sem(${nucleus_flow_parser_semantic})
