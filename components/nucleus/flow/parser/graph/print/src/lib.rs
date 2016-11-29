@@ -13,7 +13,7 @@ component! {
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
         {
-            let graph: fbp_graph::Reader = try!(ip.get_root());
+            let graph: fbp_graph::Reader = try!(ip.read_contract());
 
             println!("Graph at : {}", try!(graph.get_path()));
             println!("nodes :");

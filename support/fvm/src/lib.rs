@@ -92,7 +92,7 @@ pub extern "C" fn run(path_fbp: &str) {
     p.connect("add".into(), sched.get_sender("sched".into(), "action".into()).unwrap()).expect("unable to connect");
     let mut start_ip = IP::new();
     {
-        let builder: fbp_action::Builder = start_ip.init_root();
+        let builder: fbp_action::Builder = start_ip.build_contract();
         let mut add = builder.init_add();
         add.set_name("main");
         add.set_comp(&path_fbp);

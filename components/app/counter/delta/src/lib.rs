@@ -22,8 +22,8 @@ component! {
         }
 
         {
-            let mut reader: generic_text::Reader = try!(ip_delta.get_root());
-            let mut builder = try!(ip_actual.init_root_from_reader::<app_counter::Builder, app_counter::Reader>());
+            let mut reader: generic_text::Reader = try!(ip_delta.read_contract());
+            let mut builder = try!(ip_actual.edit_contract::<app_counter::Builder, app_counter::Reader>());
             let mut text = try!(reader.get_text());
             if text == "" { text = "0"; }
             if let Ok(i) = text.parse::<i64>() {

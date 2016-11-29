@@ -15,7 +15,7 @@ component! {
         let mut ip_a = try!(self.ports.recv("input"));
 
         {
-            let a_reader: maths_boolean::Reader = try!(ip_a.get_root());
+            let a_reader: maths_boolean::Reader = try!(ip_a.read_contract());
             let a = a_reader.get_boolean();
 
             println!("boolean : {:?}", a);

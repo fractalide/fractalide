@@ -19,15 +19,15 @@ component! {
     fn run(&mut self) -> Result<()>{
 
         let mut path_ip = try!(self.ports.recv("path"));
-        let path: path::Reader = try!(path_ip.get_root());
+        let path: path::Reader = try!(path_ip.read_contract());
         let path = try!(path.get_path());
 
         let mut contract_ip = try!(self.ports.recv("contract"));
-        let contract: generic_text::Reader = try!(contract_ip.get_root());
+        let contract: generic_text::Reader = try!(contract_ip.read_contract());
         let f_contract = try!(contract.get_text());
 
         let mut input_ip = try!(self.ports.recv("input"));
-        let input: generic_text::Reader = try!(input_ip.get_root());
+        let input: generic_text::Reader = try!(input_ip.read_contract());
         let input = try!(input.get_text());
 
         let mut child = try!(Command::new("capnp_path" )

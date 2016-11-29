@@ -12,12 +12,12 @@ component! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.get_root());
+        let path: path::Reader = try!(ip.read_contract());
         let path = try!(path.get_path());
         if path != "end" {
             let mut next_ip = IP::new();
             {
-                let mut ip = next_ip.init_root::<value_string::Builder>();
+                let mut ip = next_ip.build_contract::<value_string::Builder>();
                 ip.set_value("next");
             }
             try!(self.ports.send("next", next_ip));

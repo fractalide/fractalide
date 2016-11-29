@@ -47,7 +47,7 @@ pub trait Component {
 ///        let opt = self.recv_opt();
 ///
 ///        // Get the capn'p reader
-///        let reader: generic_text::Reader = try!(opt.get_root());
+///        let reader: generic_text::Reader = try!(opt.read_contract());
 ///        // Print the option
 ///        println!("{}", try!(reader.get_text()));
 ///

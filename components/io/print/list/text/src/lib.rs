@@ -15,13 +15,13 @@ component! {
 
         let mut ip_input = self.ports.recv("input")?;
         let input = {
-            let input_reader: list_text::Reader = ip_input.get_root()?;
+            let input_reader: list_text::Reader = ip_input.read_contract()?;
             input_reader.get_texts()
         };
 
         let mut out_ip_output = IP::new();
         {
-            let ip = out_ip_output.init_root::<list_text::Builder>();
+            let ip = out_ip_output.build_contract::<list_text::Builder>();
             let mut texts = ip.init_texts(input?.len() as u32);
             let mut i: u32 = 0;
             for cmd in input?.iter() {
