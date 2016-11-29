@@ -2,7 +2,7 @@
 
 subnet {
   src = ./.;
-  subnet = with contracts; with components; ''
+  flowscript = with contracts; with components; ''
   a => input clone1(${ip_clone})
   b => input clone2(${ip_clone})
   clone1() clone[2] -> input not1(${maths_boolean_not}) output -> a and2(${maths_boolean_and})

@@ -1,8 +1,9 @@
-{ component, contracts, crates }:
+{ component, contracts, crates, pkgs }:
 
 component {
   src = ./.;
   contracts = with contracts; [ list_text ];
   crates = with crates; [];
-  depsSha256 = "07vdmypmqh72f0rdl1f0mqsc4w2rl27yl29aywysjnlmkpyg4cgc";
+  osdeps = with pkgs; [];
+  depsSha256 = "17ypb1hvyrsvkb248s6yknybrmdj0gjsi9k212ydys17i3i5xhq9";
 }

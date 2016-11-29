@@ -1,10 +1,10 @@
 { stdenv, genName, writeTextFile}:
-{ src, subnet, name ? null, ... } @ args:
+{ src, flowscript, name ? null, ... } @ args:
   let
   subnet-name = if name == null then genName src else name;
   subnet-txt = writeTextFile {
     name = subnet-name;
-    text = subnet;
+    text = flowscript;
     executable = false;
   };
   in stdenv.mkCachedDerivation  (args // {

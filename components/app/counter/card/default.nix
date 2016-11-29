@@ -2,7 +2,7 @@
 
 subnet {
   src = ./.;
-  subnet = with contracts; with components; ''
+  flowscript = with contracts; with components; ''
    input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
 
    model(${app_model}) output -> input view(${app_counter_view}) output -> input out_dispatch()

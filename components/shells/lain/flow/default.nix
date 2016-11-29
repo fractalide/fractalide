@@ -1,8 +1,9 @@
-{ component, contracts, crates }:
+{ component, contracts, crates, pkgs }:
 
 component {
   src = ./.;
-  contracts = with contracts; [file_desc list_command];
+  contracts = with contracts; [ file_desc list_command ];
   crates = with crates; [];
-  depsSha256 = "1iiq49yvnf8cpxvnxvvy4h3vy26xkzf5lc73p06xjw5d7282bwj0";
+  osdeps = with pkgs; [];
+  depsSha256 = "0f3smv1bz24i592mq4ypdnmwdjbc7rwlqhrj90mxmiz15li6ga5k";
 }
