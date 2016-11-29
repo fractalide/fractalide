@@ -82,12 +82,10 @@ Follow us on [twitter](https://twitter.com/fractalide)
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
 For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 ```
-$ cd <your/development/directory>
-$ mkdir fractals && cd fractals
-$ git clone https://github.com/fractalide/fractal_workbench.git
-$ cd fractal_workbench
+$ git clone https://github.com/fractalide/fractalide.git
+$ cd fractalide
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
-$ nix-build
+$ nix-build --argstr debug true  --argstr local-rustfbp true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
 ```
 * You will wait about 4~5 hours to compile rustc. We're working on it...
 * a neat hack you can do that'll persist your `rustc` between `nix-collect-garbage` runs is this:
