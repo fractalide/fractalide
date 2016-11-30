@@ -1,16 +1,12 @@
-{ pkgs
-  , support
-  , contracts
-  , components
-  , fetchFromGitHub
-  , ...}:
+{ pkgs, support, contracts, components, crates }:
+
 let
-  fractal = fetchFromGitHub {
+  fractal = pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_net_ndn";
-    rev = "09e16f26e7deeb1454312f695887e29465c0e58c";
-    sha256 = "09qm6awhlybzbch48si6vw8q2n5dlc6avb1xyznfa0jywkh5wm3x";
+    rev = "f30da9816809c6b26774a355de760bfa68d425ce";
+    sha256 = "0kd4gzxx6pm4dlsiqksg3anx3yg46w7rxdfcazxmn6783bfhff0a";
   };
   /*fractal = ../../../../fractals/fractal_net_ndn;*/
 in
-  import fractal {inherit pkgs support contracts components; fractalide = null;}
+  import fractal {inherit pkgs support contracts components crates; fractalide = null;}
