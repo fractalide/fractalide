@@ -2,7 +2,7 @@
 
 contract {
   src = ./.;
-  importedContracts = with contracts; [ tuple ];
+  contracts =  with contracts; [ tuple ];
   schema = with contracts; ''
     @0xdfa17455eb3bee21;
     using Tuple = import "${tuple}/src/contract.capnp";

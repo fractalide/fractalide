@@ -1,5 +1,5 @@
 { stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
-{ src, schema, importedContracts ? [], ... } @ args:
+{ src, schema, contracts ? [], ... } @ args:
 
 let
 name = genName src;
@@ -12,12 +12,12 @@ contractText = writeTextFile {
 in stdenv.mkCachedDerivation (args // {
   name = name;
   unpackPhase = "true";
-  propagatedBuildInputs = importedContracts;
+  propagatedBuildInputs = contracts;
   installPhase = ''
     runHook preInstall
     mkdir -p $out/src
     mkdir -p $out/nix-support
-    for i in $importedContracts; do
+    for i in $contracts; do
       echo $i >> $out/nix-support/propagated-build-inputs
     done
     cp ${contractText} $out/src/contract.capnp

@@ -1,4 +1,4 @@
-{pkgs, components, contracts, support, ...}:
+{pkgs, support, components, contracts, crates, ...}:
 
 let
 fvm  = support.buildRustPackage rec {
@@ -23,6 +23,8 @@ fvm  = support.buildRustPackage rec {
     substituteInPlace src/lib.rs --replace "path_capnp.rs" "${contracts.path}/src/contract_capnp.rs"
     substituteInPlace src/lib.rs --replace "fbp_action.rs" "${contracts.fbp_action}/src/contract_capnp.rs"
     '';
+
+    crates = with crates; [ rustfbp capnp ];
 
     installPhase = ''
       runHook preInstall
