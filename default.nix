@@ -104,10 +104,23 @@ pkgs = pkgsOld.overridePackages(self: super: {
   };
 });
 
+crates = rec {
+  ### this set will be replaced with an import of github.com/fractalide/nix-crates.io-index
+  src = "TO COME: see github.com/fractalide/nixcrates";
+  rustfbp = src;
+  capnp = src;
+  toml = src;
+  libc = src;
+  copperline = src;
+  nom = src;
+  iron = src;
+  mount = src;
+  staticfile = src;
+};
 isValidSubnet = (builtins.head (lib.attrVals [subnet] components));
 defaultSubnet = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
 support = import ./support { inherit pkgs debug test local-rustfbp components contracts; };
-fractals = import ./fractals { inherit pkgs support components contracts; };
+fractals = import ./fractals { inherit buffet; };
 components = import ./components { inherit buffet; };
 contracts = import ./contracts { inherit buffet; };
 services = import ./services { inherit fractals; };
@@ -117,10 +130,10 @@ buffet = {
   components = components;
   services = services;
   fractals = fractals;
-  crates = "crates_to_come";
+  crates = crates;
   pkgs = pkgs;
 };
-fvm = import ./support/fvm { inherit pkgs support components contracts; };
+fvm = import ./support/fvm { inherit pkgs support components contracts crates; };
 in
 {
   inherit components support contracts services fractals pkgs;

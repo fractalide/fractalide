@@ -5,6 +5,7 @@
   , srcs ? null
   , sourceRoot ? null
   , buildInputs ? []
+  , crates ? []
   , cargoUpdateHook ? ""
   , ... } @ args:
 
