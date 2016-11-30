@@ -1,7 +1,7 @@
 {pkgs, support, components, contracts, crates, ...}:
 
 let
-fvm  = support.buildRustPackage rec {
+fvm  = support.buildRustPackage {
     name = "fvm";
     src = ./.;
     depsSha256 = "1vfm82dgz86i3pd531z0dhlsnxnjpd7bdq8dkpc5bjf89k7qgc5z";

@@ -136,7 +136,7 @@ buffet = {
 fvm = import ./support/fvm { inherit pkgs support components contracts crates; };
 in
 {
-  inherit components support contracts services fractals pkgs;
+  inherit components support contracts services fractals crates pkgs;
   result = if subnet == null
   then fvm
   else pkgs.writeTextFile {
