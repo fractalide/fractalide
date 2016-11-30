@@ -2,7 +2,7 @@
 
 contract {
   src = ./.;
-  importedContracts = with contracts; [];
+  contracts =  with contracts; [];
   schema = with contracts; ''
     @0xcfac55e5d5e97b4f;
 

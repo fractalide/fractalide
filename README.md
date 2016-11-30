@@ -71,6 +71,7 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [ ] Deployable example of a simple microservices setup.
 - [ ] Documentation.
 - [ ] Remove cargo.
+- [x] Stabilize contract, subnet and component API.
 - [x] Contract composition.
 - [ ] Only Information Packets make heap allocations.
 - [ ] Upgrade `nom` parser combinator to 2.0.

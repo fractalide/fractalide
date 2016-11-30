@@ -2,7 +2,7 @@
 
 contract {
   src = ./.;
-  importedContracts = with contracts; [ command ];
+  contracts =  with contracts; [ command ];
   schema = with contracts; ''
     @0xf61e7fcd2b18d862;
     using Command = import "${command}/src/contract.capnp";
