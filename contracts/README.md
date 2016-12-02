@@ -41,3 +41,17 @@ contract {
   '';
 }
 ```
+
+Out of curiosity what does the output of the above `list_command` `contract` function look like?
+
+```
+$ cat /nix/store/3s25icpbf1chayvrxwbyxr9qckn7x669-list_command/src/contract.capnp
+@0xf61e7fcd2b18d862;
+using Command = import "/nix/store/bgh37035cbr49r7mracmdwwjx9sbf4nr-command/src/contract.capnp";
+
+struct ListCommand {
+    commands @0 :List(Command.Command);
+}
+```
+
+The generated Rust code consists of the `list_command`, `command` and `tuple` contract concatenated together. 

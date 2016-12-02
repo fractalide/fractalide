@@ -1,5 +1,7 @@
 # Components and Subnets
 
+## Subnets
+
 Components are dependent on: contracts, crates and third party libraries.
 Contracts are dependent on: other contracts.
 Subnets are dependent on: contracts components and other subnets.
@@ -40,29 +42,7 @@ $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
 
 This file can then be fed into the `fvm`or fractalide virtual machine.
 
-Out of curiosity what does the output of the above list_command contract look like?
-
-```
-$ cat /nix/store/3s25icpbf1chayvrxwbyxr9qckn7x669-list_command/src/contract.capnp
-@0xf61e7fcd2b18d862;
-using Command = import "/nix/store/bgh37035cbr49r7mracmdwwjx9sbf4nr-command/src/contract.capnp";
-
-struct ListCommand {
-    commands @0 :List(Command.Command);
-}
-```
-
-How about the directory structure of `maths_boolean_nand` component?
-
-```
-/nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-maths_boolean_nand
-└── lib
-    └── libcomponent.so
-```
-
-https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/not/default.nix
-
-This is the component:
+## Components
 
 ``` nix
 { component, contracts, crates, pkgs }:
@@ -88,4 +68,12 @@ The above attributes are being passed into the component function as arguments.
 The component function will do a few things for us, 1) ensure `contracts`, `crates` (soon to happen) and `osdeps` are available in scope, then it pulls in the rust src and compiles it into a shared object file with a C ABI.
 So you can reference the name of a component (derived from the folder hierarchy) in a subnet and the component will be lazily compiled.
 
-https://github.com/fractalide/fractalide/blob/master/components/maths/boolean/nand/default.nix
+What does the output of the `component` function that build the `maths_boolean_nand` component look like?
+
+```
+/nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-maths_boolean_nand
+└── lib
+    └── libcomponent.so
+```
+
+The `fvm` is intelligent enough to know how to find the `.../lib/libcomponent.so` library and `dlopen` it.
