@@ -2,11 +2,45 @@
 
 ## Subnets
 
-Components are dependent on: contracts, crates and third party libraries.
-Contracts are dependent on: other contracts.
-Subnets are dependent on: contracts components and other subnets.
+### What?
 
-This is the subnet:
+Subnets may contain components, other subnets and [contracts](../components/README.md).
+
+### Why?
+
+Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface presenting a simple abstraction to users.
+
+### Who?
+
+Typically experts in a domain will operate here. These people most likely are not programmers and prefer focusing on the science vs getting tangled in the weeds of code. Programmers will find `subnets` very important because this allows them to create more powerful hierarchies of components.
+
+### Where?
+
+The `components` folder is where all the `subnets` go. Typically one might structure a hierarchy like such:
+
+```
+── wrangle
+   ├── default.nix <------
+   ├── aggregate
+   ├── anonymize
+   ├── print
+   ├── processchunk
+   │   ├── default.nix <------
+   │   ├── agg_chunk_triples
+   │   ├── convert_json_vector
+   │   ├── extract_keyvalue
+   │   ├── file_open
+   │   └── iterate_paths
+   └── stats
+```
+
+See those `default.nix` files? Those are `subnets`, the other names are folders containing rust `components`. Typically a `default.nix` in a folder with components will contain exactly those rust components in the subnet. It's a neat way to keep things organized and at a simple glance of the folder structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent folder and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
+
+Another style of structuring a
+
+### How?
+
+This is the contents of a subnet's `default.nix` file.
 
 ``` nix
 { subnet, components, contracts }:
@@ -43,6 +77,56 @@ $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
 This file can then be fed into the `fvm`or fractalide virtual machine.
 
 ## Components
+
+Components depend on contracts, crates and operating system libraries.
+
+### What?
+
+Components are Rust `dylib` libraries with a C ABI. They have predefined inputs and outputs. The Fractalide scheduler understands how to load these libraries.
+
+Note, typically one uses `cargo` to construct correctly formatted arguments to the `rustc` compiler. In this case we've chosen to replace `cargo` with `nix` scripts that correctly format arguments to the `rustc` compiler. There was too much cognitive dissonance happening between `nix` an immutable package manager calling `cargo` an immutable package manager. The choice has so far worked out very well indeed.
+
+### Why?
+
+Data needs to be transformed. Rust an efficient, zero-cost abstractions seem like a very good choice of implementation language for these components.
+
+### Who?
+
+Typically programmers will develop these components. They specialize on making these components as efficient as possible, while people who focus on the Science give the requirements.  
+
+### Where?
+
+The `components` are folder found in the `components` folder. How creative.
+
+```
+processchunk
+├── default.nix
+├── agg_chunk_triples
+│   ├── default.nix <---
+│   └── lib.rs
+├── convert_json_vector
+│   ├── default.nix <---
+│   └── lib.rs
+├── extract_keyvalue
+│   ├── default.nix <---
+│   └── lib.rs
+├── file_open
+│   ├── default.nix <---
+│   └── lib.rs
+└── iterate_paths
+    ├── default.nix <---
+    └── lib.rs
+```
+Typically when you see a `lib.rs` in the same folder as a `default.nix` you know that `default.nix` is not a `subnet` but a `component`.
+
+### How?
+
+The `nix` level `default.nix` file requires you make decisions about 3 things.
+* What contracts the component will use.
+* What crates are present in the component.
+* What operating system level dependencies are needed to correctly run this component.
+
+In all the above cases transitive deps are resolved for you.
 
 ``` nix
 { component, contracts, crates, pkgs }:
