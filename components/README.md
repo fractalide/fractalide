@@ -1,40 +1,8 @@
-# Fractals
-
-## Components and Subnets
+# Components and Subnets
 
 Components are dependent on: contracts, crates and third party libraries.
 Contracts are dependent on: other contracts.
 Subnets are dependent on: contracts components and other subnets.
-
-Everything in the below language is lazily evaluated, this allows us to scale to massive code repositories.
-
-This is the contract:
-``` nix
-{ contract, contracts }:
-
-contract {
-  src = ./.;
-  contracts = with contracts; [ command ];
-  schema = with contracts; ''
-    @0xf61e7fcd2b18d862;
-    using Command = import "${command}/src/contract.capnp";
-    struct ListCommand {
-        commands @0 :List(Command.Command);
-    }
-  '';
-}
-```
-
-The `{ contract, contracts }:` arguments pass in a contract buiding function called `contract` and every other contract in the system via the `contracts` attribute.
-src indicates the current hierarchical directory the source code or default.nix is in, a contract/component/subnet name will be generated from this directory hierarchy
-the `contracts = with contracts; [];` is a bit annoying, but it allows for powerful contract composition. In other words one doesn't have to copy paste contracts in the same file but reference other contracts by name, unfortunately one has to plug that imported contract into the `importedContracts` attribute as we need to find all the transitive dependencies and bring them into scope just before a component is compiled.
-the `schema = with contracts; ''` line allows the programmer to construct their contract via the capnproto schema language (https://capnproto.org/language.html)
-
-The above attributes are being passed into the contract function as function arguments.
-
-This contract mechanism allows one to compose very complex contracts between components, yet retain a nice type system in a distributed environment. This is good stuff.
-
-https://github.com/fractalide/fractalide/blob/master/contracts/list/command/default.nix
 
 This is the subnet:
 
