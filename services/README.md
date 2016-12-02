@@ -34,7 +34,7 @@ This approach is when you have a service you don't consider generic and is not w
 
 * in your `configuration.nix` put these lines:
 
-```
+``` nix
 { config, pkgs, ... }:
 let
   fractalide = import fetchFromGitHub {
@@ -63,7 +63,7 @@ in
 
 * in your `configuration.nix` put these lines:
 
-```
+``` nix
 let
   fractalide = import fetchFromGitHub {
     owner = "fractalide";
