@@ -4,7 +4,7 @@
 
 ### What?
 
-`Subnets` are essentially buckets that contain other components, subnets and contracts, this is the implementation. These buckets also have pipes, where each pipe connects to the ports of other `components` or `subnets`, in other words, the interface. 
+`Subnets` are essentially buckets that contain other components, subnets and contracts, this is the implementation. These buckets also have pipes, where each pipe connects to the ports of other `components` or `subnets`, in other words, the interface.
 
 ### Why?
 
@@ -56,17 +56,11 @@ subnet {
 ```
 
 
-The `{ subnet, contracts, components }:` arguments pass in a subnet buiding function called `subnet`, every other contract and every other component (or namespace of components).
-
-The subnet example is more simple, in this example the FBP flowscript code is actually in the text portion of one of the function arguments called `flowscript`.
-You already understand the `src` attribute, the new concept is the `flowscript` attribute.
-Here we bring every  contract and component into the scope between the opening '' and closing '' double single quotes of the `flowscript` attribute, allowing us to construct flow based programming subnets.
-
-The `${maths_boolean}:(boolean=true)' ->` bit of flowscript is a typed Initial Information Packet.
-
-The above attributes are being passed into the subnet function as function arguments.
-The subnet function assists us inthat each flowscript argument undergoes a compilation step resolving every name between a ``${...}`` into a `*.subnet` text file with absolute paths to other subnets or compiled components!
-This approach is lazy and only referenced names will be compiled. So this could be the top level component of a many hundred deep hierarchy and the whole hierarchy will be compiled lazily.
+* The `{ subnet, contracts, components }:` arguments pass in a `subnet` building function called `subnet`, every other contract and every other component (or namespace of components).
+* The `src` attribute derives a subnet name based on location the subnet is in the directory hierarchy.
+* The `flowscript` attribute defines where the `flowscript`, which is a [Flow-based programming](https://en.wikipedia.org/wiki/Flow-based_programming) language. Here the data flowing through a system is now a first class citizen that can be easily manipulated. It is here we bring in contracts, components and subnets we need into the scope between the opening '' and closing '' double single quotes of the `flowscript` attribute. The `with components; with contracts;` does this for us.
+* `Nix` assists us greatly, in that each component/subnet name, the stuff between the curly quotes ``${...}`` undergoes a compilation step resolving every name into a `/path/to/compiled/lib.subnet` text file.
+* This approach is lazy and only referenced names will be compiled. In other words this could be the top level component of a many hundred deep hierarchy and the only that hierarchy of referenced names will be compiled in a lazy fashion.
 
 This is what the output looks like:
 ```
@@ -74,8 +68,6 @@ $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand) output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> b nand()
 ```
-
-This file can then be fed into the `fvm`or fractalide virtual machine.
 
 ### Flowscript syntax is easy
 
