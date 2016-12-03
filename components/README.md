@@ -4,15 +4,15 @@
 
 ### What?
 
-Subnets may contain components, other subnets and [contracts](../components/README.md).
+`Subnets` are essentially buckets with holes in them. Each hole is a `port` connects to other `components` or `subnets` ports which are contained in the bucket. `Subnets` may also have [contracts](../components/README.md) as a dependency, they are used for an important concept called an `Initial Information Packet` or `IIP`, to be described later.
 
 ### Why?
 
-Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface presenting a simple abstraction to users.
+Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface to users. These `subnets` may be recombined in as many ways as `components`, indeed from an interface perspective they are identical to `components`.
 
 ### Who?
 
-Typically experts in a domain will operate here. These people most likely are not programmers and prefer focusing on the science vs getting tangled in the weeds of code. Programmers will find `subnets` very important because this allows them to create more powerful hierarchies of components.
+Typically experts in a domain will operate here. These people most likely are not programmers and prefer focusing on the Science vs getting tangled in the weeds of code. Programmers will find `subnets` very important because this allows them to create more powerful hierarchies of components.
 
 ### Where?
 
@@ -36,11 +36,12 @@ The `components` folder is where all the `subnets` go. Typically one might struc
 
 See those `default.nix` files? Those are `subnets`, the other names are folders containing rust `components`. Typically a `default.nix` in a folder with components will contain exactly those rust components in the subnet. It's a neat way to keep things organized and at a simple glance of the folder structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent folder and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
 
-Another style of structuring a
-
 ### How?
 
-This is the contents of a subnet's `default.nix` file.
+The `nix` level `default.nix` file requires you make decisions about 3 types of dependencies.
+* What `contracts` are needed?
+* What `components` are needed?
+* What `subnets` are needed in your `subnet`?
 
 ``` nix
 { subnet, components, contracts }:
