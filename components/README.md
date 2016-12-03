@@ -4,7 +4,7 @@
 
 ### What?
 
-`Subnets` are essentially buckets with holes in them. Each hole is a `port` and connects to other `components` or `subnets` ports which are contained in the bucket. `Subnets` may also have [contracts](../components/README.md) as a dependency, they are used for an important concept called an `Initial Information Packet` or `IIP`, to be described later.
+`Subnets` are essentially buckets that contain other components, subnets and contracts, this is the implementation. These buckets also have pipes, where each pipe connects to the ports of other `components` or `subnets`, in other words, the interface. 
 
 ### Why?
 
@@ -76,6 +76,187 @@ $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
 ```
 
 This file can then be fed into the `fvm`or fractalide virtual machine.
+
+### Flowscript syntax is easy
+
+Everything between the opening `''` and `''` attribute value is `flowscript`, i.e:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+                       <---- here
+  '';
+}
+```
+#### Component initialization:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    variable_name(${name_of_component})
+  '';
+}
+```
+#### Referencing a previously initialized component (with a comment):
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    variable_name(${name_of_component}) // <──┐
+    variable_name()                     // <──┴─ same instance
+  '';
+}
+```
+#### Connecting and initializing two components:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    component1(${name_of_component}) output_port -> input_port component2(${name_of_component2})
+  '';
+}
+```
+#### Creating an Initial Input Packet
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    '${maths_boolean}:(boolean=true)' -> a variable_name(${name_of_component})
+  '';
+}
+```
+#### More complex Initial Input Packet
+``` nix
+{ subnet, contracts, components }:
+
+subnet {
+  src = ./.;
+  flowscript = with contracts; with components; ''
+   td(${ui_js_components.flex})
+   '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
+  '';
+}
+```
+[Learn](../contracts/README.md) more about Information Packets.
+#### Creating a subnet input port
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    subnet_input => input_port variable_name(${name_of_component})
+  '';
+}
+```
+#### Creating a subnet output port
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+     variable_name(${name_of_component}) output_port => subnet_output
+  '';
+}
+```
+#### Subnet initialization:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    subnet_name(${name_of_subnet})
+  '';
+}
+```
+#### Initializing a subnet and component then connecting them:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    subnet(${name_of_subnet})
+    component(${name_of_component})
+    subnet() subnet_output -> input_port component()
+  '';
+}
+```
+#### Hierarchical naming:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
+    '${maths_boolean}:(boolean=true)' -> b nand()
+    nand() output -> input io_print(${maths_boolean_print})
+  '';
+}
+```
+
+The component and contract names seem long and irritating. Fractalide uses a hierarchical naming structure.
+So you can find the `maths_boolean_nand` component by going to the `fractalide/components/maths/boolean/nand` directory.
+The same logic applies to the contracts. Though we also support namespaces. So from time to time you might see something like this:
+
+#### Array ports:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    db_path => input clone(${ip_clone})
+    clone() clone[1] => db_path1
+    clone() clone[2] => db_path2
+    clone() clone[3] => db_path3
+    clone() clone[4] => db_path4
+  '';
+}
+```
+Note the `clone() clone[1]`. This is an `array output port`, there is an equivalent `array input port` with similar syntax and the contents between the `[` and `]` is a string, so don't be mislead by the numbers.
+There are two types of component ports, a `simple port` and an `array port`. The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+
+#### Namespaces
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    listen => listen http(${net_http_components.http})
+    db_path => input clone(${ip_clone})
+    clone() clone[1] -> db_path get(${app_todo_components.todo_get})
+    clone() clone[2] -> db_path post(${app_todo_components.todo_post})
+    clone() clone[3] -> db_path delete(${app_todo_components.todo_delete})
+    clone() clone[4] -> db_path patch(${app_todo_components.todo_patch})
+
+    http() GET[/todos/.+] -> input get() response -> response http()
+    http() POST[/todos/?] -> input post() response -> response http()
+    http() DELETE[/todos/.+] -> input delete() response -> response http()
+    http() PATCH[/todos/.+] -> input patch()
+    http() PUT[/todos/.+] -> input patch() response -> response http()
+  '';
+}
+```
+Notice the `net_http_components` and `app_todo_components` namespaces. Some [fractals](../fractals/README.md) might deliberately expose a sort of toolkit one may take tools and use. As is the case with the `net_http_components.http` component.
+When you see a `xxx_components.yyy` you know immediately this is a namespace.
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element name is actually a `regular expression` and the implementation of that component is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/components/http/src/lib.rs#L149)!
+
+
 
 ## Components
 
