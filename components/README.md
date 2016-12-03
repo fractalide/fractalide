@@ -4,7 +4,7 @@
 
 ### What?
 
-`Subnets` are essentially buckets with holes in them. Each hole is a `port` connects to other `components` or `subnets` ports which are contained in the bucket. `Subnets` may also have [contracts](../components/README.md) as a dependency, they are used for an important concept called an `Initial Information Packet` or `IIP`, to be described later.
+`Subnets` are essentially buckets with holes in them. Each hole is a `port` and connects to other `components` or `subnets` ports which are contained in the bucket. `Subnets` may also have [contracts](../components/README.md) as a dependency, they are used for an important concept called an `Initial Information Packet` or `IIP`, to be described later.
 
 ### Why?
 
@@ -16,7 +16,7 @@ Typically experts in a domain will operate here. These people most likely are no
 
 ### Where?
 
-The `components` folder is where all the `subnets` go. Typically one might structure a hierarchy like such:
+The `components` directory is where all the `subnets` go. Typically one might structure a hierarchy like such:
 
 ```
 ── wrangle
@@ -34,7 +34,7 @@ The `components` folder is where all the `subnets` go. Typically one might struc
    └── stats
 ```
 
-See those `default.nix` files? Those are `subnets`, the other names are folders containing rust `components`. Typically a `default.nix` in a folder with components will contain exactly those rust components in the subnet. It's a neat way to keep things organized and at a simple glance of the folder structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent folder and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
+See those `default.nix` files? Those are `subnets`, the other names are directories containing rust `components`. Typically a `default.nix` in a directory with `components` will contain exactly those rust `components` in the subnet. It's a neat way to keep things organized and at a simple glance of the directory structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent directory and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
 
 ### How?
 
@@ -97,7 +97,7 @@ Typically programmers will develop these components. They specialize on making t
 
 ### Where?
 
-The `components` are folder found in the `components` folder. How creative.
+The `components` are found in the `components` directory.
 
 ```
 processchunk
@@ -118,14 +118,14 @@ processchunk
     ├── default.nix <---
     └── lib.rs
 ```
-Typically when you see a `lib.rs` in the same folder as a `default.nix` you know that `default.nix` is not a `subnet` but a `component`.
+Typically when you see a `lib.rs` in the same directory as a `default.nix` you know that `default.nix` is not a `subnet` but a `component`.
 
 ### How?
 
-The `nix` level `default.nix` file requires you make decisions about 3 things.
-* What contracts the component will use.
-* What crates are present in the component.
-* What operating system level dependencies are needed to correctly run this component.
+The `nix` level `default.nix` file requires you make 3 decisions.
+* What `contracts` the `component` will use.
+* What `crates` are present in the `component`.
+* What `operating system level dependencies` or `osdeps` are needed to correctly run this `component`.
 
 In all the above cases transitive deps are resolved for you.
 
@@ -141,7 +141,7 @@ component {
 }
 ```
 
-The `{ component, contracts, crates, pkgs }:` imports the `component` function which builds the rust source code in the folder. The `contracts` argument pulls in every contract available on the system, crates *will* soon pull in only dependent and transitive crates available on https://crates.io and `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
+The `{ component, contracts, crates, pkgs }:` imports the `component` function which builds the rust source code in the directory. The `contracts` argument pulls in every contract available on the system, crates *will* soon pull in only dependent and transitive crates available on https://crates.io and `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
 
 Please note in the next couple of weeks the depsSha256 attribute will be removed.
 
@@ -151,7 +151,7 @@ Please note in the next couple of weeks the depsSha256 attribute will be removed
 
 The above attributes are being passed into the component function as arguments.
 The component function will do a few things for us, 1) ensure `contracts`, `crates` (soon to happen) and `osdeps` are available in scope, then it pulls in the rust src and compiles it into a shared object file with a C ABI.
-So you can reference the name of a component (derived from the folder hierarchy) in a subnet and the component will be lazily compiled.
+So you can reference the name of a component (derived from the directory hierarchy) in a subnet and the component will be lazily compiled.
 
 What does the output of the `component` function that build the `maths_boolean_nand` component look like?
 
