@@ -4,9 +4,7 @@
 
 ### What?
 
-`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface is much like the hardware world in that you have a `pin` or a `port` which connects other
-
-`Subnets` are essentially buckets that contain other components, subnets and contracts, this is the implementation. These buckets also have pipes, where each pipe connects to the ports of other `components` or `subnets`, in other words, the interface.
+`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface is much like the hardware world in that you have a `pin` or `ports` which connects to other `pins` or `ports`.
 
 ### Why?
 
@@ -36,7 +34,7 @@ The `components` directory is where all the `subnets` go. Typically one might st
    └── stats
 ```
 
-See those `default.nix` files? Those are `subnets`. The other names are directories containing rust `components`. Typically a `default.nix` in a directory with `components` will contain exactly those rust `components` in the subnet. It's a neat way to keep things organized and at a simple glance of the directory structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent directory and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
+See those `default.nix` files? Those are `subnets`. The other names are directories containing rust `components`. Typically a `default.nix` in a directory with `components` will contain exactly those rust `components` in the subnet. It's a neat way to keep things organized and at a glance you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent directory and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
 
 ### How?
 
@@ -51,29 +49,36 @@ The `nix` level `default.nix` file requires you make decisions about 3 types of 
 subnet {
  src = ./.;
  flowscript = with components; with contracts; ''
-  '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
+  '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
   '${maths_boolean}:(boolean=true)' -> b nand()
+  nand() output -> input io_print(${maths_boolean_print})
  '';
 }
 ```
 
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
 
-* The `{ subnet, contracts, components }:` arguments pass in a `subnet` building function called `subnet`, every other contract and every other component (or namespace of components).
-* The `src` attribute derives a subnet name based on location the subnet is in the directory hierarchy.
-* The `flowscript` attribute defines where the `flowscript`, which is a [Flow-based programming](https://en.wikipedia.org/wiki/Flow-based_programming) language. Here the data flowing through a system is now a first class citizen that can be easily manipulated. It is here we bring in contracts, components and subnets we need into the scope between the opening '' and closing '' double single quotes of the `flowscript` attribute. The `with components; with contracts;` does this for us.
-* `Nix` assists us greatly, in that each component/subnet name, the stuff between the curly quotes ``${...}`` undergoes a compilation step resolving every name into a `/path/to/compiled/lib.subnet` text file.
-* This approach is lazy and only referenced names will be compiled. In other words this could be the top level component of a many hundred deep hierarchy and the only that hierarchy of referenced names will be compiled in a lazy fashion.
 
-This is what the output looks like:
+* The `{ subnet, contracts, components }:` passes in 3 arguments, the `subnet` building function called `subnet`, `contracts` is every other contract or contract namespace and `components` is every other `subnet` and `component` in the system. Both `subnets` and `components` are bundled into the `components` argument.
+* The `subnet` building function accepts these arguments:
+  * The `src` attribute derives a subnet name based on location in the directory hierarchy.
+  * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Contracts`, `components` and `subnets` are brought into scope between the opening '' and closing '' double single quotes by using the `with components; with contracts;` syntax.
+* `Nix` assists us greatly, in that each `component`/`subnet` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subnet` text file and `/path/to/compiled/libcomponent.so` shared object.
+* This approach is lazy and only referenced names will be compiled. In other words `subnet` could be a top level `subnet` of a many  layer deep hierarchy and the only that hierarchy of referenced names will be compiled in a lazy fashion, *not* the entire `fractalide/components` folder.
+
+This is the output of the above `subnet`'s compilation:
 ```
 $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
-'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand) output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
+'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> b nand()
+nand() output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
 ```
+
+Mother of the Flying Spaghetti Monster, what is that? Thankfully, you'll not need to care about the *read only* output. In a similar vein, projects like `docker` also implement this type of registry logic, except `docker`'s granularity is at container level. We've adopted a package or library granularity instead. It allows for reproducible, deterministic systems, instead of copying around "zipped" archives, that quickly max out your hard drive.
 
 ### Flowscript syntax is easy
 
-Everything between the opening `''` and `''` attribute value is `flowscript`, i.e:
+Everything between the opening `''` and closing `''` is `flowscript`, i.e:
 ``` nix
 { subnet, components, contracts }:
 
@@ -127,7 +132,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png)
 
-#### Creating an Initial Input Packet
+#### Creating an Initial Information Packet
 ``` nix
 { subnet, components, contracts }:
 
@@ -140,7 +145,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png)
 
-#### More complex Initial Input Packet
+#### More complex Initial Information Packet
 ``` nix
 { subnet, contracts, components }:
 
@@ -209,7 +214,50 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex9.png)
 
+#### Array ports:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+  db_path => input clone(${ip_clone})
+  clone() clone[0] => db_path0
+  clone() clone[1] => db_path1
+  clone() clone[2] => db_path2
+  clone() clone[3] => db_path3
+  '';
+}
+```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
+
+Note the `clone() clone[1]`. This is an `array output port`, there is an equivalent `array input port` with similar syntax and the contents between the `[` and `]` is a string, so don't be misled by the integers.
+There are two types of component ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+
 #### Hierarchical naming:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    input => input clone(${ip_clone})
+    clone() clone[0] -> a nand(${maths_boolean_nand})
+    clone() clone[1] -> b nand() output => output
+  '';
+}
+```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png)
+
+The component and contract names, i.e.: `${maths_boolean_nand}` seem long and irritating. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` component by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The same logic applies to the contracts.
+
+Explanation of the subnet:
+
+This `subnet` takes an input of type [maths_boolean](../contracts/maths/boolean/default.nix). The `Information Packet` is cloned by the `clone` component and the result is pushed out on the `array port` `clone` using elements `[0]` and `[1]`. The `nand()` component then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `subnet` output port `output`.
+
+The above implements the `not` boolean logic component.
+
+#### Abstraction powers:
 ``` nix
 { subnet, components, contracts }:
 
@@ -218,35 +266,16 @@ subnet {
   flowscript = with components; with contracts; ''
     '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
     '${maths_boolean}:(boolean=true)' -> b nand()
-    nand() output -> input print(${maths_boolean_print})
+    nand() output -> input not(${maths_boolean_not})
+    not() output -> input print(${maths_boolean_print})
   '';
 }
 ```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
 
-The component and contract names seem long and irritating. Fractalide uses a hierarchical naming structure.
-So you can find the `maths_boolean_nand` component by going to the [fractalide/components/maths/boolean/nand](./maths/boolean/nand/src/lib.rs) directory.
-The same logic applies to the contracts. Though we also support namespaces. So from time to time you might see something like this:
-
-#### Array ports:
-``` nix
-{ subnet, components, contracts }:
-
-subnet {
-  src = ./.;
-  flowscript = with components; with contracts; ''
-    db_path => input clone(${ip_clone})
-    clone() clone[1] => db_path1
-    clone() clone[2] => db_path2
-    clone() clone[3] => db_path3
-    clone() clone[4] => db_path4
-  '';
-}
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
-
-Note the `clone() clone[1]`. This is an `array output port`, there is an equivalent `array input port` with similar syntax and the contents between the `[` and `]` is a string, so don't be mislead by the numbers.
-There are two types of component ports, a `simple port` and an `array port`. The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+Notice we're using the interface of the `not` `subnet` we implemented before this example.
+Also notice that the interface is almost exactly the same as that of a component. Indeed it's almost impossible to distinguish between a `component` and a `subnet` from an interface perspective.
+This is an extremely powerful way to hide implementation logic. One can build hierarchies many layers deep without suffering from a performance hit at run-time due to added abstractions (as is often the case in many programming languages). When the graph is loaded into the scheduler, all subnets fall away, and only rust components are connected to rust components.
 
 #### Namespaces
 ``` nix
@@ -272,9 +301,9 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png)
 
-Notice the `net_http_components` and `app_todo_components` namespaces. Some [fractals](../fractals/README.md) might deliberately expose a sort of toolkit one may take tools and use. As is the case with the `net_http_components.http` component.
-When you see a `xxx_components.yyy` you know immediately this is a namespace.
-Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element name is actually a `regular expression` and the implementation of that component is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/components/http/src/lib.rs#L149)!
+Notice the `net_http_components` and `app_todo_components` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `components` and `subnets`. As is the case with the `net_http_components.http` component.
+When you see a `fullstop` `.`, i.e. `xxx_components.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_components` suffix.
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that component is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/components/http/src/lib.rs#L149)!
 
 
 
