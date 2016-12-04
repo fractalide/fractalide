@@ -218,7 +218,8 @@ subnet {
   flowscript = with components; with contracts; ''
     '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
     '${maths_boolean}:(boolean=true)' -> b nand()
-    nand() output -> input print(${maths_boolean_print})
+    nand() output ->
+      input print(${maths_boolean_print})
   '';
 }
 ```
@@ -236,10 +237,10 @@ subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
     db_path => input clone(${ip_clone})
+    clone() clone[0] => db_path0
     clone() clone[1] => db_path1
     clone() clone[2] => db_path2
     clone() clone[3] => db_path3
-    clone() clone[4] => db_path4
   '';
 }
 ```
