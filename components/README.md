@@ -4,15 +4,17 @@
 
 ### What?
 
+`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface is much like the hardware world in that you have a `pin` or a `port` which connects other
+
 `Subnets` are essentially buckets that contain other components, subnets and contracts, this is the implementation. These buckets also have pipes, where each pipe connects to the ports of other `components` or `subnets`, in other words, the interface.
 
 ### Why?
 
-Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface to users. These `subnets` may be recombined in as many ways as `components`, indeed from an interface perspective they are identical to `components`.
+Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface to users. These `subnets` may be recombined ad nauseam, in as many ways as `components`, indeed from an interface perspective they are identical to `components`.
 
 ### Who?
 
-Typically experts in a domain will operate here. These people most likely are not programmers and prefer focusing on the Science vs getting tangled in the weeds of code. Programmers will find `subnets` very important because this allows them to create more powerful hierarchies of components.
+People who want to focus on the Science tend to work at these higher abstractions, they'd prefer not getting caught up in the details of programming low level components and prefer handing specifications to programmers who'll make efficient, reusable and safe components. Though programmers will find `subnets` indispensable as they allow for powerful hierarchies of components and subnets.
 
 ### Where?
 
@@ -34,7 +36,7 @@ The `components` directory is where all the `subnets` go. Typically one might st
    └── stats
 ```
 
-See those `default.nix` files? Those are `subnets`, the other names are directories containing rust `components`. Typically a `default.nix` in a directory with `components` will contain exactly those rust `components` in the subnet. It's a neat way to keep things organized and at a simple glance of the directory structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent directory and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
+See those `default.nix` files? Those are `subnets`. The other names are directories containing rust `components`. Typically a `default.nix` in a directory with `components` will contain exactly those rust `components` in the subnet. It's a neat way to keep things organized and at a simple glance of the directory structure you're able to have an idea of the architecture of the program. By the way, in the `nix` world a `default.nix` file means you can simply reference the parent directory and `nix` will look for the `default.nix` file, an equivalent in the `rust` world is the `lib.rs` and `mod.rs` naming conventions.
 
 ### How?
 
@@ -82,6 +84,9 @@ subnet {
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex0.png)
+
+
 #### Component initialization:
 ``` nix
 { subnet, components, contracts }:
@@ -93,6 +98,8 @@ subnet {
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
+
 #### Referencing a previously initialized component (with a comment):
 ``` nix
 { subnet, components, contracts }:
@@ -105,6 +112,8 @@ subnet {
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
+
 #### Connecting and initializing two components:
 ``` nix
 { subnet, components, contracts }:
@@ -112,10 +121,12 @@ subnet {
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-    component1(${name_of_component}) output_port -> input_port component2(${name_of_component2})
+    comp1(${name_of_component}) output_port -> input_port comp2(${name_of_component2})
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png)
+
 #### Creating an Initial Input Packet
 ``` nix
 { subnet, components, contracts }:
@@ -123,10 +134,12 @@ subnet {
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-    '${maths_boolean}:(boolean=true)' -> a variable_name(${name_of_component})
+    '${maths_boolean}:(boolean=true)' -> a comp(${name_of_component})
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png)
+
 #### More complex Initial Input Packet
 ``` nix
 { subnet, contracts, components }:
@@ -139,6 +152,8 @@ subnet {
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
+
 [Learn](../contracts/README.md) more about Information Packets.
 #### Creating a subnet input port
 ``` nix
@@ -147,10 +162,12 @@ subnet {
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-    subnet_input => input_port variable_name(${name_of_component})
+    subnet_input => input comp(${name_of_component})
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex6.png)
+
 #### Creating a subnet output port
 ``` nix
 { subnet, components, contracts }:
@@ -158,10 +175,12 @@ subnet {
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-     variable_name(${name_of_component}) output_port => subnet_output
+     comp(${name_of_component}) output => subnet_output
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex7.png)
+
 #### Subnet initialization:
 ``` nix
 { subnet, components, contracts }:
@@ -169,10 +188,12 @@ subnet {
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-    subnet_name(${name_of_subnet})
+    subnet(${name_of_subnet})
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex8.png)
+
 #### Initializing a subnet and component then connecting them:
 ``` nix
 { subnet, components, contracts }:
@@ -182,10 +203,12 @@ subnet {
   flowscript = with components; with contracts; ''
     subnet(${name_of_subnet})
     component(${name_of_component})
-    subnet() subnet_output -> input_port component()
+    subnet() output -> input component()
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex9.png)
+
 #### Hierarchical naming:
 ``` nix
 { subnet, components, contracts }:
@@ -195,13 +218,14 @@ subnet {
   flowscript = with components; with contracts; ''
     '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
     '${maths_boolean}:(boolean=true)' -> b nand()
-    nand() output -> input io_print(${maths_boolean_print})
+    nand() output -> input print(${maths_boolean_print})
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
 
 The component and contract names seem long and irritating. Fractalide uses a hierarchical naming structure.
-So you can find the `maths_boolean_nand` component by going to the `fractalide/components/maths/boolean/nand` directory.
+So you can find the `maths_boolean_nand` component by going to the [fractalide/components/maths/boolean/nand](./maths/boolean/nand/src/lib.rs) directory.
 The same logic applies to the contracts. Though we also support namespaces. So from time to time you might see something like this:
 
 #### Array ports:
@@ -219,6 +243,8 @@ subnet {
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
+
 Note the `clone() clone[1]`. This is an `array output port`, there is an equivalent `array input port` with similar syntax and the contents between the `[` and `]` is a string, so don't be mislead by the numbers.
 There are two types of component ports, a `simple port` and an `array port`. The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
 
@@ -233,17 +259,19 @@ subnet {
     db_path => input clone(${ip_clone})
     clone() clone[1] -> db_path get(${app_todo_components.todo_get})
     clone() clone[2] -> db_path post(${app_todo_components.todo_post})
-    clone() clone[3] -> db_path delete(${app_todo_components.todo_delete})
+    clone() clone[3] -> db_path del(${app_todo_components.todo_delete})
     clone() clone[4] -> db_path patch(${app_todo_components.todo_patch})
 
     http() GET[/todos/.+] -> input get() response -> response http()
     http() POST[/todos/?] -> input post() response -> response http()
-    http() DELETE[/todos/.+] -> input delete() response -> response http()
+    http() DELETE[/todos/.+] -> input del() response -> response http()
     http() PATCH[/todos/.+] -> input patch()
     http() PUT[/todos/.+] -> input patch() response -> response http()
   '';
 }
 ```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png)
+
 Notice the `net_http_components` and `app_todo_components` namespaces. Some [fractals](../fractals/README.md) might deliberately expose a sort of toolkit one may take tools and use. As is the case with the `net_http_components.http` component.
 When you see a `xxx_components.yyy` you know immediately this is a namespace.
 Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element name is actually a `regular expression` and the implementation of that component is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/components/http/src/lib.rs#L149)!
