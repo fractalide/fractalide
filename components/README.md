@@ -273,9 +273,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
 
-Notice we're using the interface of the `not` `subnet` we implemented before this example.
-Also notice that the interface is almost exactly the same as that of a component. Indeed it's almost impossible to distinguish between a `component` and a `subnet` from an interface perspective.
-This is an extremely powerful way to hide implementation logic. One can build hierarchies many layers deep without suffering from a performance hit at run-time due to added abstractions (as is often the case in many programming languages). When the graph is loaded into the scheduler, all subnets fall away, and only rust components are connected to rust components.
+Notice we're using the `not` `subnet` interface implemented earlier. It's hard to distinguish between a `component` and a `subnet` from an interface perspective. Providing a powerful way to hide implementation logic. One can build hierarchies many layers deep without suffering a performance hit at run-time due to added abstractions. When the graph is loaded, all `subnets` fall away, like water, after an artificial gravity generator engages, leaving only rust `components` connected to rust `components`.
 
 #### Namespaces
 ``` nix
