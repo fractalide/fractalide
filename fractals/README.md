@@ -44,7 +44,7 @@ dev
 * `$ cd dev/fractalide/fractals`
 * create your needed directory hierarchy `dev/fractalide/fractals/net/http/default.nix`.
 * insert the below code into a file called `default.nix` which sits in the above folder.
-```
+``` nix
 { pkgs
   , support
   , contracts
