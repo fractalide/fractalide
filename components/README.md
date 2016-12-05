@@ -214,25 +214,42 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex9.png)
 
-#### Array ports:
+#### Output array port:
 ``` nix
 { subnet, components, contracts }:
 
 subnet {
   src = ./.;
   flowscript = with components; with contracts; ''
-  db_path => input clone(${ip_clone})
-  clone() clone[0] => db_path0
-  clone() clone[1] => db_path1
-  clone() clone[2] => db_path2
-  clone() clone[3] => db_path3
+    db_path => input clone(${ip_clone})
+    clone() clone[0] => db_path0
+    clone() clone[1] => db_path1
+    clone() clone[2] => db_path2
+    clone() clone[3] => db_path3
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
 
-Note the `clone() clone[1]`. This is an `array output port`, there is an equivalent `array input port` with similar syntax and the contents between the `[` and `]` is a string, so don't be misled by the integers.
-There are two types of component ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+Note the `clone[1]`, this is an `array output port` and in this particular component `Information Packets` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of component ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+
+#### Input array port:
+``` nix
+{ subnet, components, contracts }:
+
+subnet {
+  src = ./.;
+  flowscript = with components; with contracts; ''
+    add0 => add[0] adder(${path_to_adder})
+    add1 => add[1] adder()
+    add2 => add[2] adder()
+    add3 => add[3] adder() output -> output
+  '';
+}
+```
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
+
+`Array ports` are used when the number of ports are unknown at component development time, but known when the component is used in a subnet. The `adder` component demonstrates this well, it has an `array input port` which allows `subnet` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
 
 #### Hierarchical naming:
 ``` nix
@@ -249,7 +266,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png)
 
-The component and contract names, i.e.: `${maths_boolean_nand}` seem long and irritating. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` component by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The same logic applies to the contracts.
+The component and contract names, i.e.: `${maths_boolean_nand}` are too long! Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` component by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The same logic applies to the contracts. The whole goal of this is to avoid name collisions and yet be able to have potentially hundreds to thousands of components.
 
 Explanation of the subnet:
 
@@ -273,9 +290,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
 
-Notice we're using the interface of the `not` `subnet` we implemented before this example.
-Also notice that the interface is almost exactly the same as that of a component. Indeed it's almost impossible to distinguish between a `component` and a `subnet` from an interface perspective.
-This is an extremely powerful way to hide implementation logic. One can build hierarchies many layers deep without suffering from a performance hit at run-time due to added abstractions (as is often the case in many programming languages). When the graph is loaded into the scheduler, all subnets fall away, and only rust components are connected to rust components.
+Notice we're using the `not` `subnet` interface implemented earlier. It's hard to distinguish between a `component` and a `subnet` from an interface perspective this provides a powerful method to hide implementation logic. One can build hierarchies many layers deep without suffering a performance hit at run-time due to added abstractions. When the graph is loaded, all `subnets` fall away, like water, after an artificial gravity generator engages, leaving only rust `components` connected to rust `components`.
 
 #### Namespaces
 ``` nix
@@ -309,21 +324,17 @@ Lastly, notice the advanced usage of `array ports` with this example: `GET[/todo
 
 ## Components
 
-Components depend on contracts, crates and operating system libraries.
-
 ### What?
 
-Components are Rust `dylib` libraries with a C ABI. They have predefined inputs and outputs. The Fractalide scheduler understands how to load these libraries.
-
-Note, typically one uses `cargo` to construct correctly formatted arguments to the `rustc` compiler. In this case we've chosen to replace `cargo` with `nix` scripts that correctly format arguments to the `rustc` compiler. There was too much cognitive dissonance happening between `nix` an immutable package manager calling `cargo` an immutable package manager. The choice has so far worked out very well indeed.
+Components are Rust `dylib` libraries with a [C ABI](https://en.wikipedia.org/wiki/Application_binary_interface). They define applications as a network of black box processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. - [wiki](https://en.wikipedia.org/wiki/Flow-based_programming)
 
 ### Why?
 
-Data needs to be transformed. Rust an efficient, zero-cost abstractions seem like a very good choice of implementation language for these components.
+For the same reason one doesn't throw a hammer into the rubbish after single use. A tool should be cared for and used multiple times, the same goes for software. It sounds strange to say we'll "reuse" a hammer. Then why do we say we'll reuse software? This approach to software development makes it trivial to compose and use components at will.
 
 ### Who?
 
-Typically programmers will develop these components. They specialize on making these components as efficient as possible, while people who focus on the Science give the requirements.  
+Typically programmers will develop Rust components. They specialize in making components as efficient and reusable as possible, while people who focus on the Science give the requirements and use the components. Just as a hammer is designed to be reused, so components should be designed for reused.
 
 ### Where?
 
@@ -352,12 +363,12 @@ Typically when you see a `lib.rs` in the same directory as a `default.nix` you k
 
 ### How?
 
-The `nix` level `default.nix` file requires you make 3 decisions.
+The `nix` level `default.nix` file requires you make decisions about 3 types of dependencies.
 * What `contracts` the `component` will use.
-* What `crates` are present in the `component`.
-* What `operating system level dependencies` or `osdeps` are needed to correctly run this `component`.
+* What `crates` from [crates.io](https://crates.io) are needed in the `component`.
+* What `osdeps` or `operating system level dependencies` are needed run this `component`.
 
-In all the above cases transitive deps are resolved for you.
+In all the above cases transitive dependencies are resolved for you.
 
 ``` nix
 { component, contracts, crates, pkgs }:
@@ -365,19 +376,21 @@ In all the above cases transitive deps are resolved for you.
 component {
   src = ./.;
   contracts = with contracts; [ maths_boolean ];
-  crates = with crates; [ rustfbp capnp ];
+  crates = with crates; [
+    rustfbp { vsn = "0.3.21"; }
+    capnp { vsn = "0.7.4"; }
+  ];
   osdeps = with pkgs; [ openssl ];
-  depsSha256 = "0pzvnvhmzv1bbp5gfgmak3bsizhszw4bal0vaz30xmmd5yx5ciqj";
 }
 ```
 
 The `{ component, contracts, crates, pkgs }:` imports the `component` function which builds the rust source code in the directory. The `contracts` argument pulls in every contract available on the system, crates *will* soon pull in only dependent and transitive crates available on https://crates.io and `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
 
-Please note in the next couple of weeks the depsSha256 attribute will be removed.
-
 * the argument `contracts = with contracts; [ maths_boolean ];` allows the programmer to select exactly which contracts are needed for each of the ports
-* the argument `crates = with crates; [ rustfbp capnp ];` allows the programmer to pull in selected crates from crates.io as component dependencies. Nix will help us resolve transitive dependencies.
+* the argument `crates = with crates; [ rustfbp { vsn = "0.3.21"; } capnp { vsn = "0.7.4"; } ];` allows the programmer to pull in selected crates from crates.io as component dependencies. Nix will help us resolve transitive dependencies.
 * the argument `osdeps = with pkgs; [ openssl];` allows the programmer to insert operating system level library dependencies such as openssl and well pretty much anything available on nixos
+
+Note, typically one uses `cargo` to construct correctly formatted arguments to the `rustc` compiler. In this case we've chosen to replace `cargo` with `nix` scripts that correctly format arguments to the `rustc` compiler. There was too much cognitive dissonance happening between `nix` an immutable package manager calling `cargo` an immutable package manager. The choice has so far worked out very well indeed.
 
 The above attributes are being passed into the component function as arguments.
 The component function will do a few things for us, 1) ensure `contracts`, `crates` (soon to happen) and `osdeps` are available in scope, then it pulls in the rust src and compiles it into a shared object file with a C ABI.
