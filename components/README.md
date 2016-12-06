@@ -4,7 +4,7 @@
 
 ### What?
 
-`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface consists of exposing a minimal set of well named `ports`.
+`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface consists of exposing a minimal set of well named `ports` that solve the user's problem.
 
 A simple analogy would be this gentleman's pocket watch.
 
@@ -12,7 +12,7 @@ A simple analogy would be this gentleman's pocket watch.
 
 ### Why?
 
-Composition is a very important part of programming. A `subnet` allows one to compose `components`, other `subnets` and `contracts` and expose a nice simple interface to users. These `subnets` may be recombined ad nauseam, in as many ways as `components`, indeed from an interface perspective they are identical to `components`.
+Composition is an important part of programming, allowing one to hide implementation detail. Allowing the user of your `subnet` to reason about high level problems, without getting caught up in low level details.
 
 ### Who?
 
@@ -329,19 +329,27 @@ Lastly, notice the advanced usage of `array ports` with this example: `GET[/todo
 
 ### What?
 
-Components are Rust `dylib` libraries with a [C ABI](https://en.wikipedia.org/wiki/Application_binary_interface). They define applications as a network of black box processes, which exchange data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. - [wiki](https://en.wikipedia.org/wiki/Flow-based_programming)
+Components define applications as a network of black box processes, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These black box processes can be reconnected endlessly to form different applications without having to be changed internally. Though, the word 'applications' was used to convey meaning, in actuality there is no different between an application and just another component. This allows almost insane levels of mix-and-matching to occur.
 
 ### Why?
 
-For the same reason one doesn't throw a hammer into the rubbish after single use. A tool should be cared for and used multiple times, the same goes for software. It sounds strange to say we'll "reuse" a hammer. Then why do we say we'll reuse software? This approach to software development makes it trivial to compose and use components at will.
+Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read [more](http://erlang.org/pipermail/erlang-questions/2011-May/058768.html) about the problem.
+
+Once you have the above, you have truly reusable functions. Fractalide components are just this, and it makes the below so much easier to achieve:
+```
+* Open source collaboration
+* Peer review of components
+* Reproducible applications
+* Reusable clean components
+```
 
 ### Who?
 
-Typically programmers will develop Rust components. They specialize in making components as efficient and reusable as possible, while people who focus on the Science give the requirements and use the components. Just as a hammer is designed to be reused, so components should be designed for reused.
+Typically programmers will develop Rust components. They specialize in making components as efficient and reusable as possible, while people who focus on the Science give the requirements and use the components. Just as a hammer is designed to be reused, so components should be designed for reuse.
 
 ### Where?
 
-The `components` are found in the `components` directory.
+The `components` are found in the `components` directory, i.e. this directory, or the `components` directory in a [fractal](../fractals/README.md).
 
 ```
 processchunk
@@ -362,7 +370,7 @@ processchunk
     ├── default.nix <---
     └── lib.rs
 ```
-Typically when you see a `lib.rs` in the same directory as a `default.nix` you know that `default.nix` is not a `subnet` but a `component`.
+Typically when you see a `lib.rs` in the same directory as a `default.nix` you know it's a `component`.
 
 ### How?
 
@@ -388,7 +396,12 @@ component {
 }
 ```
 
-The `{ component, contracts, crates, pkgs }:` imports the `component` function which builds the rust source code in the directory. The `contracts` argument pulls in every contract available on the system, crates *will* soon pull in only dependent and transitive crates available on https://crates.io and `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
+The `{ component, contracts, crates, pkgs }:` lambda imports:
+* The `component` function which builds the rust `lib.rs` source code in the same directory.
+* The `contracts` attributeset consists of every contract available on the system.
+* The `crates` attributeset consists of every package on https://crates.io.
+* The `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
+Note only those dependencies and their transitive dependencies will be pulled into scope and compiled, if their binaries aren't available. So you get a source distribution with a binary distribution optimization.
 
 * the argument `contracts = with contracts; [ maths_boolean ];` allows the programmer to select exactly which contracts are needed for each of the ports
 * the argument `crates = with crates; [ rustfbp { vsn = "0.3.21"; } capnp { vsn = "0.7.4"; } ];` allows the programmer to pull in selected crates from crates.io as component dependencies. Nix will help us resolve transitive dependencies.
