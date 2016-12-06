@@ -4,7 +4,11 @@
 
 ### What?
 
-`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface is much like the hardware world in that you have a `pin` or `ports` which connects to other `pins` or `ports`.
+`Subnets` have an implementation and an interface. The implementation consists of composing `components`, other `subnets` and `contracts` together and deciding on the interface. The interface consists of exposing a minimal set of well named `ports`.
+
+A simple analogy would be this gentleman's pocket watch.
+
+![Image Alt](http://www.kirkwood.edu/pdf/uploaded/835/watchcalls_35.gif)
 
 ### Why?
 
@@ -38,10 +42,10 @@ See those `default.nix` files? Those are `subnets`. The other names are director
 
 ### How?
 
-The `nix` level `default.nix` file requires you make decisions about 3 types of dependencies.
+The `subnet` `default.nix` requires you make decisions about three types of dependencies.
 * What `contracts` are needed?
-* What `components` are needed?
-* What `subnets` are needed in your `subnet`?
+* What `components` and `subnets` are needed?
+* How to connect the lot to best solve your problem.
 
 ``` nix
 { subnet, components, contracts }:
@@ -57,7 +61,6 @@ subnet {
 ```
 
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
-
 
 * The `{ subnet, contracts, components }:` passes in 3 arguments, the `subnet` building function called `subnet`, `contracts` is every other contract or contract namespace and `components` is every other `subnet` and `component` in the system. Both `subnets` and `components` are bundled into the `components` argument.
 * The `subnet` building function accepts these arguments:
@@ -160,7 +163,7 @@ subnet {
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
 
 [Learn](../contracts/README.md) more about Information Packets.
-#### Creating a subnet input port
+#### Creating a subnet input interface port
 ``` nix
 { subnet, components, contracts }:
 
@@ -173,7 +176,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex6.png)
 
-#### Creating a subnet output port
+#### Creating a subnet output interface port
 ``` nix
 { subnet, components, contracts }:
 
@@ -290,7 +293,7 @@ subnet {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
 
-Notice we're using the `not` `subnet` interface implemented earlier. It's hard to distinguish between a `component` and a `subnet` from an interface perspective this provides a powerful method to hide implementation logic. One can build hierarchies many layers deep without suffering a performance hit at run-time due to added abstractions. When the graph is loaded, all `subnets` fall away, like water, after an artificial gravity generator engages, leaving only rust `components` connected to rust `components`.
+Notice we're using the `not` `subnet` interface implemented earlier. It's hard to distinguish between a `component` and a `subnet` from an interface perspective, this provides a powerful method to hide implementation logic. One can build hierarchies many layers deep without suffering a run-time performance penalty. Once the graph is loaded into memory, all `subnets` fall away, like water, after an artificial gravity generator engages, leaving only rust `components` connected to rust `components`.
 
 #### Namespaces
 ``` nix
@@ -363,23 +366,24 @@ Typically when you see a `lib.rs` in the same directory as a `default.nix` you k
 
 ### How?
 
-The `nix` level `default.nix` file requires you make decisions about 3 types of dependencies.
-* What `contracts` the `component` will use.
-* What `crates` from [crates.io](https://crates.io) are needed in the `component`.
-* What `osdeps` or `operating system level dependencies` are needed run this `component`.
+The `component` `default.nix` requires you make decisions about three types of dependencies.
+* What `contracts` are needed?
+* What `crates` from [crates.io](https://crates.io) are needed?
+* What `osdeps` or `operating system level dependencies` are needed?
 
 In all the above cases transitive dependencies are resolved for you.
 
 ``` nix
 { component, contracts, crates, pkgs }:
 
+let
+  rustfbp = crates.rustfbp { vsn = "0.3.21"; };
+  capnp = crates.capnp { vsn = "0.7.4"; };
+in
 component {
   src = ./.;
   contracts = with contracts; [ maths_boolean ];
-  crates = with crates; [
-    rustfbp { vsn = "0.3.21"; }
-    capnp { vsn = "0.7.4"; }
-  ];
+  crates = [ rustfbp capnp ];
   osdeps = with pkgs; [ openssl ];
 }
 ```
