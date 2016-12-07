@@ -70,12 +70,12 @@ subgraph {
 * The `subgraph` building function accepts these arguments:
   * The `src` attribute is used to derive an `Subgraph` name based on location in the directory hierarchy.
   * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
-* `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subnet` text file and `/path/to/compiled/libnode.so` shared object.
+* `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
 * This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
 
 This is the output of the above `Subgraph`'s compilation:
 ```
-$ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
+$ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subgraph
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> b nand()
 nand() output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
@@ -106,34 +106,34 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    variable_name(${name_of_node})
+    agent_name(${name_of_agent})
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
 
-#### Referencing a previously initialized node (with a comment):
+#### Referencing a previously initialized agent (with a comment):
 ``` nix
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    variable_name(${name_of_node}) // <──┐
-    variable_name()                // <──┴─ same instance
+    agent_name(${name_of_agent}) // <──┐
+    agent_name()                 // <──┴─ same instance
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
 
-#### Connecting and initializing two nodes:
+#### Connecting and initializing two agents:
 ``` nix
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    comp1(${name_of_node}) output_port -> input_port comp2(${name_of_node2})
+    agent1(${name_of_agent1}) output_port -> input_port agent2(${name_of_agent2})
   '';
 }
 ```
@@ -146,7 +146,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    '${maths_boolean}:(boolean=true)' -> a comp(${name_of_node})
+    '${maths_boolean}:(boolean=true)' -> a agent(${name_of_agent})
   '';
 }
 ```
@@ -174,7 +174,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    subgraph_input => input comp(${name_of_node})
+    subgraph_input => input agent(${name_of_agent})
   '';
 }
 ```
@@ -187,7 +187,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-     comp(${name_of_node}) output => subgraph_output
+     agent(${name_of_agent}) output => subgraph_output
   '';
 }
 ```
@@ -277,7 +277,7 @@ The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` are too long! Fractal
 
 Explanation of the `Subgraph`:
 
-This `Subgraph` takes an input of type [maths_boolean](../edges/maths/boolean/default.nix) over the input port. The `Information Packet` is cloned by the `clone` node and the result is pushed out on the `array port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
+This `Subgraph` takes an input of `Edge` type [maths_boolean](../edges/maths/boolean/default.nix) over the `input` port. The `Information Packet` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
 
 The above implements the `not` boolean logic node.
 
@@ -333,7 +333,7 @@ Lastly, notice the advanced usage of `array ports` with this example: `GET[/todo
 
 ### What?
 
-Executable `Subgraphs` are defined as a network of `Agents`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Agents`  can be reconnected endlessly to form different `Subgraphs` without having to be changed internally.
+Executable `Subgraphs` are defined as a network of `Agents`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Agents`  can be reconnected endlessly to form different executable `Subgraphs` without having to be changed internally.
 
 ### Why?
 
@@ -342,14 +342,14 @@ Functions in a programming language should be placed in a content addressable st
 Once you have the above, you have truly reusable functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
 ```
 * Open source collaboration
-* Peer review of nodes
+* Open Peer review of nodes
+* Nice clean reusable nodes
 * Reproducible applications
-* Reusable clean nodes
 ```
 
 ### Who?
 
-Typically programmers will develop `Agents`. They specialize in making `Agents` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the `Subgraphs`. Just as a hammer is designed to be reused, so `Subgraphs` should be designed for reuse.
+Typically programmers will develop `Agents`. They specialize in making `Agents` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the `Subgraphs`. Just as a hammer is designed to be reused, so `Subgraphs` and `Agents` should be designed for reuse.
 
 ### Where?
 
@@ -401,14 +401,13 @@ agent {
 ```
 
 The `{ agent, edges, crates, pkgs }:` lambda imports:
-* The `agent` function which builds the rust `lib.rs` source code in the same directory.
+* The `agent` function builds the rust `lib.rs` source code in the same directory.
 * The `edges` attribute set consists of every `edge` available on the system.
-* The `crates` attribute set consists of every `package` on https://crates.io.
+* The `crates` attribute set consists of every `crate` on https://crates.io.
 * The `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
 Note only those dependencies and their transitive dependencies will be pulled into scope and compiled, if their binaries aren't available. So you get a source distribution with a binary distribution optimization.
 
-What does the output of the `node` function that build the `maths_boolean_nand` node look like?
-
+What does the output of the `agent` that builds the `maths_boolean_nand` node look like?
 
 ```
 /nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-maths_boolean_nand

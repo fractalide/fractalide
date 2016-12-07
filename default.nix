@@ -117,8 +117,8 @@ crates = rec {
   mount = src;
   staticfile = src;
 };
-isValidSubnet = (builtins.head (lib.attrVals [node] nodes));
-runThisNode = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
+isValidSubgraph = (builtins.head (lib.attrVals [node] nodes));
+runThisNode = if (builtins.isAttrs isValidSubgraph) then isValidSubgraph else null;
 support = import ./support { inherit pkgs debug test local-rustfbp nodes edges; };
 fractals = import ./fractals { inherit buffet; };
 nodes = import ./nodes { inherit buffet; };
