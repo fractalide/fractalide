@@ -1,12 +1,12 @@
-# Components Collection
+# Nodes collection
 
-The `Components` collection consists of `Interfaces` and `Objects`. An `Interface` or an `Object` may be referred to as a `Component`.
+The `Nodes` collection consists of `Subgraphs` and `Agents`. A `Subgraph` or an `Agent` may be referred to as a `Node`.
 
-## Interfaces
+## Subgraphs
 
 ### What?
 
-An `Interface` consists of an implementation and an interface aspect. The implementation is constructed using a simple language called `Flowscript` which describes how data flows through `Objects` and other `Interfaces`. The interface aspect of an `Interface` consists of exposing a minimal set of well named `ports`, thus hiding complexity.
+A `Subgraph` consists of an implementation and an interface. The implementation is constructed using a simple language called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The interface aspect of a `Subgraph` consists of exposing a minimal set of well named `ports`, thus hiding complexity.
 
 A simple analogy would be this gentleman's pocket watch.
 
@@ -18,11 +18,11 @@ Composition is an important part of programming, allowing one to hide implementa
 
 ### Who?
 
-People who want to focus on the Science tend to work at these higher abstractions, they'd prefer not getting caught up in the details of programming low level components and hand specifications to programmers who'll make efficient, reusable and safe components. Though programmers will find `Interfaces` indispensable as they allow for powerful abstractions.
+People who want to focus on the Science tend to work at these higher abstractions, they'd prefer not getting caught up in the details of programming low level nodes and hand specifications to programmers who'll make efficient, reusable and safe `Agents`. Though programmers will find `Subgraphs` indispensable as they allow for powerful abstractions.
 
 ### Where?
 
-The `Components` directory is where all `Objects` and `Interfaces` go. Typically one might structure a hierarchy like such:
+The `Nodes` directory is where all `Agents` and `Subgraphs` go. Typically one might structure a hierarchy like such:
 
 ```
 ── wrangle
@@ -40,23 +40,23 @@ The `Components` directory is where all `Objects` and `Interfaces` go. Typically
    └── stats
 ```
 
-See the above `default.nix` files? Those are `Interfaces` and they hide the entire directory level they reside in from higher levels in the hierarchy. Thus `processchunk` (an `Interface`) looks like yet another `Component` to `wrangle` (another `interface`). Indeed `wrangle` is completely unable to distinguish between an `Object` and an `Interface`.
+See the above `default.nix` files? Those are `Subgraphs` and they hide the entire directory level they reside in from higher levels in the hierarchy. Thus `processchunk` (a `Subgraph`) looks like yet another `Node` to `wrangle` (another `Subgraph`). Indeed `wrangle` is completely unable to distinguish between an `Agent` and an `Subgraph`.
 
 ### How?
 
-The `Interface` `default.nix` requires you make decisions about two types of dependencies.
-* What `contracts` are needed?
-* What `components` are needed?
+The `Subgraph` `default.nix` requires you make decisions about two types of dependencies.
+* What `Nodes` are needed?
+* What `Edges` are needed?
 
 Lastly:
 * How to connect the lot to best solve your problem.
 
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
  src = ./.;
- flowscript = with components; with contracts; ''
+ flowscript = with nodes; with edges; ''
   '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
   '${maths_boolean}:(boolean=true)' -> b nand()
   nand() output -> input io_print(${maths_boolean_print})
@@ -66,14 +66,14 @@ interface {
 
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
 
-* The `{ interface, contracts, components }:` lambda passes in three arguments, the `interface` builder, `contracts` which consists of every `Contract` or `Contract Namespace`, and the `components` argument which consists of every `Component` and `Component Namespace` in the system.
-* The `interface` building function accepts these arguments:
-  * The `src` attribute is used to derive an `Interface` name based on location in the directory hierarchy.
-  * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Contracts` and `Components` are brought into scope between the opening '' and closing '' double single quotes by using the `with components; with contracts;` syntax.
-* `Nix` assists us greatly, in that each `component` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subnet` text file and `/path/to/compiled/libcomponent.so` shared object.
-* This compilation is lazy and only referenced names will be compiled. In other words `Interface` could be a top level `Interface` of a many layer deep hierarchy and only referenced `Components` will be compiled in a lazy fashion, *not* the entire `fractalide/components` folder.
+* The `{ subgraph, nodes, edges }:` lambda passes in three arguments, the `subgraph` builder, `edges` which consists of every `Edge` or `Edge Namespace`, and the `nodes` argument which consists of every `Node` and `Node Namespace` in the system.
+* The `subgraph` building function accepts these arguments:
+  * The `src` attribute is used to derive an `Subgraph` name based on location in the directory hierarchy.
+  * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
+* `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subnet` text file and `/path/to/compiled/libnode.so` shared object.
+* This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
 
-This is the output of the above `Interface`'s compilation:
+This is the output of the above `Subgraph`'s compilation:
 ```
 $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subnet
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
@@ -87,11 +87,11 @@ Mother of the Flying Spaghetti Monster, what is that? Those hashes hint at somet
 
 Everything between the opening `''` and closing `''` is `flowscript`, i.e:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
+  flowscript = with nodes; with edges; ''
                        <---- here
   '';
 }
@@ -99,41 +99,41 @@ interface {
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex0.png)
 
 
-#### Component initialization:
+#### Agent initialization:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    variable_name(${name_of_component})
+  flowscript = with nodes; with edges; ''
+    variable_name(${name_of_node})
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
 
-#### Referencing a previously initialized component (with a comment):
+#### Referencing a previously initialized node (with a comment):
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    variable_name(${name_of_component}) // <──┐
-    variable_name()                     // <──┴─ same instance
+  flowscript = with nodes; with edges; ''
+    variable_name(${name_of_node}) // <──┐
+    variable_name()                // <──┴─ same instance
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
 
-#### Connecting and initializing two components:
+#### Connecting and initializing two nodes:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    comp1(${name_of_component}) output_port -> input_port comp2(${name_of_component2})
+  flowscript = with nodes; with edges; ''
+    comp1(${name_of_node}) output_port -> input_port comp2(${name_of_node2})
   '';
 }
 ```
@@ -141,12 +141,12 @@ interface {
 
 #### Creating an Initial Information Packet
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    '${maths_boolean}:(boolean=true)' -> a comp(${name_of_component})
+  flowscript = with nodes; with edges; ''
+    '${maths_boolean}:(boolean=true)' -> a comp(${name_of_node})
   '';
 }
 ```
@@ -154,68 +154,68 @@ interface {
 
 #### More complex Initial Information Packet
 ``` nix
-{ interface, contracts, components }:
+{ subgraph, edges, nodes }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with contracts; with components; ''
-   td(${ui_js_components.flex})
+  flowscript = with edges; with nodes; ''
+   td(${ui_js_nodes.flex})
    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
 
-[Learn](../contracts/README.md) more about Information Packets.
-#### Creating an interface input port
+[Learn](../edges/README.md) more about Information Packets.
+#### Creating an subgraph input port
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    interface_input => input comp(${name_of_component})
+  flowscript = with nodes; with edges; ''
+    subgraph_input => input comp(${name_of_node})
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex6.png)
 
-#### Creating an interface output port
+#### Creating an subgraph output port
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-     comp(${name_of_component}) output => interface_output
+  flowscript = with nodes; with edges; ''
+     comp(${name_of_node}) output => subgraph_output
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex7.png)
 
-#### Interface initialization:
+#### Subgraph initialization:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    interface(${name_of_interface})
+  flowscript = with nodes; with edges; ''
+    subgraph(${name_of_subgraph})
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex8.png)
 
-#### Initializing a interface and component then connecting them:
+#### Initializing a subgraph and agent then connecting them:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    interface(${name_of_interface})
-    component(${name_of_component})
-    interface() output -> input component()
+  flowscript = with nodes; with edges; ''
+    subgraph(${name_of_subgraph})
+    agent(${name_of_agent})
+    subgraph() output -> input agent()
   '';
 }
 ```
@@ -223,11 +223,11 @@ interface {
 
 #### Output array port:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
+  flowscript = with nodes; with edges; ''
     db_path => input clone(${ip_clone})
     clone() clone[0] => db_path0
     clone() clone[1] => db_path1
@@ -238,15 +238,15 @@ interface {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
 
-Note the `clone[1]`, this is an `array output port` and in this particular `Interface` `Information Packets` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of component ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on component logic, replicate, fan-out and a whole bunch of other things.
+Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Information Packets` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on node logic, replicate, fan-out and a whole bunch of other things.
 
 #### Input array port:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
+  flowscript = with nodes; with edges; ''
     add0 => add[0] adder(${path_to_adder})
     add1 => add[1] adder()
     add2 => add[2] adder()
@@ -256,15 +256,15 @@ interface {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
 
-`Array ports` are used when the number of ports are unknown at `Object` development time, but known when the `Object` is used in an `Interface`. The `adder` `Object` demonstrates this well, it has an `array input port` which allows `Interface` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
+`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in an `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
 
 #### Hierarchical naming:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
+  flowscript = with nodes; with edges; ''
     input => input clone(${ip_clone})
     clone() clone[0] -> a nand(${maths_boolean_nand})
     clone() clone[1] -> b nand() output => output
@@ -273,21 +273,21 @@ interface {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png)
 
-The `Component` and `Contract` names, i.e.: `${maths_boolean_nand}` are too long! Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` component by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of components.
+The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` are too long! Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
 
-Explanation of the `Interface`:
+Explanation of the `Subgraph`:
 
-This `Interface` takes an input of type [maths_boolean](../contracts/maths/boolean/default.nix) over the input port. The `Information Packet` is cloned by the `clone` component and the result is pushed out on the `array port` `clone` using elements `[0]` and `[1]`. The `nand()` component then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Interface` output port `output`.
+This `Subgraph` takes an input of type [maths_boolean](../edges/maths/boolean/default.nix) over the input port. The `Information Packet` is cloned by the `clone` node and the result is pushed out on the `array port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
 
-The above implements the `not` boolean logic component.
+The above implements the `not` boolean logic node.
 
 #### Abstraction powers:
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
+  flowscript = with nodes; with edges; ''
     '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
     '${maths_boolean}:(boolean=true)' -> b nand()
     nand() output -> input not(${maths_boolean_not})
@@ -297,21 +297,21 @@ interface {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
 
-Notice we're using the `not` component implemented earlier. One can build hierarchies many layers deep without suffering a run-time performance penalty. Once the graph is loaded into memory, all `Interfaces` fall away, like water, after an artificial gravity generator engages, leaving only `Objects` connected to `Objects`.
+Notice we're using the `not` node implemented earlier. One can build hierarchies many layers deep without suffering a run-time performance penalty. Once the graph is loaded into memory, all `Subgraphs` fall away, like water, after an artificial gravity generator engages, leaving only `Agents` connected to `Agents`.
 
 #### Namespaces
 ``` nix
-{ interface, components, contracts }:
+{ subgraph, nodes, edges }:
 
-interface {
+subgraph {
   src = ./.;
-  flowscript = with components; with contracts; ''
-    listen => listen http(${net_http_components.http})
+  flowscript = with nodes; with edges; ''
+    listen => listen http(${net_http_nodes.http})
     db_path => input clone(${ip_clone})
-    clone() clone[1] -> db_path get(${app_todo_components.todo_get})
-    clone() clone[2] -> db_path post(${app_todo_components.todo_post})
-    clone() clone[3] -> db_path del(${app_todo_components.todo_delete})
-    clone() clone[4] -> db_path patch(${app_todo_components.todo_patch})
+    clone() clone[1] -> db_path get(${app_todo_nodes.todo_get})
+    clone() clone[2] -> db_path post(${app_todo_nodes.todo_post})
+    clone() clone[3] -> db_path del(${app_todo_nodes.todo_delete})
+    clone() clone[4] -> db_path patch(${app_todo_nodes.todo_patch})
 
     http() GET[/todos/.+] -> input get() response -> response http()
     http() POST[/todos/?] -> input post() response -> response http()
@@ -323,37 +323,37 @@ interface {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png)
 
-Notice the `net_http_components` and `app_todo_components` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `Objects` and `Interfaces`. As is the case with the `net_http_components.http` component.
-When you see a `fullstop` `.`, i.e. `xxx_components.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_components` suffix.
-Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that component is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/components/http/src/lib.rs#L149)!
+Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `Nodes`. As is the case with the `net_http_nodes.http` node.
+When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix.
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149)!
 
 
 
-## Objects
+## Agents
 
 ### What?
 
-Executable `Interfaces` are defined as a network of `Objects`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Objects`  can be reconnected endlessly to form different `Interfaces` without having to be changed internally.
+Executable `Subgraphs` are defined as a network of `Agents`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Agents`  can be reconnected endlessly to form different `Subgraphs` without having to be changed internally.
 
 ### Why?
 
 Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read [more](http://erlang.org/pipermail/erlang-questions/2011-May/058768.html) about the problem.
 
-Once you have the above, you have truly reusable functions. Fractalide components are just this, and it makes the below so much easier to achieve:
+Once you have the above, you have truly reusable functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
 ```
 * Open source collaboration
-* Peer review of components
+* Peer review of nodes
 * Reproducible applications
-* Reusable clean components
+* Reusable clean nodes
 ```
 
 ### Who?
 
-Typically programmers will develop `Objects`. They specialize in making `Objects` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the components. Just as a hammer is designed to be reused, so components should be designed for reuse.
+Typically programmers will develop `Agents`. They specialize in making `Agents` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the `Subgraphs`. Just as a hammer is designed to be reused, so `Subgraphs` should be designed for reuse.
 
 ### Where?
 
-The `Objects` are found in this `components` directory, or the `components` directory of a [fractal](../fractals/README.md).
+The `Agents` are found in this `nodes` directory, or the `nodes` directory of a [fractal](../fractals/README.md).
 
 ```
 processchunk
@@ -374,40 +374,40 @@ processchunk
     ├── default.nix <---
     └── lib.rs
 ```
-Typically when you see a `lib.rs` in the same directory as a `default.nix` you know it's an `Object`.
+Typically when you see a `lib.rs` in the same directory as a `default.nix` you know it's an `Agent`.
 
 ### How?
 
-The `Object` `default.nix` requires you make decisions about three types of dependencies.
-* What `contracts` are needed?
+The `Agent` `default.nix` requires you make decisions about three types of dependencies.
+* What `edges` are needed?
 * What `crates` from [crates.io](https://crates.io) are needed?
 * What `osdeps` or `operating system level dependencies` are needed?
 
 In all the above cases transitive dependencies are resolved for you.
 
 ``` nix
-{ object, contracts, crates, pkgs }:
+{ agent, edges, crates, pkgs }:
 
 let
   rustfbp = crates.rustfbp { vsn = "0.3.21"; };
   capnp = crates.capnp { vsn = "0.7.4"; };
 in
-object {
+agent {
   src = ./.;
-  contracts = with contracts; [ maths_boolean ];
+  edges = with edges; [ maths_boolean ];
   crates = [ rustfbp capnp ];
   osdeps = with pkgs; [ openssl ];
 }
 ```
 
-The `{ object, contracts, crates, pkgs }:` lambda imports:
-* The `object` function which builds the rust `lib.rs` source code in the same directory.
-* The `contracts` attributeset consists of every contract available on the system.
-* The `crates` attributeset consists of every package on https://crates.io.
-* The `pkgs` pulls in every third party package available on NixOS, here's the whole list: http://nixos.org/nixos/packages.html
+The `{ agent, edges, crates, pkgs }:` lambda imports:
+* The `agent` function which builds the rust `lib.rs` source code in the same directory.
+* The `edges` attribute set consists of every `edge` available on the system.
+* The `crates` attribute set consists of every `package` on https://crates.io.
+* The `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
 Note only those dependencies and their transitive dependencies will be pulled into scope and compiled, if their binaries aren't available. So you get a source distribution with a binary distribution optimization.
 
-What does the output of the `component` function that build the `maths_boolean_nand` component look like?
+What does the output of the `node` function that build the `maths_boolean_nand` node look like?
 
 
 ```
