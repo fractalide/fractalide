@@ -40,7 +40,7 @@ The `Nodes` directory is where all `Agents` and `Subgraphs` go. Typically one mi
    └── stats
 ```
 
-See the above `default.nix` files? Those are `Subgraphs` and they hide the entire directory level they reside in from higher levels in the hierarchy. Thus `processchunk` (a `Subgraph`) looks like yet another `Node` to `wrangle` (another `Subgraph`). Indeed `wrangle` is completely unable to distinguish between an `Agent` and an `Subgraph`.
+See the above `default.nix` files? Those are `Subgraphs` and they hide the entire directory level they reside in from higher levels in the hierarchy. Thus `processchunk` (a `Subgraph`) looks like yet another `Node` to `wrangle` (another `Subgraph`). Indeed `wrangle` is completely unable to distinguish between an `Agent` and a `Subgraph`.
 
 ### How?
 
@@ -68,7 +68,7 @@ subgraph {
 
 * The `{ subgraph, nodes, edges }:` lambda passes in three arguments, the `subgraph` builder, `edges` which consists of every `Edge` or `Edge Namespace`, and the `nodes` argument which consists of every `Node` and `Node Namespace` in the system.
 * The `subgraph` building function accepts these arguments:
-  * The `src` attribute is used to derive an `Subgraph` name based on location in the directory hierarchy.
+  * The `src` attribute is used to derive a `Subgraph` name based on location in the directory hierarchy.
   * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
 * `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
 * This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
@@ -256,7 +256,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
 
-`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in an `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
+`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
 
 #### Hierarchical naming:
 ``` nix
