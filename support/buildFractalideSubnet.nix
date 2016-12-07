@@ -1,19 +1,19 @@
 { stdenv, genName, writeTextFile}:
 { src, flowscript, name ? null, ... } @ args:
   let
-  subnet-name = if name == null then genName src else name;
-  subnet-txt = writeTextFile {
-    name = subnet-name;
+  subgraph-name = if name == null then genName src else name;
+  subgraph-txt = writeTextFile {
+    name = subgraph-name;
     text = flowscript;
     executable = false;
   };
   in stdenv.mkCachedDerivation  (args // {
-    name = subnet-name;
+    name = subgraph-name;
     unpackPhase = "true";
     installPhase = ''
     runHook preInstall
-    #echo "SUBNET"
+    #echo "SUBGRAPH"
     mkdir -p $out/lib
-    cp  ${subnet-txt} $out/lib/lib.subnet
+    cp  ${subgraph-txt} $out/lib/lib.subgraph
     '';
   })
