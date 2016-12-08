@@ -1,8 +1,20 @@
-# Contracts
+# Edge Collection
 
 ### What?
 
-Contracts allow us to keep components separated yet retain a notion of types. The author of `capnproto-rust` refers to `capnproto` as a `type system for a distributed system`.
+An `Edge` is a bounded buffer message passing channel between two ports belonging to their respective `agents`.
+
+Terms:
+* A `contract` is defined as: The Cap'n Proto schema on the output port of the upstream `agent` MUST be the same as the Cap'n Proto schema on the input port of the downstream `agent`. If the two `schemas` are the same, the `contract` is said to be satisfied, otherwise it is unsatisfied.
+
+There are three phases building up to a successful `Edge` formation:
+* During `agent development time` an `agent`'s port is assigned a Cap'n Proto schema.
+* During `subgraph development time` the syntax `->` or `=>` is used to instruct an upstream `agent`'s port to connect to a downstream `agent`'s port at run-time. It represents a `connection` between two `nodes`. Though it is not yet an `edge` because the `contract` might not be satisfied.
+* Lastly, the graph is successfully loaded into the virtual machine without errors. This act means all `agent` `contracts` were satisfied, and all `subgraph` connections are now classified as `edges`.
+
+Once an `Edge` is formed, it becomes a bounded buffer message passing channel, which can only contain `messages` with data in the shape of whatever the Cap'n Proto schema is.
+
+So despite you seeing only Cap'n Proto schemas in this directory, the concept of an `Edge` is  more profound. Hence we would prefer naming this concept after it's grandest manifestation, and in the process, the name encapsulates all of the above information. The name should also tie in with the concept of a `node` in graph theory, as such we use `nodes` and `edges` to construct `subgraphs`.
 
 ### Why?
 
