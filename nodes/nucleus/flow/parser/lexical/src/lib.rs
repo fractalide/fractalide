@@ -101,7 +101,7 @@ agent! {
     fn run(&mut self) -> Result<()>{
         // Get one IP
         let mut ip = try!(self.ports.recv("input"));
-        let file: file_desc::Reader = try!(ip.read_edge());
+        let file: file_desc::Reader = try!(ip.read_schema());
 
         // print it
         match try!(file.which()) {
@@ -109,7 +109,7 @@ agent! {
                 let path = try!(path);
                 let mut new_ip = IP::new();
                 {
-                    let mut ip = new_ip.build_edge::<fbp_lexical::Builder>();
+                    let mut ip = new_ip.build_schema::<fbp_lexical::Builder>();
                     ip.set_start(&path);
                 }
                 let _ = self.ports.send("output", new_ip);
@@ -126,7 +126,7 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
     loop {
         // Get one IP
         let mut ip = try!(comp.ports.recv("input"));
-        let file: file_desc::Reader = try!(ip.read_edge());
+        let file: file_desc::Reader = try!(ip.read_schema());
 
         // print it
         match try!(file.which()) {
@@ -137,7 +137,7 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
                         IResult::Done(rest, lit) => {
                             let mut send_ip = IP::new();
                             {
-                                let ip = send_ip.build_edge::<fbp_lexical::Builder>();
+                                let ip = send_ip.build_schema::<fbp_lexical::Builder>();
                                 match lit {
                                     Literal::Bind => { ip.init_token().set_bind(()); },
                                     Literal::External => {ip.init_token().set_external(()); },
@@ -169,7 +169,7 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
                 }
                 let mut new_ip = IP::new();
                 {
-                    let ip = new_ip.build_edge::<fbp_lexical::Builder>();
+                    let ip = new_ip.build_schema::<fbp_lexical::Builder>();
                     ip.init_token().set_break(());
                 }
                 let _ = comp.ports.send("output", new_ip);
@@ -178,7 +178,7 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
                 let path = try!(path);
                 let mut new_ip = IP::new();
                 {
-                    let mut ip = new_ip.build_edge::<fbp_lexical::Builder>();
+                    let mut ip = new_ip.build_schema::<fbp_lexical::Builder>();
                     ip.set_end(&path);
                 }
                 let _ = comp.ports.send("output", new_ip);

@@ -14,7 +14,7 @@ agent! {
         let error;
         let mut ip = try!(self.ports.recv("input"));
         {
-            let graph: fbp_graph::Reader = try!(ip.read_edge());
+            let graph: fbp_graph::Reader = try!(ip.read_schema());
 
             let mut errors: Vec<String> = Vec::new();
 
@@ -101,7 +101,7 @@ agent! {
             if errors.len() > 0 {
                 let mut new_ip = IP::new();
                 {
-                    let mut new_ip = new_ip.build_edge::<fbp_semantic_error::Builder>();
+                    let mut new_ip = new_ip.build_schema::<fbp_semantic_error::Builder>();
                     new_ip.set_path(try!(graph.get_path()));
                     {
                         let mut nodes = new_ip.init_parsing(errors.len() as u32);

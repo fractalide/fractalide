@@ -15,7 +15,7 @@ agent! {
         let mut ip_a = try!(self.ports.recv("input"));
 
         {
-            let a_reader: maths_boolean::Reader = try!(ip_a.read_edge());
+            let a_reader: maths_boolean::Reader = try!(ip_a.read_schema());
             let a = a_reader.get_boolean();
 
             println!("boolean : {:?}", a);

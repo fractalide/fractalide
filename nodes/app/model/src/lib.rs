@@ -17,7 +17,7 @@ agent! {
 
         if ip_input.action == "get_model" {
             let action = {
-                let mut reader: generic_text::Reader = try!(ip_input.read_edge());
+                let mut reader: generic_text::Reader = try!(ip_input.read_schema());
                 try!(reader.get_text()).to_string()
             };
             let mut new_ip = ip_acc.clone();

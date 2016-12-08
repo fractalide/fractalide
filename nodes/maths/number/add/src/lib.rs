@@ -14,13 +14,13 @@ agent! {
     let mut acc = 0;
     for ins in try!(self.ports.get_input_selections("numbers")) {
       let mut ip = try!(self.ports.recv_array("numbers", &ins));
-      let m: maths_number::Reader = try!(ip.read_edge());
+      let m: maths_number::Reader = try!(ip.read_schema());
       let n = m.get_number();
       acc += n;
     }
     let mut new_m = IP::new();
     {
-      let mut number = new_m.build_edge::<maths_number::Builder>();
+      let mut number = new_m.build_schema::<maths_number::Builder>();
       number.set_number(acc);
     }
     try!(self.ports.send("output", new_m));

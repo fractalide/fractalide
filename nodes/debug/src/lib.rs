@@ -17,7 +17,7 @@ agent! {
         let mut ip = try!(self.ports.recv("input"));
 
         let mut opt = self.recv_option();
-        let text: generic_text::Reader = try!(opt.read_edge());
+        let text: generic_text::Reader = try!(opt.read_schema());
 
         println!("{}\naction: {}", try!(text.get_text()), ip.action);
 

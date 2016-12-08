@@ -55,7 +55,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
 
         let mut ip = try!(self.ports.recv("action"));
-        let mut reader: fbp_action::Reader = try!(ip.read_edge());
+        let mut reader: fbp_action::Reader = try!(ip.read_schema());
 
         match try!(reader.which()) {
             fbp_action::Which::Add(add) => {
@@ -63,7 +63,7 @@ agent! {
                 let name = try!(add.get_name());
                 let mut ask_ip = IP::new();
                 {
-                    let mut builder: fbp_graph::Builder = ask_ip.build_edge();
+                    let mut builder: fbp_graph::Builder = ask_ip.build_schema();
                     builder.set_path(try!(add.get_comp()));
                     {
                         let mut nodes = builder.borrow().init_nodes(1);
@@ -149,7 +149,7 @@ agent! {
 
 fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
     let mut ip = try!(agent.ports.recv("graph"));
-    let i_graph: fbp_graph::Reader = try!(ip.read_edge());
+    let i_graph: fbp_graph::Reader = try!(ip.read_schema());
 
     let mut subnet = Subgraph::new();
     for n in try!(i_graph.borrow().get_nodes()).iter() {
@@ -206,13 +206,13 @@ fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
         // Get the real path
         let mut new_out = IP::new();
         {
-            let mut cont = new_out.build_edge::<path::Builder>();
+            let mut cont = new_out.build_schema::<path::Builder>();
             cont.set_path(&edge);
         }
         try!(agent.ports.send("ask_path", new_out));
 
         let mut edge_path_ip = try!(agent.ports.recv("edge_path"));
-        let edge_path: path::Reader = try!(edge_path_ip.read_edge());
+        let edge_path: path::Reader = try!(edge_path_ip.read_schema());
 
         let c_path = try!(edge_path.get_path());
         let c_path = format!("{}/src/edge.capnp", c_path);
@@ -239,21 +239,21 @@ fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.build_edge::<path::Builder>();
+            let mut path = new_out.build_schema::<path::Builder>();
             path.set_path(&c_path);
         }
         try!(agent.ports.send("iip_path", new_out));
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.build_edge::<generic_text::Builder>();
+            let mut path = new_out.build_schema::<generic_text::Builder>();
             path.set_text(&edge_camel_case);
         }
         try!(agent.ports.send("iip_edge", new_out));
 
         let mut new_out = IP::new();
         {
-            let mut path = new_out.build_edge::<generic_text::Builder>();
+            let mut path = new_out.build_schema::<generic_text::Builder>();
             path.set_text(&input);
         }
         try!(agent.ports.send("iip_input", new_out));

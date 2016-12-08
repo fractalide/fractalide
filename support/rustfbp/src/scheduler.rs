@@ -448,12 +448,12 @@ impl Scheduler {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let edge = try!(sched.get_edge_input("add", "input"));
+    /// let edge = try!(sched.get_schema_input("add", "input"));
     /// ```
-    pub fn get_edge_input(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_input(&self, comp: &str, port: &str) -> Result<String> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_edge_input(&c.sort, port)
+                self.cache.get_schema_input(&c.sort, port)
             })
     }
 
@@ -461,12 +461,12 @@ impl Scheduler {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let edge = try!(sched.get_edge_input_array("add", "inputs"));
+    /// let edge = try!(sched.get_schema_input_array("add", "inputs"));
     /// ```
-    pub fn get_edge_input_array(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_input_array(&self, comp: &str, port: &str) -> Result<String> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_edge_input_array(&c.sort, port)
+                self.cache.get_schema_input_array(&c.sort, port)
             })
     }
 
@@ -474,12 +474,12 @@ impl Scheduler {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let edge = try!(sched.get_edge_output("add", "output"));
+    /// let edge = try!(sched.get_schema_output("add", "output"));
     /// ```
-    pub fn get_edge_output(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_output(&self, comp: &str, port: &str) -> Result<String> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_edge_output(&c.sort, port)
+                self.cache.get_schema_output(&c.sort, port)
             })
     }
 
@@ -487,12 +487,12 @@ impl Scheduler {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let edge = try!(sched.get_edge_output_array("add", "outputs"));
+    /// let edge = try!(sched.get_schema_output_array("add", "outputs"));
     /// ```
-    pub fn get_edge_output_array(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_output_array(&self, comp: &str, port: &str) -> Result<String> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_edge_output_array(&c.sort, port)
+                self.cache.get_schema_output_array(&c.sort, port)
             })
     }
 
@@ -705,10 +705,10 @@ impl SchedState {
 pub struct AgentLoader {
     lib: libloading::Library,
     create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)>,
-    get_edge_input: extern "C" fn(&str) -> Result<String>,
-    get_edge_input_array: extern "C" fn(&str) -> Result<String>,
-    get_edge_output: extern "C" fn(&str) -> Result<String>,
-    get_edge_output_array: extern "C" fn(&str) -> Result<String>,
+    get_schema_input: extern "C" fn(&str) -> Result<String>,
+    get_schema_input_array: extern "C" fn(&str) -> Result<String>,
+    get_schema_output: extern "C" fn(&str) -> Result<String>,
+    get_schema_output_array: extern "C" fn(&str) -> Result<String>,
 }
 
 /// Keep all the dylib agents and load them
@@ -744,29 +744,29 @@ impl AgentCache {
             };
 
             let get_in : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_edge_input\0").expect("cannot find get input method"))
+                *(lib_comp.get(b"get_schema_input\0").expect("cannot find get input method"))
             };
 
             let get_in_a : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_edge_input_array\0").expect("cannot find get input method"))
+                *(lib_comp.get(b"get_schema_input_array\0").expect("cannot find get input method"))
             };
 
             let get_out : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_edge_output\0").expect("cannot find get output method"))
+                *(lib_comp.get(b"get_schema_output\0").expect("cannot find get output method"))
             };
 
             let get_out_a : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_edge_output_array\0").expect("cannot find get output method"))
+                *(lib_comp.get(b"get_schema_output_array\0").expect("cannot find get output method"))
             };
 
             self.cache.insert(path.into(),
                               AgentLoader {
                                   lib: lib_comp,
                                   create: new_comp,
-                                  get_edge_input: get_in,
-                                  get_edge_input_array: get_in_a,
-                                  get_edge_output: get_out,
-                                  get_edge_output_array: get_out_a,
+                                  get_schema_input: get_in,
+                                  get_schema_input_array: get_in_a,
+                                  get_schema_output: get_out,
+                                  get_schema_output_array: get_out_a,
                               });
         }
         if let Some(loader) = self.cache.get(path){
@@ -780,12 +780,12 @@ impl AgentCache {
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_edge_input("add", "input");
+    /// cc.get_schema_input("add", "input");
     /// ```
-    pub fn get_edge_input(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_input(&self, comp: &str, port: &str) -> Result<String> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_edge_input)(port).expect("cannot get")
+                (comp.get_schema_input)(port).expect("cannot get")
             })
     }
 
@@ -793,12 +793,12 @@ impl AgentCache {
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_edge_input_array("add", "inputs");
+    /// cc.get_schema_input_array("add", "inputs");
     /// ```
-    pub fn get_edge_input_array(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_input_array(&self, comp: &str, port: &str) -> Result<String> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_edge_input_array)(port).expect("cannot get")
+                (comp.get_schema_input_array)(port).expect("cannot get")
             })
     }
 
@@ -806,12 +806,12 @@ impl AgentCache {
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_edge_output("add", "output");
+    /// cc.get_schema_output("add", "output");
     /// ```
-    pub fn get_edge_output(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_output(&self, comp: &str, port: &str) -> Result<String> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_edge_output)(port).expect("cannot get")
+                (comp.get_schema_output)(port).expect("cannot get")
             })
     }
 
@@ -819,12 +819,12 @@ impl AgentCache {
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_edge_output_array("add", "outputs");
+    /// cc.get_schema_output_array("add", "outputs");
     /// ```
-    pub fn get_edge_output_array(&self, comp: &str, port: &str) -> Result<String> {
+    pub fn get_schema_output_array(&self, comp: &str, port: &str) -> Result<String> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_edge_output_array)(port).expect("cannot get")
+                (comp.get_schema_output_array)(port).expect("cannot get")
             })
     }
 }

@@ -15,7 +15,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
         let mut ip_a = try!(self.ports.recv("input"));
         {
-            let a_reader: generic_text::Reader = try!(ip_a.read_edge());
+            let a_reader: generic_text::Reader = try!(ip_a.read_schema());
             let a = a_reader.get_text();
 
             println!("{}", a?);

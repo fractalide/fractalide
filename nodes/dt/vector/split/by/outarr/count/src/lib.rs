@@ -12,7 +12,7 @@ agent! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let list: file_list::Reader = try!(ip.read_edge());
+        let list: file_list::Reader = try!(ip.read_schema());
         let list = try!(list.get_files());
 
         let mut v = Vec::with_capacity(list.len() as usize);
@@ -27,7 +27,7 @@ agent! {
         {
             let mut new_ip = IP::new();
             {
-                let ip = new_ip.build_edge::<file_list::Builder>();
+                let ip = new_ip.build_schema::<file_list::Builder>();
                 let mut files = ip.init_files(chunk.len() as u32);
                 let mut i: u32 = 0;
                 for path in chunk {

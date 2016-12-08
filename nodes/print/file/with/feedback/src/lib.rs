@@ -15,7 +15,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
         loop{
             let mut ip = try!(self.ports.recv("input"));
-            let list_triple: list_triple::Reader = try!(ip.read_edge());
+            let list_triple: list_triple::Reader = try!(ip.read_schema());
             let list_triple = try!(list_triple.get_triples());
             if try!(list_triple.get(0).get_first()) == "end" {
                 println!("{}",try!(list_triple.get(0).get_first()));
@@ -32,7 +32,7 @@ agent! {
             }
             let mut next_ip = IP::new();
             {
-                let mut ip = next_ip.build_edge::<value_string::Builder>();
+                let mut ip = next_ip.build_schema::<value_string::Builder>();
                 ip.set_value("next");
             }
             try!(self.ports.send("next", next_ip));

@@ -19,15 +19,15 @@ agent! {
     fn run(&mut self) -> Result<()>{
 
         let mut path_ip = try!(self.ports.recv("path"));
-        let path: path::Reader = try!(path_ip.read_edge());
+        let path: path::Reader = try!(path_ip.read_schema());
         let path = try!(path.get_path());
 
         let mut edge_ip = try!(self.ports.recv("edge"));
-        let edge: generic_text::Reader = try!(edge_ip.read_edge());
+        let edge: generic_text::Reader = try!(edge_ip.read_schema());
         let f_edge = try!(edge.get_text());
 
         let mut input_ip = try!(self.ports.recv("input"));
-        let input: generic_text::Reader = try!(input_ip.read_edge());
+        let input: generic_text::Reader = try!(input_ip.read_schema());
         let input = try!(input.get_text());
 
         let mut child = try!(Command::new("capnp_path" )

@@ -18,7 +18,7 @@ agent! {
 
         // Get the path
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_edge());
+        let path: path::Reader = try!(ip.read_schema());
 
         let path = try!(path.get_path());
 
@@ -29,7 +29,7 @@ agent! {
                 let mut new_ip = IP::new();
 
                 {
-                    let mut ip = new_ip.build_edge::<file_error::Builder>();
+                    let mut ip = new_ip.build_schema::<file_error::Builder>();
                     ip.set_not_found(&path);
                 }
                 let _ = self.ports.send("error", new_ip);
@@ -41,7 +41,7 @@ agent! {
         // Send start
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.build_edge::<file_desc::Builder>();
+            let mut ip = new_ip.build_schema::<file_desc::Builder>();
             ip.set_start(&path);
         }
         try!(self.ports.send("output", new_ip));
@@ -52,7 +52,7 @@ agent! {
             let l = try!(line);
             let mut new_ip = IP::new();
             {
-                let mut ip = new_ip.build_edge::<file_desc::Builder>();
+                let mut ip = new_ip.build_schema::<file_desc::Builder>();
                 ip.set_text(&l);
             }
             try!(self.ports.send("output", new_ip));
@@ -61,7 +61,7 @@ agent! {
         // Send stop
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.build_edge::<file_desc::Builder>();
+            let mut ip = new_ip.build_schema::<file_desc::Builder>();
             ip.set_end(&path);
         }
         try!(self.ports.send("output", new_ip));

@@ -41,7 +41,7 @@ agent! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let literal: fbp_lexical::Reader = try!(ip.read_edge());
+        let literal: fbp_lexical::Reader = try!(ip.read_schema());
         let literal = try!(literal.which());
 
         match literal {
@@ -51,7 +51,7 @@ agent! {
                     Err(errors) => {
                         let mut new_ip = IP::new();
                         {
-                            let mut ip = new_ip.build_edge::<fbp_semantic_error::Builder>();
+                            let mut ip = new_ip.build_schema::<fbp_semantic_error::Builder>();
                             ip.set_path(path?);
                             {
                                 let mut nodes = ip.init_parsing(errors.len() as u32);
@@ -88,7 +88,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
     loop {
 
         let mut ip = comp.ports.recv("input")?;
-        let literal: fbp_lexical::Reader = ip.read_edge()?;
+        let literal: fbp_lexical::Reader = ip.read_schema()?;
         let literal = literal.which()?;
         match literal {
             fbp_lexical::End(_) => {
@@ -261,7 +261,7 @@ fn get_expected(state: &State) -> String {
 fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) -> Result<()> {
     let mut new_ip = IP::new();
     {
-        let mut ip = new_ip.build_edge::<fbp_graph::Builder>();
+        let mut ip = new_ip.build_schema::<fbp_graph::Builder>();
         ip.set_path(path);
         {
             let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);
