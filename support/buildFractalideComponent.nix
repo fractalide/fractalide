@@ -9,7 +9,7 @@
   , osdeps ? []
   , crates ? []
   , logLevel ? ""
-  , contracts ? []
+  , edges ? []
   , cargoUpdateHook ? ""
   , ... } @ args:
 
@@ -99,21 +99,21 @@ prePatch = ''
 '' + (args.prePatch or "");
 
 buildPhase = args.buildPhase or ''
-sed -i "s/name = .*/name = \"component\"/g" Cargo.toml
+sed -i "s/name = .*/name = \"agent\"/g" Cargo.toml
 ${if local-rustfbp == "true" then
 "sed -i 's@rustfbp .*@rustfbp = { path = \"${rustfbp + /src}\" }@g' Cargo.toml"
 else ""}
 propagated=""
-for i in $contracts; do
+for i in $edges; do
     findInputs $i propagated propagated-build-inputs
 done
 propagated1=""
 for i in $propagated; do
-    propagated1="$propagated1 $i/src/contract_capnp.rs"
+    propagated1="$propagated1 $i/src/edge_capnp.rs"
 done
-touch src/contract_capnp.rs
+touch src/edge_capnp.rs
 for i in $propagated1; do
-  cat $i >> src/contract_capnp.rs
+  cat $i >> src/edge_capnp.rs
 done
 echo "*********************************************************************"
 echo "****** building: ${compName} "

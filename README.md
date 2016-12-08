@@ -24,19 +24,20 @@ Follow us on [twitter](https://twitter.com/fractalide)
 
 ## Solution
 * Fractalide comes with its own actor oriented, message passing, declarative dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
-* Flowscript (punishingly) enforces well-factored, independent components within a single process that have strict boundaries and standardized API.
-* This standardized API is key to component composition and is achieved via a coordination layer called a `subnet` or a sub-network of components, which describes how components are connected and compose together. A `subnet`, from an interface perspective, is indistinguishable from a Rust component, this, neatly, allows for layers of abstraction which fall away at runtime.
-* These components are black boxes which are only dependent on data and not any other component.
-* Fractalide [components](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
+* Flowscript enforces well-factored, independent `agents` within a single process that have strict boundaries and standardized API.
+* This standardized API is key to `agent` composition and is achieved via a coordination layer called a `subgraph`, which describes how `agents` are connected and compose together. A `subgraph`, from an interface perspective, is indistinguishable from a Rust `agent`, this, neatly, allows for layers of abstraction which fall away at runtime.
+* These `agents` are black boxes which are only dependent on data and not any other `agent`.
+* Fractalide [agents](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
 * Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many 100 millisecond RPC here.
 
 ## Problem 2
 * It's easy to disrespect API contracts in many microservices setups.
 
 ## Solution
-* The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto contracts which conveniently hands structured data to you.
-* A Fractalide upstream component `U` might use Contract `X` to send data to downstream component `D`, each component will reference exactly the same Contract `X` by name alone, hence guaranteeing the two components use the same contract. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same contract. Say you change Contract `X`'s schema, nix will lazily recompile Component `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to contracts will cause dependent components to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
-* Fractalide components communicate using `Cap'n Proto` contracts, which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto contracts can be extended without breaking components with a different version. That would be a problem if we weren't in complete control of versioning in a distributed system.
+* The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto schema which conveniently hands structured data to you.
+* Each `Edge` in a Fractalide `Subgraph`/`Graph` of `Nodes` is actually a Cap'n Proto schema.
+* Say a Fractalide upstream `Node` `U` might use `Edge` `X` to send data to downstream `Node` `D`, each `Node` will reference exactly the same `Edge` `X` by name alone, hence guaranteeing the two `agents` use the same schema. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same `Edge`. Say you change `Edge` `X`'s schema, `nix` will lazily recompile `Node` `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to `Edges` will cause dependent `Nodes` to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
+* Fractalide `agents` communicate using `Cap'n Proto`schema , which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto schema can be extended without breaking `agents` with a different versions. That would be a problem if we weren't in complete control of versioning in a distributed system.
 
 ## Problem 3
 * Knowing what versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
@@ -44,7 +45,7 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ## Solution
 * [Nix](http://nixos.org/nix) is a declarative lazy language and will make the system reflect your system description exactly.
 * [Nixops](http://nixos.org/nixops) provides the means to do code delivery, whilst ensuring the entire cluster is at the expected version.
-* Due to `nix`'s declarative behaviour, each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial components to be built easily.
+* Due to `nix`'s declarative behaviour, each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial `agents` to be built easily.
 * You might want to start learning `nix` with these fun [quizzes](https://nixcloud.io/tour/?id=1).
 
 ## Problem 4
@@ -58,10 +59,10 @@ Follow us on [twitter](https://twitter.com/fractalide)
 
 ## Solution
 ##### Security
-* Fractalide's components are very strict about accepting data. Strongly inspired by the [langsec work](http://langsec.org) of Meredith Patterson, Len Sassaman and Dan Kaminsky. Fractalide makes use of the [Nom](https://github.com/Geal/nom) parser combinator, implemented by Geoffroy Couprie, to parse Flowscript. Components cannot connect together unless they use the same [Cap'n Proto](https://capnproto.org/) contracts, which is implemented by David Renshaw, and the brain child of Kenton Varda. Of course, [Rust](https://www.rust-lang.org/), a high level systems language helps us prevent an entire class of buffer overflow exploits, without sacrificing speed for safety.
+* Fractalide's `agents` are very strict about accepting data. Strongly inspired by the [langsec work](http://langsec.org) of Meredith Patterson, Len Sassaman and Dan Kaminsky. Fractalide makes use of the [Nom](https://github.com/Geal/nom) parser combinator, implemented by Geoffroy Couprie, to parse Flowscript. Components cannot connect together unless they use the same [Cap'n Proto](https://capnproto.org/) schema, which is implemented by David Renshaw, and the brain child of Kenton Varda. Of course, [Rust](https://www.rust-lang.org/), a high level systems language helps us prevent an entire class of buffer overflow exploits, without sacrificing speed for safety.
 
 ##### Business
-* Flowscript allows for a separation of business logic and component implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse components and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
+* Flowscript allows for a separation of business logic and `agent` implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse `agents` and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
 
 ### Steps towards stable release.
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
@@ -71,13 +72,12 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [ ] Deployable example of a simple microservices setup.
 - [ ] Documentation.
 - [ ] Remove cargo.
-- [x] Stabilize contract, subnet and component API.
+- [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Contract composition.
 - [ ] Only Information Packets make heap allocations.
 - [ ] Upgrade `nom` parser combinator to 2.0.
-- [ ] Make `fvm` declarative.
 - [ ] 1.0 Stabilization version.
-- [ ] Community collaboration: Please do send useful, well documented, well implemented components upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your components.
+- [ ] Community collaboration: Please do send useful, well documented, well implemented `nodes` upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your `nodes`.
 
 ### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
@@ -86,7 +86,7 @@ For the most efficient way forward, ensure you're using [NixOS](http://nixos.org
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
 $ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
-$ nix-build --argstr debug true  --argstr local-rustfbp true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
+$ nix-build --argstr debug true  --argstr local-rustfbp true --argstr cache $(./support/buildCache.sh) --argstr node workbench
 ```
 * You will wait about 4~5 hours to compile rustc. We're working on it...
 * a neat hack you can do that'll persist your `rustc` between `nix-collect-garbage` runs is this:

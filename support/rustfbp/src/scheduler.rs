@@ -5,7 +5,7 @@
 //! The exterior scheduler is an API to easily manage the scheduler.
 //!
 //! The interior scheduler is the actual state of the scheduler. It is edited by sending messages.
-//! The messages are send by the exterior scheduler and the components of the Graph.
+//! The messages are send by the exterior scheduler and the agents of the Graph.
 
 
 extern crate libloading;
@@ -17,7 +17,7 @@ use result;
 use result::Result;
 
 use ports::{IPSender, IP};
-use component::Component;
+use agent::Agent;
 
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
@@ -30,19 +30,19 @@ use std::thread::JoinHandle;
 use std::mem;
 
 
-/// A boxed comp is a component that can be send between thread
-pub type BoxedComp = Box<Component + Send>;
-// TODO : manage "can_run": allow a user to pause a component
+/// A boxed comp is a agent that can be send between thread
+pub type BoxedComp = Box<Agent + Send>;
+// TODO : manage "can_run": allow a user to pause a agent
 
 /// All the messages that can be send between the "exterior scheduler" and the "interior scheduler".
 pub enum CompMsg {
-    /// Add a new component. The String is the name, the BoxedComp is the component itself
-    NewComponent(String, BoxedComp),
+    /// Add a new agent. The String is the name, the BoxedComp is the agent itself
+    NewAgent(String, BoxedComp),
     /// Stop the scheduler
     Halt,
     /// Try to stop the sheduler state
     HaltState,
-    /// Start a component
+    /// Start a agent
     Start(String),
     /// Connect the output port
     ConnectOutputPort(String, String, IPSender),
@@ -62,11 +62,11 @@ pub enum CompMsg {
     RunEnd(String, BoxedComp),
     /// Set the receiver of an input port
     SetReceiver(String, String, Receiver<IP>),
-    /// The component received an IP
+    /// The agent received an IP
     Inc(String),
-    /// The component read an IP
+    /// The agent read an IP
     Dec(String),
-    /// Remove a component
+    /// Remove a agent
     Remove(String, Sender<SyncMsg>),
 }
 
@@ -78,18 +78,18 @@ pub struct Comp {
     pub inputs: HashMap<String, IPSender>,
     /// Keep the IPSender of the array input ports
     pub inputs_array: HashMap<String, HashMap<String, IPSender>>,
-    /// The type of the component
+    /// The type of the agent
     pub sort: String,
-    /// True if a component had no input port
+    /// True if a agent had no input port
     pub start: bool,
 }
 
 /// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
-    /// Keep the dylib of the loaded components
-    pub cache: ComponentCache,
-    /// Keep the component
-    pub components: HashMap<String, Comp>,
+    /// Keep the dylib of the loaded agents
+    pub cache: AgentCache,
+    /// Keep the agent
+    pub agents: HashMap<String, Comp>,
     /// A sender to send message to the scheduler
     pub sender: Sender<CompMsg>,
     /// Received the error from the "interior scheduler"
@@ -113,34 +113,34 @@ impl Scheduler {
             loop {
                 let msg = r.recv().unwrap();
                 let res: Result<()> = match msg {
-                    CompMsg::NewComponent(name, comp) => { sched_s.new_component(name, comp) },
+                    CompMsg::NewAgent(name, comp) => { sched_s.new_agent(name, comp) },
                     CompMsg::Start(name) => { sched_s.start(name) },
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
                     CompMsg::AddInputArraySelection(name, port, selection, recv) => {
-                        sched_s.edit_component(name, EditCmp::AddInputArraySelection(port, selection, recv))
+                        sched_s.edit_agent(name, EditCmp::AddInputArraySelection(port, selection, recv))
                     },
                     CompMsg::RemoveInputArraySelection(name, port, selection) => {
-                        sched_s.edit_component(name, EditCmp::RemoveInputArraySelection(port, selection))
+                        sched_s.edit_agent(name, EditCmp::RemoveInputArraySelection(port, selection))
                     },
                     CompMsg::AddOutputArraySelection(name, port, selection) => {
-                        sched_s.edit_component(name, EditCmp::AddOutputArraySelection(port, selection))
+                        sched_s.edit_agent(name, EditCmp::AddOutputArraySelection(port, selection))
                     },
                     CompMsg::ConnectOutputPort(comp_out, port_out, sender) => {
-                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputPort(port_out, sender))
+                        sched_s.edit_agent(comp_out, EditCmp::ConnectOutputPort(port_out, sender))
                     },
                     CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sender) => {
-                        sched_s.edit_component(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, sender))
+                        sched_s.edit_agent(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, sender))
                     },
                     CompMsg::SetReceiver(comp, port, receiver) => {
-                        sched_s.edit_component(comp, EditCmp::SetReceiver(port, receiver))
+                        sched_s.edit_agent(comp, EditCmp::SetReceiver(port, receiver))
                     },
                     CompMsg::Disconnect(name, port) => {
-                        sched_s.edit_component(name, EditCmp::Disconnect(port))
+                        sched_s.edit_agent(name, EditCmp::Disconnect(port))
                     },
                     CompMsg::DisconnectArray(name, port, selection) => {
-                        sched_s.edit_component(name, EditCmp::DisconnectArray(port, selection))
+                        sched_s.edit_agent(name, EditCmp::DisconnectArray(port, selection))
                     },
                     CompMsg::Inc(dest) => { sched_s.inc(dest) },
                     CompMsg::Dec(dest) => { sched_s.dec(dest) },
@@ -153,30 +153,30 @@ impl Scheduler {
         });
 
         Scheduler {
-            cache: ComponentCache::new(),
-            components: HashMap::new(),
+            cache: AgentCache::new(),
+            agents: HashMap::new(),
             sender: s,
             error_receiver: error_r,
             th: th,
         }
     }
 
-    /// Add a component to the scheduler
+    /// Add a agent to the scheduler
     ///
     /// The sort is a complete path to the dylib
     ///
     /// # Example
     ///
     /// ```rust,ignore
-    /// try!(sched.add_component("add", "/home/xxx/components/add.so");
+    /// try!(sched.add_node("add", "/home/xxx/agents/add.so");
     /// ```
-    pub fn add_component(&mut self, name: &str, sort: &str) -> Result<()> {
+    pub fn add_node(&mut self, name: &str, sort: &str) -> Result<()> {
         let name = name.to_string();
         let (comp, senders) = self.cache.create_comp(sort, name.clone(), self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
-        self.sender.send(CompMsg::NewComponent(name.clone(), comp)).expect("Cannot send to sched state");
+        self.sender.send(CompMsg::NewAgent(name.clone(), comp)).expect("Cannot send to sched state");
         let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound(name.clone(), "acc".into()))).clone();
-        self.components.insert(name.clone(),
+        self.agents.insert(name.clone(),
                                Comp {
                                    inputs: senders,
                                    inputs_array: HashMap::new(),
@@ -189,7 +189,7 @@ impl Scheduler {
 
     /// Start the scheduler
     ///
-    /// Start all the component that have no input ports
+    /// Start all the agent that have no input ports
     ///
     /// # Example
     ///
@@ -197,14 +197,14 @@ impl Scheduler {
     /// sched.start();
     /// ```
     pub fn start(&self) {
-        for (name, comp) in &self.components {
+        for (name, comp) in &self.agents {
             if comp.start {
                 self.sender.send(CompMsg::Start(name.clone())).expect("start: unable to send to sched state");
             }
         }
     }
 
-    /// Start the component `name` if it has no input port
+    /// Start the agent `name` if it has no input port
     ///
     /// # Example
     ///
@@ -212,7 +212,7 @@ impl Scheduler {
     /// try!(sched.start_if_needed("add"));
     /// ```
     pub fn start_if_needed(&self, name: &str) -> Result<()> {
-        self.components.get(name).ok_or(result::Error::ComponentNotFound(name.into()))
+        self.agents.get(name).ok_or(result::Error::AgentNotFound(name.into()))
             .and_then(|comp| {
                 if comp.start {
                     self.sender.send(CompMsg::Start(name.into())).expect("start_if_needed");
@@ -221,30 +221,30 @@ impl Scheduler {
             })
     }
 
-    /// Start a component, even if it has an input port
+    /// Start a agent, even if it has an input port
     ///
     /// # Example
     /// ```rust,ignore
-    /// sched.start_component("add");
+    /// sched.start_agent("add");
     /// ```
-    pub fn start_component(&self, name: String) {
+    pub fn start_agent(&self, name: String) {
         self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state");
     }
 
-    /// Remove a component form the scheduler and retrieve all the information
+    /// Remove a agent form the scheduler and retrieve all the information
     ///
     /// # Example
     /// ```rust,ignore
-    /// let (boxed_comp, comp) = try!(sched.remove_component("add"));
+    /// let (boxed_comp, comp) = try!(sched.remove_agent("add"));
     /// assert!(boxed_comp.is_input_ports());
     /// ```
-    pub fn remove_component(&mut self, name: String) -> Result<(BoxedComp, Comp)>{
+    pub fn remove_agent(&mut self, name: String) -> Result<(BoxedComp, Comp)>{
         let (s, r) = channel();
-        self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_component: cannot send to the state");
+        self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_agent: cannot send to the state");
         let response = try!(r.recv());
         match response {
             SyncMsg::Remove(boxed_comp) => {
-                Ok((boxed_comp, try!(self.components.remove(&name).ok_or(result::Error::ComponentNotFound(name.into())))))
+                Ok((boxed_comp, try!(self.agents.remove(&name).ok_or(result::Error::AgentNotFound(name.into())))))
             },
             SyncMsg::CannotRemove => {
                 Err(result::Error::CannotRemove(name.into()))
@@ -335,7 +335,7 @@ impl Scheduler {
             dest: comp_name.clone(),
             sched: self.sender.clone(),
         };
-        try!(self.components.get_mut(&comp_name).ok_or(result::Error::ComponentNotFound(comp_name.clone()))
+        try!(self.agents.get_mut(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))
             .and_then(|mut comp| {
                 if !comp.inputs_array.contains_key(&port) {
                     comp.inputs_array.insert(port.clone(), HashMap::new());
@@ -362,7 +362,7 @@ impl Scheduler {
     /// ```
     pub fn soft_add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
         let mut res = true;
-        if let Some(comp) = self.components.get(&comp) {
+        if let Some(comp) = self.agents.get(&comp) {
             if let Some(port) = comp.inputs_array.get(&port) {
                 if let Some(_) = port.get(&selection) {
                     res = false;
@@ -389,7 +389,7 @@ impl Scheduler {
 
     /// Change the receiver of an input port.
     ///
-    /// Usefull for replacing a component
+    /// Usefull for replacing a agent
     ///
     /// # Example
     /// ```rust,ignore
@@ -402,7 +402,7 @@ impl Scheduler {
 
     /// Change the receiver of an array input port.
     ///
-    /// Usefull for replacing a component
+    /// Usefull for replacing a agent
     ///
     /// # Example
     /// ```rust,ignore
@@ -420,7 +420,7 @@ impl Scheduler {
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
     pub fn get_sender(&self, comp: &str, port: &str) -> Result<IPSender> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
                     .map(|s| { s.clone() })
@@ -434,7 +434,7 @@ impl Scheduler {
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
     pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<IPSender> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs_array.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
                     .and_then(|p| {
@@ -444,55 +444,55 @@ impl Scheduler {
             })
     }
 
-    /// Get the contract of an input port
+    /// Get the edge of an input port
     ///
     /// # Example
     /// ```rust,ignore
-    /// let contract = try!(sched.get_contract_input("add", "input"));
+    /// let edge = try!(sched.get_edge_input("add", "input"));
     /// ```
-    pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_input(&self, comp: &str, port: &str) -> Result<String> {
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_contract_input(&c.sort, port)
+                self.cache.get_edge_input(&c.sort, port)
             })
     }
 
-    /// Get the contract of an array input port
+    /// Get the edge of an array input port
     ///
     /// # Example
     /// ```rust,ignore
-    /// let contract = try!(sched.get_contract_input_array("add", "inputs"));
+    /// let edge = try!(sched.get_edge_input_array("add", "inputs"));
     /// ```
-    pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_input_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_contract_input_array(&c.sort, port)
+                self.cache.get_edge_input_array(&c.sort, port)
             })
     }
 
-    /// Get the contract of an output port
+    /// Get the edge of an output port
     ///
     /// # Example
     /// ```rust,ignore
-    /// let contract = try!(sched.get_contract_output("add", "output"));
+    /// let edge = try!(sched.get_edge_output("add", "output"));
     /// ```
-    pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_output(&self, comp: &str, port: &str) -> Result<String> {
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_contract_output(&c.sort, port)
+                self.cache.get_edge_output(&c.sort, port)
             })
     }
 
-    /// Get the contract of an array output port
+    /// Get the edge of an array output port
     ///
     /// # Example
     /// ```rust,ignore
-    /// let contract = try!(sched.get_contract_output_array("add", "outputs"));
+    /// let edge = try!(sched.get_edge_output_array("add", "outputs"));
     /// ```
-    pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.components.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_output_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
-                self.cache.get_contract_output_array(&c.sort, port)
+                self.cache.get_edge_output_array(&c.sort, port)
             })
     }
 
@@ -526,7 +526,7 @@ pub enum SyncMsg {
     CannotRemove,
 }
 
-/// Internal representation of a component
+/// Internal representation of a agent
 struct CompState {
     comp: Option<BoxedComp>,
     // TODO : manage can_run
@@ -538,7 +538,7 @@ struct CompState {
 /// The state of the internal scheduler
 struct SchedState {
     sched_sender: Sender<CompMsg>,
-    components: HashMap<String, CompState>,
+    agents: HashMap<String, CompState>,
     connections: usize,
     can_halt: bool,
     pool: ThreadPool,
@@ -548,7 +548,7 @@ impl SchedState {
     fn new(s: Sender<CompMsg>) -> Self {
         SchedState {
             sched_sender: s,
-            components: HashMap::new(),
+            agents: HashMap::new(),
             connections: 0,
             can_halt: false,
             pool: ThreadPool::new(8),
@@ -558,7 +558,7 @@ impl SchedState {
     fn inc(&mut self, name: String) -> Result<()> {
         // silent error for exterior ports
         let mut start = false;
-        if let Some(ref mut comp) = self.components.get_mut(&name) {
+        if let Some(ref mut comp) = self.agents.get_mut(&name) {
             comp.ips += 1;
             start = comp.ips > 0 && comp.comp.is_some();
         }
@@ -568,14 +568,14 @@ impl SchedState {
 
     fn dec(&mut self, name: String) -> Result<()> {
         // silent error for exterior ports
-        if let Some(ref mut comp) = self.components.get_mut(&name) {
+        if let Some(ref mut comp) = self.agents.get_mut(&name) {
             comp.ips -= 1;
         }
         Ok(())
     }
 
-    fn new_component(&mut self, name: String, comp: BoxedComp) -> Result<()> {
-        self.components.insert(name, CompState {
+    fn new_agent(&mut self, name: String, comp: BoxedComp) -> Result<()> {
+        self.agents.insert(name, CompState {
             comp: Some(comp),
             can_run: false,
             edit_msgs: vec![],
@@ -586,7 +586,7 @@ impl SchedState {
 
     fn remove(&mut self, name: String, sync_sender: Sender<SyncMsg>) -> Result<()>{
         let must_remove = {
-            let mut o_comp = self.components.get_mut(&name).expect("SchedState remove : component doesn't exist");
+            let mut o_comp = self.agents.get_mut(&name).expect("SchedState remove : agent doesn't exist");
             let b_comp = mem::replace(&mut o_comp.comp, None);
             if let Some(boxed_comp) = b_comp {
                 sync_sender.send(SyncMsg::Remove(boxed_comp)).expect("SchedState remove : cannot send to the channel");
@@ -596,13 +596,13 @@ impl SchedState {
                 false
             }
         };
-        if must_remove { self.components.remove(&name); }
+        if must_remove { self.agents.remove(&name); }
         Ok(())
     }
 
     fn start(&mut self, name: String) -> Result<()> {
         let start = {
-            let mut comp = self.components.get_mut(&name).expect("SchedState start : component not found");
+            let mut comp = self.agents.get_mut(&name).expect("SchedState start : agent not found");
             comp.can_run = true;
             comp.comp.is_some()
         };
@@ -622,7 +622,7 @@ impl SchedState {
 
     fn run_end(&mut self, name: String, mut box_comp: BoxedComp) -> Result<()>{
         let must_restart = {
-            let mut comp = self.components.get_mut(&name).expect("SchedState RunEnd : component doesn't exist");
+            let mut comp = self.agents.get_mut(&name).expect("SchedState RunEnd : agent doesn't exist");
             let vec = mem::replace(&mut comp.edit_msgs, vec![]);
             for msg in vec {
                 try!(Self::edit_one_comp(&mut box_comp, msg));
@@ -643,7 +643,7 @@ impl SchedState {
     }
     #[allow(unused_must_use)]
     fn run(&mut self, name: String) {
-        let mut o_comp = self.components.get_mut(&name).expect("SchedSate run : component doesn't exist");
+        let mut o_comp = self.agents.get_mut(&name).expect("SchedSate run : agent doesn't exist");
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
             self.connections += 1;
             let sched_s = self.sched_sender.clone();
@@ -657,8 +657,8 @@ impl SchedState {
         };
     }
 
-    fn edit_component(&mut self, name: String, msg: EditCmp) -> Result<()> {
-        let mut comp = self.components.get_mut(&name).expect("SchedState edit_component : component doesn't exist");
+    fn edit_agent(&mut self, name: String, msg: EditCmp) -> Result<()> {
+        let mut comp = self.agents.get_mut(&name).expect("SchedState edit_agent : agent doesn't exist");
         if let Some(ref mut c) = comp.comp {
             let mut c = c;
             try!(Self::edit_one_comp(&mut c, msg));
@@ -700,73 +700,73 @@ impl SchedState {
     }
 }
 
-/// Contains all the information of a dylib components
+/// Contains all the information of a dylib agents
 #[allow(dead_code)]
-pub struct ComponentLoader {
+pub struct AgentLoader {
     lib: libloading::Library,
-    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)>,
-    get_contract_input: extern "C" fn(&str) -> Result<String>,
-    get_contract_input_array: extern "C" fn(&str) -> Result<String>,
-    get_contract_output: extern "C" fn(&str) -> Result<String>,
-    get_contract_output_array: extern "C" fn(&str) -> Result<String>,
+    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)>,
+    get_edge_input: extern "C" fn(&str) -> Result<String>,
+    get_edge_input_array: extern "C" fn(&str) -> Result<String>,
+    get_edge_output: extern "C" fn(&str) -> Result<String>,
+    get_edge_output_array: extern "C" fn(&str) -> Result<String>,
 }
 
-/// Keep all the dylib components and load them
-pub struct ComponentCache {
-    cache: HashMap<String, ComponentLoader>,
+/// Keep all the dylib agents and load them
+pub struct AgentCache {
+    cache: HashMap<String, AgentLoader>,
 }
 
-impl ComponentCache {
-    ///  create a new ComponentCache
+impl AgentCache {
+    ///  create a new AgentCache
     ///
     /// # Example
     /// ```rust,ignore
-    /// let cc = ComponentCache::new();
+    /// let cc = AgentCache::new();
     /// ```
     pub fn new() -> Self {
-        ComponentCache {
+        AgentCache {
             cache: HashMap::new(),
         }
     }
 
-    /// Load a new component from the system file
+    /// Load a new agent from the system file
     ///
     /// # Example
     /// ```rust,ignore
-    /// try!(cc.create_comp("/home/xxx/components/add.so", "add", sched_sender));
+    /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> {
+    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
 
-            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Component + Send>, HashMap<String, IPSender>)> = unsafe {
-                *(lib_comp.get(b"create_component\0").expect("cannot find create method"))
+            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> = unsafe {
+                *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
             };
 
             let get_in : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_contract_input\0").expect("cannot find get input method"))
+                *(lib_comp.get(b"get_edge_input\0").expect("cannot find get input method"))
             };
 
             let get_in_a : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_contract_input_array\0").expect("cannot find get input method"))
+                *(lib_comp.get(b"get_edge_input_array\0").expect("cannot find get input method"))
             };
 
             let get_out : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_contract_output\0").expect("cannot find get output method"))
+                *(lib_comp.get(b"get_edge_output\0").expect("cannot find get output method"))
             };
 
             let get_out_a : extern fn(&str) -> Result<String> = unsafe {
-                *(lib_comp.get(b"get_contract_output_array\0").expect("cannot find get output method"))
+                *(lib_comp.get(b"get_edge_output_array\0").expect("cannot find get output method"))
             };
 
             self.cache.insert(path.into(),
-                              ComponentLoader {
+                              AgentLoader {
                                   lib: lib_comp,
                                   create: new_comp,
-                                  get_contract_input: get_in,
-                                  get_contract_input_array: get_in_a,
-                                  get_contract_output: get_out,
-                                  get_contract_output_array: get_out_a,
+                                  get_edge_input: get_in,
+                                  get_edge_input_array: get_in_a,
+                                  get_edge_output: get_out,
+                                  get_edge_output_array: get_out_a,
                               });
         }
         if let Some(loader) = self.cache.get(path){
@@ -776,57 +776,57 @@ impl ComponentCache {
         }
     }
 
-    /// Get the contract of an input port
+    /// Get the edge of an input port
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_contract_input("add", "input");
+    /// cc.get_edge_input("add", "input");
     /// ```
-    pub fn get_contract_input(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_input(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_contract_input)(port).expect("cannot get")
+                (comp.get_edge_input)(port).expect("cannot get")
             })
     }
 
-    /// Get the contract of an array input port
+    /// Get the edge of an array input port
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_contract_input_array("add", "inputs");
+    /// cc.get_edge_input_array("add", "inputs");
     /// ```
-    pub fn get_contract_input_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_input_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_contract_input_array)(port).expect("cannot get")
+                (comp.get_edge_input_array)(port).expect("cannot get")
             })
     }
 
-    /// Get the contract of an output port
+    /// Get the edge of an output port
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_contract_output("add", "output");
+    /// cc.get_edge_output("add", "output");
     /// ```
-    pub fn get_contract_output(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_output(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_contract_output)(port).expect("cannot get")
+                (comp.get_edge_output)(port).expect("cannot get")
             })
     }
 
-    /// Get the contract of an array output port
+    /// Get the edge of an array output port
     ///
     /// # Example
     /// ```rust,ignore
-    /// cc.get_contract_output_array("add", "outputs");
+    /// cc.get_edge_output_array("add", "outputs");
     /// ```
-    pub fn get_contract_output_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.cache.get(comp).ok_or(result::Error::ComponentNotFound(comp.into()))
+    pub fn get_edge_output_array(&self, comp: &str, port: &str) -> Result<String> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
-                (comp.get_contract_output_array)(port).expect("cannot get")
+                (comp.get_edge_output_array)(port).expect("cannot get")
             })
     }
 }
 
-unsafe impl Send for ComponentCache {}
+unsafe impl Send for AgentCache {}

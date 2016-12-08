@@ -1,4 +1,4 @@
-//! Utility class to communicate between components
+//! Utility class to communicate between agents
 //!
 //! This class provides three structs : IP, Ports and IPSender.
 
@@ -50,11 +50,11 @@ impl IP {
     /// ```rust,ignore
     /// let ip = an_initialized_ip;
     /// {
-    ///     let reader: generic_text::Reader = try!(ip.read_contract());
+    ///     let reader: generic_text::Reader = try!(ip.read_edge());
     ///     let text = try!(reader.get_text());
     /// }
     /// ```
-    pub fn read_contract<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
+    pub fn read_edge<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
         let msg = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
         self.reader = Some(msg);
         Ok(try!(self.reader.as_ref().unwrap().get_root()))
@@ -68,11 +68,11 @@ impl IP {
     /// let mut ip = IP::new();
     /// // Initialize the IP
     /// {
-    ///     let mut builder: generic_text::Builder = ip.build_contract();
+    ///     let mut builder: generic_text::Builder = ip.build_edge();
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn build_contract<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
+    pub fn build_edge<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
         let msg = capnp::message::Builder::new_default();
         self.builder = Some(msg);
         self.builder.as_mut().unwrap().init_root()
@@ -85,11 +85,11 @@ impl IP {
     /// ```rust,ignore
     /// let mut ip = an_initialized_ip;
     /// {
-    ///     let mut builder = try!(edit_contract::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn edit_contract<'a, T: capnp::traits::FromPointerBuilder<'a>,
+    pub fn edit_edge<'a, T: capnp::traits::FromPointerBuilder<'a>,
                                  U: capnp::traits::FromPointerReader<'a> + capnp::traits::SetPointerBuilder<T>>
         (&'a mut self) -> Result<T> {
         let reader = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
@@ -109,7 +109,7 @@ impl IP {
     /// ```rust,ignore
     /// let mut ip = an_initialized_ip;
     /// {
-    ///     let mut builder = try!(edit_contract::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// try!(ip.before_send());
@@ -141,9 +141,9 @@ impl Clone for IP {
 /// A specific `SyncSender` for the IP object. It also sends information to the scheduler.
 #[derive(Clone)]
 pub struct IPSender {
-    /// The SyncSender, connected to a receiver in another component
+    /// The SyncSender, connected to a receiver in another agent
     pub sender: SyncSender<IP>,
-    /// The name of the component owning the receiver
+    /// The name of the agent owning the receiver
     pub dest: String,
     /// A Sender to the scheduler, to signal that the receiver must be run
     pub sched: Sender<CompMsg>,
@@ -161,13 +161,13 @@ impl IPSender {
     }
 }
 
-/// Represents all the ports of a component
+/// Represents all the ports of a agent
 ///
 /// Provides help to send and receive IPs, and to create ports.
 pub struct Ports {
-    /// The name of the component owning this structure
+    /// The name of the agent owning this structure
     name: String,
-    /// A Sender to the scheduler owning the component
+    /// A Sender to the scheduler owning the agent
     sched: Sender<CompMsg>,
     /// All the receiver of the inputs ports
     inputs: HashMap<String, Receiver<IP>>,
@@ -186,7 +186,7 @@ impl Ports {
     ///
     /// # Example
     /// ```rust,ignore
-    /// let ports = try!(Ports::new("component".to_string(),
+    /// let ports = try!(Ports::new("agent".to_string(),
     ///                        sched_sender,
     ///                        vec!["input".to_string()], vec![],
     ///                        vec!["output".to_string()], vec![]));
@@ -426,7 +426,7 @@ impl Ports {
 
     /// Send an IP outside, depending of the action
     ///
-    /// The component must have a simple output port and an array output port with the same name (IE: output). If the array output port had a selection corresponding to the IP action, the IP will be send on it. Otherwise, the IP is send on the simple output port.
+    /// The agent must have a simple output port and an array output port with the same name (IE: output). If the array output port had a selection corresponding to the IP action, the IP will be send on it. Otherwise, the IP is send on the simple output port.
     ///
     /// # Example
     ///
@@ -529,7 +529,7 @@ impl Ports {
 
     /// Change the receiver of a simple output ports
     ///
-    /// useful if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a agent, but keep the existing connection
     ///
     /// ```rust,ignore
     /// ports.set_receiver("input", receiver);
@@ -540,7 +540,7 @@ impl Ports {
 
     /// Get the receiver of a simple output port
     ///
-    /// useful if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a agent, but keep the existing connection
     ///
     /// ```rust,ignore
     /// let receiver = try!(ports.remove_receiver("input"));
@@ -552,7 +552,7 @@ impl Ports {
 
     /// Get the receiver of a array output port
     ///
-    /// useful if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a agent, but keep the existing connection
     ///
     /// ```rust,ignore
     /// let receiver = try!(ports.remove_array_receiver("inputs", "1"));
@@ -588,7 +588,7 @@ impl Ports {
 
     /// Change the receiver of an array output port
     ///
-    /// useful if you want to swap a component, but keep the existing connection
+    /// useful if you want to swap a agent, but keep the existing connection
     ///
     /// ```rust,ignore
     /// ports.add_input_receiver("input", receiver);
@@ -604,7 +604,7 @@ impl Ports {
 
     /// Add a selection in an input array port
     ///
-    /// This selection will be able to be connected to another component
+    /// This selection will be able to be connected to another agent
     ///
     /// ```rust,ignore
     /// try!(ports.add_output_selection("inputs", "1"));

@@ -1,5 +1,5 @@
 { debug ? "--release"
-, subnet ? null
+, node ? null
 , local-rustfbp ? ""
 , cache ? null
 , test ? null
@@ -117,30 +117,30 @@ crates = rec {
   mount = src;
   staticfile = src;
 };
-isValidSubnet = (builtins.head (lib.attrVals [subnet] components));
-defaultSubnet = if (builtins.isAttrs isValidSubnet) then isValidSubnet else null;
-support = import ./support { inherit pkgs debug test local-rustfbp components contracts; };
+isValidSubgraph = (builtins.head (lib.attrVals [node] nodes));
+runThisNode = if (builtins.isAttrs isValidSubgraph) then isValidSubgraph else null;
+support = import ./support { inherit pkgs debug test local-rustfbp nodes edges; };
 fractals = import ./fractals { inherit buffet; };
-components = import ./components { inherit buffet; };
-contracts = import ./contracts { inherit buffet; };
+nodes = import ./nodes { inherit buffet; };
+edges = import ./edges { inherit buffet; };
 services = import ./services { inherit fractals; };
 buffet = {
   support = support;
-  contracts = contracts;
-  components = components;
+  edges = edges;
+  nodes = nodes;
   services = services;
   fractals = fractals;
   crates = crates;
   pkgs = pkgs;
 };
-fvm = import ./support/fvm { inherit pkgs support components contracts crates; };
+fvm = import ./support/fvm { inherit pkgs support nodes edges crates; };
 in
 {
-  inherit components support contracts services fractals crates pkgs;
-  result = if subnet == null
+  inherit nodes support edges services fractals crates pkgs;
+  result = if node == null
   then fvm
   else pkgs.writeTextFile {
-    name = defaultSubnet.name;
-    text = "${fvm}/bin/fvm ${defaultSubnet}";
+    name = runThisNode.name;
+    text = "${fvm}/bin/fvm ${runThisNode}";
     executable = true;};
 }
