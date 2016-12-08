@@ -19,7 +19,7 @@ agent! {
         let mut out = String::new();
         let mut separator = String::new();
         {
-            let reader: command::Reader = opt.read_edge()?;
+            let reader: command::Reader = opt.read_schema()?;
             let singles = reader.get_singles()?
                 .iter()
                 .map(|o| {
@@ -31,7 +31,7 @@ agent! {
             let sep = if singles.contains(&"--zero") || singles.contains(&"-z") {"\0"} else {"\n"};
             separator.push_str(sep);
             {
-                let stdin_reader: generic_text::Reader = stdin_ip.read_edge()?;
+                let stdin_reader: generic_text::Reader = stdin_ip.read_schema()?;
                 let path = stdin_reader.get_text();
 
                 let p = Path::new(path?);
@@ -57,7 +57,7 @@ agent! {
             }
             let mut new_ip = IP::new();
             {
-                let mut ip = new_ip.build_edge::<generic_text::Builder>();
+                let mut ip = new_ip.build_schema::<generic_text::Builder>();
                 out.push_str(separator.as_str());
                 ip.set_text(out.as_str());
             }

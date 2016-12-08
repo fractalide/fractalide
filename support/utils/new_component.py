@@ -122,7 +122,7 @@ def write_simple_input_extractor(port, edge):
     return """
     let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let """ + reader + """: """ + edge + """::Reader = """ + ip + """.read_edge()?;
+        let """ + reader + """: """ + edge + """::Reader = """ + ip + """.read_schema()?;
         """ + reader + """.get_XXX() // read edge: """ + edge + """ to replace XXX
     };"""
 
@@ -138,7 +138,7 @@ def write_inputs_array_extractor(port, edge):
     return """
     let mut """ + ip + """ = self.ports.recv(\"""" + port + """\")?;
     let """ + port + """ = {
-        let """ + reader + """: """ + edge + """::Reader = """ + ip + """.read_edge()?;
+        let """ + reader + """: """ + edge + """::Reader = """ + ip + """.read_schema()?;
         """ + reader + """.get_XXX() // read edge: """ + edge + """ to replace XXX
     };"""
 
@@ -153,7 +153,7 @@ def write_simple_outputs_extractor(port, edge):
     return """
     let mut """ + out_ip + """ = IP::new();
     {
-      let mut variable = """ + out_ip + """.build_edge::<""" + edge + """::Builder>();
+      let mut variable = """ + out_ip + """.build_schema::<""" + edge + """::Builder>();
       variable.set_XXX(YYY); // read edge: """ + edge + """ to replace XXX
     }"""
 
@@ -168,7 +168,7 @@ def write_outputs_array_extractor(port, edge):
     return """
     let mut """ + out_ip + """ = IP::new();
     {
-      let mut variable = """ + out_ip + """.build_edge::<""" + edge + """::Builder>();
+      let mut variable = """ + out_ip + """.build_schema::<""" + edge + """::Builder>();
       variable.set_XXX(YYY); // read edge: """ + edge + """ to replace XXX
     }"""
 

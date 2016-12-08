@@ -17,14 +17,14 @@ agent! {
         let mut ip_input = try!(self.ports.recv("input"));
 
         let (number, delta) = {
-            let mut reader: app_counter::Reader = try!(ip_input.read_edge());
+            let mut reader: app_counter::Reader = try!(ip_input.read_schema());
             (reader.get_value(), reader.get_delta())
         };
 
         let mut ip = IP::new();
         // Plus button
         {
-            let mut builder = ip.build_edge::<js_create::Builder>();
+            let mut builder = ip.build_schema::<js_create::Builder>();
             builder.set_type("button");
             builder.set_text("+");
         }
@@ -34,7 +34,7 @@ agent! {
         // Minus button
         let mut ip = IP::new();
         {
-            let mut builder = ip.build_edge::<js_create::Builder>();
+            let mut builder = ip.build_schema::<js_create::Builder>();
             builder.set_type("button");
             builder.set_text("-");
         }
@@ -44,7 +44,7 @@ agent! {
         // td
         let mut ip = IP::new();
         {
-            let mut builder = ip.build_edge::<js_create::Builder>();
+            let mut builder = ip.build_schema::<js_create::Builder>();
             builder.set_type("div");
             {
                 let mut css = builder.borrow().init_style(2);
@@ -60,7 +60,7 @@ agent! {
         // lr
         let mut ip = IP::new();
         {
-            let mut builder = ip.build_edge::<js_create::Builder>();
+            let mut builder = ip.build_schema::<js_create::Builder>();
             builder.set_type("div");
             {
                 let mut css = builder.borrow().init_style(1);
@@ -74,7 +74,7 @@ agent! {
         // label
         let mut ip = IP::new();
         {
-            let mut builder = ip.build_edge::<js_create::Builder>();
+            let mut builder = ip.build_schema::<js_create::Builder>();
             builder.set_type("span");
             builder.set_text(&format!("{}", number));
             {
@@ -88,7 +88,7 @@ agent! {
 
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.build_edge::<js_create::Builder>();
+            let mut builder = new_ip.build_schema::<js_create::Builder>();
             builder.set_type("input");
             {
                 let mut attr = builder.borrow().init_property(1);

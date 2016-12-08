@@ -30,7 +30,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
         let mut ip_input = self.ports.recv("input")?;
         let raw_command = {
-            let input_reader: generic_text::Reader = ip_input.read_edge()?;
+            let input_reader: generic_text::Reader = ip_input.read_schema()?;
             input_reader.get_text()
         };
         //let parsed_commands = parse_lain_lang(raw_command?);
@@ -51,7 +51,7 @@ agent! {
         ];
         let mut out_ip = IP::new();
         {
-            let mut ip = out_ip.build_edge::<list_command::Builder>();
+            let mut ip = out_ip.build_schema::<list_command::Builder>();
             let mut cmd_count: u32 = 0;
             let mut list = ip.borrow().init_commands(commands.len() as u32);
             for command in commands {

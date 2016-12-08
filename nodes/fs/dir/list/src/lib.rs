@@ -17,10 +17,10 @@ agent! {
     fn run(&mut self) -> Result<()> {
 
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_edge());
+        let path: path::Reader = try!(ip.read_schema());
         let mut new_ip = IP::new();
         {
-            let ip = new_ip.build_edge::<file_list::Builder>();
+            let ip = new_ip.build_schema::<file_list::Builder>();
             let mut files = ip.init_files(try!(fs::read_dir(try!(path.get_path()))).count() as u32);
             let mut i: u32 = 0;
             for path in try!(fs::read_dir(try!(path.get_path()))) {

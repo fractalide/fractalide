@@ -13,18 +13,18 @@ agent! {
   fn run(&mut self) -> Result<()> {
     let a = {
         let mut ip_a = try!(self.ports.recv("a"));
-        let a_reader: maths_boolean::Reader = try!(ip_a.read_edge());
+        let a_reader: maths_boolean::Reader = try!(ip_a.read_schema());
         a_reader.get_boolean()
     };
     let b = {
         let mut ip_b = try!(self.ports.recv("b"));
-        let b_reader: maths_boolean::Reader = try!(ip_b.read_edge());
+        let b_reader: maths_boolean::Reader = try!(ip_b.read_schema());
         b_reader.get_boolean()
     };
 
     let mut out_ip = IP::new();
     {
-      let mut boolean = out_ip.build_edge::<maths_boolean::Builder>();
+      let mut boolean = out_ip.build_schema::<maths_boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
     try!(self.ports.send("output", out_ip));

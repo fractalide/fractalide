@@ -16,7 +16,7 @@ agent! {
 
         match self.ports.try_recv("semantic_error") {
             Ok(mut ip) => {
-                let error: fbp_semantic_error::Reader = try!(ip.read_edge());
+                let error: fbp_semantic_error::Reader = try!(ip.read_schema());
 
                 println!("Graph at : {}", try!(error.get_path()));
                 let parsing = try!(error.get_parsing());
@@ -30,7 +30,7 @@ agent! {
 
         match self.ports.try_recv("file_error") {
             Ok(mut ip) => {
-                let error: file_error::Reader = try!(ip.read_edge());
+                let error: file_error::Reader = try!(ip.read_schema());
                 println!("Subgraph doesn't exist at file location : {}\n", try!(error.get_not_found()));
             }
             _ => {}
@@ -39,7 +39,7 @@ agent! {
 
         let mut new_ip = IP::new();
         {
-            let mut ip = new_ip.build_edge::<fbp_graph::Builder>();
+            let mut ip = new_ip.build_schema::<fbp_graph::Builder>();
             ip.set_path("error");
         }
         let _ = self.ports.send("output", new_ip);

@@ -30,7 +30,7 @@ agent! {
 
         // retrieve the asked graph
         let mut ip = try!(self.ports.recv("input"));
-        let i_graph: fbp_graph::Reader = try!(ip.read_edge());
+        let i_graph: fbp_graph::Reader = try!(ip.read_schema());
 
         try!(add_graph(self, &mut graph, i_graph, ""));
 
@@ -99,13 +99,13 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
 
         let mut ip = IP::new();
         {
-            let mut path = ip.build_edge::<path::Builder>();
+            let mut path = ip.build_schema::<path::Builder>();
             path.set_path(&c_sort);
         }
         try!(agent.ports.send("ask_path", ip));
 
         let mut ip = try!(agent.ports.recv("new_path"));
-        let i_graph: option_path::Reader = try!(ip.read_edge());
+        let i_graph: option_path::Reader = try!(ip.read_schema());
 
         let new_path: Option<String> = match try!(i_graph.which()) {
             option_path::Path(p) => { Some(try!(p).into()) },
@@ -133,14 +133,14 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
         if is_subgraph {
             let mut msg = IP::new();
             {
-                let mut number = msg.build_edge::<path::Builder>();
+                let mut number = msg.build_schema::<path::Builder>();
                 number.set_path(&path);
             }
             try!(agent.ports.send("ask_graph", msg));
 
             // retrieve the asked graph
             let mut ip = try!(agent.ports.recv("input"));
-            let i_graph: fbp_graph::Reader = try!(ip.read_edge());
+            let i_graph: fbp_graph::Reader = try!(ip.read_schema());
 
             add_graph(agent, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {
@@ -153,7 +153,7 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
 fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
     let mut new_ip = IP::new();
     {
-        let mut ip = new_ip.build_edge::<fbp_graph::Builder>();
+        let mut ip = new_ip.build_schema::<fbp_graph::Builder>();
         ip.set_path("");
         {
             let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);

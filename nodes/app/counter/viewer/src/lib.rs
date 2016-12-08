@@ -17,11 +17,11 @@ agent! {
         let mut ip_input = try!(self.ports.recv("input"));
 
         let (number, delta) = {
-            let mut reader: app_counter::Reader = try!(ip_input.read_edge());
+            let mut reader: app_counter::Reader = try!(ip_input.read_schema());
             (reader.get_value(), reader.get_delta())
         };
         {
-            let mut builder = ip_input.build_edge::<generic_text::Builder>();
+            let mut builder = ip_input.build_schema::<generic_text::Builder>();
             builder.set_text(&format!("{}", number));
         }
         ip_input.action = "set_text".into();
@@ -29,7 +29,7 @@ agent! {
 
         let mut new_ip = IP::new();
         {
-            let mut builder = new_ip.build_edge::<generic_tuple_text::Builder>();
+            let mut builder = new_ip.build_schema::<generic_tuple_text::Builder>();
             builder.set_key("value");
             builder.set_value(&format!("{}", delta));
         }

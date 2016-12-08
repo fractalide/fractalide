@@ -47,7 +47,7 @@ pub trait Agent {
 ///        let opt = self.recv_opt();
 ///
 ///        // Get the capn'p reader
-///        let reader: generic_text::Reader = try!(opt.read_edge());
+///        let reader: generic_text::Reader = try!(opt.read_schema());
 ///        // Print the option
 ///        println!("{}", try!(reader.get_text()));
 ///
@@ -183,7 +183,7 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn get_edge_input(port: &str) -> Result<String> {
+        pub extern fn get_schema_input(port: &str) -> Result<String> {
             match port {
                 $(
                     stringify!($input_field_name)=> Ok(stringify!($input_edge_name).into()),
@@ -193,7 +193,7 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn get_edge_input_array(port: &str) -> Result<String> {
+        pub extern fn get_schema_input_array(port: &str) -> Result<String> {
             match port {
                 $(
                     stringify!($input_array_name) => Ok(stringify!($input_edge_array).into()),
@@ -203,7 +203,7 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn get_edge_output(port: &str) -> Result<String> {
+        pub extern fn get_schema_output(port: &str) -> Result<String> {
             match port {
                 $(
                     stringify!($output_field_name)=> Ok(stringify!($output_edge_name).into()),
@@ -213,7 +213,7 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn get_edge_output_array(port: &str) -> Result<String> {
+        pub extern fn get_schema_output_array(port: &str) -> Result<String> {
             match port {
                 $(
                     stringify!($output_array_name) => Ok(stringify!($output_edge_array).into()),

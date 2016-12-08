@@ -50,11 +50,11 @@ impl IP {
     /// ```rust,ignore
     /// let ip = an_initialized_ip;
     /// {
-    ///     let reader: generic_text::Reader = try!(ip.read_edge());
+    ///     let reader: generic_text::Reader = try!(ip.read_schema());
     ///     let text = try!(reader.get_text());
     /// }
     /// ```
-    pub fn read_edge<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
+    pub fn read_schema<'a, T: capnp::traits::FromPointerReader<'a>>(&'a mut self) -> Result<T> {
         let msg = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));
         self.reader = Some(msg);
         Ok(try!(self.reader.as_ref().unwrap().get_root()))
@@ -68,11 +68,11 @@ impl IP {
     /// let mut ip = IP::new();
     /// // Initialize the IP
     /// {
-    ///     let mut builder: generic_text::Builder = ip.build_edge();
+    ///     let mut builder: generic_text::Builder = ip.build_schema();
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn build_edge<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
+    pub fn build_schema<'a, T: capnp::traits::FromPointerBuilder<'a>>(&'a mut self) -> T {
         let msg = capnp::message::Builder::new_default();
         self.builder = Some(msg);
         self.builder.as_mut().unwrap().init_root()

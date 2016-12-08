@@ -13,7 +13,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
         {
-            let graph: fbp_graph::Reader = try!(ip.read_edge());
+            let graph: fbp_graph::Reader = try!(ip.read_schema());
 
             println!("Graph at : {}", try!(graph.get_path()));
             println!("nodes :");

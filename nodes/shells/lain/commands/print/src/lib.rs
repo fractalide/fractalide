@@ -14,14 +14,14 @@ agent! {
     fn run(&mut self) -> Result<()> {
         let mut opt = self.recv_option();
         {
-            let reader: generic_text::Reader = opt.read_edge()?;
+            let reader: generic_text::Reader = opt.read_schema()?;
             let option = reader.get_text();
 
             //println!("{}", option?);
         }
         let mut ip_a = try!(self.ports.recv("stdin"));
         {
-            let a_reader: generic_text::Reader = try!(ip_a.read_edge());
+            let a_reader: generic_text::Reader = try!(ip_a.read_schema());
             let a = a_reader.get_text();
 
             println!("{:?}", a?);

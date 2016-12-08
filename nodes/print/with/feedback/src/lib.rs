@@ -12,12 +12,12 @@ agent! {
     acc(),
     fn run(&mut self) -> Result<()> {
         let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_edge());
+        let path: path::Reader = try!(ip.read_schema());
         let path = try!(path.get_path());
         if path != "end" {
             let mut next_ip = IP::new();
             {
-                let mut ip = next_ip.build_edge::<value_string::Builder>();
+                let mut ip = next_ip.build_schema::<value_string::Builder>();
                 ip.set_value("next");
             }
             try!(self.ports.send("next", next_ip));

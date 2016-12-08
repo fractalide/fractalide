@@ -15,13 +15,13 @@ agent! {
 
         let mut ip_input = self.ports.recv("input")?;
         let input = {
-            let input_reader: list_text::Reader = ip_input.read_edge()?;
+            let input_reader: list_text::Reader = ip_input.read_schema()?;
             input_reader.get_texts()
         };
 
         let mut out_ip_output = IP::new();
         {
-            let ip = out_ip_output.build_edge::<list_text::Builder>();
+            let ip = out_ip_output.build_schema::<list_text::Builder>();
             let mut texts = ip.init_texts(input?.len() as u32);
             let mut i: u32 = 0;
             for cmd in input?.iter() {
