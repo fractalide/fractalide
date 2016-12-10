@@ -89,7 +89,7 @@ impl IP {
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
-    pub fn edit_edge<'a, T: capnp::traits::FromPointerBuilder<'a>,
+    pub fn edit_schema<'a, T: capnp::traits::FromPointerBuilder<'a>,
                                  U: capnp::traits::FromPointerReader<'a> + capnp::traits::SetPointerBuilder<T>>
         (&'a mut self) -> Result<T> {
         let reader = try!(capnp::serialize::read_message(&mut &self.vec[..], capnp::message::ReaderOptions::new()));

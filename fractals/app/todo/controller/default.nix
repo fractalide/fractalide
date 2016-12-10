@@ -4,8 +4,8 @@
   fractal = pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_app_todo_controller";
-    rev = "54192998e43372e4fd406d3e4735229fb88dafd3";
-    sha256 = "0zplniallzkgl3mfi02588pgka78h775drxrr34kdd80b2vwjgs1";
+    rev = "59330da444b5f0d98eb3e35a7ccef3d1c1122e4f";
+    sha256 = "0sxh741jrwfbc1dfdb807frqpbx3ba9srl36qghg0jg9xj3kq0ii";
   };
   /*fractal = ../../../../../fractals/fractal_app_todo_controller;*/
   in

@@ -4,7 +4,7 @@
 
 ### What?
 
-`Fractals` are importable 3rd party sets of components, subnets and contracts, this folder hierarchy is the single source of truth regarding where to find each community fractal.
+`Fractals` are importable 3rd party sets of nodes, subgraphs and edges, this folder hierarchy is the single source of truth regarding where to find each community fractal.
 
 ### Why?
 
@@ -12,7 +12,7 @@
 
 ### Who?
 
-Anyone making high quality, documented components, subnets and contracts may plug into this folder hierarchy. We use the [C4](../CONTRIBUTING.md) so your `fractals` will be merged in quickly.
+Anyone making high quality, documented nodes, subgraphs and edges may plug into this folder hierarchy. We use the [C4](../CONTRIBUTING.md) so your `fractals` will be merged in quickly.
 
 ### Where?
 
@@ -47,8 +47,8 @@ dev
 ``` nix
 { pkgs
   , support
-  , contracts
-  , components
+  , edges
+  , nodes
   , fetchFromGitHub
   , ...}:
 let
@@ -60,27 +60,27 @@ let
   };
   /*fractal = ../../../../fractals/fractal_net_http;*/
 in
-  import fractal {inherit pkgs support contracts components; fractalide = null;}
+  import fractal {inherit pkgs support edges nodes; fractalide = null;}
 ```
 
 * Notes on the above expression:
-  * The `pkgs`, `support`, `components`, `contracts` and `fetchFromGitHub` are arguments passed into this closure.
+  * The `pkgs`, `support`, `nodes`, `edges` and `fetchFromGitHub` are arguments passed into this closure.
   * The `let` expression contains a `fetchFromGitHub` expression describing the location of the `fractal`.
   	* `owner` of the git repository i.e.: `github.com/fractalide`
   	* `repo` is the git repository in question i.e.: `github.com/fractalide/fractal_net_http`
   	* `rev` indicates the git revision you want to import i.e.: `https://github.com/fractalide/fractal_net_http/commit/66ad3bf74b04627edc71227b3e5b944561854367`
   	* `sha256` is a neat `nix` mechanism to assist in deterministic builds. To obtain the correct `sha256` try build your project with an incorrect `sha256` (change the first alpha-numeric character in `1vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b` to a `2`). Nix will download the repository and check that the actual `sha256` matches against what you incorrectly inserted. Nix will tell you what the correct `sha256` is. Copy it and insert the correct `sha256`, replacing `2vs1d3d9lbxnyilx8g45pb01z5cl2z3gy4035h24p28p9v94jx1b`.
   * Please notice the line: `/*fractal = ../../../../fractals/fractal_net_http;*/` This line allows you to tell nix not to refer to the remote repo but your local clone of `fractal_net_http`. Comment out the `fetchFromGitHub` expression and uncomment the above local repo clone path. When you publish your `fractal` upstream, ensure this line is commented out! Please use a relative path compatible with the above directory structure convention as it will work for everyone and we don't have to hunt for the correct folder. Just un/comment and go!
-  * The line: `import fractal {inherit pkgs support contracts components; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making your components available to everyone.
+  * The line: `import fractal {inherit pkgs support edges nodes; fractalide = null;}` is where we import your closures into `fractalide`'s set of closures. Thus making your nodes available to everyone.
 
-* The last step is to expose the exact components / contracts to `dev/fractalide/components/default.nix` and `dev/fractalide/contracts/default.nix`.
+* The last step is to expose the exact nodes / edges to `dev/fractalide/nodes/default.nix` and `dev/fractalide/edges/default.nix`.
 This is done in this manner:
-	* Open `dev/fractalide/components/default.nix` and seek out the `net_http_components` attribute. This is what it looks like:
-`net_http_components = fractals.net_http.components;`
-In this case there is no specific top level component you'd wish to expose so the convention `*_components` is used to indicate this. Whereas if you have a specific component you'd wish to expose then you'd name it as such:
-`net_http = fractals.net_http.components.http`. Why the `*.http`? well that's what the component is named in the namespace [here](https://github.com/fractalide/fractal_net_http/blob/master/components/default.nix#L5). Please notice the lack of the `*_components` when exporting a single component.
-	* Regarding importing contracts, typically you don't need to import contracts, but there are times when you need a special contract which must operate on the public side of the `fractal` and thus usable across a number of `fractals`, say the [`net_http_contracts.request`](https://github.com/fractalide/fractal_net_http/blob/master/contracts/default.nix#L8)
-You'd use a [similar mechanism](https://github.com/fractalide/fractalide/blob/2312ac77fbb09f7a6cb2d29b79496a83aade3852/contracts/default.nix#L31) as above when exposing your contracts.
+	* Open `dev/fractalide/nodes/default.nix` and seek out the `net_http_nodes` attribute. This is what it looks like:
+`net_http_nodes = fractals.net_http.nodes;`
+In this case there is no specific top level node you'd wish to expose so the convention `*_nodes` is used to indicate this. Whereas if you have a specific node you'd wish to expose then you'd name it as such:
+`net_http = fractals.net_http.nodes.http`. Why the `*.http`? well that's what the node is named in the namespace [here](https://github.com/fractalide/fractal_net_http/blob/master/nodes/default.nix#L5). Please notice the lack of the `*_nodes` when exporting a single node.
+	* Regarding importing edges, typically you don't need to import edges, but there are times when you need a special edge which must operate on the public side of the `fractal` and thus usable across a number of `fractals`, say the [`net_http_edges.request`](https://github.com/fractalide/fractal_net_http/blob/master/edges/default.nix#L8)
+You'd use a [similar mechanism](https://github.com/fractalide/fractalide/blob/2312ac77fbb09f7a6cb2d29b79496a83aade3852/edges/default.nix#L31) as above when exposing your edges.
 
 ### Incremental Builds
 
@@ -93,7 +93,7 @@ Here is an example how you can build with the Incremental Build System:
 
 ```
 $ cd dev/fractalide
-$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subnet workbench
+$ nix-build --argstr debug true --argstr cache $(./support/buildCache.sh) --argstr subgraph workbench
 ```
 If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, otherwise Incremental Compilation will fail.
 
@@ -106,7 +106,7 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 * Executed directly from the `fractal`.
 	* advantages
 		* faster to test by just issuing the `nix-build` command
-		* convenient for CI & CD of you specific subnet
+		* convenient for CI & CD of you specific subgraph
 		* don't have to plug it into `dev/fractalide/fractals`
 	* disadvantages
 		* no incremental recompilation
@@ -120,7 +120,7 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 #### Executing from within Fractalide
 
 * `$ cd dev/fractalide`
-* `$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr subnet workbench`
+* `$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr node workbench`
 * `$ ./result`
 
 #### Executing from with the Fractal

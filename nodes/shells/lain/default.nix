@@ -7,6 +7,6 @@ subgraph {
    prompt(${shells_lain_prompt}) output ->
    input parse(${shells_lain_parse}) output ->
    input flow(${shells_lain_flow}) output ->
-   flowscript scheduler(${nucleus_flow_subnet})
+   flowscript scheduler(${nucleus_flow_subgraph})
  '';
 }
