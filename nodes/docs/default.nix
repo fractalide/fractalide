@@ -3,7 +3,7 @@
 let
   doc = import ../../doc {};
 in
-subnet  {
+subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
   '${path}:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})

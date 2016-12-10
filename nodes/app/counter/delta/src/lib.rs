@@ -23,7 +23,7 @@ agent! {
 
         {
             let mut reader: generic_text::Reader = try!(ip_delta.read_schema());
-            let mut builder = try!(ip_actual.edit_edge::<app_counter::Builder, app_counter::Reader>());
+            let mut builder = try!(ip_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
             let mut text = try!(reader.get_text());
             if text == "" { text = "0"; }
             if let Ok(i) = text.parse::<i64>() {

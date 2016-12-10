@@ -1,3 +1,4 @@
+#![feature(question_mark)]
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -13,12 +14,12 @@ agent! {
   fn run(&mut self) -> Result<()> {
     let a = {
         let mut ip_a = try!(self.ports.recv("a"));
-        let a_reader: maths_boolean::Reader = try!(ip_a.read_schema());
+        let a_reader: maths_boolean::Reader = ip_a.read_schema()?;
         a_reader.get_boolean()
     };
     let b = {
         let mut ip_b = try!(self.ports.recv("b"));
-        let b_reader: maths_boolean::Reader = try!(ip_b.read_schema());
+        let b_reader: maths_boolean::Reader = ip_b.read_schema()?;
         b_reader.get_boolean()
     };
 
