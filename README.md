@@ -132,8 +132,11 @@ Consulting not limited to just Fractalide work, but Rust gigs in general.
 * Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
 ### Documentation
-* [RustFBP](https://docs.rs/rustfbp) provides all the needed functionality to allow for declarative dataflow.
-* [Build your own Fractal](https://github.com/fractalide/fractalide/blob/master/fractals/README.md)
+* [Nodes](./nodes/README.md)
+* [Edges](./edges/README.md)
+* [Services](./services/README.md)
+* [Fractals](./fractals/README.md)
+* [RustFBP](https://docs.rs/rustfbp)
 
 ### License
 The project license is specified in LICENSE.
