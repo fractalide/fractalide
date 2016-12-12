@@ -48,9 +48,6 @@ The `Subgraph` `default.nix` requires you make decisions about two types of depe
 * What `Nodes` are needed?
 * What `Edges` are needed?
 
-Lastly:
-* How to connect the lot to best solve your problem.
-
 ``` nix
 { subgraph, nodes, edges }:
 
@@ -168,7 +165,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
 
-[Learn](../edges/README.md) more about Information Packets.
+[Learn](../edges/README.md) more about `Edges`.
 #### Creating an subgraph input port
 ``` nix
 { subgraph, nodes, edges }:
@@ -240,7 +237,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
 
-Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Information Packets` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
+Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
 
 #### Input array port:
 ``` nix
@@ -519,7 +516,7 @@ agent! {
   }
 }
 ```
-
+The humble simple output port. It doesn't have elements and is fixed at `subgraph development time`.
 ##### `outarr`:
 ``` rust
 agent! {
@@ -535,6 +532,8 @@ agent! {
   }
 }
 ```
+The `outarr` port is an `output array port`. It contains elements which may be expanded at `subgraph development time`.
+
 ##### `portal`:
 ``` rust
 #![feature(question_mark)]
@@ -582,6 +581,7 @@ agent! {
 ![Image Alt](https://lh5.ggpht.com/owLgzEVCKQ4n2fWCMbQtzp0ScBdC0G6vQgFZAiTDfaJPVp7qTi1V3vuago1nWAuAdw=w300)
 
 This feature is named after Valve's `portal` game. A `Portal` allows us to keep complex state hanging around if needed. Basically, you shoot a couple of portals and throw your state through one portal, catching it as it falls out the other portal on the next function run.
+
 ##### `option`:
 ``` rust
 agent! {
@@ -595,6 +595,8 @@ agent! {
   }
 }
 ```
+The `option` port gives the `subgraph` developer a way to send in parameters such as a connection string and the message will not be consumed and thrown away, that message may be read on every function run. Whereas other ports will consume and throw away the message.
+
 ##### `accumulator`:
 ``` rust
 agent! {
@@ -608,5 +610,6 @@ agent! {
   }
 }
 ```
+The `accumulator` gives the `subgraph` developer a way to start counting at a certain number. This port isn't used so often.
 ##### `run`:
 This function does the actual processing and is the only mandatory expression of this macro.
