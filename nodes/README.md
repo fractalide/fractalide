@@ -419,7 +419,7 @@ This is the output of the above `agent`'s compilation:
 
 #### The `agent!` Rust macro
 
-The `agent!` macro hides boiler plate code and exposes a simple interface for you to construct your `agent`.
+This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `${maths_boolean_nand}` `agent` seen earlier.
 
 ``` rust
 #![feature(question_mark)]
@@ -428,17 +428,17 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  schema(maths_boolean)
+  schema(maths_boolean),
   input(a: maths_boolean, b: maths_boolean),
   output(output: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let a = {
-      let mut ip_a = try!(self.input.a.recv());
+      let mut ip_a = self.input.a.recv()?;
       let a_reader: maths_boolean::Reader = ip_a.read_schema()?;
       a_reader.get_boolean()
     };
     let b = {
-      let mut ip_b = try!(self.input.b.recv());
+      let mut ip_b = self.input.b.recv()?;
       let b_reader: maths_boolean::Reader = ip_b.read_schema()?;
       b_reader.get_boolean()
     };
@@ -448,9 +448,165 @@ agent! {
       let mut boolean = out_ip.build_schema::<maths_boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
-    try!(self.output.output.send(out_ip));
+    self.output.output.send(out_ip)?;
     Ok(End)
   }
 }
-
 ```
+
+An explanation of each of the items should be given.
+All expresions are optional except for the `run` function.
+
+##### `schema`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    Ok(End)
+  }
+}
+```
+The `schema` expression loads all `schema` imported by the `nix` `agent` function.
+
+##### `input`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  input(input_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let a = {
+      let mut a_msg = self.input.input_name.recv()?;
+      let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+      a_reader.get_boolean()
+    };
+    Ok(End)
+  }
+}
+```
+The `input` port, is a bounded buffer simple input channel that carries Cap'n Proto schemas as messages.
+
+##### `inarr`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  inarr(input_array_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let a = {
+      let mut a_msg = self.input.input_array_name.recv()?;
+      let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+      a_reader.get_boolean()
+    };
+    Ok(End)
+  }
+}
+```
+The `inarr` is an input array port, which consists of multiple elements of a port.
+They are used when the `Subgraph` developer needs multiple elements of a port, for example an `adder` has multiple input elements. This `adder` `agent` may be used in many scenarios where the amount of inputs are unknown at `agent development time`.
+
+##### `output`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  output(output_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut msg_out = msg::new();
+    {
+      let mut boolean = msg_out.build_schema::<maths_boolean::Builder>();
+      boolean.set_boolean(true);
+    }
+    self.output.output_name.send(msg_out)?;
+    Ok(End)
+  }
+}
+```
+
+##### `outarr`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  input(input: any),
+  outarr(clone: any),
+  fn run(&mut self) -> Result<Signal> {
+    let msg = self.input.input.recv()?;
+    for p in self.outarr.clone.elements()? {
+        self.outarr.clone.send( &p, msg.clone())?;
+    }
+    Ok(End)
+  }
+}
+```
+##### `portal`:
+``` rust
+#![feature(question_mark)]
+#[macro_use]
+extern crate rustfbp;
+extern crate capnp;
+extern crate nanomsg;
+
+use nanomsg::{Socket, Protocol};
+pub struct Portal {
+    socket: Option<Socket>,
+}
+
+impl Portal {
+    fn new() -> Portal {
+        Portal {
+            socket: None,
+        }
+    }
+}
+
+agent! {
+  schema(generic_text),
+  input(connect: generic_text, ip: any),
+  portal(Portal => Portal::new()),
+  fn run(&mut self) -> Result<Signal> {
+    if let Ok(mut ip) = self.inputs.connect.try_recv() {
+        let reader: generic_text::Reader = ip.read_schema()?;
+        let mut socket = Socket::new(Protocol::Push)
+            .or(Err(result::Error::Misc("Cannot create socket".into())))?;
+        socket.bind(reader.get_text()?)
+            .or(Err(result::Error::Misc("Cannot connect socket".into())))?;
+        self.portal.socket = Some(socket);
+    }
+
+    if let Ok(ip) = self.inputs.ip.try_recv() {
+        if let Some(ref mut socket) = self.portal.socket {
+            socket.write(&ip.vec[..]);
+        }
+    }
+    Ok(End)
+  }
+}
+```
+![Image Alt](https://lh5.ggpht.com/owLgzEVCKQ4n2fWCMbQtzp0ScBdC0G6vQgFZAiTDfaJPVp7qTi1V3vuago1nWAuAdw=w300)
+
+This feature is named after Valve's `portal` game. A `Portal` allows us to keep complex state hanging around if needed. Basically, you shoot a couple of portals and throw your state through one portal, catching it as it falls out the other portal on the next function run.
+##### `option`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  option(maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut opt = self.option.recv();
+    let opt_reader: maths_boolean::Reader = opt.read_schema()?;
+    let opt_boolean = opt_reader.get_boolean()?;
+    Ok(End)
+  }
+}
+```
+##### `accumulator`:
+``` rust
+agent! {
+  schema(maths_boolean),
+  accumulator(maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut acc = self.ports.accumulator.recv()?;
+    let acc_reader: maths_boolean::Reader = ip_acc.read_schema()?;
+    let acc_boolean = acc_reader.get_boolean()?;
+    Ok(End)
+  }
+}
+```
+##### `run`:
+This function does the actual processing and is the only mandatory expression of this macro.
