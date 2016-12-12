@@ -6,7 +6,7 @@ The `Nodes` collection consists of `Subgraphs` and `Agents`. A `Subgraph` or an 
 
 ### What?
 
-A `Subgraph` consists of an implementation and an interface. The implementation is constructed using a simple language called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The interface aspect of a `Subgraph` consists of exposing a minimal set of well named `ports`, thus hiding complexity.
+A `Subgraph` consists of an implementation and an interface. The interface is implemented using a simple `interface description language` called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The result is an interface that consists of a minimal set of well named `ports`, thus hiding complexity.
 
 A simple analogy would be this gentleman's pocket watch.
 
