@@ -55,13 +55,13 @@ Lastly:
 { subgraph, nodes, edges }:
 
 subgraph {
- src = ./.;
- flowscript = with nodes; with edges; ''
-  nand(${maths_boolean_nand})
-  '${maths_boolean}:(boolean=true)' -> a nand()
-  '${maths_boolean}:(boolean=true)' -> b nand()
-  nand() output -> input io_print(${maths_boolean_print})
- '';
+  src = ./.;
+  flowscript = with nodes; with edges; ''
+    nand(${maths_boolean_nand})
+    '${maths_boolean}:(boolean=true)' -> a nand()
+    '${maths_boolean}:(boolean=true)' -> b nand()
+    nand() output -> input io_print(${maths_boolean_print})
+  '';
 }
 ```
 
@@ -161,8 +161,8 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with edges; with nodes; ''
-   td(${ui_js_nodes.flex})
-   '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
+    td(${ui_js_nodes.flex})
+    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
   '';
 }
 ```
@@ -189,7 +189,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-     agent(${name_of_agent}) output => subgraph_output
+    agent(${name_of_agent}) output => subgraph_output
   '';
 }
 ```
@@ -378,7 +378,9 @@ Typically when you see a `lib.rs` in the same directory as a `default.nix` you k
 
 ### How?
 
-An `Agent` essentially consists of two parts; a `nix` `default.nix` file and a `rust` `lib.rs` file.
+An `Agent` consists of two parts:
+* a `nix` `default.nix` file that sets up an environment to satisfy `rustc`.
+* a `rust` `lib.rs` file implements your `agent`.
 
 #### The `agent` Nix function.
 
@@ -399,11 +401,11 @@ agent {
 ```
 
 * The `{ agent, edges, crates, pkgs }:` lambda imports: The `edges` attribute which consists of every `edge` available on the system. The `crates` attribute set consists of every `crate` on https://crates.io. Lastly the `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
-* The `agent` function builds the rust `lib.rs` source code in the same directory, and accepts these arguments:
+* The `agent` function builds the rust `lib.rs` source code, and accepts these arguments:
   * The `src` attribute is used to derive an `Agent` name based on location in the directory hierarchy.
-  * The `edges` lazily compiles schema and composite schema and ensures they are available.
+  * The `edges` lazily compiles schema and composite schema ensuring their availability.
   * The `crates` specifies exactly which `crates` are needed in scope.
-  * The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl`.
+  * The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl` needed in scope.
 
 Only specified dependencies and their transitive dependencies will be pulled into scope once the `agent` compilation starts.
 
@@ -417,7 +419,7 @@ This is the output of the above `agent`'s compilation:
 
 #### The `agent!` Rust macro
 
-The `agent!` macro hides boiler plate code and exposes a simple interface for you to construct your `agent!`
+The `agent!` macro hides boiler plate code and exposes a simple interface for you to construct your `agent`.
 
 ``` rust
 #![feature(question_mark)]
