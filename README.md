@@ -141,3 +141,8 @@ Consulting not limited to just Fractalide work, but Rust gigs in general.
 ### License
 The project license is specified in LICENSE.
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
+
+### Thanks
+* Peter Van Roy
+* Pieter Hintjens
+* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) for implementing [nixcrates](https://github.com/fractalide/nixcrates)
