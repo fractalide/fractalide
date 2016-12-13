@@ -425,7 +425,6 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  schema(maths_boolean),
   input(a: maths_boolean, b: maths_boolean),
   output(output: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
@@ -454,21 +453,9 @@ agent! {
 An explanation of each of the items should be given.
 All expresions are optional except for the `run` function.
 
-##### `schema`:
-``` rust
-agent! {
-  schema(maths_boolean),
-  fn run(&mut self) -> Result<Signal> {
-    Ok(End)
-  }
-}
-```
-The `schema` expression loads all `schema` imported by the `nix` `agent` function.
-
 ##### `input`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   input(input_name: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let a = {
@@ -485,11 +472,10 @@ The `input` port, is a bounded buffer simple input channel that carries Cap'n Pr
 ##### `inarr`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   inarr(input_array_name: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let a = {
-      let mut a_msg = self.input.input_array_name.recv()?;
+      let mut a_msg = self.inarr.input_array_name.recv()?;
       let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
       a_reader.get_boolean()
     };
@@ -503,7 +489,6 @@ They are used when the `Subgraph` developer needs multiple elements of a port, f
 ##### `output`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   output(output_name: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let mut msg_out = msg::new();
@@ -520,7 +505,6 @@ The humble simple output port. It doesn't have elements and is fixed at `subgrap
 ##### `outarr`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   input(input: any),
   outarr(clone: any),
   fn run(&mut self) -> Result<Signal> {
@@ -556,7 +540,6 @@ impl Portal {
 }
 
 agent! {
-  schema(generic_text),
   input(connect: generic_text, ip: any),
   portal(Portal => Portal::new()),
   fn run(&mut self) -> Result<Signal> {
@@ -585,7 +568,6 @@ This feature is named after Valve's `portal` game. A `Portal` allows us to keep 
 ##### `option`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   option(maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let mut opt = self.option.recv();
@@ -600,7 +582,6 @@ The `option` port gives the `subgraph` developer a way to send in parameters suc
 ##### `accumulator`:
 ``` rust
 agent! {
-  schema(maths_boolean),
   accumulator(maths_boolean),
   fn run(&mut self) -> Result<Signal> {
     let mut acc = self.ports.accumulator.recv()?;
