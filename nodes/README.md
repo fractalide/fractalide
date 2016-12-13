@@ -474,11 +474,13 @@ The `input` port, is a bounded buffer simple input channel that carries Cap'n Pr
 agent! {
   inarr(input_array_name: maths_boolean),
   fn run(&mut self) -> Result<Signal> {
-    let a = {
-      let mut a_msg = self.inarr.input_array_name.recv()?;
-      let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
-      a_reader.get_boolean()
-    };
+    for ins in self.inarr.input_array_name.elements()? {
+      let a = {
+        let mut a_msg = self.inarr.input_array_name.recv(&ins)?;
+        let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+        a_reader.get_boolean()
+      };
+    }
     Ok(End)
   }
 }
