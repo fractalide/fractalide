@@ -17,7 +17,6 @@ fn main() {
     run(&env::args().nth(1).unwrap());
 }
 
-
 mod edge_capnp {
     include!("path_capnp.rs");
     include!("fbp_action.rs");
