@@ -71,9 +71,9 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [ ] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
 - [ ] Deployable example of a simple microservices setup.
 - [ ] Documentation.
-- [ ] Remove cargo.
+- [x] Remove cargo.
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
-- [x] Contract composition.
+- [x] Cap'n Proto schema composition.
 - [ ] Only Information Packets make heap allocations.
 - [ ] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.

@@ -1,6 +1,6 @@
 { buffet }:
 let
-callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet );
+callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet.support.crates-support // buffet );
 # insert in alphabetical order to reduce conflicts
 self = rec { # use one line only to insert a node (utils/new_node.py sorts this list)
   app_counter_add = callPackage ./app/counter/add {};

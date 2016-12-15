@@ -5,5 +5,5 @@ agent {
   edges = with edges; [ maths_boolean ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
-  depsSha256 = "0pzvnvhmzv1bbp5gfgmak3bsizhszw4bal0vaz30xmmd5yx5ciqj";
+  depsSha256 = "11pd9fl05xd5ra327fmi2cv497xl4c16rg4iqj34izwzqii832hk";
 }
