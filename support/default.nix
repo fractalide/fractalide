@@ -8,10 +8,11 @@
   , nodes}:
 let
 callPackage = pkgs.lib.callPackageWith (pkgs);
-newpkgs = import (pkgs.fetchgit {
-   url = https://github.com/NixOS/nixpkgs;
-   rev = "1f811a67274e340d9e13987801fe726308e748ab";
-   sha256 = "0dhmh0fcjki8qnvy1fyw4jhi0m3kvabj9nfcd2nc4dcl2ljc84mg";
+newpkgs = import (pkgs.fetchFromGitHub {
+  owner = "NixOS";
+  repo = "nixpkgs";
+  rev = "1f811a67274e340d9e13987801fe726308e748ab";
+  sha256 = "0dhmh0fcjki8qnvy1fyw4jhi0m3kvabj9nfcd2nc4dcl2ljc84mg";
  }) {};
 rustc = newpkgs.rustcNightlyBin.rustc;
 crates-support = rec {
