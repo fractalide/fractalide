@@ -36,10 +36,22 @@ in stdenv.mkCachedDerivation (args // rec {
       for i in $propagated1; do
         cat $i >> src/edge_capnp.rs
       done
-      ${rustc}/bin/rustc src/lib.rs --crate-type ${binary} -A dead_code -A unused_imports --emit=dep-info,link --crate-name agent -L dependency=nixcrates ${crates-support.depsStringCalc crates} -o libagent.so
+      ${rustc}/bin/rustc src/lib.rs \
+      --crate-type ${binary} \
+      -A dead_code -A unused_imports \
+      --emit=dep-info,link \
+      --crate-name agent \
+      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+      -o libagent.so
     ''
     else ''
-      ${rustc}/bin/rustc src/main.rs --crate-type ${binary} -A dead_code -A unused_imports --emit=dep-info,link --crate-name ${crates-support.normalizeName compName} -L dependency=nixcrates ${crates-support.depsStringCalc crates} -o ${compName}
+      ${rustc}/bin/rustc src/main.rs \
+      --crate-type ${binary} \
+      -A dead_code -A unused_imports \
+      --emit=dep-info,link \
+      --crate-name ${crates-support.normalizeName compName} \
+      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+      -o ${compName}
     ''}
   '';
 
