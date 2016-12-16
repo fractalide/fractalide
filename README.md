@@ -87,7 +87,8 @@ This codebase is currently in huge flux before stabilization, but at least you c
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ nix-build -A nodes.maths_boolean_nand
+$ nix-build --argstr node test_sjm
+$ ./result
 ```
 
 ### Building your own fractals
