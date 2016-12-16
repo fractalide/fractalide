@@ -14,15 +14,14 @@ let
   compName = if name == null then genName src else name;
 in stdenv.mkCachedDerivation (args // rec {
   name = compName;
-  buildInputs = crateDeps;
-  crateDeps = crates-support.cratesDeps [] crates;
+  buildInputs = osdeps;
   #Don't forget to runHook, else the incremental builds wont work
   configurePhase = (args.configurePhase or "runHook preConfigure");
   buildPhase = args.buildPhase or ''
     echo "*********************************************************************"
     echo "****** building: ${compName} "
     echo "*********************************************************************"
-    ${crates-support.symlinkCalc buildInputs}
+    ${crates-support.symlinkCalc (crates-support.cratesDeps [] crates)}
     ${ if binary == "dylib" then ''
       propagated=""
       for i in $edges; do
