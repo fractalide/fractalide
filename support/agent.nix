@@ -55,12 +55,12 @@ in stdenv.mkCachedDerivation (args // rec {
   installPhase = (args.installPhase or ''
     runHook preInstall
     ${if binary == "dylib" then ''
-    mkdir -p $out/lib
-    cp libagent.so $out/lib
+      mkdir -p $out/lib
+      cp libagent.so $out/lib
     ''
     else ''
-    mkdir -p $out/bin
-    cp ${compName} $out/bin
+      mkdir -p $out/bin
+      cp ${compName} $out/bin
     ''}
   '' );
   })
