@@ -96,15 +96,13 @@ $ ./result
 A `fractal` is a fractalide 3rd party library. [Learn more](fractals/README.md)
 
 ### Consulting and Support
-Name | Email | Info
------|-------|-----
-Stewart Mackenzie | setori88@gmail.com | Founder and maintainer of Fractalide.
-Denis Michiels | dmichiels@gmail.com | Founder and maintainer of Fractalide.
-
-Consulting not limited to just Fractalide work, but Rust gigs in general.
+Name | Info | Language
+-----|------|---------
+[Stewart Mackenzie](mailto:setori88@gmail.com) | Founder and maintainer of Fractalide | English
+[Denis Michiels](mailto:dmichiels@mailoo.org) | Founder and maintainer of Fractalide | French
 
 ### Contributing to Fractalide
-* The contributors are listed in `fractalide/support/upkeepers.nix` (add yourself).
+* The contributors are listed in [AUTHORS](./AUTHORS) (add yourself).
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
 * Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
