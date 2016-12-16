@@ -5,10 +5,9 @@ rustBinary {
   binary = "bin";
   crates = with crates; [ capnp capnpc ];
   src = fetchFromGitHub {
-    owner = "fractalide";
+    owner = "dwrensha";
     repo = "capnpc-rust";
-    rev = "4c305605484c6cf16716d5a6683b5dbcb1ad0fbd";
-    sha256 = "06w19i59pjrpbbzhfmdsh2g8jzxh36vfykyhxypb4ycajbzk96iy";
+    rev = "e662a3cf50eecebeadfd1f0c4755cf779840b93b";
+    sha256 = "03khbs6cg38z41i53v3l9h45sr6nvvki7q7v04h1lmc0l3yhgc5w";
   };
-  depsSha256 = "07f11b2nanrv6mi460r9wq2mm3jk7nqawhxvsr81hrl4za9fdr26";
 }

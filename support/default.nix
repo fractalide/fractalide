@@ -19,10 +19,9 @@ crates-support = rec {
   normalizeName = builtins.replaceStrings [ "-"] ["_"];
   depsStringCalc = pkgs.lib.fold ( dep: str: "${str} --extern ${normalizeName dep.name}=${dep}/lib${normalizeName dep.name}.rlib") "";
   cratesDeps = pkgs.lib.fold ( recursiveDeps : newCratesDeps: newCratesDeps ++ recursiveDeps.cratesDeps  );
-  symlinkCalc = pkgs.lib.fold ( dep: str: "${str} ln -fs ${dep}/lib${normalizeName dep.name}.rlib mylibs/ \n") "mkdir mylibs\n ";
+  symlinkCalc = pkgs.lib.fold ( dep: str: "${str} ln -fs ${dep}/lib${normalizeName dep.name}.rlib nixcrates/ \n") "mkdir nixcrates\n ";
 };
 genName = callPackage ./genName.nix {};
-
 in
 rec {
   inherit crates-support;

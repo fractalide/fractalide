@@ -6,7 +6,6 @@ fvm  = support.rustBinary {
     src = ./.;
     binary = "bin";
     crates = with crates; [ rustfbp capnp ];
-    depsSha256 = "1zwf62xbpby6s56kz24xs5ypg62slabh85c3f1995d11v89cgai9";
     configurePhase = with nodes; with edges; ''
     runHook preConfigure
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"

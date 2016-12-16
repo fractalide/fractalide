@@ -27,7 +27,6 @@ self = rec { # use one line only to insert a node (utils/new_node.py sorts this 
   lain = callPackage ./shells/lain {};
   halter = callPackage ./halter {};
   io_print = callPackage ./io/print {};
-  io_print_list_text = callPackage ./io/print/list/text {};
   ip_action = callPackage ./ip/action {};
   ip_clone = callPackage ./ip/clone {};
   ip_delay = callPackage ./ip/delay {};
