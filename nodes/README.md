@@ -6,7 +6,7 @@ The `Nodes` collection consists of `Subgraphs` and `Agents`. A `Subgraph` or an 
 
 ### What?
 
-A `Subgraph` consists of an implementation and an interface. The implementation is constructed using a simple language called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The interface aspect of a `Subgraph` consists of exposing a minimal set of well named `ports`, thus hiding complexity.
+A `Subgraph` consists of an implementation and an interface. The interface is implemented using a simple `interface description language` called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The result is an interface that consists of a minimal set of well named `ports`, thus hiding complexity.
 
 A simple analogy would be this gentleman's pocket watch.
 
@@ -48,19 +48,17 @@ The `Subgraph` `default.nix` requires you make decisions about two types of depe
 * What `Nodes` are needed?
 * What `Edges` are needed?
 
-Lastly:
-* How to connect the lot to best solve your problem.
-
 ``` nix
 { subgraph, nodes, edges }:
 
 subgraph {
- src = ./.;
- flowscript = with nodes; with edges; ''
-  '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
-  '${maths_boolean}:(boolean=true)' -> b nand()
-  nand() output -> input io_print(${maths_boolean_print})
- '';
+  src = ./.;
+  flowscript = with nodes; with edges; ''
+    nand(${maths_boolean_nand})
+    '${maths_boolean}:(boolean=true)' -> a nand()
+    '${maths_boolean}:(boolean=true)' -> b nand()
+    nand() output -> input io_print(${maths_boolean_print})
+  '';
 }
 ```
 
@@ -76,12 +74,13 @@ subgraph {
 This is the output of the above `Subgraph`'s compilation:
 ```
 $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subgraph
-'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
+nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
+'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand()
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> b nand()
 nand() output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
 ```
 
-Mother of the Flying Spaghetti Monster, what is that? Those hashes hint at something powerful, projects like `docker` and `git` implement this type of content addressable store, except `docker`'s granularity is at container level, and `git`'s granularity is at every changeset. Our granularity is at package or library level. It allows for reproducible, deterministic systems, instead of copying around "zipped" archives, that quickly max out your hard drive.
+Mother of the Flying Spaghetti Monster, what is that? One really doesn't need to be concerned about this target, as it's meant to be processed by the `Fractalide Virtual Machine`. It's worth noting that those hashes hint at something powerful. Projects like `docker` and `git` implement this type of content addressable store. Except `docker`'s granularity is at container level, and `git`'s granularity is at revision level. Our granularity is at package or library level. It allows for reproducible, deterministic systems, instead of copying around "zipped" archives, that quickly max out your hard drive.
 
 ### Flowscript syntax is easy
 
@@ -139,7 +138,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png)
 
-#### Creating an Initial Information Packet
+#### Creating an [Exposed Edge](../edges/README.md)
 ``` nix
 { subgraph, nodes, edges }:
 
@@ -152,21 +151,21 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png)
 
-#### More complex Initial Information Packet
+#### More complex Exposed Edge
 ``` nix
 { subgraph, edges, nodes }:
 
 subgraph {
   src = ./.;
   flowscript = with edges; with nodes; ''
-   td(${ui_js_nodes.flex})
-   '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
+    td(${ui_js_nodes.flex})
+    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
   '';
 }
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
 
-[Learn](../edges/README.md) more about Information Packets.
+[Learn](../edges/README.md) more about `Edges`.
 #### Creating an subgraph input port
 ``` nix
 { subgraph, nodes, edges }:
@@ -187,7 +186,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-     agent(${name_of_agent}) output => subgraph_output
+    agent(${name_of_agent}) output => subgraph_output
   '';
 }
 ```
@@ -238,7 +237,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
 
-Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Information Packets` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements). The `array port` allows one to, depending on node logic, replicate, fan-out and a whole bunch of other things.
+Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
 
 #### Input array port:
 ``` nix
@@ -256,7 +255,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
 
-`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two simple input ports then be constrained when you need to add three numbers together.
+`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two fixed simple input ports then be constrained when you need to add three numbers together.
 
 #### Hierarchical naming:
 ``` nix
@@ -273,13 +272,13 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png)
 
-The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` are too long! Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
+The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
 
 Explanation of the `Subgraph`:
 
-This `Subgraph` takes an input of `Edge` type [maths_boolean](../edges/maths/boolean/default.nix) over the `input` port. The `Information Packet` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
+This `Subgraph` takes an input of `Hidden Edge` type [maths_boolean](../edges/maths/boolean/default.nix) over the `input` port. A `Message` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
 
-The above implements the `not` boolean logic node.
+The above implements the `not` boolean logic operation.
 
 #### Abstraction powers:
 ``` nix
@@ -327,8 +326,6 @@ Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../
 When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix.
 Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149)!
 
-
-
 ## Agents
 
 ### What?
@@ -342,7 +339,7 @@ Functions in a programming language should be placed in a content addressable st
 Once you have the above, you have truly reusable functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
 ```
 * Open source collaboration
-* Open Peer review of nodes
+* Open peer review of nodes
 * Nice clean reusable nodes
 * Reproducible applications
 ```
@@ -378,36 +375,38 @@ Typically when you see a `lib.rs` in the same directory as a `default.nix` you k
 
 ### How?
 
-The `Agent` `default.nix` requires you make decisions about three types of dependencies.
+An `Agent` consists of two parts:
+* a `nix` `default.nix` file that sets up an environment to satisfy `rustc`.
+* a `rust` `lib.rs` file implements your `agent`.
+
+#### The `agent` Nix function.
+
+The `agent` function in the `default.nix` requires you make decisions about three types of dependencies.
 * What `edges` are needed?
 * What `crates` from [crates.io](https://crates.io) are needed?
 * What `osdeps` or `operating system level dependencies` are needed?
 
-In all the above cases transitive dependencies are resolved for you.
-
 ``` nix
 { agent, edges, crates, pkgs }:
 
-let
-  rustfbp = crates.rustfbp { vsn = "0.3.21"; };
-  capnp = crates.capnp { vsn = "0.7.4"; };
-in
 agent {
   src = ./.;
   edges = with edges; [ maths_boolean ];
-  crates = [ rustfbp capnp ];
+  crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [ openssl ];
 }
 ```
 
-The `{ agent, edges, crates, pkgs }:` lambda imports:
-* The `agent` function builds the rust `lib.rs` source code in the same directory.
-* The `edges` attribute set consists of every `edge` available on the system.
-* The `crates` attribute set consists of every `crate` on https://crates.io.
-* The `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
-Note only those dependencies and their transitive dependencies will be pulled into scope and compiled, if their binaries aren't available. So you get a source distribution with a binary distribution optimization.
+* The `{ agent, edges, crates, pkgs }:` lambda imports: The `edges` attribute which consists of every `edge` available on the system. The `crates` attribute set consists of every `crate` on https://crates.io. Lastly the `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
+* The `agent` function builds the rust `lib.rs` source code, and accepts these arguments:
+  * The `src` attribute is used to derive an `Agent` name based on location in the directory hierarchy.
+  * The `edges` lazily compiles schema and composite schema ensuring their availability.
+  * The `crates` specifies exactly which `crates` are needed in scope.
+  * The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl` needed in scope.
 
-What does the output of the `agent` that builds the `maths_boolean_nand` node look like?
+Only specified dependencies and their transitive dependencies will be pulled into scope once the `agent` compilation starts.
+
+This is the output of the above `agent`'s compilation:
 
 ```
 /nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-maths_boolean_nand
@@ -415,7 +414,9 @@ What does the output of the `agent` that builds the `maths_boolean_nand` node lo
     └── libagent.so
 ```
 
-The implementation of an `agent` programmed in [Rust](https://rust-lang.org) looks like this:
+#### The `agent!` Rust macro
+
+This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `${maths_boolean_nand}` `agent` seen earlier.
 
 ``` rust
 #![feature(question_mark)]
@@ -424,23 +425,18 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  maths_boolean_nand, edges(maths_boolean)
-  inputs(a: maths_boolean, b: maths_boolean),
-  inputs_array(),
-  outputs(output: maths_boolean),
-  outputs_array(),
-  option(),
-  acc(),
-  fn run(&mut self) -> Result<()> {
+  input(a: maths_boolean, b: maths_boolean),
+  output(output: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
     let a = {
-        let mut ip_a = try!(self.ports.recv("a"));
-        let a_reader: maths_boolean::Reader = ip_a.read_schema()?;
-        a_reader.get_boolean()
+      let mut ip_a = self.input.a.recv()?;
+      let a_reader: maths_boolean::Reader = ip_a.read_schema()?;
+      a_reader.get_boolean()
     };
     let b = {
-        let mut ip_b = try!(self.ports.recv("b"));
-        let b_reader: maths_boolean::Reader = ip_b.read_schema()?;
-        b_reader.get_boolean()
+      let mut ip_b = self.input.b.recv()?;
+      let b_reader: maths_boolean::Reader = ip_b.read_schema()?;
+      b_reader.get_boolean()
     };
 
     let mut out_ip = IP::new();
@@ -448,13 +444,155 @@ agent! {
       let mut boolean = out_ip.build_schema::<maths_boolean::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
-    try!(self.ports.send("output", out_ip));
-    Ok(())
+    self.output.output.send(out_ip)?;
+    Ok(End)
   }
 }
-
 ```
 
-#### `agent!` Rust macro
+An explanation of each of the items should be given.
+All expresions are optional except for the `run` function.
 
-The `agent!` macro hides boiler plate code and exposes a simple interface for you to construct your `agent!`
+##### `input`:
+``` rust
+agent! {
+  input(input_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let a = {
+      let mut a_msg = self.input.input_name.recv()?;
+      let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+      a_reader.get_boolean()
+    };
+    Ok(End)
+  }
+}
+```
+The `input` port, is a bounded buffer simple input channel that carries Cap'n Proto schemas as messages.
+
+##### `inarr`:
+``` rust
+agent! {
+  inarr(input_array_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    for ins in self.inarr.input_array_name.elements()? {
+      let a = {
+        let mut a_msg = self.inarr.input_array_name.recv(&ins)?;
+        let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+        a_reader.get_boolean()
+      };
+    }
+    Ok(End)
+  }
+}
+```
+The `inarr` is an input array port, which consists of multiple elements of a port.
+They are used when the `Subgraph` developer needs multiple elements of a port, for example an `adder` has multiple input elements. This `adder` `agent` may be used in many scenarios where the amount of inputs are unknown at `agent development time`.
+
+##### `output`:
+``` rust
+agent! {
+  output(output_name: maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut msg_out = msg::new();
+    {
+      let mut boolean = msg_out.build_schema::<maths_boolean::Builder>();
+      boolean.set_boolean(true);
+    }
+    self.output.output_name.send(msg_out)?;
+    Ok(End)
+  }
+}
+```
+The humble simple output port. It doesn't have elements and is fixed at `subgraph development time`.
+##### `outarr`:
+``` rust
+agent! {
+  input(input: any),
+  outarr(clone: any),
+  fn run(&mut self) -> Result<Signal> {
+    let msg = self.input.input.recv()?;
+    for p in self.outarr.clone.elements()? {
+        self.outarr.clone.send( &p, msg.clone())?;
+    }
+    Ok(End)
+  }
+}
+```
+The `outarr` port is an `output array port`. It contains elements which may be expanded at `subgraph development time`.
+
+##### `portal`:
+``` rust
+#![feature(question_mark)]
+#[macro_use]
+extern crate rustfbp;
+extern crate capnp;
+extern crate nanomsg;
+
+use nanomsg::{Socket, Protocol};
+pub struct Portal {
+    socket: Option<Socket>,
+}
+
+impl Portal {
+    fn new() -> Portal {
+        Portal {
+            socket: None,
+        }
+    }
+}
+
+agent! {
+  input(connect: generic_text, ip: any),
+  portal(Portal => Portal::new()),
+  fn run(&mut self) -> Result<Signal> {
+    if let Ok(mut ip) = self.inputs.connect.try_recv() {
+        let reader: generic_text::Reader = ip.read_schema()?;
+        let mut socket = Socket::new(Protocol::Push)
+            .or(Err(result::Error::Misc("Cannot create socket".into())))?;
+        socket.bind(reader.get_text()?)
+            .or(Err(result::Error::Misc("Cannot connect socket".into())))?;
+        self.portal.socket = Some(socket);
+    }
+
+    if let Ok(ip) = self.inputs.ip.try_recv() {
+        if let Some(ref mut socket) = self.portal.socket {
+            socket.write(&ip.vec[..]);
+        }
+    }
+    Ok(End)
+  }
+}
+```
+![Image Alt](https://lh5.ggpht.com/owLgzEVCKQ4n2fWCMbQtzp0ScBdC0G6vQgFZAiTDfaJPVp7qTi1V3vuago1nWAuAdw=w300)
+
+This feature is named after Valve's `portal` game. A `Portal` allows us to keep complex state hanging around if needed. Basically, you shoot a couple of portals and throw your state through one portal, catching it as it falls out the other portal on the next function run.
+
+##### `option`:
+``` rust
+agent! {
+  option(maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut opt = self.option.recv();
+    let opt_reader: maths_boolean::Reader = opt.read_schema()?;
+    let opt_boolean = opt_reader.get_boolean()?;
+    Ok(End)
+  }
+}
+```
+The `option` port gives the `subgraph` developer a way to send in parameters such as a connection string and the message will not be consumed and thrown away, that message may be read on every function run. Whereas other ports will consume and throw away the message.
+
+##### `accumulator`:
+``` rust
+agent! {
+  accumulator(maths_boolean),
+  fn run(&mut self) -> Result<Signal> {
+    let mut acc = self.ports.accumulator.recv()?;
+    let acc_reader: maths_boolean::Reader = ip_acc.read_schema()?;
+    let acc_boolean = acc_reader.get_boolean()?;
+    Ok(End)
+  }
+}
+```
+The `accumulator` gives the `subgraph` developer a way to start counting at a certain number. This port isn't used so often.
+##### `run`:
+This function does the actual processing and is the only mandatory expression of this macro.

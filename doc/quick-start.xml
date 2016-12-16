@@ -172,8 +172,7 @@ Then insert this into the <filename>default.nix</filename>
 
 agent {
   src = ./.;
-   maths_boolean ];
-  depsSha256 = "132bjwq6x1g3llvlsb0sg34mryry4my5d79qqmkh0cazmb23w4gm";
+  edges = with edges; [ maths_boolean ];
 }
 </screen>
 Notice <filename>contracts = [ maths_boolean ];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!

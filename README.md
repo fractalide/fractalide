@@ -71,9 +71,9 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [ ] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
 - [ ] Deployable example of a simple microservices setup.
 - [ ] Documentation.
-- [ ] Remove cargo.
+- [x] Remove cargo.
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
-- [x] Contract composition.
+- [x] Cap'n Proto schema composition.
 - [ ] Only Information Packets make heap allocations.
 - [ ] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.
@@ -82,37 +82,13 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
 For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
+
+This codebase is currently in huge flux before stabilization, but at least you can build an agent using the new [nixcrates](https://github.com/fractalide/nixcrates) approach. Should hopefully be back to normal in a few days.
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ NIX_PATH="nixpkgs=https://github.com/NixOS/nixpkgs/archive/125ffff089b6bd360c82cf986d8cc9b17fc2e8ac.tar.gz:fractalide=https://github.com/fractalide/fractalide/archive/master.tar.gz" && export NIX_PATH
-$ nix-build --argstr debug true  --argstr local-rustfbp true --argstr cache $(./support/buildCache.sh) --argstr node workbench
+$ nix-build -A nodes.maths_boolean_nand
 ```
-* You will wait about 4~5 hours to compile rustc. We're working on it...
-* a neat hack you can do that'll persist your `rustc` between `nix-collect-garbage` runs is this:
-* `$ git clone github.com/nixos/nixpkgs`
-* `$ cd nixpkgs`
-* `$ git checkout 125ffff`
-* `$ nix-build -A rustUnstable.rustc  -o rust-125fff`
-* then do not delete the `rust-125fff` symlink.
-* this is a temporary hack, which should last about 1~2 weeks
-```
-$ ./result
-```
-* Open `firefox`:
-* Install and open the `resteasy` firefox plugin
-* Post : `http://localhost:8000/todos/`
-* Open `"data"`
-* Select `"custom"`
-* Keep `Mime type` empty
-* Put `{ "title": "A new title" }` in the textbox.
-* Click `send`
-* Notice the `200` response, now be a cool hacker and make a nifty front end please.
-
-You can also mess around with
-* `GET http://localhost:8000/todos/ID`
-* `DELETE http://localhost:8000/todos/ID`
-* `PUT http://localhost:8000/todos/ID`
 
 ### Building your own fractals
 
@@ -141,3 +117,8 @@ Consulting not limited to just Fractalide work, but Rust gigs in general.
 ### License
 The project license is specified in LICENSE.
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
+
+### Thanks
+* Peter Van Roy
+* Pieter Hintjens
+* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) for implementing [nixcrates](https://github.com/fractalide/nixcrates)
