@@ -13,12 +13,16 @@ use result::Result;
 ///
 /// These three functions are used by the scheduler
 pub trait Agent {
-    /// Return a muttable borrow to the Ports object.
-    fn get_ports(&mut self) -> &mut Ports;
     /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
-    /// Run the method of the agent, his personal logic
-    fn run(&mut self) -> Result<()>;
+    /// Connect output port
+    fn connect(&mut self, port: &str, sender: IPSender) -> Result<()>;
+    /// Connect array output port
+    fn connect_array(&mut self, port: &str, element: String, sender: IPSender) -> Result<()>;
+    /// Add input element
+    fn add_inarr_element(&mut self, port: &str, element: String, recv: IPReceiver) -> Result<()>;
+    /// Run the method of the component, his personal logic
+    fn run(&mut self) -> Result<Signal>;
 }
 
 
