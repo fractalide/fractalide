@@ -104,12 +104,12 @@ pkgs = pkgsOld.overridePackages(self: super: {
   };
 });
 
-cratesSrc = pkgs.fetchgit {
+nix-crates-index = pkgs.fetchgit {
   url = https://github.com/fractalide/nix-crates-index;
   rev = "871bba3496eac51dcef5d634d16861c550ed6d30";
   sha256 = "1sfla861dkpfrbnvkp1f1rgyn9lw4jqgndq490fmj046idwwfy2g";
 };
-crates = pkgs.recurseIntoAttrs (pkgs.callPackage (cratesSrc + /all-carg-packages.nix) { });
+crates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
 support = import ./support { inherit pkgs debug test local-rustfbp nodes edges crates; };
 fractals = import ./fractals { inherit buffet; };
@@ -128,7 +128,7 @@ buffet = {
 fvm = import ./support/fvm { inherit pkgs support nodes edges crates; };
 in
 {
-  inherit nodes support edges services fractals crates pkgs fvm;
+  inherit buffet nodes edges;
   result = if node == null
   then fvm
   else pkgs.writeTextFile {

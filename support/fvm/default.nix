@@ -2,11 +2,11 @@
 
 let
 fvm  = support.rustBinary {
-    name = "fvm";
-    src = ./.;
-    binary = "bin";
-    crates = with crates; [ rustfbp capnp ];
-    configurePhase = with nodes; with edges; ''
+  name = "fvm";
+  src = ./.;
+  binary = "bin";
+  crates = with crates; [ rustfbp capnp ];
+  configurePhase = with nodes; with edges; ''
     runHook preConfigure
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "nucleus_flow_parser_lexical.so" "${nucleus_flow_parser_lexical}/lib/libagent.so"
@@ -23,19 +23,7 @@ fvm  = support.rustBinary {
 
     substituteInPlace src/main.rs --replace "path_capnp.rs" "${path}/src/edge_capnp.rs"
     substituteInPlace src/main.rs --replace "fbp_action.rs" "${fbp_action}/src/edge_capnp.rs"
-    '';
-
-
-    installPhase = ''
-      runHook preInstall
-    '';
-
-    meta = with pkgs.stdenv.lib; {
-      description = "Fractalide Virtual Machine";
-      homepage = https://github.com/fractalide/fractalide;
-      license = with licenses; [ mpl20 ];
-      maintainers = with support.upkeepers; [ dmichiels sjmackenzie ];
-  };
+  '';
 };
 in
 fvm
