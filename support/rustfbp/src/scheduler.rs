@@ -16,7 +16,7 @@ use self::threadpool::ThreadPool;
 use result;
 use result::Result;
 
-use ports::{IPSender, IP};
+use ports::{IPSender, IPReceiver, IP};
 use agent::Agent;
 
 use std::collections::HashMap;
@@ -53,7 +53,7 @@ pub enum CompMsg {
     /// Disconnect an array output port
     DisconnectArray(String, String, String),
     /// Add an selection in an array input port
-    AddInputArraySelection(String, String, String, Receiver<IP>),
+    AddInputArraySelection(String, String, String, IPReceiver),
     /// Remove an selection in an array input port
     RemoveInputArraySelection(String, String, String),
     /// Add an selection in an array output port
@@ -68,6 +68,11 @@ pub enum CompMsg {
     Dec(String),
     /// Remove a agent
     Remove(String, Sender<SyncMsg>),
+}
+
+pub enum Signal {
+    End,
+    Continue,
 }
 
 /// This structure keep all the information for the "exterior scheduler".
@@ -329,12 +334,11 @@ impl Scheduler {
     /// try!(sched.add_input_array_selection("add".into(), "inputs".into(), "1".into()));
     /// ```
     pub fn add_input_array_selection(&mut self, comp_name: String, port: String, selection: String) -> Result<()>{
-        let (s, r) = sync_channel(25);
-        let s = IPSender {
-            sender: s,
-            dest: comp_name.clone(),
-            sched: self.sender.clone(),
-        };
+        let (r, s) = IPReceiver::new(
+            comp_name.clone(),
+            self.sender.clone(),
+            true
+        );
         try!(self.agents.get_mut(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))
             .and_then(|mut comp| {
                 if !comp.inputs_array.contains_key(&port) {
@@ -408,7 +412,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: Receiver<IP>) -> Result<()> {
+    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: IPReceiver) -> Result<()> {
         self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, receiver)).expect("scheduler cannot send");
         Ok(())
     }
@@ -510,7 +514,7 @@ impl Scheduler {
 }
 
 enum EditCmp {
-    AddInputArraySelection(String, String, Receiver<IP>),
+    AddInputArraySelection(String, String, IPReceiver),
     RemoveInputArraySelection(String, String),
     AddOutputArraySelection(String, String),
     ConnectOutputPort(String, IPSender),
@@ -669,31 +673,37 @@ impl SchedState {
     }
 
     fn edit_one_comp(mut c: &mut BoxedComp, msg: EditCmp) -> Result<()> {
-        let mut c = c.get_ports();
+        // let mut c = c.get_ports();
         match msg {
             EditCmp::AddInputArraySelection(port, selection, recv) => {
-                try!(c.add_input_receiver(&port, selection, recv));
+                // try!(c.add_input_receiver(&port, selection, recv));
+                c.add_inarr_element(&port, selection, recv)?;
             },
             EditCmp::RemoveInputArraySelection(port, selection) => {
-                try!(c.remove_array_receiver(&port, &selection));
+                unimplemented!();
+                // try!(c.remove_array_receiver(&port, &selection));
             }
             EditCmp::AddOutputArraySelection(port, selection) => {
-                try!(c.add_output_selection(&port, selection));
+                unimplemented!();
+                //try!(c.add_output_selection(&port, selection));
             },
             EditCmp::ConnectOutputPort(port_out, his) => {
-                try!(c.connect(port_out, his));
+                c.connect(&port_out, his)?;
             },
             EditCmp::ConnectOutputArrayPort(port_out, selection_out, his) => {
-                try!(c.connect_array(port_out, selection_out, his));
+                c.connect_array(&port_out, selection_out, his)?;
             },
             EditCmp::SetReceiver(port, hir) => {
-                c.set_receiver(port, hir);
+                unimplemented!();
+                //c.set_receiver(port, hir);
             }
             EditCmp::Disconnect(port) => {
-                try!(c.disconnect(port));
+                unimplemented!();
+                //try!(c.disconnect(port));
             },
             EditCmp::DisconnectArray(port, selection) => {
-                try!(c.disconnect_array(port, selection));
+                unimplemented!();
+                //try!(c.disconnect_array(port, selection));
             },
         }
         Ok(())
