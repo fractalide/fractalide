@@ -99,9 +99,7 @@ macro_rules! agent {
                 include!("edge_capnp.rs");
         }
 
-        $( $(
-            use edge_capnp::$edge;
-        )* )*
+        use edge_capnp::*;
 
         impl $name {
             pub fn recv_option(&mut self) -> IP {
