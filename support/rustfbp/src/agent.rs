@@ -8,7 +8,7 @@
 extern crate capnp;
 
 // TODO : Add method to remove components
-use ports::{IPSender, IPReceiver};
+use ports::{MsgSender, MsgReceiver};
 use scheduler::Signal;
 use result::Result;
 
@@ -19,11 +19,11 @@ pub trait Agent {
     /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
     /// Connect output port
-    fn connect(&mut self, port: &str, sender: IPSender) -> Result<()>;
+    fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()>;
     /// Connect array output port
-    fn connect_array(&mut self, port: &str, element: String, sender: IPSender) -> Result<()>;
+    fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()>;
     /// Add input element
-    fn add_inarr_element(&mut self, port: &str, element: String, recv: IPReceiver) -> Result<()>;
+    fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()>;
     /// Run the method of the component, his personal logic
     fn run(&mut self) -> Result<Signal>;
 }
@@ -42,7 +42,7 @@ pub trait Agent {
 ///    option(generic_text),
 ///    fn run(&mut self) -> Result<Signal> {
 ///        // Receive an IP
-///        let ip = try!(self.input.input.recv());
+///        let msg = try!(self.input.input.recv());
 ///
 ///        // Received an IP from the option port (a generic_text)
 ///        let opt = self.recv_opt();
@@ -53,7 +53,7 @@ pub trait Agent {
 ///        println!("{}", try!(reader.get_text()));
 ///
 ///        // Send the received IP outside, but don't care about the success (drop on fail)
-///        let _ = self.output.output.send(ip);
+///        let _ = self.output.output.send(msg);
 ///
 ///        Ok(End)
 ///    }
@@ -83,7 +83,7 @@ macro_rules! agent {
         use std::sync::mpsc::{Sender};
         use std::sync::mpsc::channel;
 
-        use rustfbp::ports::{IP, IPSender, IPReceiver, OutputSend};
+        use rustfbp::ports::{Msg, MsgSender, MsgReceiver, OutputSend};
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -106,45 +106,45 @@ macro_rules! agent {
             fn dummy() {
                 if stringify!($option) != "" {}
             }
-            pub fn recv_option(&mut self) -> IP {
+            pub fn recv_option(&mut self) -> Msg {
                 self.try_recv_option();
-                if self.option_ip.is_none() {
-                    self.option_ip = self.input.option.recv().ok();
+                if self.option_msg.is_none() {
+                    self.option_msg = self.input.option.recv().ok();
                 }
-                match self.option_ip {
-                    Some(ref ip) => ip.clone(),
+                match self.option_msg {
+                    Some(ref msg) => msg.clone(),
                     None => unreachable!(),
                 }
             }
 
-            pub fn try_recv_option(&mut self) -> Option<IP> {
+            pub fn try_recv_option(&mut self) -> Option<Msg> {
                 loop {
                     match self.input.option.try_recv() {
                         Err(_) => { break; },
-                        Ok(ip) => { self.option_ip = Some(ip); }
+                        Ok(msg) => { self.option_msg = Some(msg); }
                     };
                 }
-                self.option_ip.as_ref().map(|ip|{ ip.clone() })
+                self.option_msg.as_ref().map(|msg|{ msg.clone() })
             }
             )*
 
-            pub fn send_action(&mut self, output: &str, ip: IP) -> Result<()> {
+            pub fn send_action(&mut self, output: &str, msg: Msg) -> Result<()> {
                 if let Some(sender) = {
                     match output {
                         $($(
-                            stringify!($output_a_name) =>  { self.outarr.$output_a_name.get(&ip.action) }
+                            stringify!($output_a_name) =>  { self.outarr.$output_a_name.get(&msg.action) }
                         )*)*
                             _ => None
                     }
                 } // End of the if let Some = { ... }
                 {
-                    let s: &IPSender = sender;
-                    try!(s.send(ip));
+                    let s: &MsgSender = sender;
+                    try!(s.send(msg));
                 }
                 else {
                     match output {
                         $($(
-                            stringify!($output_name) => { self.output.$output_name.send(ip);}
+                            stringify!($output_name) => { self.output.$output_name.send(msg);}
                         )*)*
                             _ => { return Err(result::Error::PortDontExist(output.into())); }
                     }
@@ -165,7 +165,7 @@ macro_rules! agent {
                 false
             }
 
-            fn connect(&mut self, port: &str, sender: IPSender) -> Result<()> {
+            fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()> {
                 match port {
                     $($(
                         stringify!($output_name) => {
@@ -179,7 +179,7 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn connect_array(&mut self, port: &str, element: String, sender: IPSender) -> Result<()> {
+            fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()> {
                 match port {
                     $($(
                         stringify!($output_a_name) => {
@@ -193,7 +193,7 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn add_inarr_element(&mut self, port: &str, element: String, recv: IPReceiver) -> Result<()> {
+            fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()> {
                 match port {
                     $($(
                         stringify!($input_a_name) => {
@@ -212,29 +212,29 @@ macro_rules! agent {
         }
 
         pub struct Input {
-            option: IPReceiver,
-            acc: IPReceiver,
+            option: MsgReceiver,
+            acc: MsgReceiver,
             $($(
-                $input_name: IPReceiver,
+                $input_name: MsgReceiver,
             )*)*
         }
 
         pub struct Inarr {
             $($(
-                $input_a_name: HashMap<String, IPReceiver>,
+                $input_a_name: HashMap<String, MsgReceiver>,
             )*)*
         }
 
         pub struct Output {
-            acc: Option<IPSender>,
+            acc: Option<MsgSender>,
             $($(
-                $output_name: Option<IPSender>,
+                $output_name: Option<MsgSender>,
             )*)*
         }
 
         pub struct Outarr {
             $($(
-                $output_a_name: HashMap<String, IPSender>
+                $output_a_name: HashMap<String, MsgSender>
             )*)*
         }
 
@@ -248,7 +248,7 @@ macro_rules! agent {
             pub inarr: Inarr,
             pub output: Output,
             pub outarr: Outarr,
-            pub option_ip: Option<IP>,
+            pub option_msg: Option<Msg>,
             sched: Sender<CompMsg>,
             $(
             pub portal: $portal_type ,
@@ -256,15 +256,15 @@ macro_rules! agent {
         }
 
         #[allow(dead_code)]
-        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
+        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
 
-            let mut senders: HashMap<String, IPSender> = HashMap::new();
-            let option = IPReceiver::new(name.clone(), sched.clone(), false);
+            let mut senders: HashMap<String, MsgSender> = HashMap::new();
+            let option = MsgReceiver::new(name.clone(), sched.clone(), false);
             senders.insert("option".to_string(), option.1);
-            let acc = IPReceiver::new(name.clone(), sched.clone(), false);
+            let acc = MsgReceiver::new(name.clone(), sched.clone(), false);
             senders.insert("acc".to_string(), acc.1.clone());
             $($(
-                let $input_name = IPReceiver::new(name.clone(), sched.clone(), true);
+                let $input_name = MsgReceiver::new(name.clone(), sched.clone(), true);
                 senders.insert(stringify!($input_name).to_string(), $input_name.1);
             )*)*
             let input = Input {
@@ -300,7 +300,7 @@ macro_rules! agent {
                 inarr: inarr,
                 output: output,
                 outarr: outarr,
-                option_ip: None,
+                option_msg: None,
                 sched: sched,
                 $(
                     portal: $portal_value,
@@ -311,7 +311,7 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn create_agent(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
+        pub extern fn create_agent(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
             new(name, sched)
         }
 

@@ -1,6 +1,6 @@
 //! Utility class to communicate between agents
 //!
-//! This class provides three structs : IP, Ports and IPSender.
+//! This class provides three structs : Msg, Ports and MsgSender.
 
 
 extern crate capnp;
@@ -18,25 +18,25 @@ use std::sync::mpsc::sync_channel;
 
 use scheduler::CompMsg;
 
-/// Represent an IP
-pub struct IP {
+/// Represent an Msg
+pub struct Msg {
     /// The capn'p representation
     pub vec: Vec<u8>,
-    /// is the action of the IP
+    /// is the action of the Msg
     pub action: String,
     reader: Option<capnp::message::Reader<capnp::serialize::OwnedSegments>>,
     builder: Option<capnp::message::Builder<capnp::message::HeapAllocator>>,
 }
 
-impl IP {
-    /// Return a new IP
+impl Msg {
+    /// Return a new Msg
     ///
     /// # Example
     /// ```rust,ignore
-    /// let ip = IP::new();
+    /// let msg = Msg::new();
     /// ```
     pub fn new() -> Self {
-        IP { vec: vec![],
+        Msg { vec: vec![],
              action: String::new(),
              reader: None,
              builder: None,
@@ -48,9 +48,9 @@ impl IP {
     /// # Example
     ///
     /// ```rust,ignore
-    /// let ip = an_initialized_ip;
+    /// let msg = an_initialized_msg;
     /// {
-    ///     let reader: generic_text::Reader = try!(ip.read_schema());
+    ///     let reader: generic_text::Reader = try!(msg.read_schema());
     ///     let text = try!(reader.get_text());
     /// }
     /// ```
@@ -65,10 +65,10 @@ impl IP {
     /// # Example
     ///
     /// ```rust,ignore
-    /// let mut ip = IP::new();
-    /// // Initialize the IP
+    /// let mut msg = Msg::new();
+    /// // Initialize the Msg
     /// {
-    ///     let mut builder: generic_text::Builder = ip.build_schema();
+    ///     let mut builder: generic_text::Builder = msg.build_schema();
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
@@ -83,7 +83,7 @@ impl IP {
     /// # Example
     ///
     /// ```rust,ignore
-    /// let mut ip = an_initialized_ip;
+    /// let mut msg = an_initialized_msg;
     /// {
     ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
@@ -107,12 +107,12 @@ impl IP {
     /// # Example
     ///
     /// ```rust,ignore
-    /// let mut ip = an_initialized_ip;
+    /// let mut msg = an_initialized_msg;
     /// {
     ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
-    /// try!(ip.before_send());
+    /// try!(msg.before_send());
     /// ```
     pub fn before_send(&mut self) -> Result<()> {
         let mut build = mem::replace(&mut self.builder, None);
@@ -125,9 +125,9 @@ impl IP {
     }
 }
 
-impl Clone for IP {
+impl Clone for Msg {
     fn clone(&self) -> Self {
-        IP {
+        Msg {
             vec: self.vec.clone(),
             action: self.action.clone(),
             reader: None,
@@ -136,24 +136,24 @@ impl Clone for IP {
     }
 }
 
-/// A wrapper around `SyncSender<IP>`
+/// A wrapper around `SyncSender<Msg>`
 ///
-/// A specific `SyncSender` for the IP object. It also sends information to the scheduler.
+/// A specific `SyncSender` for the Msg object. It also sends information to the scheduler.
 #[derive(Clone)]
-pub struct IPSender {
+pub struct MsgSender {
     /// The SyncSender, connected to a receiver in another agent
-    pub sender: SyncSender<IP>,
+    pub sender: SyncSender<Msg>,
     /// The name of the agent owning the receiver
     pub dest: String,
     /// A Sender to the scheduler, to signal that the receiver must be run
     pub sched: Sender<CompMsg>,
 }
 
-impl IPSender {
-    /// Send an IP to the Receiver
-    pub fn send(&self, mut ip: IP) -> Result<()> {
-        try!(ip.before_send());
-        try!(self.sender.send(ip));
+impl MsgSender {
+    /// Send an Msg to the Receiver
+    pub fn send(&self, mut msg: Msg) -> Result<()> {
+        try!(msg.before_send());
+        try!(self.sender.send(msg));
         if self.dest != "" {
             try!(self.sched.send(CompMsg::Inc(self.dest.clone())));
         }
@@ -162,13 +162,13 @@ impl IPSender {
 }
 
 pub trait OutputSend {
-    fn send(&self, ip:IP) -> Result<()>;
+    fn send(&self, msg:Msg) -> Result<()>;
 }
 
-impl OutputSend for Option<IPSender> {
-    fn send(&self, ip: IP) -> Result<()> {
+impl OutputSend for Option<MsgSender> {
+    fn send(&self, msg: Msg) -> Result<()> {
         if let &Some(ref sender) = self {
-            sender.send(ip)?;
+            sender.send(msg)?;
             Ok(())
         } else {
             Err(result::Error::OutputNotConnected)
@@ -177,22 +177,22 @@ impl OutputSend for Option<IPSender> {
 }
 
 
-pub struct IPReceiver {
+pub struct MsgReceiver {
     name: String,
-    recv: Receiver<IP>,
+    recv: Receiver<Msg>,
     sched: Sender<CompMsg>,
     must_sched: bool,
 }
 
-impl IPReceiver {
-    pub fn new(name: String, sched: Sender<CompMsg>, must_sched: bool) -> (IPReceiver, IPSender) {
+impl MsgReceiver {
+    pub fn new(name: String, sched: Sender<CompMsg>, must_sched: bool) -> (MsgReceiver, MsgSender) {
         let (s, r) = sync_channel(25);
-        let s = IPSender {
+        let s = MsgSender {
             sender: s,
             dest: if must_sched { name.clone() } else { "".into() },
             sched: sched.clone(),
         };
-        let r = IPReceiver {
+        let r = MsgReceiver {
             recv: r,
             name: name,
             sched: sched,
@@ -201,19 +201,19 @@ impl IPReceiver {
         (r, s)
     }
 
-    pub fn recv(&self) -> Result<IP> {
-        let ip = try!(self.recv.recv());
+    pub fn recv(&self) -> Result<Msg> {
+        let msg = try!(self.recv.recv());
         if self.must_sched {
             try!(self.sched.send(CompMsg::Dec(self.name.clone())));
         }
-        Ok(ip)
+        Ok(msg)
     }
 
-    pub fn try_recv(&self) -> Result<IP> {
-        let ip = self.recv.try_recv()?;
+    pub fn try_recv(&self) -> Result<Msg> {
+        let msg = self.recv.try_recv()?;
         if self.must_sched {
             try!(self.sched.send(CompMsg::Dec(self.name.clone())));
         }
-        Ok(ip)
+        Ok(msg)
     }
 }

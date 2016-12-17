@@ -16,7 +16,7 @@ use self::threadpool::ThreadPool;
 use result;
 use result::Result;
 
-use ports::{IPSender, IPReceiver, IP};
+use ports::{MsgSender, MsgReceiver, Msg};
 use agent::Agent;
 
 use std::collections::HashMap;
@@ -45,15 +45,15 @@ pub enum CompMsg {
     /// Start a agent
     Start(String),
     /// Connect the output port
-    ConnectOutputPort(String, String, IPSender),
+    ConnectOutputPort(String, String, MsgSender),
     /// Connect the array output port
-    ConnectOutputArrayPort(String, String, String, IPSender),
+    ConnectOutputArrayPort(String, String, String, MsgSender),
     /// Disconnect an output port
     Disconnect(String, String),
     /// Disconnect an array output port
     DisconnectArray(String, String, String),
     /// Add an selection in an array input port
-    AddInputArraySelection(String, String, String, IPReceiver),
+    AddInputArraySelection(String, String, String, MsgReceiver),
     /// Remove an selection in an array input port
     RemoveInputArraySelection(String, String, String),
     /// Add an selection in an array output port
@@ -61,10 +61,10 @@ pub enum CompMsg {
     /// Signal the end of an execution
     RunEnd(String, BoxedComp),
     /// Set the receiver of an input port
-    SetReceiver(String, String, Receiver<IP>),
-    /// The agent received an IP
+    SetReceiver(String, String, Receiver<Msg>),
+    /// The agent received an Msg
     Inc(String),
-    /// The agent read an IP
+    /// The agent read an Msg
     Dec(String),
     /// Remove a agent
     Remove(String, Sender<SyncMsg>),
@@ -79,10 +79,10 @@ pub enum Signal {
 ///
 /// These information must be accessible for the user of the scheduler
 pub struct Comp {
-    /// Keep the IPSender of the input ports
-    pub inputs: HashMap<String, IPSender>,
-    /// Keep the IPSender of the array input ports
-    pub inputs_array: HashMap<String, HashMap<String, IPSender>>,
+    /// Keep the MsgSender of the input ports
+    pub inputs: HashMap<String, MsgSender>,
+    /// Keep the MsgSender of the array input ports
+    pub inputs_array: HashMap<String, HashMap<String, MsgSender>>,
     /// The type of the agent
     pub sort: String,
     /// True if a agent had no input port
@@ -334,7 +334,7 @@ impl Scheduler {
     /// try!(sched.add_input_array_selection("add".into(), "inputs".into(), "1".into()));
     /// ```
     pub fn add_input_array_selection(&mut self, comp_name: String, port: String, selection: String) -> Result<()>{
-        let (r, s) = IPReceiver::new(
+        let (r, s) = MsgReceiver::new(
             comp_name.clone(),
             self.sender.clone(),
             true
@@ -399,7 +399,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver(&self, comp: String, port: String, receiver: Receiver<IP>) -> Result<()> {
+    pub fn set_receiver(&self, comp: String, port: String, receiver: Receiver<Msg>) -> Result<()> {
         self.sender.send(CompMsg::SetReceiver(comp, port, receiver)).expect("scheduler cannot send");
         Ok(())
     }
@@ -412,7 +412,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: IPReceiver) -> Result<()> {
+    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: MsgReceiver) -> Result<()> {
         self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, receiver)).expect("scheduler cannot send");
         Ok(())
     }
@@ -423,7 +423,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
-    pub fn get_sender(&self, comp: &str, port: &str) -> Result<IPSender> {
+    pub fn get_sender(&self, comp: &str, port: &str) -> Result<MsgSender> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
@@ -437,7 +437,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
-    pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<IPSender> {
+    pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<MsgSender> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs_array.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
@@ -514,12 +514,12 @@ impl Scheduler {
 }
 
 enum EditCmp {
-    AddInputArraySelection(String, String, IPReceiver),
+    AddInputArraySelection(String, String, MsgReceiver),
     RemoveInputArraySelection(String, String),
     AddOutputArraySelection(String, String),
-    ConnectOutputPort(String, IPSender),
-    ConnectOutputArrayPort(String, String, IPSender),
-    SetReceiver(String, Receiver<IP>),
+    ConnectOutputPort(String, MsgSender),
+    ConnectOutputArrayPort(String, String, MsgSender),
+    SetReceiver(String, Receiver<Msg>),
     Disconnect(String),
     DisconnectArray(String, String),
 }
@@ -714,7 +714,7 @@ impl SchedState {
 #[allow(dead_code)]
 pub struct AgentLoader {
     lib: libloading::Library,
-    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)>,
+    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)>,
     get_schema_input: extern "C" fn(&str) -> Result<String>,
     get_schema_input_array: extern "C" fn(&str) -> Result<String>,
     get_schema_output: extern "C" fn(&str) -> Result<String>,
@@ -745,11 +745,11 @@ impl AgentCache {
     /// ```rust,ignore
     /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
+    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
 
-            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> = unsafe {
+            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> = unsafe {
                 *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
             };
 

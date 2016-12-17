@@ -8,7 +8,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 use self::rustfbp::scheduler::{Scheduler, Comp};
-use self::rustfbp::ports::{IP};
+use self::rustfbp::ports::{Msg};
 
 use std::collections::HashMap;
 use std::env;
@@ -42,7 +42,7 @@ fn run(path_fbp: &str) {
 
     // Send the start ip for the graph
     let h = sched.get_sender("halter".into(), "input".into()).expect("halter not found");
-    let start_ip = IP::new();
+    let start_ip = Msg::new();
     h.send(start_ip).expect("start");
 
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
@@ -71,7 +71,7 @@ fn run(path_fbp: &str) {
     sched.connect("vm".into(), "ask_path".into(), "nucleus_find_node".into(), "input".into()).expect("cannot connect");
     sched.connect("nucleus_find_node".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
 
-    // IIP part
+    // IMsg part
     sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");
     sched.connect("sched".into(), "iip_edge".into(), "iip".into(), "edge".into()).expect("cannot connect");
     sched.connect("sched".into(), "iip_input".into(), "iip".into(), "input".into()).expect("cannot connect");
@@ -81,8 +81,8 @@ fn run(path_fbp: &str) {
 
     let add = sched.get_sender("sched".into(), "action".into()).expect("action of sched not found");
 
-    // Send the first IP to the scheduler
-    let mut start_ip = IP::new();
+    // Send the first Msg to the scheduler
+    let mut start_ip = Msg::new();
     {
         let builder: fbp_action::Builder = start_ip.build_schema();
         let mut add = builder.init_add();
