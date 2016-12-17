@@ -1,8 +1,8 @@
-//! This crate helps to create a Fractalide agent
+//! This crate helps to create a Fractalide component
 //!
-//! It provides the macro `agent` which takes the high level view of the agent, and creates the code for the scheduler.
+//! It provides the macro `component` which takes the high level view of the component, and creates the code for the scheduler.
 //!
-//! It also declare the Trait Agent and the shared methods needed by every agent and the scheduler.
+//! It also declare the Trait Agent and the shared methods needed by every component and the scheduler.
 
 
 extern crate capnp;
@@ -30,22 +30,16 @@ pub trait Agent {
 ///
 /// It helps to define a agent, by defining the input and output ports, if there is an option or an acc port, ...
 ///
-/// `edges()` and `portal()` are optional.
-///
 /// Example :
 ///
 /// ```rust,ignore
 /// agent! {
-///    display, edges(generic_text)
 ///    inputs(input: any),
-///    inputs_array(),
 ///    outputs(output: any),
-///    outputs_array(),
 ///    option(generic_text),
-///    acc(), portal()
-///    fn run(&mut self) -> Result<()> {
+///    fn run(&mut self) -> Result<Signal> {
 ///        // Receive an IP
-///        let ip = try!(self.ports.recv("input"));
+///        let ip = try!(self.input.input.recv());
 ///
 ///        // Received an IP from the option port (a generic_text)
 ///        let opt = self.recv_opt();
@@ -56,9 +50,9 @@ pub trait Agent {
 ///        println!("{}", try!(reader.get_text()));
 ///
 ///        // Send the received IP outside, but don't care about the success (drop on fail)
-///        let _ = self.ports.send("output", ip);
+///        let _ = self.output.output.send(ip);
 ///
-///        Ok(())
+///        Ok(End)
 ///    }
 /// }
 /// ```
