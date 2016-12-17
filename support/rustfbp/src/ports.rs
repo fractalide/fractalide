@@ -168,14 +168,43 @@ impl IPSender {
     }
 
 
+pub struct IPReceiver {
+    name: String,
+    recv: Receiver<IP>,
+    sched: Sender<CompMsg>,
+    must_sched: bool,
+}
 
+impl IPReceiver {
+    pub fn new(name: String, sched: Sender<CompMsg>, must_sched: bool) -> (IPReceiver, IPSender) {
         let (s, r) = sync_channel(25);
         let s = IPSender {
             sender: s,
+            dest: if must_sched { name.clone() } else { "".into() },
+            sched: sched.clone(),
         };
+        let r = IPReceiver {
+            recv: r,
+            name: name,
+            sched: sched,
+            must_sched: must_sched,
+        };
+        (r, s)
     }
 
+    pub fn recv(&self) -> Result<IP> {
+        let ip = try!(self.recv.recv());
+        if self.must_sched {
+            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+        }
+        Ok(ip)
     }
 
+    pub fn try_recv(&self) -> Result<IP> {
+        let ip = self.recv.try_recv()?;
+        if self.must_sched {
+            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+        }
+        Ok(ip)
     }
 }
