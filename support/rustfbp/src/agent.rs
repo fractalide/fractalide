@@ -62,14 +62,14 @@ pub trait Agent {
 #[macro_export]
 macro_rules! agent {
     (
-       $name:ident, $( edges( $( $edge:ident ),* ) )*
-        inputs($( $input_field_name:ident: $input_edge_name:ident),* ),
-        inputs_array($( $input_array_name:ident: $input_edge_array:ident),* ),
-        outputs($( $output_field_name:ident: $output_edge_name:ident),* ),
-        outputs_array($($output_array_name:ident: $output_edge_array:ident),* ),
-        option($($option_edge: ident),*),
-        acc($($acc_edge: ident),*), $( portal($portal_type:ty => $portal_value:expr))*
-        fn run(&mut $arg:ident) -> Result<()> $fun:block
+        $( input($( $input_name:ident: $input_contract:ident ),*), )*
+        $( inarr($( $input_a_name:ident: $input_a_contract:ident ),*), )*
+        $( output($( $output_name:ident: $output_contract:ident ),*), )*
+        $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
+        $( portal( $portal_type:ty => $portal_value:expr ), )*
+        $( option($option:ident), )*
+        $( accumulator($acc:ident ), )*
+        fn run(&mut $arg:ident) -> Result<Signal> $fun:block
     )
         =>
     {
