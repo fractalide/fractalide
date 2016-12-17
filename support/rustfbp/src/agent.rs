@@ -146,17 +146,45 @@ macro_rules! agent {
             }
 
             fn run(&mut $arg) -> Result<()> $fun
-
+        pub struct Input {
+            option: IPReceiver,
+            acc: IPReceiver,
+            $($(
+                $input_name: IPReceiver,
+            )*)*
         }
 
-        /* Global agent */
+        pub struct Inarr {
+            $($(
+                $input_a_name: HashMap<String, IPReceiver>,
+            )*)*
+        }
+
+        pub struct Output {
+            acc: Option<IPSender>,
+            $($(
+                $output_name: Option<IPSender>,
+            )*)*
+        }
+
+        pub struct Outarr {
+            $($(
+                $output_a_name: HashMap<String, IPSender>
+            )*)*
+        }
+
+        /* Global component */
 
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
         pub struct ThisAgent {
             name: String,
-            pub ports: Ports,
+            pub input: Input,
+            pub inarr: Inarr,
+            pub output: Output,
+            pub outarr: Outarr,
             pub option_ip: Option<IP>,
+            sched: Sender<CompMsg>,
             $(
             pub portal: $portal_type ,
             )*
