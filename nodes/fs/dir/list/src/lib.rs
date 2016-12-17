@@ -7,28 +7,23 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    fs_dir_list, edges(file_list, path)
-    inputs(input: path),
-    inputs_array(),
-    outputs(output: file_list),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    input(input: path),
+    output(output: file_list),
+    fn run(&mut self) -> Result<Signal> {
 
-        let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_schema());
-        let mut new_ip = IP::new();
+        let mut msg = try!(self.input.input.recv());
+        let path: path::Reader = try!(msg.read_schema());
+        let mut new_msg = Msg::new();
         {
-            let ip = new_ip.build_schema::<file_list::Builder>();
-            let mut files = ip.init_files(try!(fs::read_dir(try!(path.get_path()))).count() as u32);
+            let msg = new_msg.build_schema::<file_list::Builder>();
+            let mut files = msg.init_files(try!(fs::read_dir(try!(path.get_path()))).count() as u32);
             let mut i: u32 = 0;
             for path in try!(fs::read_dir(try!(path.get_path()))) {
                 files.borrow().set(i, try!(path).path().to_str().unwrap());
                 i += 1;
             }
         }
-        try!(self.ports.send("output", new_ip));
-        Ok(())
+        try!(self.output.output.send(new_msg));
+        Ok(End)
     }
 }

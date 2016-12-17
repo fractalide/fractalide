@@ -4,26 +4,22 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    debug, edges(generic_text)
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
+    input(input: any),
+    output(output: any),
     option(generic_text),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    fn run(&mut self) -> Result<Signal> {
 
         // Get the path
-        let mut ip = try!(self.ports.recv("input"));
+        let mut msg = try!(self.input.input.recv());
 
         let mut opt = self.recv_option();
         let text: generic_text::Reader = try!(opt.read_schema());
 
-        println!("{}\naction: {}", try!(text.get_text()), ip.action);
+        println!("{}\naction: {}", try!(text.get_text()), msg.action);
 
-        let _ = self.ports.send("output", ip);
+        let _ = self.output.output.send(msg);
 
-        Ok(())
+        Ok(End)
 
     }
 

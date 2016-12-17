@@ -5,17 +5,12 @@ extern crate capnp;
 use std::str::FromStr;
 
 agent! {
-    print_file_with_feedback, edges(value_string, list_triple)
-    inputs(input: list_triple),
-    inputs_array(),
-    outputs(next: value_string),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    input(input: list_triple),
+    output(next: value_string),
+    fn run(&mut self) -> Result<Signal> {
         loop{
-            let mut ip = try!(self.ports.recv("input"));
-            let list_triple: list_triple::Reader = try!(ip.read_schema());
+            let mut msg = try!(self.input.input.recv());
+            let list_triple: list_triple::Reader = try!(msg.read_schema());
             let list_triple = try!(list_triple.get_triples());
             if try!(list_triple.get(0).get_first()) == "end" {
                 println!("{}",try!(list_triple.get(0).get_first()));
@@ -30,13 +25,13 @@ agent! {
                     }
                 }
             }
-            let mut next_ip = IP::new();
+            let mut next_msg = Msg::new();
             {
-                let mut ip = next_ip.build_schema::<value_string::Builder>();
-                ip.set_value("next");
+                let mut msg = next_msg.build_schema::<value_string::Builder>();
+                msg.set_value("next");
             }
-            try!(self.ports.send("next", next_ip));
+            try!(self.output.next.send(next_msg));
         }
-        Ok(())
+        Ok(End)
     }
 }

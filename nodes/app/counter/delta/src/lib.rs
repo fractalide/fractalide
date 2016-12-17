@@ -6,24 +6,19 @@ extern crate rustfbp;
 use std::thread;
 
 agent! {
-    app_counter_delta, edges(app_counter, generic_text)
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip_delta = try!(self.ports.recv("input"));
-        let mut ip_actual = try!(self.ports.recv("input"));
+    input(input: any),
+    output(output: any),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg_delta = try!(self.input.input.recv());
+        let mut msg_actual = try!(self.input.input.recv());
 
-        if &ip_delta.action != "delta" {
+        if &msg_delta.action != "delta" {
             return Err(result::Error::Misc("Bad action".into()));
         }
 
         {
-            let mut reader: generic_text::Reader = try!(ip_delta.read_schema());
-            let mut builder = try!(ip_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
+            let mut reader: generic_text::Reader = try!(msg_delta.read_schema());
+            let mut builder = try!(msg_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
             let mut text = try!(reader.get_text());
             if text == "" { text = "0"; }
             if let Ok(i) = text.parse::<i64>() {
@@ -31,8 +26,8 @@ agent! {
             }
         }
 
-        try!(self.ports.send("output", ip_actual));
+        try!(self.output.output.send(msg_actual));
 
-        Ok(())
+        Ok(End)
     }
 }

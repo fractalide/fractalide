@@ -12,7 +12,7 @@ enum Literal {
     External,
     Comp(String, String),
     Port(String, Option<String>),
-    IIP(String),
+    IMSG(String),
 }
 
 use nom::{IResult, AsBytes};
@@ -39,13 +39,13 @@ named!(external<&[u8], Literal>, chain!(
         multispace?
     , || { external }
     ));
-named!(iip<&[u8], Literal>, chain!(
+named!(imsg<&[u8], Literal>, chain!(
     multispace? ~
         tag!(b"'") ~
-        iip: is_not!(b"'") ~
+        imsg: is_not!(b"'") ~
         tag!(b"'") ~
         multispace
-        , || { Literal::IIP(String::from_utf8(iip.to_vec()).expect("not utf8"))}
+        , || { Literal::IMSG(String::from_utf8(imsg.to_vec()).expect("not utf8"))}
     ));
 named!(name, is_not!(b"[ ("));
 named!(selection, chain!(
@@ -88,45 +88,40 @@ named!(comp_or_port<&[u8], Literal>, chain!(
     }
     ));
 
-named!(literal<&[u8], Literal>, alt!(comment | iip | bind | external | comp_or_port));
+named!(literal<&[u8], Literal>, alt!(comment | imsg | bind | external | comp_or_port));
 
 agent! {
-    nucleus_flow_parser_lexical, edges(file_desc, fbp_lexical)
-    inputs(input: file_desc),
-    inputs_array(),
-    outputs(output: fbp_lexical),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()>{
-        // Get one IP
-        let mut ip = try!(self.ports.recv("input"));
-        let file: file_desc::Reader = try!(ip.read_schema());
+    input(input: file_desc),
+    output(output: fbp_lexical),
+    fn run(&mut self) -> Result<Signal>{
+        // Get one MSG
+        let mut msg = try!(self.input.input.recv());
+        let file: file_desc::Reader = try!(msg.read_schema());
 
         // print it
         match try!(file.which()) {
             file_desc::Start(path) => {
                 let path = try!(path);
-                let mut new_ip = IP::new();
+                let mut new_msg = Msg::new();
                 {
-                    let mut ip = new_ip.build_schema::<fbp_lexical::Builder>();
-                    ip.set_start(&path);
+                    let mut msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    msg.set_start(&path);
                 }
-                let _ = self.ports.send("output", new_ip);
+                let _ = self.output.output.send(new_msg);
                 try!(handle_stream(&self));
             },
             _ => { return Err(result::Error::Misc("bad stream".to_string())) }
         }
 
-        Ok(())
+        Ok(End)
     }
 }
 
-fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
+fn handle_stream(comp: &ThisAgent) -> Result<()> {
     loop {
-        // Get one IP
-        let mut ip = try!(comp.ports.recv("input"));
-        let file: file_desc::Reader = try!(ip.read_schema());
+        // Get one Msg
+        let mut msg = try!(comp.input.input.recv());
+        let file: file_desc::Reader = try!(msg.read_schema());
 
         // print it
         match try!(file.which()) {
@@ -135,14 +130,14 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
-                            let mut send_ip = IP::new();
+                            let mut send_msg = Msg::new();
                             {
-                                let ip = send_ip.build_schema::<fbp_lexical::Builder>();
+                                let msg = send_msg.build_schema::<fbp_lexical::Builder>();
                                 match lit {
-                                    Literal::Bind => { ip.init_token().set_bind(()); },
-                                    Literal::External => {ip.init_token().set_external(()); },
+                                    Literal::Bind => { msg.init_token().set_bind(()); },
+                                    Literal::External => {msg.init_token().set_external(()); },
                                     Literal::Port(name, selection) => {
-                                        let mut port = ip.init_token().init_port();
+                                        let mut port = msg.init_token().init_port();
                                         port.set_name(&name);
                                         if let Some(s) = selection {
                                             port.set_selection(&s);
@@ -151,37 +146,37 @@ fn handle_stream(comp: &nucleus_flow_parser_lexical) -> Result<()> {
                                         }
                                     },
                                     Literal::Comp(name, sort) => {
-                                        let mut comp = ip.init_token().init_comp();
+                                        let mut comp = msg.init_token().init_comp();
                                         comp.set_name(&name);
                                         comp.set_sort(&sort);
                                     },
-                                    Literal::IIP(iip) => {
-                                        ip.init_token().set_iip(&iip);
+                                    Literal::IMSG(imsg) => {
+                                        msg.init_token().set_imsg(&imsg);
                                     }
                                     Literal::Comment => { break; }
                                 }
                             }
                             text = rest;
-                            let _ = comp.ports.send("output", send_ip);
+                            let _ = comp.output.output.send(send_msg);
                         },
                         _ => { break;}
                     }
                 }
-                let mut new_ip = IP::new();
+                let mut new_msg = Msg::new();
                 {
-                    let ip = new_ip.build_schema::<fbp_lexical::Builder>();
-                    ip.init_token().set_break(());
+                    let msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    msg.init_token().set_break(());
                 }
-                let _ = comp.ports.send("output", new_ip);
+                let _ = comp.output.output.send(new_msg);
             },
             file_desc::End(path) => {
                 let path = try!(path);
-                let mut new_ip = IP::new();
+                let mut new_msg = Msg::new();
                 {
-                    let mut ip = new_ip.build_schema::<fbp_lexical::Builder>();
-                    ip.set_end(&path);
+                    let mut msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    msg.set_end(&path);
                 }
-                let _ = comp.ports.send("output", new_ip);
+                let _ = comp.output.output.send(new_msg);
                 break;
             },
             _ => { return Err(result::Error::Misc("Bad stream".to_string())); }

@@ -3,18 +3,13 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    ip_clone,
-    inputs(input: any),
-    inputs_array(),
-    outputs(),
-    outputs_array(clone: any),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let ip = try!(self.ports.recv("input"));
-        for p in try!(self.ports.get_output_selections("clone")) {
-            try!(self.ports.send_array("clone", &p, ip.clone()));
+    input(input: any),
+    outarr(clone: any),
+    fn run(&mut self) -> Result<Signal> {
+        let msg = try!(self.input.input.recv());
+        for sender in self.outarr.clone.values() {
+            try!(sender.send(msg.clone()));
         }
-        Ok(())
+        Ok(End)
     }
 }

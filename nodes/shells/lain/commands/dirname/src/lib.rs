@@ -6,16 +6,12 @@ extern crate capnp;
 use std::path::Path;
 
 agent! {
-    shells_lain_commands_dirname, edges(generic_text, command)
-    inputs(stdin: generic_text),
-    inputs_array(),
-    outputs(stdout: generic_text),
-    outputs_array(),
+    input(stdin: generic_text),
+    output(stdout: generic_text),
     option(command),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    fn run(&mut self) -> Result<Signal> {
         let mut opt = self.recv_option();
-        let mut stdin_ip = self.ports.recv("stdin")?;
+        let mut stdin_ip = self.input.stdin.recv()?;
         let mut out = String::new();
         let mut separator = String::new();
         {
@@ -61,8 +57,8 @@ agent! {
                 out.push_str(separator.as_str());
                 ip.set_text(out.as_str());
             }
-            self.ports.send("stdout", new_ip);
+            self.output.stdout.send(new_ip);
         }
-        Ok(())
+        Ok(End)
     }
 }

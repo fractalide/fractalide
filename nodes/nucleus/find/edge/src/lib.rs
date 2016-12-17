@@ -6,16 +6,11 @@ use std::fs;
 use std::process::Command;
 
 agent! {
-    nucleus_find_edge, edges(path, option_path)
-    inputs(input: path),
-    inputs_array(),
-    outputs(output: option_path),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input"));
-        let name: path::Reader = try!(ip.read_schema());
+    input(input: path),
+    output(output: option_path),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg = try!(self.input.input.recv());
+        let name: path::Reader = try!(msg.read_schema());
         let is_path = try!(name.get_path());
         let mut stdout: String = String::new();
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
@@ -24,16 +19,16 @@ agent! {
             stdout = find_edge_path(is_path);
             Some(stdout.as_str())
         };
-        let mut new_ip = IP::new();
+        let mut new_msg = Msg::new();
         {
-            let mut ip = new_ip.build_schema::<option_path::Builder>();
+            let mut msg = new_msg.build_schema::<option_path::Builder>();
             match new_path {
-                None => { ip.set_none(());},
-                Some(p) => { ip.set_path(p);}
+                None => { msg.set_none(());},
+                Some(p) => { msg.set_path(p);}
             };
         }
-        self.ports.send("output", new_ip);
-        Ok(())
+        self.output.output.send(new_msg);
+        Ok(End)
     }
 }
 

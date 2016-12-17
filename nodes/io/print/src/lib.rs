@@ -5,22 +5,17 @@ extern crate capnp;
 
 
 agent! {
-    io_print, edges(generic_text)
-    inputs(input: generic_text),
-    inputs_array(),
-    outputs(output: generic_text),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip_a = try!(self.ports.recv("input"));
+    input(input: generic_text),
+    output(output: generic_text),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg_a = try!(self.input.input.recv());
         {
-            let a_reader: generic_text::Reader = try!(ip_a.read_schema());
+            let a_reader: generic_text::Reader = try!(msg_a.read_schema());
             let a = a_reader.get_text();
 
             println!("{}", a?);
         }
-        let _ = self.ports.send("output", ip_a);
-        Ok(())
+        let _ = self.output.output.send(msg_a);
+        Ok(End)
     }
 }

@@ -5,17 +5,12 @@ extern crate capnp;
 use std::thread;
 
 agent! {
-    ip_delay,
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let ip_input = try!(self.ports.recv("input"));
+    input(input: any),
+    output(output: any),
+    fn run(&mut self) -> Result<Signal> {
+        let msg_input = try!(self.input.input.recv());
         thread::sleep_ms(1000);
-        try!(self.ports.send("output", ip_input));
-        Ok(())
+        try!(self.output.output.send(msg_input));
+        Ok(End)
     }
 }

@@ -4,25 +4,20 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    Nand, edges(maths_boolean)
-    inputs(input: maths_boolean),
-    inputs_array(),
-    outputs(output: maths_boolean),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip_a = try!(self.ports.recv("input"));
+    input(input: maths_boolean),
+    output(output: maths_boolean),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg_a = try!(self.input.input.recv());
 
         {
-            let a_reader: maths_boolean::Reader = try!(ip_a.read_schema());
+            let a_reader: maths_boolean::Reader = try!(msg_a.read_schema());
             let a = a_reader.get_boolean();
 
             println!("boolean : {:?}", a);
         }
 
-        let _ = self.ports.send("output", ip_a);
+        let _ = self.output.output.send(msg_a);
 
-        Ok(())
+        Ok(End)
     }
 }

@@ -3,19 +3,15 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    ip_action, edges(generic_text)
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
+    input(input: any),
+    output(output: any),
     option(generic_text),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    fn run(&mut self) -> Result<Signal> {
         let mut opt = self.recv_option();
-        let mut ip_input = try!(self.ports.recv("input"));
+        let mut msg_input = try!(self.input.input.recv());
         let mut reader: generic_text::Reader = try!(opt.read_schema());
-        ip_input.action = try!(reader.get_text()).into();
-        try!(self.ports.send("output", ip_input));
-        Ok(())
+        msg_input.action = try!(reader.get_text()).into();
+        try!(self.output.output.send(msg_input));
+        Ok(End)
     }
 }

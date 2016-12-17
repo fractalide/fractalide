@@ -3,16 +3,12 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    ip_dispatcher,
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(output: any),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let ip = try!(self.ports.recv("input"));
-        let _ = self.ports.send_action("output", ip);
-        Ok(())
+    input(input: any),
+    output(output: any),
+    outarr(output: any),
+    fn run(&mut self) -> Result<Signal> {
+        let msg = try!(self.ports.recv("input"));
+        let _ = self.send_action("output", msg);
+        Ok(End)
     }
 }

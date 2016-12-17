@@ -22,7 +22,7 @@ edge {
             name @7 :Text;
             selection @8 :Text;
           }
-          iip @9 :Text;
+          imsg @9 :Text;
           break @10 :Void;
         }
       }

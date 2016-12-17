@@ -3,18 +3,13 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    nucleus_flow_parser_graph_check, edges(fbp_graph, fbp_semantic_error)
-    inputs(input: fbp_graph),
-    inputs_array(),
-    outputs(output: fbp_graph, error: fbp_semantic_error),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    input(input: fbp_graph),
+    output(output: fbp_graph, error: fbp_semantic_error),
+    fn run(&mut self) -> Result<Signal> {
         let error;
-        let mut ip = try!(self.ports.recv("input"));
+        let mut msg = try!(self.input.input.recv());
         {
-            let graph: fbp_graph::Reader = try!(ip.read_schema());
+            let graph: fbp_graph::Reader = try!(msg.read_schema());
 
             let mut errors: Vec<String> = Vec::new();
 
@@ -68,7 +63,7 @@ agent! {
                         for e in v {
                             error = format!("{}{} -> {}\n", error, k, e);
                         }
-                        error = format!("{}Please use the ip_clone agent\n", error);
+                        error = format!("{}Please use the msg_clone agent\n", error);
                         errors.push(error);
                     }
                 }
@@ -91,7 +86,7 @@ agent! {
                         for e in v {
                             error = format!("{}{} => {}\n", error, k, e);
                         }
-                        error = format!("{}Please use the ip_clone agent\n", error);
+                        error = format!("{}Please use the msg_clone agent\n", error);
                         errors.push(error);
                     }
                 }
@@ -99,12 +94,12 @@ agent! {
 
 
             if errors.len() > 0 {
-                let mut new_ip = IP::new();
+                let mut new_msg = Msg::new();
                 {
-                    let mut new_ip = new_ip.build_schema::<fbp_semantic_error::Builder>();
-                    new_ip.set_path(try!(graph.get_path()));
+                    let mut new_msg = new_msg.build_schema::<fbp_semantic_error::Builder>();
+                    new_msg.set_path(try!(graph.get_path()));
                     {
-                        let mut nodes = new_ip.init_parsing(errors.len() as u32);
+                        let mut nodes = new_msg.init_parsing(errors.len() as u32);
                         let mut i = 0;
                         for n in &errors {
                             nodes.borrow().set(i, &n[..]);
@@ -112,15 +107,15 @@ agent! {
                         }
                     }
                 }
-                let _ = self.ports.send("error", new_ip);
+                let _ = self.output.error.send(new_msg);
                 error = true;
             } else { error = false }
         }
 
         if !error {
-            let _ = self.ports.send("output", ip);
+            let _ = self.output.output.send(msg);
         }
 
-        Ok(())
+        Ok(End)
     }
 }

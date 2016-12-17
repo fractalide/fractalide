@@ -9,25 +9,20 @@ use std::path::Path;
 use std::env;
 
 agent! {
-    nucleus_capnp_encode, edges(path, generic_text)
-    inputs(path: path, edge: generic_text, input: generic_text),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()>{
+    input(path: path, edge: generic_text, input: generic_text),
+    output(output: any),
+    fn run(&mut self) -> Result<Signal>{
 
-        let mut path_ip = try!(self.ports.recv("path"));
-        let path: path::Reader = try!(path_ip.read_schema());
+        let mut path_msg = try!(self.input.path.recv());
+        let path: path::Reader = try!(path_msg.read_schema());
         let path = try!(path.get_path());
 
-        let mut edge_ip = try!(self.ports.recv("edge"));
-        let edge: generic_text::Reader = try!(edge_ip.read_schema());
+        let mut edge_msg = try!(self.input.edge.recv());
+        let edge: generic_text::Reader = try!(edge_msg.read_schema());
         let f_edge = try!(edge.get_text());
 
-        let mut input_ip = try!(self.ports.recv("input"));
-        let input: generic_text::Reader = try!(input_ip.read_schema());
+        let mut input_msg = try!(self.input.input.recv());
+        let input: generic_text::Reader = try!(input_msg.read_schema());
         let input = try!(input.get_text());
 
         let mut child = try!(Command::new("capnp_path" )
@@ -50,9 +45,9 @@ agent! {
             return Err(result::Error::Misc("capnp encode command doesn't work".into()));
         }
 
-        let mut send_ip = IP::new();
-        send_ip.vec = output.stdout;
-        let _ = self.ports.send("output", send_ip);
-        Ok(())
+        let mut send_msg = Msg::new();
+        send_msg.vec = output.stdout;
+        let _ = self.output.output.send(send_msg);
+        Ok(End)
     }
 }

@@ -4,16 +4,10 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    halter,
-    inputs(input: any),
-    inputs_array(),
-    outputs(),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        try!(self.ports.recv("input"));
-        try!(self.ports.recv("input"));
-        Ok(())
+    input(input: any),
+    fn run(&mut self) -> Result<Signal> {
+        try!(self.input.input.recv());
+        try!(self.input.input.recv());
+        Ok(End)
     }
 }

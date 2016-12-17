@@ -3,28 +3,23 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  maths_number_add, edges(maths_number)
-  inputs(),
-  inputs_array(numbers: maths_number),
-  outputs(output: number),
-  outputs_array(),
-  option(),
-  acc(),
-  fn run(&mut self) -> Result<()> {
+  inarr(numbers: maths_number),
+  output(output: number),
+  fn run(&mut self) -> Result<Signal> {
     let mut acc = 0;
-    for ins in try!(self.ports.get_input_selections("numbers")) {
-      let mut ip = try!(self.ports.recv_array("numbers", &ins));
-      let m: maths_number::Reader = try!(ip.read_schema());
-      let n = m.get_number();
-      acc += n;
+    for recv in self.inarr.numbers.values() {
+        let mut msg = try!(recv.recv());
+        let m: maths_number::Reader = try!(msg.read_schema());
+        let n = m.get_number();
+        acc += n;
     }
-    let mut new_m = IP::new();
+    let mut new_m = Msg::new();
     {
       let mut number = new_m.build_schema::<maths_number::Builder>();
       number.set_number(acc);
     }
-    try!(self.ports.send("output", new_m));
+    try!(self.output.output.send(new_m));
 
-    Ok(())
+    Ok(End)
   }
 }

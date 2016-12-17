@@ -6,30 +6,25 @@ extern crate rustfbp;
 use std::thread;
 
 agent! {
-    app_counter_add, edges(app_counter)
-    inputs(input: generic_i64),
-    inputs_array(),
-    outputs(output: generic_i64),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip_add = try!(self.ports.recv("input"));
-        let mut ip_actual = try!(self.ports.recv("input"));
+    input(input: app_counter),
+    output(output: app_counter),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg_add = try!(self.input.input.recv());
+        let mut msg_actual = try!(self.input.input.recv());
 
-        if &ip_add.action != "add" {
+        if &msg_add.action != "add" {
             return Err(result::Error::Misc("Bad action".into()));
         }
 
         {
-            let mut builder = try!(ip_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
+            let mut builder = try!(msg_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
             let actual = builder.borrow().as_reader().get_value();
             let delta = builder.borrow().as_reader().get_delta();
             builder.set_value(actual+delta);
         }
 
-        try!(self.ports.send("output", ip_actual));
+        try!(self.output.output.send(msg_actual));
 
-        Ok(())
+        Ok(End)
     }
 }
