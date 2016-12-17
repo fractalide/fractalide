@@ -8,7 +8,7 @@ extern crate rustfbp;
 extern crate capnp;
 
 use self::rustfbp::scheduler::{Scheduler, Comp};
-use self::rustfbp::ports::{IP, Ports};
+use self::rustfbp::ports::{IP};
 
 use std::collections::HashMap;
 use std::env;
@@ -27,38 +27,24 @@ use edge_capnp::fbp_action;
 fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
-    sched.add_node("open", "fs_file_open.so");
-    sched.add_node("lex", "nucleus_flow_parser_lexical.so");
-    sched.add_node("sem", "nucleus_flow_parser_semantic.so");
-    sched.add_node("vm", "nucleus_flow_vm.so");
-    sched.add_node("errors", "nucleus_flow_errors.so");
-    sched.add_node("graph_print", "nucleus_flow_parser_graph_print.so");
-    sched.add_node("graph_check", "nucleus_flow_parser_graph_check.so");
-    sched.add_node("sched", "nucleus_flow_scheduler.so");
-    sched.add_node("iip", "nucleus_capnp_encode.so");
-    sched.add_node("nucleus_find_edge", "nucleus_find_edge.so");
-    sched.add_node("nucleus_find_node", "nucleus_find_node.so");
-    sched.add_node("halter", "halter.so");
-
-    let (mut p, senders) = Ports::new("exterior".into(), sched.sender.clone(),
-                                      vec!["r".into()],
-                                      vec![],
-                                      vec!["s".into(), "opt".into(), "w".into(),
-                                           "h".into(), "add".into()],
-                                      vec![]).expect("cannot create");
-    sched.agents.insert("exterior".into(), Comp {
-        inputs: senders,
-        inputs_array: HashMap::new(),
-        sort: "".into(),
-        start: false,
-    });
+    sched.add_node("open", "fs_file_open.so").expect("cannot add node");
+    sched.add_node("lex", "nucleus_flow_parser_lexical.so").expect("cannot add node");
+    sched.add_node("sem", "nucleus_flow_parser_semantic.so").expect("cannot add node");
+    sched.add_node("vm", "nucleus_flow_vm.so").expect("cannot add node");
+    sched.add_node("errors", "nucleus_flow_errors.so").expect("cannot add node");
+    sched.add_node("graph_print", "nucleus_flow_parser_graph_print.so").expect("cannot add node");
+    sched.add_node("graph_check", "nucleus_flow_parser_graph_check.so").expect("cannot add node");
+    sched.add_node("sched", "nucleus_flow_scheduler.so").expect("cannot add node");
+    sched.add_node("iip", "nucleus_capnp_encode.so").expect("cannot add node");
+    sched.add_node("nucleus_find_edge", "nucleus_find_edge.so").expect("cannot add node");
+    sched.add_node("nucleus_find_node", "nucleus_find_node.so").expect("cannot add node");
+    sched.add_node("halter", "halter.so").expect("cannot add node");
 
     // Send the start ip for the graph
-    p.connect("h".into(), sched.get_sender("halter".into(), "input".into()).unwrap()).expect("unable to connect");
+    let h = sched.get_sender("halter".into(), "input".into()).expect("halter not found");
     let start_ip = IP::new();
-    p.send("h".into(), start_ip).expect("start");
+    h.send(start_ip).expect("start");
 
-    p.connect("s".into(), sched.get_sender("open".into(), "input".into()).unwrap()).expect("unable to connect");
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
     sched.connect("sem".into(), "output".into(), "graph_check".into(), "input".into()).expect("cannot connect");
@@ -93,8 +79,9 @@ fn run(path_fbp: &str) {
 
     sched.connect("sched".into(), "ask_graph".into(), "vm".into(), "input".into()).expect("cannot connect ask_graph");
 
+    let add = sched.get_sender("sched".into(), "action".into()).expect("action of sched not found");
+
     // Send the first IP to the scheduler
-    p.connect("add".into(), sched.get_sender("sched".into(), "action".into()).unwrap()).expect("unable to connect");
     let mut start_ip = IP::new();
     {
         let builder: fbp_action::Builder = start_ip.build_schema();
@@ -102,7 +89,6 @@ fn run(path_fbp: &str) {
         add.set_name("main");
         add.set_comp(&path_fbp);
     }
-    p.send("add".into(), start_ip).expect("add");
-
+    add.send(start_ip).expect("cannot send start_ip");
     sched.join();
 }
