@@ -35,15 +35,15 @@ fn run(path_fbp: &str) {
     sched.add_node("graph_print", "nucleus_flow_parser_graph_print.so").expect("cannot add node");
     sched.add_node("graph_check", "nucleus_flow_parser_graph_check.so").expect("cannot add node");
     sched.add_node("sched", "nucleus_flow_scheduler.so").expect("cannot add node");
-    sched.add_node("iip", "nucleus_capnp_encode.so").expect("cannot add node");
+    sched.add_node("imsg", "nucleus_capnp_encode.so").expect("cannot add node");
     sched.add_node("nucleus_find_edge", "nucleus_find_edge.so").expect("cannot add node");
     sched.add_node("nucleus_find_node", "nucleus_find_node.so").expect("cannot add node");
     sched.add_node("halter", "halter.so").expect("cannot add node");
 
-    // Send the start ip for the graph
+    // Send the start msg for the graph
     let h = sched.get_sender("halter".into(), "input".into()).expect("halter not found");
-    let start_ip = Msg::new();
-    h.send(start_ip).expect("start");
+    let start_msg = Msg::new();
+    h.send(start_msg).expect("start");
 
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
@@ -72,23 +72,23 @@ fn run(path_fbp: &str) {
     sched.connect("nucleus_find_node".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
 
     // IMsg part
-    sched.connect("sched".into(), "iip_path".into(), "iip".into(), "path".into()).expect("cannot connect");
-    sched.connect("sched".into(), "iip_edge".into(), "iip".into(), "edge".into()).expect("cannot connect");
-    sched.connect("sched".into(), "iip_input".into(), "iip".into(), "input".into()).expect("cannot connect");
-    sched.connect("iip".into(), "output".into(), "sched".into(), "iip".into()).expect("cannot connect");
+    sched.connect("sched".into(), "imsg_path".into(), "imsg".into(), "path".into()).expect("cannot connect");
+    sched.connect("sched".into(), "imsg_edge".into(), "imsg".into(), "edge".into()).expect("cannot connect");
+    sched.connect("sched".into(), "imsg_input".into(), "imsg".into(), "input".into()).expect("cannot connect");
+    sched.connect("imsg".into(), "output".into(), "sched".into(), "imsg".into()).expect("cannot connect");
 
     sched.connect("sched".into(), "ask_graph".into(), "vm".into(), "input".into()).expect("cannot connect ask_graph");
 
     let add = sched.get_sender("sched".into(), "action".into()).expect("action of sched not found");
 
     // Send the first Msg to the scheduler
-    let mut start_ip = Msg::new();
+    let mut start_msg = Msg::new();
     {
-        let builder: fbp_action::Builder = start_ip.build_schema();
+        let builder: fbp_action::Builder = start_msg.build_schema();
         let mut add = builder.init_add();
         add.set_name("main");
         add.set_comp(&path_fbp);
     }
-    add.send(start_ip).expect("cannot send start_ip");
+    add.send(start_msg).expect("cannot send start_msg");
     sched.join();
 }
