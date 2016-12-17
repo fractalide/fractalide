@@ -126,26 +126,91 @@ macro_rules! agent {
                 }
                 self.option_ip.as_ref().map(|ip|{ ip.clone() })
             }
+            )*
+
+            pub fn send_action(&mut self, output: &str, ip: IP) -> Result<()> {
+                if let Some(sender) = {
+                    match output {
+                        $($(
+                            stringify!($output_a_name) =>  { self.outarr.$output_a_name.get(&ip.action) }
+                        )*)*
+                            _ => None
+                    }
+                } // End of the if let Some = { ... }
+                {
+                    let s: &IPSender = sender;
+                    try!(s.send(ip));
+                }
+                else {
+                    match output {
+                        $($(
+                            stringify!($output_name) => { self.output.$output_name.send(ip);}
+                        )*)*
+                            _ => { return Err(result::Error::PortDontExist(output.into())); }
+                    }
+                }
+                Ok(())
+            }
         }
 
-        // simple and array
-
-            fn get_ports(&mut self) -> &mut Ports {
-                &mut self.ports
-            }
         impl Agent for ThisAgent {
 
             fn is_input_ports(&self) -> bool {
-                $(
-                    if true || stringify!($input_field_name) == "" { return true; }
-                )*
-                $(
-                    if true || stringify!($input_array_name) == "" { return true; }
-                )*
+                $($(
+                    if true || stringify!($input_name) == "" { return true; }
+                )*)*
+                $($(
+                    if true || stringify!($input_a_name) == "" { return true; }
+                )*)*
                 false
             }
 
-            fn run(&mut $arg) -> Result<()> $fun
+            fn connect(&mut self, port: &str, sender: IPSender) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($output_name) => {
+                            self.output.$output_name = Some(sender);
+                        }
+                    )*)*
+                        _ => {
+                            return Err(result::Error::PortDontExist(port.into()));
+                        }
+                }
+                Ok(())
+            }
+
+            fn connect_array(&mut self, port: &str, element: String, sender: IPSender) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($output_a_name) => {
+                            self.outarr.$output_a_name.insert(element, sender);
+                        }
+                    )*)*
+                        _ => {
+                            return Err(result::Error::PortDontExist(port.into()));
+                        }
+                }
+                Ok(())
+            }
+
+            fn add_inarr_element(&mut self, port: &str, element: String, recv: IPReceiver) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($input_a_name) => {
+                            self.inarr.$input_a_name.insert(element, recv);
+                            Ok(())
+                        }
+                    )*)*
+                        _ => {
+                            Err(result::Error::PortDontExist(port.into()))
+                        }
+                }
+            }
+
+            fn run(&mut $arg) -> Result<Signal> $fun
+
+        }
+
         pub struct Input {
             option: IPReceiver,
             acc: IPReceiver,
@@ -192,22 +257,57 @@ macro_rules! agent {
 
         #[allow(dead_code)]
         pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
-            let (ports, senders) = try!(Ports::new(name.clone(), sched,
-                                   vec!["option".into(), "acc".into(), $( stringify!($input_field_name).to_string() ),*],
-                                   vec![$( stringify!($input_array_name).to_string() ),*],
-                                   vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
-                                   vec![$( stringify!($output_array_name).to_string() ),*],));
 
-            // Put it together
-            let comp = $name{
+            let mut senders: HashMap<String, IPSender> = HashMap::new();
+            let option = IPReceiver::new(name.clone(), sched.clone(), false);
+            senders.insert("option".to_string(), option.1);
+            let acc = IPReceiver::new(name.clone(), sched.clone(), false);
+            senders.insert("acc".to_string(), acc.1.clone());
+            $($(
+                let $input_name = IPReceiver::new(name.clone(), sched.clone(), true);
+                senders.insert(stringify!($input_name).to_string(), $input_name.1);
+            )*)*
+            let input = Input {
+                option: option.0,
+                acc: acc.0,
+                $($(
+                    $input_name: $input_name.0,
+                )*)*
+            };
+
+            let inarr = Inarr {
+                $($(
+                    $input_a_name: HashMap::new(),
+                )*)*
+            };
+
+            let output = Output {
+                acc: Some(acc.1),
+                $($(
+                    $output_name: None,
+                )*)*
+            };
+
+            let outarr = Outarr {
+                $($(
+                    $output_a_name: HashMap::new(),
+                )*)*
+            };
+
+            let agent= ThisAgent {
                 name: name,
-                ports: ports,
+                input: input,
+                inarr: inarr,
+                output: output,
+                outarr: outarr,
                 option_ip: None,
+                sched: sched,
                 $(
                     portal: $portal_value,
                 )*
             };
-            Ok((Box::new(comp) as Box<Agent + Send>, senders))
+
+            Ok((Box::new(agent) as Box<Agent + Send>, senders))
         }
 
         #[no_mangle]
