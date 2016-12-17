@@ -102,10 +102,14 @@ macro_rules! agent {
         use edge_capnp::*;
 
         impl ThisAgent {
+            $(
+            fn dummy() {
+                if stringify!($option) != "" {}
+            }
             pub fn recv_option(&mut self) -> IP {
                 self.try_recv_option();
                 if self.option_ip.is_none() {
-                    self.option_ip = self.ports.recv("option").ok();
+                    self.option_ip = self.input.option.recv().ok();
                 }
                 match self.option_ip {
                     Some(ref ip) => ip.clone(),
@@ -115,7 +119,7 @@ macro_rules! agent {
 
             pub fn try_recv_option(&mut self) -> Option<IP> {
                 loop {
-                    match self.ports.try_recv("option") {
+                    match self.input.option.try_recv() {
                         Err(_) => { break; },
                         Ok(ip) => { self.option_ip = Some(ip); }
                     };
