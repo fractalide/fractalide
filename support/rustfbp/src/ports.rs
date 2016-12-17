@@ -161,11 +161,20 @@ impl IPSender {
     }
 }
 
+pub trait OutputSend {
+    fn send(&self, ip:IP) -> Result<()>;
 }
 
+impl OutputSend for Option<IPSender> {
+    fn send(&self, ip: IP) -> Result<()> {
+        if let &Some(ref sender) = self {
+            sender.send(ip)?;
+            Ok(())
         } else {
+            Err(result::Error::OutputNotConnected)
         }
     }
+}
 
 
 pub struct IPReceiver {
