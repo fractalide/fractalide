@@ -318,40 +318,46 @@ macro_rules! agent {
         #[no_mangle]
         pub extern fn get_schema_input(port: &str) -> Result<String> {
             match port {
+                $($(
+                    stringify!($input_name)=> Ok(stringify!($input_contract).into()),
+                )*)*
                 $(
-                    stringify!($input_field_name)=> Ok(stringify!($input_edge_name).into()),
+                    "option" => Ok(stringify!($option).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $(
+                    "acc" => Ok(stringify!($acc).into()),
+                )*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_input_array(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($input_array_name) => Ok(stringify!($input_edge_array).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($input_a_name) => Ok(stringify!($input_a_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_output(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($output_field_name)=> Ok(stringify!($output_edge_name).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($output_name)=> Ok(stringify!($output_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_output_array(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($output_array_name) => Ok(stringify!($output_edge_array).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($output_a_name) => Ok(stringify!($output_a_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
     }
