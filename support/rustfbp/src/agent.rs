@@ -6,7 +6,10 @@
 
 
 extern crate capnp;
-use ports::Ports;
+
+// TODO : Add method to remove components
+use ports::{IPSender, IPReceiver};
+use scheduler::Signal;
 use result::Result;
 
 /// Provide the generic functions of agents
@@ -74,13 +77,13 @@ macro_rules! agent {
 
         use rustfbp::result;
         use rustfbp::result::Result;
-        use rustfbp::ports::IPSender;
-        use rustfbp::scheduler::CompMsg;
+        use rustfbp::scheduler::{CompMsg, Signal};
         use std::error::Error;
 
-        use std::sync::mpsc::Sender;
+        use std::sync::mpsc::{Sender};
+        use std::sync::mpsc::channel;
 
-        use rustfbp::ports::{IP, Ports};
+        use rustfbp::ports::{IP, IPSender, IPReceiver, OutputSend};
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -89,6 +92,8 @@ macro_rules! agent {
         use capnp::message;
 
         use std::io::{Read, Write};
+
+        use rustfbp::scheduler::Signal::*;
 
         mod edge_capnp {
                 include!("edge_capnp.rs");
