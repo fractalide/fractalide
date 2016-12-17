@@ -101,7 +101,7 @@ macro_rules! agent {
 
         use edge_capnp::*;
 
-        impl $name {
+        impl ThisAgent {
             pub fn recv_option(&mut self) -> IP {
                 self.try_recv_option();
                 if self.option_ip.is_none() {
@@ -125,11 +125,11 @@ macro_rules! agent {
         }
 
         // simple and array
-        impl Agent for $name {
 
             fn get_ports(&mut self) -> &mut Ports {
                 &mut self.ports
             }
+        impl Agent for ThisAgent {
 
             fn is_input_ports(&self) -> bool {
                 $(
@@ -149,7 +149,7 @@ macro_rules! agent {
 
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
-        pub struct $name {
+        pub struct ThisAgent {
             name: String,
             pub ports: Ports,
             pub option_ip: Option<IP>,
