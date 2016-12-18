@@ -1,17 +1,13 @@
 { buffet }:
-let
-callPackage = buffet.pkgs.lib.callPackageWith ( buffet );
-# insert in alphabetical order to reduce conflicts
-self = rec {
-  example_wrangle = callPackage ./example/wrangle {};
-  app_todo = callPackage ./app/todo {};
-  app_todo_controller = callPackage ./app/todo/controller {};
-  app_todo_model = callPackage ./app/todo/model {};
-  nanomsg = callPackage ./nanomsg {};
-  net_http = callPackage ./net/http {};
-  net_ndn = callPackage ./net/ndn {};
-  ui_js = callPackage ./ui/js {};
-  workbench = callPackage ./workbench {};
-};
-in
-self
+
+rec {
+  example_wrangle = import ./example/wrangle { inherit buffet; };
+  app_todo = import ./app/todo { inherit buffet; };
+  app_todo_controller = import ./app/todo/controller { inherit buffet; };
+  app_todo_model = import ./app/todo/model { inherit buffet; };
+  nanomsg = import ./nanomsg { inherit buffet; };
+  net_http = import ./net/http { inherit buffet; };
+  net_ndn = import ./net/ndn { inherit buffet; };
+  ui_js = import ./ui/js { inherit buffet; };
+  workbench = import ./workbench { inherit buffet; };
+}

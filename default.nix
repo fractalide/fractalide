@@ -104,10 +104,11 @@ pkgs = pkgsOld.overridePackages(self: super: {
   };
 });
 
-nix-crates-index = pkgs.fetchgit {
-  url = https://github.com/fractalide/nix-crates-index;
-  rev = "871bba3496eac51dcef5d634d16861c550ed6d30";
-  sha256 = "1sfla861dkpfrbnvkp1f1rgyn9lw4jqgndq490fmj046idwwfy2g";
+nix-crates-index = pkgs.fetchFromGitHub {
+  owner = "fractalide";
+  repo = "nix-crates-index";
+  rev = "4345508a63636ae41ed317bb17a16140f50b827a";
+  sha256 = "13mipqiklbh9bhl0sdgaindjxzn62l0a2sykvdvxxxshrg4ki3w9";
 };
 crates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
@@ -125,7 +126,7 @@ buffet = {
   crates = crates;
   pkgs = pkgs;
 };
-fvm = import ./support/fvm { inherit pkgs support nodes edges crates; };
+fvm = import ./support/fvm { inherit buffet; };
 in
 {
   inherit buffet nodes edges;
