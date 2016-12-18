@@ -126,7 +126,7 @@ buffet = {
   crates = crates;
   pkgs = pkgs;
 };
-fvm = import ./support/fvm { inherit pkgs support nodes edges crates; };
+fvm = import ./support/fvm { inherit buffet; };
 in
 {
   inherit buffet nodes edges;

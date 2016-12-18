@@ -1,4 +1,4 @@
-{ pkgs, support, edges, nodes, crates }:
+{ buffet }:
 
 let
   fractal = pkgs.fetchFromGitHub {
@@ -9,4 +9,4 @@ let
   };
   /*fractal = ../../../fractals/fractal_workbench;*/
 in
-  import fractal {inherit pkgs support edges nodes crates; fractalide = null;}
+  import fractal {inherit buffet; fractalide = null;}

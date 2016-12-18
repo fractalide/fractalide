@@ -1,12 +1,12 @@
-{ pkgs, support, nodes, edges, crates }:
+{ buffet }:
 
 let
-fvm  = support.rustBinary {
+fvm  = buffet.support.rustBinary {
   name = "fvm";
   src = ./.;
   binary = "bin";
-  crates = with crates; [ rustfbp capnp ];
-  configurePhase = with nodes; with edges; ''
+  crates = with buffet.crates; [ rustfbp capnp ];
+  configurePhase = with buffet.nodes; with buffet.edges; ''
     runHook preConfigure
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "nucleus_flow_parser_lexical.so" "${nucleus_flow_parser_lexical}/lib/libagent.so"
