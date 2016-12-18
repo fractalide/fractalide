@@ -3,19 +3,15 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    ip_replace,
-    inputs(input: any),
-    inputs_array(),
-    outputs(output: any),
-    outputs_array(),
+    input(input: any),
+    output(output: any),
     option(any),
-    acc(),
-    fn run(&mut self) -> Result<()> {
+    fn run(&mut self) -> Result<Signal> {
         let opt = self.recv_option();
-        let mut ip_input = try!(self.ports.recv("input"));
-        ip_input.vec = opt.vec.clone();
-        ip_input.action = opt.action.clone();
-        try!(self.ports.send("output", ip_input));
-        Ok(())
+        let mut msg_input = try!(self.input.input.recv());
+        msg_input.vec = opt.vec.clone();
+        msg_input.action = opt.action.clone();
+        try!(self.output.output.send(msg_input));
+        Ok(End)
     }
 }

@@ -8,7 +8,7 @@ use std::io;
 use std::string;
 use std::sync::mpsc;
 
-use ports::IP;
+use ports::Msg;
 use scheduler::CompMsg;
 
 pub type Result<T> = result::Result<T, Error>;
@@ -25,9 +25,11 @@ pub enum Error {
     MpscSend,
     AgentNotFound(String),
     OutputPortNotConnected(String, String),
+    OutputNotConnected,
     ArrayOutputPortNotConnected(String, String, String),
     PortNotFound(String, String),
-    SelectionNotFound(String, String, String),
+    PortDontExist(String),
+    ElementNotFound(String, String, String),
     CannotRemove(String),
     BadMessageInfo,
 }
@@ -44,10 +46,12 @@ impl fmt::Display for Error {
             Error::Misc(ref err) => write!(f, "Misc error : {}", err),
             Error::MpscSend => write!(f, "Mpsc error : cannot send"),
             Error::OutputPortNotConnected(ref c, ref p) => write!(f, "OutputSender : Port {} of agent {} is not connected", p, c),
-            Error::ArrayOutputPortNotConnected(ref c, ref p, ref s) => write!(f, "OutputSender : Selection {} Port {} of agent {} is not connected", s, p, c),
-            Error::AgentNotFound(ref c) => write!(f, "Scheduler error : Agent {} is not found", c),
-            Error::PortNotFound(ref c, ref p) => write!(f, "Agent error : Port {} of agent {} is not found", p, c),
-            Error::SelectionNotFound(ref c, ref p, ref s) => write!(f, "Agent error : Selection {} on port {} of agent {} is not found", s, p, c),
+            Error::OutputNotConnected => write!(f, "OutputSender : Port not connected"),
+            Error::ArrayOutputPortNotConnected(ref c, ref p, ref s) => write!(f, "OutputSender : Element {} Port {} of agent {} is not connected", s, p, c),
+            Error::AgentNotFound(ref c) => write!(f, "Scheduler error : agent {} is not found", c),
+            Error::PortNotFound(ref c, ref p) => write!(f, "agent error : Port {} of agent {} is not found", p, c),
+            Error::PortDontExist(ref p) => write!(f, "agent error : Port {} doesn't exist", p),
+            Error::ElementNotFound(ref c, ref p, ref s) => write!(f, "agent error : Element {} on port {} of agent {} is not found", s, p, c),
             Error::CannotRemove(ref c) => write!(f, "Scheduler error : Cannot remove agent {}", c),
             Error::BadMessageInfo => write!(f, "Ports error : Bad message information"),
         }
@@ -66,10 +70,12 @@ impl error::Error for Error {
             Error::Misc(ref err) => &err,
             Error::MpscSend => "Mpsc : cannot send",
             Error::OutputPortNotConnected(..) => "Output port not connected",
+            Error::OutputNotConnected => "Output port not connected",
             Error::ArrayOutputPortNotConnected(..) => "Array Output port not connect",
             Error::AgentNotFound(..) => "Agent not found",
             Error::PortNotFound(..) => "Port not found",
-            Error::SelectionNotFound(..) => "Selection not found",
+            Error::PortDontExist(..) => "Port not found",
+            Error::ElementNotFound(..) => "Element not found",
             Error::CannotRemove(..) => "Cannot remove agent",
             Error::BadMessageInfo => "Ports error : cannot receive the message, wrong bit information",
         }
@@ -136,8 +142,8 @@ impl From<mpsc::SendError<CompMsg>> for Error {
     }
 }
 
-impl From<mpsc::SendError<IP>> for Error {
-    fn from(_: mpsc::SendError<IP>) -> Error {
+impl From<mpsc::SendError<Msg>> for Error {
+    fn from(_: mpsc::SendError<Msg>) -> Error {
         Error::MpscSend
     }
 }

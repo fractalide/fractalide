@@ -4,15 +4,9 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    drop_ip,
-    inputs( drop: any),
-    inputs_array(),
-    outputs(),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("drop"));
-        Ok(())
+    input(drop: any),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg = try!(self.input.drop.recv());
+        Ok(End)
     }
 }

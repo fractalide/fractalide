@@ -10,7 +10,7 @@ edge {
       path @0 :Text;
       nodes @1 :List(Node);
       edges @2 :List(Edge);
-      iips @3 :List(Iip);
+      imsgs @3 :List(Imsg);
       externalInputs @4 :List(Ext);
       externalOutputs @5 :List(Ext);
     }
@@ -29,8 +29,8 @@ edge {
            iSelection @5 :Text;
     }
 
-    struct Iip {
-           iip @0 :Text;
+    struct Imsg {
+           imsg @0 :Text;
            comp @1 :Text;
            port @2 :Text;
            selection @3 :Text;

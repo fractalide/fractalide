@@ -16,7 +16,7 @@ use self::threadpool::ThreadPool;
 use result;
 use result::Result;
 
-use ports::{IPSender, IP};
+use ports::{MsgSender, MsgReceiver, Msg};
 use agent::Agent;
 
 use std::collections::HashMap;
@@ -45,39 +45,44 @@ pub enum CompMsg {
     /// Start a agent
     Start(String),
     /// Connect the output port
-    ConnectOutputPort(String, String, IPSender),
+    ConnectOutputPort(String, String, MsgSender),
     /// Connect the array output port
-    ConnectOutputArrayPort(String, String, String, IPSender),
+    ConnectOutputArrayPort(String, String, String, MsgSender),
     /// Disconnect an output port
     Disconnect(String, String),
     /// Disconnect an array output port
     DisconnectArray(String, String, String),
-    /// Add an selection in an array input port
-    AddInputArraySelection(String, String, String, Receiver<IP>),
-    /// Remove an selection in an array input port
-    RemoveInputArraySelection(String, String, String),
-    /// Add an selection in an array output port
-    AddOutputArraySelection(String, String, String),
+    /// Add an element in an array input port
+    AddInputArrayElement(String, String, String, MsgReceiver),
+    /// Remove an element in an array input port
+    RemoveInputArrayElement(String, String, String),
+    /// Add an element in an array output port
+    AddOutputArrayElement(String, String, String),
     /// Signal the end of an execution
     RunEnd(String, BoxedComp),
     /// Set the receiver of an input port
-    SetReceiver(String, String, Receiver<IP>),
-    /// The agent received an IP
+    SetReceiver(String, String, Receiver<Msg>),
+    /// The agent received an Msg
     Inc(String),
-    /// The agent read an IP
+    /// The agent read an Msg
     Dec(String),
     /// Remove a agent
     Remove(String, Sender<SyncMsg>),
+}
+
+pub enum Signal {
+    End,
+    Continue,
 }
 
 /// This structure keep all the information for the "exterior scheduler".
 ///
 /// These information must be accessible for the user of the scheduler
 pub struct Comp {
-    /// Keep the IPSender of the input ports
-    pub inputs: HashMap<String, IPSender>,
-    /// Keep the IPSender of the array input ports
-    pub inputs_array: HashMap<String, HashMap<String, IPSender>>,
+    /// Keep the MsgSender of the input ports
+    pub inputs: HashMap<String, MsgSender>,
+    /// Keep the MsgSender of the array input ports
+    pub inputs_array: HashMap<String, HashMap<String, MsgSender>>,
     /// The type of the agent
     pub sort: String,
     /// True if a agent had no input port
@@ -118,20 +123,20 @@ impl Scheduler {
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
                     CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
-                    CompMsg::AddInputArraySelection(name, port, selection, recv) => {
-                        sched_s.edit_agent(name, EditCmp::AddInputArraySelection(port, selection, recv))
+                    CompMsg::AddInputArrayElement(name, port, element, recv) => {
+                        sched_s.edit_agent(name, EditCmp::AddInputArrayElement(port, element, recv))
                     },
-                    CompMsg::RemoveInputArraySelection(name, port, selection) => {
-                        sched_s.edit_agent(name, EditCmp::RemoveInputArraySelection(port, selection))
+                    CompMsg::RemoveInputArrayElement(name, port, element) => {
+                        sched_s.edit_agent(name, EditCmp::RemoveInputArrayElement(port, element))
                     },
-                    CompMsg::AddOutputArraySelection(name, port, selection) => {
-                        sched_s.edit_agent(name, EditCmp::AddOutputArraySelection(port, selection))
+                    CompMsg::AddOutputArrayElement(name, port, element) => {
+                        sched_s.edit_agent(name, EditCmp::AddOutputArrayElement(port, element))
                     },
                     CompMsg::ConnectOutputPort(comp_out, port_out, sender) => {
                         sched_s.edit_agent(comp_out, EditCmp::ConnectOutputPort(port_out, sender))
                     },
-                    CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sender) => {
-                        sched_s.edit_agent(comp_out, EditCmp::ConnectOutputArrayPort(port_out, selection_out, sender))
+                    CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender) => {
+                        sched_s.edit_agent(comp_out, EditCmp::ConnectOutputArrayPort(port_out, element_out, sender))
                     },
                     CompMsg::SetReceiver(comp, port, receiver) => {
                         sched_s.edit_agent(comp, EditCmp::SetReceiver(port, receiver))
@@ -139,8 +144,8 @@ impl Scheduler {
                     CompMsg::Disconnect(name, port) => {
                         sched_s.edit_agent(name, EditCmp::Disconnect(port))
                     },
-                    CompMsg::DisconnectArray(name, port, selection) => {
-                        sched_s.edit_agent(name, EditCmp::DisconnectArray(port, selection))
+                    CompMsg::DisconnectArray(name, port, element) => {
+                        sched_s.edit_agent(name, EditCmp::DisconnectArray(port, element))
                     },
                     CompMsg::Inc(dest) => { sched_s.inc(dest) },
                     CompMsg::Dec(dest) => { sched_s.dec(dest) },
@@ -270,9 +275,9 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_array("add", "outputs", "1", "display", "input"));
     /// ```
-    pub fn connect_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String) -> Result<()> {
+    pub fn connect_array(&self, comp_out: String, port_out: String, element_out: String, comp_in: String, port_in: String) -> Result<()> {
         let sender = try!(self.get_sender(&comp_in, &port_in));
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -282,8 +287,8 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_to_array("add", "output", "display", "inputs", "1"));
     /// ```
-    pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
-        let sender = try!(self.get_array_sender(&comp_in, &port_in, &selection_in));
+    pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, element_in: String) -> Result<()>{
+        let sender = try!(self.get_array_sender(&comp_in, &port_in, &element_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -294,9 +299,9 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_array_to_array("add", "outputs", "1", "display", "inputs", "1"));
     /// ```
-    pub fn connect_array_to_array(&self, comp_out: String, port_out: String, selection_out: String, comp_in: String, port_in: String, selection_in: String) -> Result<()>{
-        let sender = try!(self.get_array_sender(&comp_in, &port_in, &selection_in));
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, selection_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
+    pub fn connect_array_to_array(&self, comp_out: String, port_out: String, element_out: String, comp_in: String, port_in: String, element_in: String) -> Result<()>{
+        let sender = try!(self.get_array_sender(&comp_in, &port_in, &element_in));
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -317,73 +322,72 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.disconnect_array("add", "outputs", "1"));
     /// ```
-    pub fn disconnect_array(&self, comp_out: String, port_out: String, selection:String) -> Result<()>{
-        self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, selection)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
+    pub fn disconnect_array(&self, comp_out: String, port_out: String, element:String) -> Result<()>{
+        self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, element)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
         Ok(())
     }
 
-    /// Add a selection in an input array port
+    /// Add a element in an input array port
     ///
     /// # Example
     /// ```rust,ignore
-    /// try!(sched.add_input_array_selection("add".into(), "inputs".into(), "1".into()));
+    /// try!(sched.add_input_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_input_array_selection(&mut self, comp_name: String, port: String, selection: String) -> Result<()>{
-        let (s, r) = sync_channel(25);
-        let s = IPSender {
-            sender: s,
-            dest: comp_name.clone(),
-            sched: self.sender.clone(),
-        };
+    pub fn add_input_array_element(&mut self, comp_name: String, port: String, element: String) -> Result<()>{
+        let (r, s) = MsgReceiver::new(
+            comp_name.clone(),
+            self.sender.clone(),
+            true
+        );
         try!(self.agents.get_mut(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))
             .and_then(|mut comp| {
                 if !comp.inputs_array.contains_key(&port) {
                     comp.inputs_array.insert(port.clone(), HashMap::new());
                 }
-                comp.inputs_array.get_mut(&port).ok_or(result::Error::SelectionNotFound(comp_name.clone(), port.clone(), selection.clone()))
+                comp.inputs_array.get_mut(&port).ok_or(result::Error::ElementNotFound(comp_name.clone(), port.clone(), element.clone()))
                     .and_then(|mut port| {
-                        port.insert(selection.clone(), s);
+                        port.insert(element.clone(), s);
                         Ok(())
                     })
             }));
-        self.sender.send(CompMsg::AddInputArraySelection(comp_name, port, selection, r)).ok().expect("Scheduler add_input_array_selection : Unable to send to scheduler state");
+        self.sender.send(CompMsg::AddInputArrayElement(comp_name, port, element, r)).ok().expect("Scheduler add_input_array_element : Unable to send to scheduler state");
         Ok(())
     }
 
-    // pub fn remove_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
+    // pub fn remove_input_array_element(&mut self, comp: String, port: String, element: String) -> Result<()> {
     //     // TODO
     // }
 
-    /// Add a selection in an input array port, only if this selection exists not yet
+    /// Add a element in an input array port, only if this element exists not yet
     ///
     /// # Example
     /// ```rust,ignore
-    /// try!(sched.soft_add_input_array_selection("add".into(), "inputs".into(), "1".into()));
+    /// try!(sched.soft_add_input_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn soft_add_input_array_selection(&mut self, comp: String, port: String, selection: String) -> Result<()> {
+    pub fn soft_add_input_array_element(&mut self, comp: String, port: String, element: String) -> Result<()> {
         let mut res = true;
         if let Some(comp) = self.agents.get(&comp) {
             if let Some(port) = comp.inputs_array.get(&port) {
-                if let Some(_) = port.get(&selection) {
+                if let Some(_) = port.get(&element) {
                     res = false;
                 }
             }
         }
         if res {
-            self.add_input_array_selection(comp, port, selection)
+            self.add_input_array_element(comp, port, element)
         } else {
             Ok(())
         }
     }
 
-    /// Add a selection in an output array port
+    /// Add a element in an output array port
     ///
     /// # Example
     /// ```rust,ignore
-    /// try!(sched.add_output_array_selection("add".into(), "inputs".into(), "1".into()));
+    /// try!(sched.add_output_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_output_array_selection(&self, comp: String, port: String, selection: String) -> Result<()>{
-        self.sender.send(CompMsg::AddOutputArraySelection(comp, port, selection)).ok().expect("Scheduler add_output_array_selection : Unable to send to scheduler state");
+    pub fn add_output_array_element(&self, comp: String, port: String, element: String) -> Result<()>{
+        self.sender.send(CompMsg::AddOutputArrayElement(comp, port, element)).ok().expect("Scheduler add_output_array_element : Unable to send to scheduler state");
         Ok(())
     }
 
@@ -395,7 +399,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver(&self, comp: String, port: String, receiver: Receiver<IP>) -> Result<()> {
+    pub fn set_receiver(&self, comp: String, port: String, receiver: Receiver<Msg>) -> Result<()> {
         self.sender.send(CompMsg::SetReceiver(comp, port, receiver)).expect("scheduler cannot send");
         Ok(())
     }
@@ -408,8 +412,8 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver(&self, comp: String, port: String, selection: String, receiver: Receiver<IP>) -> Result<()> {
-        self.sender.send(CompMsg::AddInputArraySelection(comp, port, selection, receiver)).expect("scheduler cannot send");
+    pub fn set_array_receiver(&self, comp: String, port: String, element: String, receiver: MsgReceiver) -> Result<()> {
+        self.sender.send(CompMsg::AddInputArrayElement(comp, port, element, receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -419,7 +423,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
-    pub fn get_sender(&self, comp: &str, port: &str) -> Result<IPSender> {
+    pub fn get_sender(&self, comp: &str, port: &str) -> Result<MsgSender> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
@@ -433,12 +437,12 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
-    pub fn get_array_sender(&self, comp: &str, port: &str, selection: &str) -> Result<IPSender> {
+    pub fn get_array_sender(&self, comp: &str, port: &str, element: &str) -> Result<MsgSender> {
         self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .and_then(|c| {
                 c.inputs_array.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
                     .and_then(|p| {
-                        p.get(selection).ok_or(result::Error::SelectionNotFound(comp.into(), port.into(), selection.into()))
+                        p.get(element).ok_or(result::Error::ElementNotFound(comp.into(), port.into(), element.into()))
                             .map(|s| { s.clone() })
                     })
             })
@@ -510,12 +514,12 @@ impl Scheduler {
 }
 
 enum EditCmp {
-    AddInputArraySelection(String, String, Receiver<IP>),
-    RemoveInputArraySelection(String, String),
-    AddOutputArraySelection(String, String),
-    ConnectOutputPort(String, IPSender),
-    ConnectOutputArrayPort(String, String, IPSender),
-    SetReceiver(String, Receiver<IP>),
+    AddInputArrayElement(String, String, MsgReceiver),
+    RemoveInputArrayElement(String, String),
+    AddOutputArrayElement(String, String),
+    ConnectOutputPort(String, MsgSender),
+    ConnectOutputArrayPort(String, String, MsgSender),
+    SetReceiver(String, Receiver<Msg>),
     Disconnect(String),
     DisconnectArray(String, String),
 }
@@ -669,31 +673,37 @@ impl SchedState {
     }
 
     fn edit_one_comp(mut c: &mut BoxedComp, msg: EditCmp) -> Result<()> {
-        let mut c = c.get_ports();
+        // let mut c = c.get_ports();
         match msg {
-            EditCmp::AddInputArraySelection(port, selection, recv) => {
-                try!(c.add_input_receiver(&port, selection, recv));
+            EditCmp::AddInputArrayElement(port, element, recv) => {
+                // try!(c.add_input_receiver(&port, element, recv));
+                c.add_inarr_element(&port, element, recv)?;
             },
-            EditCmp::RemoveInputArraySelection(port, selection) => {
-                try!(c.remove_array_receiver(&port, &selection));
+            EditCmp::RemoveInputArrayElement(port, element) => {
+                unimplemented!();
+                // try!(c.remove_array_receiver(&port, &element));
             }
-            EditCmp::AddOutputArraySelection(port, selection) => {
-                try!(c.add_output_selection(&port, selection));
+            EditCmp::AddOutputArrayElement(port, element) => {
+                unimplemented!();
+                //try!(c.add_output_element(&port, element));
             },
             EditCmp::ConnectOutputPort(port_out, his) => {
-                try!(c.connect(port_out, his));
+                c.connect(&port_out, his)?;
             },
-            EditCmp::ConnectOutputArrayPort(port_out, selection_out, his) => {
-                try!(c.connect_array(port_out, selection_out, his));
+            EditCmp::ConnectOutputArrayPort(port_out, element_out, his) => {
+                c.connect_array(&port_out, element_out, his)?;
             },
             EditCmp::SetReceiver(port, hir) => {
-                c.set_receiver(port, hir);
+                unimplemented!();
+                //c.set_receiver(port, hir);
             }
             EditCmp::Disconnect(port) => {
-                try!(c.disconnect(port));
+                unimplemented!();
+                //try!(c.disconnect(port));
             },
-            EditCmp::DisconnectArray(port, selection) => {
-                try!(c.disconnect_array(port, selection));
+            EditCmp::DisconnectArray(port, element) => {
+                unimplemented!();
+                //try!(c.disconnect_array(port, element));
             },
         }
         Ok(())
@@ -704,7 +714,7 @@ impl SchedState {
 #[allow(dead_code)]
 pub struct AgentLoader {
     lib: libloading::Library,
-    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)>,
+    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)>,
     get_schema_input: extern "C" fn(&str) -> Result<String>,
     get_schema_input_array: extern "C" fn(&str) -> Result<String>,
     get_schema_output: extern "C" fn(&str) -> Result<String>,
@@ -735,11 +745,11 @@ impl AgentCache {
     /// ```rust,ignore
     /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
+    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
 
-            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> = unsafe {
+            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> = unsafe {
                 *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
             };
 

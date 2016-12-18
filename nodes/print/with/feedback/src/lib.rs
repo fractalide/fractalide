@@ -3,25 +3,20 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    print_with_feedback, edges(path, value_string)
-    inputs(input: path),
-    inputs_array(),
-    outputs(next: value_string),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_schema());
+    input(input: path),
+    output(next: value_string),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg = try!(self.input.input.recv());
+        let path: path::Reader = try!(msg.read_schema());
         let path = try!(path.get_path());
         if path != "end" {
-            let mut next_ip = IP::new();
+            let mut next_msg = Msg::new();
             {
-                let mut ip = next_ip.build_schema::<value_string::Builder>();
-                ip.set_value("next");
+                let mut msg = next_msg.build_schema::<value_string::Builder>();
+                msg.set_value("next");
             }
-            try!(self.ports.send("next", next_ip));
+            try!(self.output.next.send(next_msg));
         }
-        Ok(())
+        Ok(End)
     }
 }

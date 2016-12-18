@@ -7,18 +7,18 @@ extern crate capnp;
 struct Graph {
     nodes: Vec<(String, String)>,
     edges: Vec<(String, String, String, String, String, String)>,
-    iips: Vec<(String, String, String, String)>,
+    imsgs: Vec<(String, String, String, String)>,
     ext_in: Vec<(String, String, String, String)>,
     ext_out: Vec<(String, String, String, String)>,
 }
 
 #[derive(PartialEq, Debug)]
 enum State {
-    Break, Comp, Port, IIP,
+    Break, Compo, Port, IMSG,
     CompPort, CompPortBind, CompPortBindPort,
     CompPortExternal, CompPortExternalPort,
     PortExternal, PortExternalPort,
-    IIPBind, IIPBindPort,
+    IMSGBind, IMSGBindPort,
     ErrorS
 }
 use State::*;
@@ -27,21 +27,16 @@ use State::*;
 enum Literal {
     Comp(String, String),
     Port(String, String),
-    IIP(String),
+    IMSG(String),
     Bind, External,
 }
 
 agent! {
-    nucleus_flow_parser_semantic, edges(fbp_graph, fbp_lexical, fbp_semantic_error)
-    inputs(input: fbp_lexical),
-    inputs_array(),
-    outputs(output: fbp_graph, error: fbp_semantic_error),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input"));
-        let literal: fbp_lexical::Reader = try!(ip.read_schema());
+    input(input: fbp_lexical),
+    output(output: fbp_graph, error: fbp_semantic_error),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg = try!(self.input.input.recv());
+        let literal: fbp_lexical::Reader = try!(msg.read_schema());
         let literal = try!(literal.which());
 
         match literal {
@@ -49,12 +44,12 @@ agent! {
                 match handle_stream(&self)? {
                     Ok(graph) => { send_graph(&self, try!(path), &graph)? },
                     Err(errors) => {
-                        let mut new_ip = IP::new();
+                        let mut new_msg = Msg::new();
                         {
-                            let mut ip = new_ip.build_schema::<fbp_semantic_error::Builder>();
-                            ip.set_path(path?);
+                            let mut msg = new_msg.build_schema::<fbp_semantic_error::Builder>();
+                            msg.set_path(path?);
                             {
-                                let mut nodes = ip.init_parsing(errors.len() as u32);
+                                let mut nodes = msg.init_parsing(errors.len() as u32);
                                 let mut i = 0;
                                 for n in &errors {
                                     nodes.borrow().set(i, &n[..]);
@@ -62,23 +57,23 @@ agent! {
                                 }
                             }
                         }
-                        let _ = self.ports.send("error", new_ip);
+                        let _ = self.output.error.send(new_msg);
                     },
                 }
             }
             _ => { return Err(result::Error::Misc("bad stream".to_string())); },
         }
-        Ok(())
+        Ok(End)
     }
 }
 
-fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Result<Graph, Vec<String>>> {
+fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<String>>> {
     let mut state = Break;
     let mut stack: Vec<Literal> = vec![];
     let mut graph = Graph {
         nodes: vec![],
         edges: vec![],
-        iips: vec![],
+        imsgs: vec![],
         ext_in: vec![],
         ext_out: vec![]
     };
@@ -87,8 +82,8 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
 
     loop {
 
-        let mut ip = comp.ports.recv("input")?;
-        let literal: fbp_lexical::Reader = ip.read_schema()?;
+        let mut msg = comp.input.input.recv()?;
+        let literal: fbp_lexical::Reader = msg.read_schema()?;
         let literal = literal.which()?;
         match literal {
             fbp_lexical::End(_) => {
@@ -101,7 +96,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                         state = match state {
                             CompPort => { CompPortBind },
                             ErrorS => { ErrorS },
-                            IIP => { IIPBind },
+                            IMSG => { IMSGBind },
                             _ => {
                                 errors.push(format!("line {} : Found a \"->\", when \"{}\" was expected.", line, get_expected(&state)));
                                 ErrorS
@@ -122,7 +117,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                     fbp_lexical::token::Port(port) => {
                         stack.push(Literal::Port(port.get_name()?.to_string(), port.get_selection()?.to_string()));
                         state = match state {
-                            Comp => { CompPort },
+                            Compo => { CompPort },
                             CompPortBind => { CompPortBindPort },
                             CompPortExternal => {
                                 let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
@@ -138,7 +133,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                             Break => { Port },
                             PortExternal => { PortExternalPort },
                             ErrorS => { ErrorS },
-                            IIPBind => { IIPBindPort },
+                            IMSGBind => { IMSGBindPort },
                             _ => {
                                 errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
                                 ErrorS
@@ -164,7 +159,7 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                                     graph.edges.push((out_c_n, out_p_n, out_p_s, in_p_n, in_p_s, in_c_n.clone()));
                                 }
                                 stack.push(in_c);
-                                Comp
+                                Compo
                             },
                             PortExternalPort => {
                                 let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
@@ -177,37 +172,37 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                                     graph.ext_in.push((out_p_n, in_p_n, in_p_s, in_c_n.clone()));
                                 }
                                 stack.push(in_c);
-                                Comp
+                                Compo
                             }
-                            IIPBindPort => {
+                            IMSGBindPort => {
                                 let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 let in_p = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
-                                let iip = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
+                                let imsg = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
                                 {
                                     let (in_c_n, _) = if let Literal::Comp(ref n, ref s) = in_c { (n, s) } else { unreachable!() };
                                     let (in_p_n, in_p_s) = if let Literal::Port(n, s) = in_p { (n, s) } else { unreachable!() };
-                                    let iip = if let Literal::IIP(iip) = iip { iip } else { unreachable!() };
-                                    graph.iips.push((iip, in_p_n, in_p_s, in_c_n.clone()));
+                                    let imsg = if let Literal::IMSG(imsg) = imsg { imsg } else { unreachable!() };
+                                    graph.imsgs.push((imsg, in_p_n, in_p_s, in_c_n.clone()));
                                 }
                                 stack.push(in_c);
-                                Comp
+                                Compo
                             }
-                            Break => { Comp },
-                            ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Comp },
+                            Break => { Compo },
+                            ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Compo },
                             _ => {
                                 errors.push(format!("line {} : Found agent \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
                                 ErrorS
                             },
                         }
                     },
-                    fbp_lexical::token::Iip(iip) => {
-                        let iip = iip?;
-                        stack.push(Literal::IIP(iip.to_string()));
+                    fbp_lexical::token::Imsg(imsg) => {
+                        let imsg = imsg?;
+                        stack.push(Literal::IMSG(imsg.to_string()));
                         state = match state {
-                            ErrorS => { IIP },
-                            Break => { IIP },
+                            ErrorS => { IMSG },
+                            Break => { IMSG },
                             _ => {
-                                errors.push(format!("line {} : Found an IIP \"{}\", when \"{}\" was expected.", line, iip, get_expected(&state)));
+                                errors.push(format!("line {} : Found an IMSG \"{}\", when \"{}\" was expected.", line, imsg, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -216,8 +211,8 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
                         line += 1;
                         state = match state {
                             CompPortBind => { state },
-                            IIPBind => { state },
-                            Comp => { stack.clear(); Break },
+                            IMSGBind => { state },
+                            Compo => { stack.clear(); Break },
                             CompPortExternalPort => { stack.clear(); Break },
                             Break => { Break },
                             ErrorS => { ErrorS },
@@ -241,10 +236,10 @@ fn handle_stream(comp: &nucleus_flow_parser_semantic) -> Result<std::result::Res
 
 fn get_expected(state: &State) -> String {
     match *state {
-        Break => { "[Component, Port, IIP, NewLine]".into() },
-        Comp => { "[Port, NewLine]".into() },
+        Break => { "[Component, Port, IMSG, NewLine]".into() },
+        Compo => { "[Port, NewLine]".into() },
         Port => { "[Component, ->, =>]".into() },
-        IIP => { "[->]".into() },
+        IMSG => { "[->]".into() },
         CompPort => { "[->, =>]".into() },
         CompPortBind => { "[Port]".into() },
         CompPortBindPort => { "[Component]".into() },
@@ -252,19 +247,19 @@ fn get_expected(state: &State) -> String {
         CompPortExternalPort => { "[NewLine]".into() },
         PortExternal => { "[Port]".into() },
         PortExternalPort => { "[Component]".into() },
-        IIPBind => { "[Port]".into() },
-        IIPBindPort => { "[Component]".into() },
+        IMSGBind => { "[Port]".into() },
+        IMSGBindPort => { "[Component]".into() },
         ErrorS => { unreachable!() }
     }
 }
 
-fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) -> Result<()> {
-    let mut new_ip = IP::new();
+fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
+    let mut new_msg = Msg::new();
     {
-        let mut ip = new_ip.build_schema::<fbp_graph::Builder>();
-        ip.set_path(path);
+        let mut msg = new_msg.build_schema::<fbp_graph::Builder>();
+        msg.set_path(path);
         {
-            let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);
+            let mut nodes = msg.borrow().init_nodes(graph.nodes.len() as u32);
             let mut i = 0;
             for n in &graph.nodes {
                 nodes.borrow().get(i).set_name(&n.0[..]);
@@ -273,7 +268,7 @@ fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) ->
             }
         }
         {
-            let mut edges = ip.borrow().init_edges(graph.edges.len() as u32);
+            let mut edges = msg.borrow().init_edges(graph.edges.len() as u32);
             let mut i = 0;
             for e in &graph.edges {
                 edges.borrow().get(i).set_o_name(&e.0[..]);
@@ -286,18 +281,18 @@ fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) ->
             }
         }
         {
-            let mut iips = ip.borrow().init_iips(graph.iips.len() as u32);
+            let mut imsgs = msg.borrow().init_imsgs(graph.imsgs.len() as u32);
             let mut i = 0;
-            for iip in &graph.iips {
-                iips.borrow().get(i).set_iip(&iip.0[..]);
-                iips.borrow().get(i).set_port(&iip.1[..]);
-                iips.borrow().get(i).set_selection(&iip.2[..]);
-                iips.borrow().get(i).set_comp(&iip.3[..]);
+            for imsg in &graph.imsgs {
+                imsgs.borrow().get(i).set_imsg(&imsg.0[..]);
+                imsgs.borrow().get(i).set_port(&imsg.1[..]);
+                imsgs.borrow().get(i).set_selection(&imsg.2[..]);
+                imsgs.borrow().get(i).set_comp(&imsg.3[..]);
                 i += 1;
             }
         }
         {
-            let mut ext = ip.borrow().init_external_inputs(graph.ext_in.len() as u32);
+            let mut ext = msg.borrow().init_external_inputs(graph.ext_in.len() as u32);
             let mut i = 0;
             for e in &graph.ext_in {
                 ext.borrow().get(i).set_name(&e.0[..]);
@@ -308,7 +303,7 @@ fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) ->
             }
         }
         {
-            let mut ext = ip.borrow().init_external_outputs(graph.ext_out.len() as u32);
+            let mut ext = msg.borrow().init_external_outputs(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
                 ext.borrow().get(i).set_comp(&e.0[..]);
@@ -319,6 +314,6 @@ fn send_graph(comp: &nucleus_flow_parser_semantic, path: &str, graph: &Graph) ->
             }
         }
     }
-    let _ = comp.ports.send("output", new_ip);
+    let _ = comp.output.output.send(new_msg);
     Ok(())
 }

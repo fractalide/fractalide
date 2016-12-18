@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate rustfbp;
-use rustfbp::scheduler::{Comp, Scheduler};
+use rustfbp::scheduler::{Scheduler};
 use std::mem;
 use std::str;
 
@@ -37,33 +37,30 @@ impl Portal {
 }
 
 agent! {
-    nucleus_flow_scheduler, edges(fbp_graph, path, generic_text, fbp_action)
-    inputs(action: fbp_action,
+    input(action: fbp_action,
            graph: fbp_graph,
            edge_path: path,
-           iip: any),
-    inputs_array(),
-    outputs(error: error,
+           imsg: any),
+    output(error: error,
             ask_graph: path,
             ask_path: path,
-            iip_path: path,
-            iip_edge: generic_text,
-            iip_input: generic_text),
-    outputs_array(outputs: any),
-    option(),
-    acc(), portal(Portal => Portal::new())
-    fn run(&mut self) -> Result<()> {
+            imsg_path: path,
+            imsg_edge: generic_text,
+            imsg_input: generic_text),
+    outarr(outputs: any),
+    portal(Portal => Portal::new()),
+    fn run(&mut self) -> Result<Signal> {
 
-        let mut ip = try!(self.ports.recv("action"));
-        let mut reader: fbp_action::Reader = try!(ip.read_schema());
+        let mut msg = try!(self.input.action.recv());
+        let mut reader: fbp_action::Reader = try!(msg.read_schema());
 
         match try!(reader.which()) {
             fbp_action::Which::Add(add) => {
                 let mut add = try!(add);
                 let name = try!(add.get_name());
-                let mut ask_ip = IP::new();
+                let mut ask_msg = Msg::new();
                 {
-                    let mut builder: fbp_graph::Builder = ask_ip.build_schema();
+                    let mut builder: fbp_graph::Builder = ask_msg.build_schema();
                     builder.set_path(try!(add.get_comp()));
                     {
                         let mut nodes = builder.borrow().init_nodes(1);
@@ -71,7 +68,7 @@ agent! {
                         nodes.borrow().get(0).set_sort(try!(add.get_comp()));
                     }
                 }
-                try!(self.ports.send("ask_graph", ask_ip));
+                try!(self.output.ask_graph.send(ask_msg));
                 try!(add_graph(self, name));
             },
             fbp_action::Which::Remove(remove) => {
@@ -120,8 +117,9 @@ agent! {
                         port = p.1.clone();
                     }
                 }
-                let sender = try!(self.ports.get_array_sender("outputs", try!(connect.get_output())));
-                try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender)));
+                let sender = try!(self.outarr.outputs.get(try!(connect.get_output()))
+                    .ok_or(result::Error::Misc("Element not found".into())));
+                try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender.clone())));
             },
             fbp_action::Which::Send(send) => {
                 let send = try!(send);
@@ -134,22 +132,22 @@ agent! {
                         port = &subnet_port.1;
                     }
                 }
-                let ip = try!(self.ports.recv("action"));
+                let msg = try!(self.input.action.recv());
                 let sender = if selection == "" {
                     try!(self.portal.sched.get_sender(comp, port))
                 } else {
                     try!(self.portal.sched.get_array_sender(comp, port, selection))
                 };
-                try!(sender.send(ip));
+                try!(sender.send(msg));
             },
         }
-        Ok(())
+        Ok(End)
     }
 }
 
-fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
-    let mut ip = try!(agent.ports.recv("graph"));
-    let i_graph: fbp_graph::Reader = try!(ip.read_schema());
+fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
+    let mut msg = try!(agent.input.graph.recv());
+    let i_graph: fbp_graph::Reader = try!(msg.read_schema());
 
     let mut subnet = Subgraph::new();
     for n in try!(i_graph.borrow().get_nodes()).iter() {
@@ -183,36 +181,24 @@ fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
         subnet.ext_out.insert(name.into(), (comp.into(), port.into()));
     }
 
-    let (mut p, senders) = try!(Ports::new("exterior".into(), agent.portal.sched.sender.clone(),
-                                           vec![],
-                                           vec![],
-                                           vec!["s".into()],
-                                           vec![]));
-    agent.portal.sched.agents.insert("exterior".into(), Comp{
-        inputs: senders,
-        inputs_array: HashMap::new(),
-        sort: "".into(),
-        start: false,
-    });
+    for imsg in try!(i_graph.borrow().get_imsgs()).iter() {
 
-    for iip in try!(i_graph.borrow().get_iips()).iter() {
-
-        let comp = try!(iip.get_comp());
-        let port = try!(iip.get_port());
-        let input = try!(iip.get_iip());
+        let comp = try!(imsg.get_comp());
+        let port = try!(imsg.get_port());
+        let input = try!(imsg.get_imsg());
 
         let (edge, input, option_action) = try!(split_input(input));
 
         // Get the real path
-        let mut new_out = IP::new();
+        let mut new_out = Msg::new();
         {
             let mut cont = new_out.build_schema::<path::Builder>();
             cont.set_path(&edge);
         }
-        try!(agent.ports.send("ask_path", new_out));
+        try!(agent.output.ask_path.send(new_out));
 
-        let mut edge_path_ip = try!(agent.ports.recv("edge_path"));
-        let edge_path: path::Reader = try!(edge_path_ip.read_schema());
+        let mut edge_path_msg = try!(agent.input.edge_path.recv());
+        let edge_path: path::Reader = try!(edge_path_msg.read_schema());
 
         let c_path = try!(edge_path.get_path());
         let c_path = format!("{}/src/edge.capnp", c_path);
@@ -231,36 +217,36 @@ fn add_graph(mut agent: &mut nucleus_flow_scheduler, name: &str) -> Result<()> {
 
         let edge_camel_case = to_camel_case(&c_name);
 
-        if try!(iip.get_selection()) == "" {
-            try!(p.connect("s".into(), try!(agent.portal.sched.get_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into()))));
+        let sender = if try!(imsg.get_selection()) == "" {
+            try!(agent.portal.sched.get_sender(try!(imsg.get_comp()).into(), try!(imsg.get_port()).into()))
         } else {
-            try!(p.connect("s".into(), try!(agent.portal.sched.get_array_sender(try!(iip.get_comp()).into(), try!(iip.get_port()).into(), try!(iip.get_selection()).into()))));
-        }
+            try!(agent.portal.sched.get_array_sender(try!(imsg.get_comp()).into(), try!(imsg.get_port()).into(), try!(imsg.get_selection()).into()))
+        };
 
-        let mut new_out = IP::new();
+        let mut new_out = Msg::new();
         {
             let mut path = new_out.build_schema::<path::Builder>();
             path.set_path(&c_path);
         }
-        try!(agent.ports.send("iip_path", new_out));
+        try!(agent.output.imsg_path.send(new_out));
 
-        let mut new_out = IP::new();
+        let mut new_out = Msg::new();
         {
             let mut path = new_out.build_schema::<generic_text::Builder>();
             path.set_text(&edge_camel_case);
         }
-        try!(agent.ports.send("iip_edge", new_out));
+        try!(agent.output.imsg_edge.send(new_out));
 
-        let mut new_out = IP::new();
+        let mut new_out = Msg::new();
         {
             let mut path = new_out.build_schema::<generic_text::Builder>();
             path.set_text(&input);
         }
-        try!(agent.ports.send("iip_input", new_out));
+        try!(agent.output.imsg_input.send(new_out));
 
-        let mut iip = try!(agent.ports.recv("iip"));
-        option_action.map(|action| { iip.action = action; });
-        try!(p.send("s", iip));
+        let mut imsg = try!(agent.input.imsg.recv());
+        option_action.map(|action| { imsg.action = action; });
+        try!(sender.send(imsg));
     }
 
     // Start all agents without input port
@@ -291,7 +277,7 @@ fn capitalize_first_letter(s : &str) -> String {
 }
 
 fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
-    let pos = try!(s.find(":").ok_or(result::Error::Misc("bad definition of iip".into())));
+    let pos = try!(s.find(":").ok_or(result::Error::Misc("bad definition of imsg".into())));
     let (a, b) = s.split_at(pos);
     let (_, b) = b.split_at(1);
     let pos2 = b.find("~");
@@ -310,16 +296,16 @@ fn connect_ports(sched: &mut Scheduler, o_name: String, o_port: String, o_select
             try!(sched.connect(o_name, o_port, i_name, i_port));
         },
         (_, "") => {
-            try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
+            // try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
             try!(sched.connect_array(o_name, o_port, o_selection, i_name, i_port));
         },
         ("", _) => {
-            try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
+            try!(sched.soft_add_input_array_element(i_name.clone(), i_port.clone(), i_selection.clone()));
             try!(sched.connect_to_array(o_name, o_port, i_name, i_port, i_selection));
         },
         _ => {
-            try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
-            try!(sched.soft_add_input_array_selection(i_name.clone(), i_port.clone(), i_selection.clone()));
+            // try!(sched.add_output_array_selection(o_name.clone(), o_port.clone(), o_selection.clone()));
+            try!(sched.soft_add_input_array_element(i_name.clone(), i_port.clone(), i_selection.clone()));
             try!(sched.connect_array_to_array(o_name, o_port, o_selection, i_name, i_port, i_selection));
         }
     }

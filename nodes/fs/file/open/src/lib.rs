@@ -7,66 +7,60 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    fs_file_open, edges(path, file_desc, file_error)
-    inputs(input: path),
-    inputs_array(),
-    outputs(output: file_desc, error: file_error),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-
+    input(input: path),
+    output(output: file_desc, error: file_error),
+    fn run(&mut self) -> Result<Signal> {
         // Get the path
-        let mut ip = try!(self.ports.recv("input"));
-        let path: path::Reader = try!(ip.read_schema());
+        let mut msg = try!(self.input.input.recv());
+        let path: path::Reader = try!(msg.read_schema());
 
         let path = try!(path.get_path());
 
         let file = match File::open(path) {
             Ok(file) => { file },
             Err(_) => {
-                // Prepare the output ip
-                let mut new_ip = IP::new();
+                // Prepare the output msg
+                let mut new_msg = Msg::new();
 
                 {
-                    let mut ip = new_ip.build_schema::<file_error::Builder>();
-                    ip.set_not_found(&path);
+                    let mut msg = new_msg.build_schema::<file_error::Builder>();
+                    msg.set_not_found(&path);
                 }
-                let _ = self.ports.send("error", new_ip);
-                return Ok(());
+                let _ = self.output.error.send(new_msg);
+                return Ok(End);
             }
         };
 
 
         // Send start
-        let mut new_ip = IP::new();
+        let mut new_msg = Msg::new();
         {
-            let mut ip = new_ip.build_schema::<file_desc::Builder>();
-            ip.set_start(&path);
+            let mut msg = new_msg.build_schema::<file_desc::Builder>();
+            msg.set_start(&path);
         }
-        try!(self.ports.send("output", new_ip));
+        try!(self.output.output.send(new_msg));
 
         // Send lines
         let file = BufReader::new(&file);
         for line in file.lines() {
             let l = try!(line);
-            let mut new_ip = IP::new();
+            let mut new_msg = Msg::new();
             {
-                let mut ip = new_ip.build_schema::<file_desc::Builder>();
-                ip.set_text(&l);
+                let mut msg = new_msg.build_schema::<file_desc::Builder>();
+                msg.set_text(&l);
             }
-            try!(self.ports.send("output", new_ip));
+            try!(self.output.output.send(new_msg));
         }
 
         // Send stop
-        let mut new_ip = IP::new();
+        let mut new_msg = Msg::new();
         {
-            let mut ip = new_ip.build_schema::<file_desc::Builder>();
-            ip.set_end(&path);
+            let mut msg = new_msg.build_schema::<file_desc::Builder>();
+            msg.set_end(&path);
         }
-        try!(self.ports.send("output", new_ip));
+        try!(self.output.output.send(new_msg));
 
-        Ok(())
+        Ok(End)
 
     }
 

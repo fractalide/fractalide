@@ -9,39 +9,34 @@ struct Graph {
     errors: bool,
     nodes: Vec<(String, String)>,
     edges: Vec<(String, String, String, String, String, String)>,
-    iips: Vec<(String, String, String, String)>,
+    imsgs: Vec<(String, String, String, String)>,
     ext_in: Vec<(String, String, String, String)>,
     ext_out: Vec<(String, String, String, String)>,
 }
 
 agent! {
-    nucleus_flow_vm, edges(path, fbp_graph, option_path)
-    inputs(input: fbp_graph, new_path: option_path, error: any),
-    inputs_array(),
-    outputs(output: fbp_graph, ask_graph: path, ask_path: path),
-    outputs_array(),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()>{
+    input(input: fbp_graph, new_path: option_path, error: any),
+    output(output: fbp_graph, ask_graph: path, ask_path: path),
+    fn run(&mut self) -> Result<Signal>{
         let mut graph = Graph { errors: false,
-            nodes: vec![], edges: vec![], iips: vec![],
+            nodes: vec![], edges: vec![], imsgs: vec![],
             ext_in: vec![], ext_out: vec![],
         };
 
         // retrieve the asked graph
-        let mut ip = try!(self.ports.recv("input"));
-        let i_graph: fbp_graph::Reader = try!(ip.read_schema());
+        let mut msg = try!(self.input.input.recv());
+        let i_graph: fbp_graph::Reader = try!(msg.read_schema());
 
         try!(add_graph(self, &mut graph, i_graph, ""));
 
         if !graph.errors {
             try!(send_graph(&self, &graph))
         }
-        Ok(())
+        Ok(End)
     }
 }
 
-fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
+fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
 
     if try!(new_graph.get_path()) == "error" { graph.errors = true; }
 
@@ -51,8 +46,8 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
         try!(n.get_i_port()).into(), try!(n.get_i_selection()).into(),
         format!("{}-{}", name, try!(n.get_i_name()))));
     }
-    for n in try!(new_graph.borrow().get_iips()).iter() {
-        graph.iips.push((try!(n.get_iip()).into(),
+    for n in try!(new_graph.borrow().get_imsgs()).iter() {
+        graph.imsgs.push((try!(n.get_imsg()).into(),
         try!(n.get_port()).into(), try!(n.get_selection()).into(),
         format!("{}-{}", name, try!(n.get_comp())) ));
     }
@@ -65,11 +60,11 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
             }
         }
 
-        for iip in &mut graph.iips {
-            if iip.3 == name && iip.1 == try!(n.get_name()) {
-                iip.3 = comp_name.clone();
-                iip.1 = try!(n.get_port()).into();
-                iip.2 = try!(n.get_selection()).into();
+        for imsg in &mut graph.imsgs {
+            if imsg.3 == name && imsg.1 == try!(n.get_name()) {
+                imsg.3 = comp_name.clone();
+                imsg.1 = try!(n.get_port()).into();
+                imsg.2 = try!(n.get_selection()).into();
             }
         }
 
@@ -97,15 +92,15 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
         let c_sort = try!(n.get_sort());
         let c_name = try!(n.get_name());
 
-        let mut ip = IP::new();
+        let mut msg = Msg::new();
         {
-            let mut path = ip.build_schema::<path::Builder>();
+            let mut path = msg.build_schema::<path::Builder>();
             path.set_path(&c_sort);
         }
-        try!(agent.ports.send("ask_path", ip));
+        try!(agent.output.ask_path.send(msg));
 
-        let mut ip = try!(agent.ports.recv("new_path"));
-        let i_graph: option_path::Reader = try!(ip.read_schema());
+        let mut msg = try!(agent.input.new_path.recv());
+        let i_graph: option_path::Reader = try!(msg.read_schema());
 
         let new_path: Option<String> = match try!(i_graph.which()) {
             option_path::Path(p) => { Some(try!(p).into()) },
@@ -131,16 +126,16 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
         };
 
         if is_subgraph {
-            let mut msg = IP::new();
+            let mut msg = Msg::new();
             {
                 let mut number = msg.build_schema::<path::Builder>();
                 number.set_path(&path);
             }
-            try!(agent.ports.send("ask_graph", msg));
+            try!(agent.output.ask_graph.send(msg));
 
             // retrieve the asked graph
-            let mut ip = try!(agent.ports.recv("input"));
-            let i_graph: fbp_graph::Reader = try!(ip.read_schema());
+            let mut msg = try!(agent.input.input.recv());
+            let i_graph: fbp_graph::Reader = try!(msg.read_schema());
 
             add_graph(agent, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {
@@ -150,13 +145,13 @@ fn add_graph(agent: &nucleus_flow_vm, mut graph: &mut Graph, new_graph: fbp_grap
     Ok(())
 }
 
-fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
-    let mut new_ip = IP::new();
+fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
+    let mut new_msg = Msg::new();
     {
-        let mut ip = new_ip.build_schema::<fbp_graph::Builder>();
-        ip.set_path("");
+        let mut msg = new_msg.build_schema::<fbp_graph::Builder>();
+        msg.set_path("");
         {
-            let mut nodes = ip.borrow().init_nodes(graph.nodes.len() as u32);
+            let mut nodes = msg.borrow().init_nodes(graph.nodes.len() as u32);
             let mut i = 0;
             for n in &graph.nodes {
                 nodes.borrow().get(i).set_name(&n.0[..]);
@@ -165,7 +160,7 @@ fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
             }
         }
         {
-            let mut edges = ip.borrow().init_edges(graph.edges.len() as u32);
+            let mut edges = msg.borrow().init_edges(graph.edges.len() as u32);
             let mut i = 0;
             for e in &graph.edges {
                 edges.borrow().get(i).set_o_name(&e.0[..]);
@@ -178,18 +173,18 @@ fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
             }
         }
         {
-            let mut iips = ip.borrow().init_iips(graph.iips.len() as u32);
+            let mut imsgs = msg.borrow().init_imsgs(graph.imsgs.len() as u32);
             let mut i = 0;
-            for iip in &graph.iips {
-                iips.borrow().get(i).set_iip(&iip.0[..]);
-                iips.borrow().get(i).set_port(&iip.1[..]);
-                iips.borrow().get(i).set_selection(&iip.2[..]);
-                iips.borrow().get(i).set_comp(&iip.3[..]);
+            for imsg in &graph.imsgs {
+                imsgs.borrow().get(i).set_imsg(&imsg.0[..]);
+                imsgs.borrow().get(i).set_port(&imsg.1[..]);
+                imsgs.borrow().get(i).set_selection(&imsg.2[..]);
+                imsgs.borrow().get(i).set_comp(&imsg.3[..]);
                 i += 1;
             }
         }
         {
-            let mut ext = ip.borrow().init_external_inputs(graph.ext_in.len() as u32);
+            let mut ext = msg.borrow().init_external_inputs(graph.ext_in.len() as u32);
             let mut i = 0;
             for e in &graph.ext_in {
                 ext.borrow().get(i).set_name(&e.0[..]);
@@ -200,7 +195,7 @@ fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
             }
         }
         {
-            let mut ext = ip.borrow().init_external_outputs(graph.ext_out.len() as u32);
+            let mut ext = msg.borrow().init_external_outputs(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
                 ext.borrow().get(i).set_name(&e.0[..]);
@@ -211,6 +206,6 @@ fn send_graph(comp: &nucleus_flow_vm, graph: &Graph) -> Result<()> {
             }
         }
     }
-    let _ = comp.ports.send("output", new_ip);
+    let _ = comp.output.output.send(new_msg);
     Ok(())
 }

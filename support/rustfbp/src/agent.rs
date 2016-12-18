@@ -1,24 +1,31 @@
-//! This crate helps to create a Fractalide agent
+//! This crate helps to create a Fractalide component
 //!
-//! It provides the macro `agent` which takes the high level view of the agent, and creates the code for the scheduler.
+//! It provides the macro `component` which takes the high level view of the component, and creates the code for the scheduler.
 //!
-//! It also declare the Trait Agent and the shared methods needed by every agent and the scheduler.
+//! It also declare the Trait Agent and the shared methods needed by every component and the scheduler.
 
 
 extern crate capnp;
-use ports::Ports;
+
+// TODO : Add method to remove components
+use ports::{MsgSender, MsgReceiver};
+use scheduler::Signal;
 use result::Result;
 
 /// Provide the generic functions of agents
 ///
 /// These three functions are used by the scheduler
 pub trait Agent {
-    /// Return a muttable borrow to the Ports object.
-    fn get_ports(&mut self) -> &mut Ports;
     /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
-    /// Run the method of the agent, his personal logic
-    fn run(&mut self) -> Result<()>;
+    /// Connect output port
+    fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()>;
+    /// Connect array output port
+    fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()>;
+    /// Add input element
+    fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()>;
+    /// Run the method of the component, his personal logic
+    fn run(&mut self) -> Result<Signal>;
 }
 
 
@@ -26,22 +33,16 @@ pub trait Agent {
 ///
 /// It helps to define a agent, by defining the input and output ports, if there is an option or an acc port, ...
 ///
-/// `edges()` and `portal()` are optional.
-///
 /// Example :
 ///
 /// ```rust,ignore
 /// agent! {
-///    display, edges(generic_text)
 ///    inputs(input: any),
-///    inputs_array(),
 ///    outputs(output: any),
-///    outputs_array(),
 ///    option(generic_text),
-///    acc(), portal()
-///    fn run(&mut self) -> Result<()> {
+///    fn run(&mut self) -> Result<Signal> {
 ///        // Receive an IP
-///        let ip = try!(self.ports.recv("input"));
+///        let msg = try!(self.input.input.recv());
 ///
 ///        // Received an IP from the option port (a generic_text)
 ///        let opt = self.recv_opt();
@@ -52,23 +53,23 @@ pub trait Agent {
 ///        println!("{}", try!(reader.get_text()));
 ///
 ///        // Send the received IP outside, but don't care about the success (drop on fail)
-///        let _ = self.ports.send("output", ip);
+///        let _ = self.output.output.send(msg);
 ///
-///        Ok(())
+///        Ok(End)
 ///    }
 /// }
 /// ```
 #[macro_export]
 macro_rules! agent {
     (
-       $name:ident, $( edges( $( $edge:ident ),* ) )*
-        inputs($( $input_field_name:ident: $input_edge_name:ident),* ),
-        inputs_array($( $input_array_name:ident: $input_edge_array:ident),* ),
-        outputs($( $output_field_name:ident: $output_edge_name:ident),* ),
-        outputs_array($($output_array_name:ident: $output_edge_array:ident),* ),
-        option($($option_edge: ident),*),
-        acc($($acc_edge: ident),*), $( portal($portal_type:ty => $portal_value:expr))*
-        fn run(&mut $arg:ident) -> Result<()> $fun:block
+        $( input($( $input_name:ident: $input_contract:ident ),*), )*
+        $( inarr($( $input_a_name:ident: $input_a_contract:ident ),*), )*
+        $( output($( $output_name:ident: $output_contract:ident ),*), )*
+        $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
+        $( portal( $portal_type:ty => $portal_value:expr ), )*
+        $( option($option:ident), )*
+        $( accumulator($acc:ident ), )*
+        fn run(&mut $arg:ident) -> Result<Signal> $fun:block
     )
         =>
     {
@@ -76,13 +77,13 @@ macro_rules! agent {
 
         use rustfbp::result;
         use rustfbp::result::Result;
-        use rustfbp::ports::IPSender;
-        use rustfbp::scheduler::CompMsg;
+        use rustfbp::scheduler::{CompMsg, Signal};
         use std::error::Error;
 
-        use std::sync::mpsc::Sender;
+        use std::sync::mpsc::{Sender};
+        use std::sync::mpsc::channel;
 
-        use rustfbp::ports::{IP, Ports};
+        use rustfbp::ports::{Msg, MsgSender, MsgReceiver, OutputSend};
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -92,133 +93,271 @@ macro_rules! agent {
 
         use std::io::{Read, Write};
 
+        use rustfbp::scheduler::Signal::*;
+
         mod edge_capnp {
                 include!("edge_capnp.rs");
         }
 
-        $( $(
-            use edge_capnp::$edge;
-        )* )*
+        use edge_capnp::*;
 
-        impl $name {
-            pub fn recv_option(&mut self) -> IP {
+        impl ThisAgent {
+            $(
+            fn dummy() {
+                if stringify!($option) != "" {}
+            }
+            pub fn recv_option(&mut self) -> Msg {
                 self.try_recv_option();
-                if self.option_ip.is_none() {
-                    self.option_ip = self.ports.recv("option").ok();
+                if self.option_msg.is_none() {
+                    self.option_msg = self.input.option.recv().ok();
                 }
-                match self.option_ip {
-                    Some(ref ip) => ip.clone(),
+                match self.option_msg {
+                    Some(ref msg) => msg.clone(),
                     None => unreachable!(),
                 }
             }
 
-            pub fn try_recv_option(&mut self) -> Option<IP> {
+            pub fn try_recv_option(&mut self) -> Option<Msg> {
                 loop {
-                    match self.ports.try_recv("option") {
+                    match self.input.option.try_recv() {
                         Err(_) => { break; },
-                        Ok(ip) => { self.option_ip = Some(ip); }
+                        Ok(msg) => { self.option_msg = Some(msg); }
                     };
                 }
-                self.option_ip.as_ref().map(|ip|{ ip.clone() })
+                self.option_msg.as_ref().map(|msg|{ msg.clone() })
+            }
+            )*
+
+            pub fn send_action(&mut self, output: &str, msg: Msg) -> Result<()> {
+                if let Some(sender) = {
+                    match output {
+                        $($(
+                            stringify!($output_a_name) =>  { self.outarr.$output_a_name.get(&msg.action) }
+                        )*)*
+                            _ => None
+                    }
+                } // End of the if let Some = { ... }
+                {
+                    let s: &MsgSender = sender;
+                    try!(s.send(msg));
+                }
+                else {
+                    match output {
+                        $($(
+                            stringify!($output_name) => { self.output.$output_name.send(msg);}
+                        )*)*
+                            _ => { return Err(result::Error::PortDontExist(output.into())); }
+                    }
+                }
+                Ok(())
             }
         }
 
-        // simple and array
-        impl Agent for $name {
-
-            fn get_ports(&mut self) -> &mut Ports {
-                &mut self.ports
-            }
+        impl Agent for ThisAgent {
 
             fn is_input_ports(&self) -> bool {
-                $(
-                    if true || stringify!($input_field_name) == "" { return true; }
-                )*
-                $(
-                    if true || stringify!($input_array_name) == "" { return true; }
-                )*
+                $($(
+                    if true || stringify!($input_name) == "" { return true; }
+                )*)*
+                $($(
+                    if true || stringify!($input_a_name) == "" { return true; }
+                )*)*
                 false
             }
 
-            fn run(&mut $arg) -> Result<()> $fun
+            fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($output_name) => {
+                            self.output.$output_name = Some(sender);
+                        }
+                    )*)*
+                        _ => {
+                            return Err(result::Error::PortDontExist(port.into()));
+                        }
+                }
+                Ok(())
+            }
+
+            fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($output_a_name) => {
+                            self.outarr.$output_a_name.insert(element, sender);
+                        }
+                    )*)*
+                        _ => {
+                            return Err(result::Error::PortDontExist(port.into()));
+                        }
+                }
+                Ok(())
+            }
+
+            fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()> {
+                match port {
+                    $($(
+                        stringify!($input_a_name) => {
+                            self.inarr.$input_a_name.insert(element, recv);
+                            Ok(())
+                        }
+                    )*)*
+                        _ => {
+                            Err(result::Error::PortDontExist(port.into()))
+                        }
+                }
+            }
+
+            fn run(&mut $arg) -> Result<Signal> $fun
 
         }
 
-        /* Global agent */
+        pub struct Input {
+            option: MsgReceiver,
+            acc: MsgReceiver,
+            $($(
+                $input_name: MsgReceiver,
+            )*)*
+        }
+
+        pub struct Inarr {
+            $($(
+                $input_a_name: HashMap<String, MsgReceiver>,
+            )*)*
+        }
+
+        pub struct Output {
+            acc: Option<MsgSender>,
+            $($(
+                $output_name: Option<MsgSender>,
+            )*)*
+        }
+
+        pub struct Outarr {
+            $($(
+                $output_a_name: HashMap<String, MsgSender>
+            )*)*
+        }
+
+        /* Global component */
 
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
-        pub struct $name {
+        pub struct ThisAgent {
             name: String,
-            pub ports: Ports,
-            pub option_ip: Option<IP>,
+            pub input: Input,
+            pub inarr: Inarr,
+            pub output: Output,
+            pub outarr: Outarr,
+            pub option_msg: Option<Msg>,
+            sched: Sender<CompMsg>,
             $(
             pub portal: $portal_type ,
             )*
         }
 
         #[allow(dead_code)]
-        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
-            let (ports, senders) = try!(Ports::new(name.clone(), sched,
-                                   vec!["option".into(), "acc".into(), $( stringify!($input_field_name).to_string() ),*],
-                                   vec![$( stringify!($input_array_name).to_string() ),*],
-                                   vec!["acc".into(), $( stringify!($output_field_name).to_string() ),*],
-                                   vec![$( stringify!($output_array_name).to_string() ),*],));
+        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
 
-            // Put it together
-            let comp = $name{
+            let mut senders: HashMap<String, MsgSender> = HashMap::new();
+            let option = MsgReceiver::new(name.clone(), sched.clone(), false);
+            senders.insert("option".to_string(), option.1);
+            let acc = MsgReceiver::new(name.clone(), sched.clone(), false);
+            senders.insert("acc".to_string(), acc.1.clone());
+            $($(
+                let $input_name = MsgReceiver::new(name.clone(), sched.clone(), true);
+                senders.insert(stringify!($input_name).to_string(), $input_name.1);
+            )*)*
+            let input = Input {
+                option: option.0,
+                acc: acc.0,
+                $($(
+                    $input_name: $input_name.0,
+                )*)*
+            };
+
+            let inarr = Inarr {
+                $($(
+                    $input_a_name: HashMap::new(),
+                )*)*
+            };
+
+            let output = Output {
+                acc: Some(acc.1),
+                $($(
+                    $output_name: None,
+                )*)*
+            };
+
+            let outarr = Outarr {
+                $($(
+                    $output_a_name: HashMap::new(),
+                )*)*
+            };
+
+            let agent= ThisAgent {
                 name: name,
-                ports: ports,
-                option_ip: None,
+                input: input,
+                inarr: inarr,
+                output: output,
+                outarr: outarr,
+                option_msg: None,
+                sched: sched,
                 $(
                     portal: $portal_value,
                 )*
             };
-            Ok((Box::new(comp) as Box<Agent + Send>, senders))
+
+            Ok((Box::new(agent) as Box<Agent + Send>, senders))
         }
 
         #[no_mangle]
-        pub extern fn create_agent(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, IPSender>)> {
+        pub extern fn create_agent(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
             new(name, sched)
         }
 
         #[no_mangle]
         pub extern fn get_schema_input(port: &str) -> Result<String> {
             match port {
+                $($(
+                    stringify!($input_name)=> Ok(stringify!($input_contract).into()),
+                )*)*
                 $(
-                    stringify!($input_field_name)=> Ok(stringify!($input_edge_name).into()),
+                    "option" => Ok(stringify!($option).into()),
                 )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $(
+                    "acc" => Ok(stringify!($acc).into()),
+                )*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_input_array(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($input_array_name) => Ok(stringify!($input_edge_array).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($input_a_name) => Ok(stringify!($input_a_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_output(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($output_field_name)=> Ok(stringify!($output_edge_name).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($output_name)=> Ok(stringify!($output_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
 
         #[no_mangle]
         pub extern fn get_schema_output_array(port: &str) -> Result<String> {
             match port {
-                $(
-                    stringify!($output_array_name) => Ok(stringify!($output_edge_array).into()),
-                )*
-                _ => { Err(result::Error::PortNotFound("unknown".into(), port.into())) }
+                $($(
+                    stringify!($output_a_name) => Ok(stringify!($output_a_contract).into()),
+                )*)*
+                _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
     }

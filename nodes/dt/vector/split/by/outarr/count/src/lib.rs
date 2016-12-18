@@ -3,16 +3,11 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    dt_vector_split_by_outarr_count, edges(file_list)
-    inputs(input: file_list),
-    inputs_array(),
-    outputs(),
-    outputs_array(output: file_list),
-    option(),
-    acc(),
-    fn run(&mut self) -> Result<()> {
-        let mut ip = try!(self.ports.recv("input"));
-        let list: file_list::Reader = try!(ip.read_schema());
+    input(input: file_list),
+    outarr(output: file_list),
+    fn run(&mut self) -> Result<Signal> {
+        let mut msg = try!(self.input.input.recv());
+        let list: file_list::Reader = try!(msg.read_schema());
         let list = try!(list.get_files());
 
         let mut v = Vec::with_capacity(list.len() as usize);
@@ -20,24 +15,26 @@ agent! {
         {
             v.push(try!(list.get(path)));
         }
-        let out_array_count = try!(self.ports.get_output_selections("output")).iter().count();
+        let out_array_count = self.outarr.output.keys().count();
         let inc_by = list.len() as usize / out_array_count ;
         let mut i: u32 = 0;
         for chunk in v.chunks(inc_by)
         {
-            let mut new_ip = IP::new();
+            let mut new_msg = Msg::new();
             {
-                let ip = new_ip.build_schema::<file_list::Builder>();
-                let mut files = ip.init_files(chunk.len() as u32);
+                let msg = new_msg.build_schema::<file_list::Builder>();
+                let mut files = msg.init_files(chunk.len() as u32);
                 let mut i: u32 = 0;
                 for path in chunk {
                     files.borrow().set(i, path);
                     i += 1;
                 }
             }
-            try!(self.ports.send_array("output", &format!("{}", i), new_ip));
+            if let Some(sender) = self.outarr.output.get(&format!("{}", i)){
+                try!(sender.send(new_msg));
+            }
             i += 1;
         }
-        Ok(())
+        Ok(End)
     }
 }
