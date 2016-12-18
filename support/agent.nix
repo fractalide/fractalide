@@ -31,11 +31,12 @@ in stdenv.mkCachedDerivation (args // rec {
       for i in $propagated; do
         propagated1="$propagated1 $i/src/edge_capnp.rs"
       done
-      touch src/edge_capnp.rs
+      touch edge_capnp.rs
       for i in $propagated1; do
-        cat $i >> src/edge_capnp.rs
+        cat $i >> edge_capnp.rs
       done
-      ${rustc}/bin/rustc src/lib.rs \
+      ls -la
+      ${rustc}/bin/rustc lib.rs \
       --crate-type ${binary} \
       -A dead_code -A unused_imports \
       --emit=dep-info,link \

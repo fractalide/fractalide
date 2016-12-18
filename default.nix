@@ -107,8 +107,8 @@ pkgs = pkgsOld.overridePackages(self: super: {
 nix-crates-index = pkgs.fetchFromGitHub {
   owner = "fractalide";
   repo = "nix-crates-index";
-  rev = "4345508a63636ae41ed317bb17a16140f50b827a";
-  sha256 = "13mipqiklbh9bhl0sdgaindjxzn62l0a2sykvdvxxxshrg4ki3w9";
+  rev = "9a204a4036fd76c2a405c2db3dcb7a9729ed6254";
+  sha256 = "1bh71rys15v3wrccvpf5q8j0v2n6fgj8qsbkj4f6x03s1pgxbb0n";
 };
 crates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
