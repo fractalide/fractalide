@@ -1,10 +1,9 @@
 { buffet }:
 
 let
-fvm  = buffet.support.rustBinary {
+fvm  = buffet.support.executable {
   name = "fvm";
   src = ./.;
-  binary = "bin";
   crates = with buffet.crates; [ rustfbp capnp ];
   configurePhase = with buffet.nodes; with buffet.edges; ''
     runHook preConfigure

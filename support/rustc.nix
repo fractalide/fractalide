@@ -1,13 +1,14 @@
-{lib, stdenv, git, rustc
+{lib, stdenv, git, rustNightly
   , genName, crates-support
-  , debug, test, local-rustfbp}:
+  , debug, test}:
+
+{ type ? ""}:
 
 { name ? null
   , src ? null
   , osdeps ? []
   , crates ? []
   , edges ? []
-  , binary ? "dylib"
   , ... } @ args:
 
 let
@@ -15,6 +16,7 @@ let
 in stdenv.mkCachedDerivation (args // rec {
   name = compName;
   buildInputs = osdeps;
+  crateDeps = crates;
   #Don't forget to runHook, else the incremental builds wont work
   configurePhase = (args.configurePhase or "runHook preConfigure");
   buildPhase = args.buildPhase or ''
@@ -22,7 +24,7 @@ in stdenv.mkCachedDerivation (args // rec {
     echo "****** building: ${compName} "
     echo "*********************************************************************"
     ${crates-support.symlinkCalc (crates-support.cratesDeps [] crates)}
-    ${ if binary == "dylib" then ''
+    ${ if type == "agent" then ''
       propagated=""
       for i in $edges; do
         findInputs $i propagated propagated-build-inputs
@@ -35,23 +37,33 @@ in stdenv.mkCachedDerivation (args // rec {
       for i in $propagated1; do
         cat $i >> edge_capnp.rs
       done
-      ${rustc}/bin/rustc lib.rs \
-      --crate-type ${binary} \
+      ${rustNightly}/bin/rustc lib.rs \
+      --crate-type dylib \
       -A dead_code -A unused_imports \
       --emit=dep-info,link \
       --crate-name agent \
       -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
       -o libagent.so
     ''
-    else ''
-      ${rustc}/bin/rustc src/main.rs \
-      --crate-type ${binary} \
+    else if type == "executable" then ''
+      ${rustNightly}/bin/rustc src/main.rs \
+      --crate-type bin \
       -A dead_code -A unused_imports \
       --emit=dep-info,link \
       --crate-name ${crates-support.normalizeName compName} \
       -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
       -o ${compName}
-    ''}
+    ''
+    else if type == "crate" then ''
+      ${rustNightly}/bin/rustc src/lib.rs \
+      --crate-type lib \
+      -A dead_code -A unused_imports \
+      --emit=dep-info,link \
+      --crate-name ${crates-support.normalizeName compName} \
+      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+      -o lib${compName}.rlib
+    '' else ""
+  }
   '';
 
   checkPhase = if test == null then "echo skipping tests in debug mode"
@@ -65,13 +77,20 @@ in stdenv.mkCachedDerivation (args // rec {
   #Don't forget to runHook, else the incremental builds wont work
   installPhase = (args.installPhase or ''
     runHook preInstall
-    ${if binary == "dylib" then ''
-      mkdir -p $out/lib
-      cp libagent.so $out/lib
-    ''
-    else ''
-      mkdir -p $out/bin
-      cp ${compName} $out/bin
-    ''}
+    ${
+      if type == "agent" then ''
+        mkdir -p $out/lib
+        cp libagent.so $out/lib
+      ''
+      else if type == "executable" then ''
+        mkdir -p $out/bin
+        cp ${compName} $out/bin
+      ''
+      else if type == "crate" then ''
+        mkdir -p $out
+        cp lib${compName}.rlib $out/
+      ''
+      else ""
+    }
   '' );
   })

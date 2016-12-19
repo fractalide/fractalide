@@ -1,16 +1,10 @@
-{lib, stdenv}:
-
-stdenv.mkCachedDerivation {
+{ crate, crates, cratesDeps }:
+let
+  deps = with crates; [ capnp libloading threadpool ];
+in
+crate {
   name = "rustfbp";
-  src = lib.cleanSource ./rustfbp;
-
-  buildPhase = ''
-  mkdir -p $out/src
-  '';
-  installPhase = ''
-  runHook preInstall
-  cp -r src $out/src/
-  cp Cargo.toml $out/src/Cargo.toml
-  cp Cargo.lock $out/src/Cargo.lock
-  '';
+  crates = deps;
+  cratesDeps  = with crates; cratesDeps deps deps;
+  src = ./rustfbp;
 }

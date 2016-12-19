@@ -1,6 +1,6 @@
 { debug ? "--release"
 , node ? null
-, local-rustfbp ? ""
+, local-rustfbp ? "false"
 , cache ? null
 , test ? null
 , ...} @argsInput:
@@ -110,9 +110,10 @@ nix-crates-index = pkgs.fetchFromGitHub {
   rev = "809e8e9926a6e8366df35e0e9eb69ddf308acc21";
   sha256 = "07nry5ish34b3cvhq6qzx50289pggr0fmwzxapmfd34j7lklzkra";
 };
-crates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
+origCrates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
+crates = if local-rustfbp == "true" then origCrates // { rustfbp = support.rustfbp;} else origCrates;
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
-support = import ./support { inherit pkgs debug test local-rustfbp nodes edges crates; };
+support = import ./support { inherit pkgs debug test nodes edges crates; };
 fractals = import ./fractals { inherit buffet; };
 nodes = import ./nodes { inherit buffet; };
 edges = import ./edges { inherit buffet; };
@@ -129,7 +130,7 @@ buffet = {
 fvm = import ./support/fvm { inherit buffet; };
 in
 {
-  inherit buffet nodes edges;
+  inherit buffet nodes edges support;
   result = if node == null
   then fvm
   else pkgs.writeTextFile {
