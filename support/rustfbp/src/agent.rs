@@ -234,7 +234,7 @@ macro_rules! agent {
 
         pub struct Outarr {
             $($(
-                $output_a_name: HashMap<String, MsgSender>
+                $output_a_name: HashMap<String, MsgSender>,
             )*)*
         }
 
