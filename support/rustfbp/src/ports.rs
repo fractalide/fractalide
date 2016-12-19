@@ -180,6 +180,7 @@ impl OutputSend for Option<MsgSender> {
 pub struct MsgReceiver {
     name: String,
     recv: Receiver<Msg>,
+    sender: MsgSender,
     sched: Sender<CompMsg>,
     must_sched: bool,
 }
@@ -195,6 +196,7 @@ impl MsgReceiver {
         let r = MsgReceiver {
             recv: r,
             name: name,
+            sender: s.clone(),
             sched: sched,
             must_sched: must_sched,
         };
@@ -215,5 +217,9 @@ impl MsgReceiver {
             try!(self.sched.send(CompMsg::Dec(self.name.clone())));
         }
         Ok(msg)
+    }
+
+    pub fn get_sender(&self) -> MsgSender {
+	self.sender.clone()
     }
 }
