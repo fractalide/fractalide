@@ -35,7 +35,6 @@ in stdenv.mkCachedDerivation (args // rec {
       for i in $propagated1; do
         cat $i >> edge_capnp.rs
       done
-      ls -la
       ${rustc}/bin/rustc lib.rs \
       --crate-type ${binary} \
       -A dead_code -A unused_imports \
