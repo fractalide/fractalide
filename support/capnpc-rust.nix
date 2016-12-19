@@ -1,8 +1,7 @@
-{ fetchFromGitHub, crates, rustBinary }:
+{ fetchFromGitHub, executable, crates  }:
 
-rustBinary {
+executable {
   name = "capnpc-rust";
-  binary = "bin";
   crates = with crates; [ capnp capnpc ];
   src = fetchFromGitHub {
     owner = "dwrensha";
