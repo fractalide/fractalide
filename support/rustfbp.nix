@@ -5,6 +5,6 @@ in
 crate {
   name = "rustfbp";
   crates = deps;
-  cratesDeps  = with crates; cratesDeps deps deps;
+  cratesDeps  = cratesDeps deps deps;
   src = ./rustfbp;
 }
