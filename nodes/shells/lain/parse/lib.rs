@@ -1,5 +1,3 @@
-#![feature(question_mark)]
-
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;

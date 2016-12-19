@@ -419,7 +419,6 @@ This is the output of the above `agent`'s compilation:
 This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `${maths_boolean_nand}` `agent` seen earlier.
 
 ``` rust
-#![feature(question_mark)]
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -522,7 +521,6 @@ The `outarr` port is an `output array port`. It contains elements which may be e
 
 ##### `portal`:
 ``` rust
-#![feature(question_mark)]
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
