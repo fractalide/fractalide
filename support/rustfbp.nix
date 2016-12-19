@@ -1,10 +1,7 @@
-{ crate, crates, cratesDeps }:
-let
-  deps = with crates; [ capnp libloading threadpool ];
-in
+{ crate, crates }:
+
 crate {
   name = "rustfbp";
-  crates = deps;
-  cratesDeps  = cratesDeps deps deps;
+  crates = with crates; [ capnp libloading threadpool ];
   src = ./rustfbp;
 }

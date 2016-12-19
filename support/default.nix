@@ -26,7 +26,7 @@ rustc = callPackage ./rustc.nix {inherit debug test crates-support rustNightly g
 crate = rustc { type = "crate"; };
 executable = rustc { type = "executable"; };
 capnpc-rust = callPackage ./capnpc-rust.nix { inherit executable crates; };
-rustfbp = callPackage ./rustfbp.nix { inherit crate crates; cratesDeps = crates-support.cratesDeps; };
+rustfbp = callPackage ./rustfbp.nix { inherit crate crates; };
 in
 rec {
   inherit executable crates-support capnpc-rust rustfbp;

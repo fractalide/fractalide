@@ -16,7 +16,7 @@ let
 in stdenv.mkCachedDerivation (args // rec {
   name = compName;
   buildInputs = osdeps;
-  crateDeps = crates;
+  cratesDeps = crates-support.cratesDeps crates crates;
   #Don't forget to runHook, else the incremental builds wont work
   configurePhase = (args.configurePhase or "runHook preConfigure");
   buildPhase = args.buildPhase or ''
