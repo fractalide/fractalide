@@ -1,10 +1,10 @@
 { buffet }:
 
 let
-  fractal = pkgs.fetchFromGitHub {
+  fractal = buffet.pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_nanomsg";
-    rev = "6b2036458b73d927799a6c57a41cc4e714fa9148";
+    rev = "d0c0dfbfd99a3588587ea91aca3fe78d4f82f012";
     sha256 = "18raw44cn67f6dwl7b63y1m470y63vbr5h689c5z3nsakigv0ydc";
   };
   /*fractal = ../../../fractals/fractal_nanomsg;*/

@@ -7,6 +7,6 @@ agent {
   osdeps = with pkgs; [];
   configurePhase = with pkgs; ''
     runHook preConfigure
-    substituteInPlace src/lib.rs --replace "capnp_path" "${capnproto}/bin/capnp"
+    substituteInPlace lib.rs --replace "capnp_path" "${capnproto}/bin/capnp"
   '';
 }

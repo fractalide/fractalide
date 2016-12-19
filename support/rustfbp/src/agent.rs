@@ -1,13 +1,13 @@
-//! This crate helps to create a Fractalide component
+//! This crate helps to create a Fractalide agent
 //!
-//! It provides the macro `component` which takes the high level view of the component, and creates the code for the scheduler.
+//! It provides the macro `agent` which takes the high level view of the agent, and creates the code for the scheduler.
 //!
-//! It also declare the Trait Agent and the shared methods needed by every component and the scheduler.
+//! It also declare the Trait Agent and the shared methods needed by every agent and the scheduler.
 
 
 extern crate capnp;
 
-// TODO : Add method to remove components
+// TODO : Add method to remove agents
 use ports::{MsgSender, MsgReceiver};
 use scheduler::Signal;
 use result::Result;
@@ -24,7 +24,7 @@ pub trait Agent {
     fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()>;
     /// Add input element
     fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()>;
-    /// Run the method of the component, his personal logic
+    /// Run the method of the agent, his personal logic
     fn run(&mut self) -> Result<Signal>;
 }
 
@@ -238,7 +238,7 @@ macro_rules! agent {
             )*)*
         }
 
-        /* Global component */
+        /* Global agent */
 
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
