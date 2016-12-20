@@ -1,6 +1,6 @@
 [package]
 name = "rustfbp"
-version = "0.3.25"
+version = "0.3.26"
 authors = ["Denis Michiels <dmichiels@gmail.com>","Stewart Mackenzie <setori88@gmail.com>"]
 license = "MPL-2.0"
 homepage = "https://gitlab.com/fractalide/fractalide"
