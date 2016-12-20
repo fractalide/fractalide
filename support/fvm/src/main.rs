@@ -39,41 +39,41 @@ fn run(path_fbp: &str) {
     sched.add_node("nucleus_find_edge", "nucleus_find_edge.so").expect("cannot add node");
     sched.add_node("nucleus_find_node", "nucleus_find_node.so").expect("cannot add node");
 
-    sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
-    sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
-    sched.connect("sem".into(), "output".into(), "graph_check".into(), "input".into()).expect("cannot connect");
-    sched.connect("graph_check".into(), "output".into(), "vm".into(), "input".into()).expect("cannot connect");
-    sched.connect("graph_check".into(), "error".into(), "errors".into(), "semantic_error".into()).expect("cannot connect");
+    sched.connect("open", "output", "lex", "input").expect("cannot connect");
+    sched.connect("lex", "output", "sem", "input").expect("cannot connect");
+    sched.connect("sem", "output", "graph_check", "input").expect("cannot connect");
+    sched.connect("graph_check", "output", "vm", "input").expect("cannot connect");
+    sched.connect("graph_check", "error", "errors", "semantic_error").expect("cannot connect");
 
-    sched.connect("open".into(), "error".into(), "errors".into(), "file_error".into()).expect("cannot connect");
-    sched.connect("sem".into(), "error".into(), "errors".into(), "semantic_error".into()).expect("cannot connect");
-    sched.connect("errors".into(), "output".into(), "vm".into(), "input".into()).expect("cannot connect");
+    sched.connect("open", "error", "errors", "file_error").expect("cannot connect");
+    sched.connect("sem", "error", "errors", "semantic_error").expect("cannot connect");
+    sched.connect("errors", "output", "vm", "input").expect("cannot connect");
 
     // reccursive part
-    sched.connect("vm".into(), "ask_graph".into(), "open".into(), "input".into()).expect("cannot connect");
+    sched.connect("vm", "ask_graph", "open", "input").expect("cannot connect");
 
     // With Graph print
-    // sched.connect("vm".into(), "output".into(), "graph_print".into(), "input".into()).expect("cannot connect");
-    // sched.connect("graph_print".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");
+    // sched.connect("vm", "output", "graph_print", "input").expect("cannot connect");
+    // sched.connect("graph_print", "output", "sched", "graph").expect("cannot connect");
 
     // Without Graph print
-    sched.connect("vm".into(), "output".into(), "sched".into(), "graph".into()).expect("cannot connect");
+    sched.connect("vm", "output", "sched", "graph").expect("cannot connect");
 
-    sched.connect("sched".into(), "ask_path".into(), "nucleus_find_edge".into(), "input".into()).expect("cannot connect");
-    sched.connect("nucleus_find_edge".into(), "output".into(), "sched".into(), "edge_path".into()).expect("cannot connect");
+    sched.connect("sched", "ask_path", "nucleus_find_edge", "input").expect("cannot connect");
+    sched.connect("nucleus_find_edge", "output", "sched", "edge_path").expect("cannot connect");
 
-    sched.connect("vm".into(), "ask_path".into(), "nucleus_find_node".into(), "input".into()).expect("cannot connect");
-    sched.connect("nucleus_find_node".into(), "output".into(), "vm".into(), "new_path".into()).expect("cannot connect");
+    sched.connect("vm", "ask_path", "nucleus_find_node", "input").expect("cannot connect");
+    sched.connect("nucleus_find_node", "output", "vm", "new_path").expect("cannot connect");
 
     // IMsg part
-    sched.connect("sched".into(), "imsg_path".into(), "imsg".into(), "path".into()).expect("cannot connect");
-    sched.connect("sched".into(), "imsg_edge".into(), "imsg".into(), "edge".into()).expect("cannot connect");
-    sched.connect("sched".into(), "imsg_input".into(), "imsg".into(), "input".into()).expect("cannot connect");
-    sched.connect("imsg".into(), "output".into(), "sched".into(), "imsg".into()).expect("cannot connect");
+    sched.connect("sched", "imsg_path", "imsg", "path").expect("cannot connect");
+    sched.connect("sched", "imsg_edge", "imsg", "edge").expect("cannot connect");
+    sched.connect("sched", "imsg_input", "imsg", "input").expect("cannot connect");
+    sched.connect("imsg", "output", "sched", "imsg").expect("cannot connect");
 
-    sched.connect("sched".into(), "ask_graph".into(), "vm".into(), "input".into()).expect("cannot connect ask_graph");
+    sched.connect("sched", "ask_graph", "vm", "input").expect("cannot connect ask_graph");
 
-    let add = sched.get_sender("sched".into(), "action".into()).expect("action of sched not found");
+    let add = sched.get_sender("sched", "action").expect("action of sched not found");
 
     // Send the first Msg to the scheduler
     let mut start_msg = Msg::new();

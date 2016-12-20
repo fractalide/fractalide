@@ -78,27 +78,27 @@ agent! {
                         try!(self.portal.sched.remove_agent(node));
                     }
                 } else {
-                    try!(self.portal.sched.remove_agent(name.into()));
+                    try!(self.portal.sched.remove_agent(name));
                 }
             },
             fbp_action::Which::Connect(connect) => {
                 let connect = try!(connect);
-                let mut o_name: String = try!(connect.get_o_name()).into();
-                let mut o_port: String = try!(connect.get_o_port()).into();
-                let o_selection: String = try!(connect.get_o_selection()).into();
-                if let Some(subnet) = self.portal.subnet.get(&o_name) {
-                    if let Some(port) = subnet.ext_out.get(&o_port) {
-                        o_name = port.0.clone();
-                        o_port = port.1.clone();
+                let mut o_name = try!(connect.get_o_name());
+                let mut o_port = try!(connect.get_o_port());
+                let o_selection = try!(connect.get_o_selection());
+                if let Some(subnet) = self.portal.subnet.get(o_name) {
+                    if let Some(port) = subnet.ext_out.get(o_port) {
+                        o_name = &port.0;
+                        o_port = &port.1;
                     }
                 }
-                let mut i_name: String = try!(connect.get_i_name()).into();
-                let mut i_port: String = try!(connect.get_i_port()).into();
-                let i_selection: String = try!(connect.get_i_selection()).into();
-                if let Some(subnet) = self.portal.subnet.get(&i_name) {
-                    if let Some(port) = subnet.ext_in.get(&i_port) {
-                        i_name = port.0.clone();
-                        i_port = port.1.clone();
+                let mut i_name = try!(connect.get_i_name());
+                let mut i_port = try!(connect.get_i_port());
+                let i_selection = try!(connect.get_i_selection());
+                if let Some(subnet) = self.portal.subnet.get(i_name) {
+                    if let Some(port) = subnet.ext_in.get(i_port) {
+                        i_name = &port.0;
+                        i_port = &port.1;
                     }
                 }
                 try!(connect_ports(&mut self.portal.sched,
@@ -161,12 +161,12 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
     }
 
     for e in try!(i_graph.borrow().get_edges()).iter() {
-        let o_name = try!(e.get_o_name()).into();
-        let o_port = try!(e.get_o_port()).into();
-        let o_selection: String = try!(e.get_o_selection()).into();
-        let i_port = try!(e.get_i_port()).into();
-        let i_selection: String = try!(e.get_i_selection()).into();
-        let i_name = try!(e.get_i_name()).into();
+        let o_name = try!(e.get_o_name());
+        let o_port = try!(e.get_o_port());
+        let o_selection = try!(e.get_o_selection());
+        let i_port = try!(e.get_i_port());
+        let i_selection = try!(e.get_i_selection());
+        let i_name = try!(e.get_i_name());
 
         try!(connect_ports(&mut agent.portal.sched,
                 o_name, o_port, o_selection,
@@ -223,9 +223,9 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
         let edge_camel_case = to_camel_case(&c_name);
 
         let sender = if try!(imsg.get_selection()) == "" {
-            try!(agent.portal.sched.get_sender(try!(imsg.get_comp()).into(), try!(imsg.get_port()).into()))
+            try!(agent.portal.sched.get_sender(try!(imsg.get_comp()), try!(imsg.get_port())))
         } else {
-            try!(agent.portal.sched.get_array_sender(try!(imsg.get_comp()).into(), try!(imsg.get_port()).into(), try!(imsg.get_selection()).into()))
+            try!(agent.portal.sched.get_array_sender(try!(imsg.get_comp()), try!(imsg.get_port()), try!(imsg.get_selection())))
         };
 
         let mut new_out = Msg::new();
@@ -256,7 +256,7 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
 
     // Start all agents without input port
     for n in &subnet.nodes {
-        try!(agent.portal.sched.start_if_needed(n));
+        try!(agent.portal.sched.start_if_needed(n as &str));
     }
 
     // Remember the subnet
@@ -294,8 +294,8 @@ fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
     Ok((a.into(), b.into(), None))
 }
 
-fn connect_ports(sched: &mut Scheduler, o_name: String, o_port: String, o_selection: String,
-           i_name: String, i_port: String, i_selection: String) -> Result<()> {
+fn connect_ports(sched: &mut Scheduler, o_name: &str, o_port: &str, o_selection: &str,
+           i_name: &str, i_port: &str, i_selection: &str) -> Result<()> {
     match (&o_selection[..], &i_selection[..]) {
         ("", "") => {
             try!(sched.connect(o_name, o_port, i_name, i_port));
