@@ -140,8 +140,13 @@ agent! {
                 };
                 try!(sender.send(msg));
             },
+            fbp_action::Which::Halt(()) => {
+                let sched = mem::replace(&mut self.portal.sched, Scheduler::new());
+                sched.join();
+                return Ok(End);
+            }
         }
-        Ok(End)
+        Ok(Continue)
     }
 }
 

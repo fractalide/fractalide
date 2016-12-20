@@ -22,7 +22,6 @@ use agent::Agent;
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc::channel;
-use std::sync::mpsc::sync_channel;
 
 use std::thread;
 use std::thread::JoinHandle;
@@ -59,7 +58,7 @@ pub enum CompMsg {
     /// Add an element in an array output port
     AddOutputArrayElement(String, String, String),
     /// Signal the end of an execution
-    RunEnd(String, BoxedComp),
+    RunEnd(String, BoxedComp, Result<Signal>),
     /// Set the receiver of an input port
     SetReceiver(String, String, Receiver<Msg>),
     /// The agent received an Msg
@@ -122,7 +121,7 @@ impl Scheduler {
                     CompMsg::Start(name) => { sched_s.start(name) },
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
-                    CompMsg::RunEnd(name, boxed_comp) => { sched_s.run_end(name, boxed_comp) },
+                    CompMsg::RunEnd(name, boxed_comp, res) => { sched_s.run_end(name, boxed_comp, res) },
                     CompMsg::AddInputArrayElement(name, port, element, recv) => {
                         sched_s.edit_agent(name, EditCmp::AddInputArrayElement(port, element, recv))
                     },
@@ -534,6 +533,7 @@ pub enum SyncMsg {
 struct CompState {
     comp: Option<BoxedComp>,
     // TODO : manage can_run
+    is_run: bool,
     can_run: bool,
     edit_msgs: Vec<EditCmp>,
     ips: isize,
@@ -543,7 +543,7 @@ struct CompState {
 struct SchedState {
     sched_sender: Sender<CompMsg>,
     agents: HashMap<String, CompState>,
-    connections: usize,
+    running: usize,
     can_halt: bool,
     pool: ThreadPool,
 }
@@ -553,7 +553,7 @@ impl SchedState {
         SchedState {
             sched_sender: s,
             agents: HashMap::new(),
-            connections: 0,
+            running: 0,
             can_halt: false,
             pool: ThreadPool::new(8),
         }
@@ -581,6 +581,7 @@ impl SchedState {
     fn new_agent(&mut self, name: String, comp: BoxedComp) -> Result<()> {
         self.agents.insert(name, CompState {
             comp: Some(comp),
+            is_run: false,
             can_run: false,
             edit_msgs: vec![],
             ips: 0,
@@ -618,13 +619,13 @@ impl SchedState {
 
     fn halt(&mut self) -> Result<()> {
         self.can_halt = true;
-        if self.connections <= 0 {
+        if self.running <= 0 {
             self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
         }
         Ok(())
     }
 
-    fn run_end(&mut self, name: String, mut box_comp: BoxedComp) -> Result<()>{
+    fn run_end(&mut self, name: String, mut box_comp: BoxedComp, res: Result<Signal>) -> Result<()>{
         let must_restart = {
             let mut comp = self.agents.get_mut(&name).expect("SchedState RunEnd : agent doesn't exist");
             let vec = mem::replace(&mut comp.edit_msgs, vec![]);
@@ -633,13 +634,20 @@ impl SchedState {
             }
             let must_restart = comp.ips > 0;
             comp.comp = Some(box_comp);
+            if let Ok(Signal::End) = res {
+                if comp.is_run {
+                    self.running -= 1;
+                    comp.is_run = false;
+                }
+            } else if let Err(e) = res {
+                println!("{} fails : {}", name, e);
+            }
             must_restart
         };
-        self.connections -= 1;
         if must_restart {
             self.run(name);
         } else {
-            if self.connections <= 0 && self.can_halt {
+            if self.running <= 0 && self.can_halt {
                 self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
             }
         }
@@ -649,14 +657,14 @@ impl SchedState {
     fn run(&mut self, name: String) {
         let mut o_comp = self.agents.get_mut(&name).expect("SchedSate run : agent doesn't exist");
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
-            self.connections += 1;
+            if !o_comp.is_run {
+                self.running += 1;
+                o_comp.is_run = true;
+            }
             let sched_s = self.sched_sender.clone();
             self.pool.execute(move || {
                 let res = b_comp.run();
-                if let Err(e) = res {
-                    println!("{} fails : {}", name, e);
-                }
-                sched_s.send(CompMsg::RunEnd(name, b_comp)).expect("SchedState run : unable to send RunEnd");
+                sched_s.send(CompMsg::RunEnd(name, b_comp, res)).expect("SchedState run : unable to send RunEnd");
             });
         };
     }
@@ -679,11 +687,11 @@ impl SchedState {
                 // try!(c.add_input_receiver(&port, element, recv));
                 c.add_inarr_element(&port, element, recv)?;
             },
-            EditCmp::RemoveInputArrayElement(port, element) => {
+            EditCmp::RemoveInputArrayElement(_port, _element) => {
                 unimplemented!();
                 // try!(c.remove_array_receiver(&port, &element));
             }
-            EditCmp::AddOutputArrayElement(port, element) => {
+            EditCmp::AddOutputArrayElement(_port, _element) => {
                 unimplemented!();
                 //try!(c.add_output_element(&port, element));
             },
@@ -693,15 +701,15 @@ impl SchedState {
             EditCmp::ConnectOutputArrayPort(port_out, element_out, his) => {
                 c.connect_array(&port_out, element_out, his)?;
             },
-            EditCmp::SetReceiver(port, hir) => {
+            EditCmp::SetReceiver(_port, _hir) => {
                 unimplemented!();
                 //c.set_receiver(port, hir);
             }
-            EditCmp::Disconnect(port) => {
+            EditCmp::Disconnect(_port) => {
                 unimplemented!();
                 //try!(c.disconnect(port));
             },
-            EditCmp::DisconnectArray(port, element) => {
+            EditCmp::DisconnectArray(_port, _element) => {
                 unimplemented!();
                 //try!(c.disconnect_array(port, element));
             },

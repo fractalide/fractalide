@@ -10,7 +10,6 @@ use std::io::Read;
 use result;
 use result::Result;
 
-use std::collections::HashMap;
 use std::mem;
 
 use std::sync::mpsc::{Sender, Receiver, SyncSender};

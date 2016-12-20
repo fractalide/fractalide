@@ -38,12 +38,6 @@ fn run(path_fbp: &str) {
     sched.add_node("imsg", "nucleus_capnp_encode.so").expect("cannot add node");
     sched.add_node("nucleus_find_edge", "nucleus_find_edge.so").expect("cannot add node");
     sched.add_node("nucleus_find_node", "nucleus_find_node.so").expect("cannot add node");
-    sched.add_node("halter", "halter.so").expect("cannot add node");
-
-    // Send the start msg for the graph
-    let h = sched.get_sender("halter".into(), "input".into()).expect("halter not found");
-    let start_msg = Msg::new();
-    h.send(start_msg).expect("start");
 
     sched.connect("open".into(), "output".into(), "lex".into(), "input".into()).expect("cannot connect");
     sched.connect("lex".into(), "output".into(), "sem".into(), "input".into()).expect("cannot connect");
@@ -90,5 +84,15 @@ fn run(path_fbp: &str) {
         add.set_comp(&path_fbp);
     }
     add.send(start_msg).expect("cannot send start_msg");
+
+    // Send the halt msg
+    let mut halt_msg = Msg::new();
+    {
+        let mut builder: fbp_action::Builder = halt_msg.build_schema();
+        builder.set_halt(());
+    }
+    add.send(halt_msg).expect("cannot send halt_msg");
+
+    // Wait for the end of the execution
     sched.join();
 }

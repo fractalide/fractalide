@@ -13,6 +13,7 @@ edge {
         connect @2 :Connect;
         send @3 :Send;
         connectSender @4 :ConnectSender;
+        halt @5 :Void;
       }
     }
 
