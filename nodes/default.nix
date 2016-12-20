@@ -68,6 +68,7 @@ self = rec { # use one line only to insert a node (utils/new_node.py sorts this 
   ui_js_nodes = buffet.fractals.ui_js.nodes;
   web_server = callPackage ./web/server {};
   workbench = buffet.fractals.workbench.nodes.workbench;
+  workbench_test = buffet.fractals.workbench.nodes.test;
 }; # use one line only to insert a node (utils/new_node.py sorts this list)
 in
 self
