@@ -19,6 +19,8 @@ use result::Result;
 use ports::{MsgSender, MsgReceiver, Msg};
 use agent::Agent;
 
+use std::borrow::Cow;
+
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
 use std::sync::mpsc::channel;
@@ -174,9 +176,13 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.add_node("add", "/home/xxx/agents/add.so");
     /// ```
-    pub fn add_node(&mut self, name: &str, sort: &str) -> Result<()> {
-        let name = name.to_string();
-        let (comp, senders) = self.cache.create_comp(sort, name.clone(), self.sender.clone()).expect("cannot create comp");
+    pub fn add_node<'a, A, B>(&mut self, name: A, sort: B) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>
+    {
+        let name = name.into().into_owned();
+        let sort = sort.into().into_owned();
+        let (comp, senders) = self.cache.create_comp(&sort, name.clone(), self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
         self.sender.send(CompMsg::NewAgent(name.clone(), comp)).expect("Cannot send to sched state");
         let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound(name.clone(), "acc".into()))).clone();
@@ -184,7 +190,7 @@ impl Scheduler {
                                Comp {
                                    inputs: senders,
                                    inputs_array: HashMap::new(),
-                                   sort: sort.into(),
+                                   sort: sort,
                                    start: start,
                                });
         self.sender.send(CompMsg::ConnectOutputPort(name, "acc".into(), s_acc)).expect("Cannot send to sched state");
@@ -215,11 +221,12 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.start_if_needed("add"));
     /// ```
-    pub fn start_if_needed(&self, name: &str) -> Result<()> {
-        self.agents.get(name).ok_or(result::Error::AgentNotFound(name.into()))
+    pub fn start_if_needed<'a, A: Into<Cow<'a, str>>>(&self, name: A) -> Result<()> {
+        let name = name.into().into_owned();
+        self.agents.get(&name).ok_or(result::Error::AgentNotFound(name.clone()))
             .and_then(|comp| {
                 if comp.start {
-                    self.sender.send(CompMsg::Start(name.into())).expect("start_if_needed");
+                    self.sender.send(CompMsg::Start(name)).expect("start_if_needed");
                 }
                 Ok(())
             })
@@ -231,8 +238,8 @@ impl Scheduler {
     /// ```rust,ignore
     /// sched.start_agent("add");
     /// ```
-    pub fn start_agent(&self, name: String) {
-        self.sender.send(CompMsg::Start(name)).expect("start: unable to send to sched state");
+    pub fn start_agent<'a, A: Into<Cow<'a, str>>>(&self, name: A) {
+        self.sender.send(CompMsg::Start(name.into().into_owned())).expect("start: unable to send to sched state");
     }
 
     /// Remove a agent form the scheduler and retrieve all the information
@@ -242,7 +249,8 @@ impl Scheduler {
     /// let (boxed_comp, comp) = try!(sched.remove_agent("add"));
     /// assert!(boxed_comp.is_input_ports());
     /// ```
-    pub fn remove_agent(&mut self, name: String) -> Result<(BoxedComp, Comp)>{
+    pub fn remove_agent<'a, A: Into<Cow<'a, str>>>(&mut self, name: A) -> Result<(BoxedComp, Comp)>{
+        let name = name.into().into_owned();
         let (s, r) = channel();
         self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_agent: cannot send to the state");
         let response = try!(r.recv());
@@ -262,8 +270,17 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect("add", "output", "display", "input"));
     /// ```
-    pub fn connect(&self, comp_out: String, port_out: String, comp_in: String, port_in: String) -> Result<()>{
-        let sender = try!(self.get_sender(&comp_in, &port_in));
+    pub fn connect<'a, A, B, C, D>(&self, comp_out: A, port_out: B, comp_in: C, port_in: D) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+        D: Into<Cow<'a, str>>
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
+        let comp_in = &*(comp_in.into());
+        let port_in = &*(port_in.into());
+        let sender = try!(self.get_sender(comp_in, port_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to sched state");
         Ok(())
     }
@@ -274,8 +291,19 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_array("add", "outputs", "1", "display", "input"));
     /// ```
-    pub fn connect_array(&self, comp_out: String, port_out: String, element_out: String, comp_in: String, port_in: String) -> Result<()> {
-        let sender = try!(self.get_sender(&comp_in, &port_in));
+    pub fn connect_array<'a, A, B, C, D, E>(&self, comp_out: A, port_out: B, element_out: C, comp_in: D, port_in: E) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+        D: Into<Cow<'a, str>>,
+        E: Into<Cow<'a, str>>
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
+        let element_out = element_out.into().into_owned();
+        let comp_in = &*(comp_in.into());
+        let port_in = &*(port_in.into());
+        let sender = try!(self.get_sender(comp_in, port_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -286,8 +314,19 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_to_array("add", "output", "display", "inputs", "1"));
     /// ```
-    pub fn connect_to_array(&self, comp_out: String, port_out: String, comp_in: String, port_in: String, element_in: String) -> Result<()>{
-        let sender = try!(self.get_array_sender(&comp_in, &port_in, &element_in));
+    pub fn connect_to_array<'a, A, B, C, D, E>(&self, comp_out: A, port_out: B, comp_in: C, port_in: D, element_in: E) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+        D: Into<Cow<'a, str>>,
+        E: Into<Cow<'a, str>>
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
+        let comp_in = &*(comp_in.into());
+        let port_in = &*(port_in.into());
+        let element_in = &*(element_in.into());
+        let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -298,8 +337,21 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.connect_array_to_array("add", "outputs", "1", "display", "inputs", "1"));
     /// ```
-    pub fn connect_array_to_array(&self, comp_out: String, port_out: String, element_out: String, comp_in: String, port_in: String, element_in: String) -> Result<()>{
-        let sender = try!(self.get_array_sender(&comp_in, &port_in, &element_in));
+    pub fn connect_array_to_array<'a, A, B, C, D, E, F>(&self, comp_out: A, port_out: B, element_out: C, comp_in: D, port_in: E, element_in: F) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+        D: Into<Cow<'a, str>>,
+        E: Into<Cow<'a, str>>,
+        F: Into<Cow<'a, str>>
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
+        let element_out = element_out.into().into_owned();
+        let comp_in = &*(comp_in.into());
+        let port_in = &*(port_in.into());
+        let element_in = &*(element_in.into());
+        let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
@@ -310,7 +362,12 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.disconnect("add", "output"));
     /// ```
-    pub fn disconnect(&self, comp_out: String, port_out: String) -> Result<()>{
+    pub fn disconnect<'a, A, B>(&self, comp_out: A, port_out: B) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
         self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
         Ok(())
     }
@@ -321,7 +378,14 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.disconnect_array("add", "outputs", "1"));
     /// ```
-    pub fn disconnect_array(&self, comp_out: String, port_out: String, element:String) -> Result<()>{
+    pub fn disconnect_array<'a, A, B, C>(&self, comp_out: A, port_out: B, element: C) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+    {
+        let comp_out = comp_out.into().into_owned();
+        let port_out = port_out.into().into_owned();
+        let element = element.into().into_owned();
         self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, element)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
         Ok(())
     }
@@ -332,7 +396,14 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.add_input_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_input_array_element(&mut self, comp_name: String, port: String, element: String) -> Result<()>{
+    pub fn add_input_array_element<'a, A, B, C>(&mut self, comp_name: A, port: B, element: C) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+    {
+        let comp_name = comp_name.into().into_owned();
+        let port = port.into().into_owned();
+        let element = element.into().into_owned();
         let (r, s) = MsgReceiver::new(
             comp_name.clone(),
             self.sender.clone(),
@@ -363,12 +434,24 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.soft_add_input_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn soft_add_input_array_element(&mut self, comp: String, port: String, element: String) -> Result<()> {
+    pub fn soft_add_input_array_element<'a, A, B, C>(&mut self, comp: A, port: B, element: C) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>
+    {
         let mut res = true;
-        if let Some(comp) = self.agents.get(&comp) {
-            if let Some(port) = comp.inputs_array.get(&port) {
-                if let Some(_) = port.get(&element) {
-                    res = false;
+        let comp = comp.into();
+        let port = port.into();
+        let element = element.into();
+        {
+            let c = &(comp) as &str;
+            let p = &(port) as &str;
+            let e = &(element) as &str;
+            if let Some(comp) = self.agents.get(c) {
+                if let Some(port) = comp.inputs_array.get(p) {
+                    if let Some(_) = port.get(e) {
+                        res = false;
+                    }
                 }
             }
         }
@@ -385,8 +468,12 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.add_output_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_output_array_element(&self, comp: String, port: String, element: String) -> Result<()>{
-        self.sender.send(CompMsg::AddOutputArrayElement(comp, port, element)).ok().expect("Scheduler add_output_array_element : Unable to send to scheduler state");
+    pub fn add_output_array_element<A, B, C>(&self, comp: A, port: B, element: C) -> Result<()> where
+        A: Into<String>,
+        B: Into<String>,
+        C: Into<String>
+    {
+        self.sender.send(CompMsg::AddOutputArrayElement(comp.into(), port.into(), element.into())).ok().expect("Scheduler add_output_array_element : Unable to send to scheduler state");
         Ok(())
     }
 
@@ -398,8 +485,11 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver(&self, comp: String, port: String, receiver: Receiver<Msg>) -> Result<()> {
-        self.sender.send(CompMsg::SetReceiver(comp, port, receiver)).expect("scheduler cannot send");
+    pub fn set_receiver<A, B>(&self, comp: A, port: B, receiver: Receiver<Msg>) -> Result<()> where
+        A: Into<String>,
+        B: Into<String>,
+    {
+        self.sender.send(CompMsg::SetReceiver(comp.into(), port.into(), receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -411,8 +501,12 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver(&self, comp: String, port: String, element: String, receiver: MsgReceiver) -> Result<()> {
-        self.sender.send(CompMsg::AddInputArrayElement(comp, port, element, receiver)).expect("scheduler cannot send");
+    pub fn set_array_receiver<A, B, C>(&self, comp: A, port: B, element: C, receiver: MsgReceiver) -> Result<()> where
+        A: Into<String>,
+        B: Into<String>,
+        C: Into<String>
+    {
+        self.sender.send(CompMsg::AddInputArrayElement(comp.into(), port.into(), element.into(), receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -422,10 +516,15 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
-    pub fn get_sender(&self, comp: &str, port: &str) -> Result<MsgSender> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_sender<'a, A, B>(&self, comp: A, port: B) -> Result<MsgSender> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                c.inputs.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
+                c.inputs.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))
                     .map(|s| { s.clone() })
             })
     }
@@ -436,12 +535,19 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
-    pub fn get_array_sender(&self, comp: &str, port: &str, element: &str) -> Result<MsgSender> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_array_sender<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<MsgSender> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        let element = element.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                c.inputs_array.get(port).ok_or(result::Error::PortNotFound(comp.into(), port.into()))
+                c.inputs_array.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))
                     .and_then(|p| {
-                        p.get(element).ok_or(result::Error::ElementNotFound(comp.into(), port.into(), element.into()))
+                        p.get(&element as &str).ok_or(result::Error::ElementNotFound(comp.to_string(), port.to_string(), element.to_string()))
                             .map(|s| { s.clone() })
                     })
             })
@@ -453,10 +559,15 @@ impl Scheduler {
     /// ```rust,ignore
     /// let edge = try!(sched.get_schema_input("add", "input"));
     /// ```
-    pub fn get_schema_input(&self, comp: &str, port: &str) -> Result<String> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_schema_input<'a, A, B>(&self, comp: A, port: B) -> Result<String> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                self.cache.get_schema_input(&c.sort, port)
+                self.cache.get_schema_input(&c.sort, &port as &str)
             })
     }
 
@@ -466,10 +577,15 @@ impl Scheduler {
     /// ```rust,ignore
     /// let edge = try!(sched.get_schema_input_array("add", "inputs"));
     /// ```
-    pub fn get_schema_input_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_schema_input_array<'a, A, B>(&self, comp: A, port: B) -> Result<String> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                self.cache.get_schema_input_array(&c.sort, port)
+                self.cache.get_schema_input_array(&c.sort, &port as &str)
             })
     }
 
@@ -479,10 +595,15 @@ impl Scheduler {
     /// ```rust,ignore
     /// let edge = try!(sched.get_schema_output("add", "output"));
     /// ```
-    pub fn get_schema_output(&self, comp: &str, port: &str) -> Result<String> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_schema_output<'a, A, B>(&self, comp: A, port: B) -> Result<String> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                self.cache.get_schema_output(&c.sort, port)
+                self.cache.get_schema_output(&c.sort, &port as &str)
             })
     }
 
@@ -492,10 +613,15 @@ impl Scheduler {
     /// ```rust,ignore
     /// let edge = try!(sched.get_schema_output_array("add", "outputs"));
     /// ```
-    pub fn get_schema_output_array(&self, comp: &str, port: &str) -> Result<String> {
-        self.agents.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn get_schema_output_array<'a, A, B>(&self, comp: A, port: B) -> Result<String> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+    {
+        let comp = comp.into();
+        let port = port.into();
+        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
             .and_then(|c| {
-                self.cache.get_schema_output_array(&c.sort, port)
+                self.cache.get_schema_output_array(&c.sort, &port as &str)
             })
     }
 
