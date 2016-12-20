@@ -280,6 +280,15 @@ impl Scheduler {
         let port_out = port_out.into().into_owned();
         let comp_in = &*(comp_in.into());
         let port_in = &*(port_in.into());
+        // Check schema
+        let sort_in = self.agents.get(comp_in).ok_or(result::Error::AgentNotFound(comp_in.into()))?;
+        let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        let in_schema = self.cache.get_schema_input(&sort_in.sort, port_in)?;
+        let out_schema = self.cache.get_schema_output(&sort_out.sort, &port_out)?;
+        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+            return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
+        }
+
         let sender = try!(self.get_sender(comp_in, port_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to sched state");
         Ok(())
@@ -303,6 +312,15 @@ impl Scheduler {
         let element_out = element_out.into().into_owned();
         let comp_in = &*(comp_in.into());
         let port_in = &*(port_in.into());
+        // Check schema
+        let sort_in = self.agents.get(comp_in).ok_or(result::Error::AgentNotFound(comp_in.into()))?;
+        let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        let in_schema = self.cache.get_schema_input(&sort_in.sort, port_in)?;
+        let out_schema = self.cache.get_schema_output_array(&sort_out.sort, &port_out)?;
+        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+            return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
+        }
+
         let sender = try!(self.get_sender(comp_in, port_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
@@ -326,6 +344,15 @@ impl Scheduler {
         let comp_in = &*(comp_in.into());
         let port_in = &*(port_in.into());
         let element_in = &*(element_in.into());
+        // Check schema
+        let sort_in = self.agents.get(comp_in).ok_or(result::Error::AgentNotFound(comp_in.into()))?;
+        let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        let in_schema = self.cache.get_schema_input_array(&sort_in.sort, port_in)?;
+        let out_schema = self.cache.get_schema_output(&sort_out.sort, &port_out)?;
+        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+            return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
+        }
+
         let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
         self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
@@ -351,6 +378,15 @@ impl Scheduler {
         let comp_in = &*(comp_in.into());
         let port_in = &*(port_in.into());
         let element_in = &*(element_in.into());
+        // Check schema
+        let sort_in = self.agents.get(comp_in).ok_or(result::Error::AgentNotFound(comp_in.into()))?;
+        let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        let in_schema = self.cache.get_schema_input_array(&sort_in.sort, port_in)?;
+        let out_schema = self.cache.get_schema_output_array(&sort_out.sort, &port_out)?;
+        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+            return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
+        }
+
         let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
         self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())

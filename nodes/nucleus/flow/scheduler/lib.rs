@@ -39,10 +39,10 @@ impl Portal {
 agent! {
     input(action: fbp_action,
            graph: fbp_graph,
-           edge_path: path,
+           edge_path: option_path,
            imsg: any),
     output(error: error,
-            ask_graph: path,
+            ask_graph: fbp_graph,
             ask_path: path,
             imsg_path: path,
             imsg_edge: generic_text,
@@ -203,9 +203,13 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
         try!(agent.output.ask_path.send(new_out));
 
         let mut edge_path_msg = try!(agent.input.edge_path.recv());
-        let edge_path: path::Reader = try!(edge_path_msg.read_schema());
+        let edge_path: option_path::Reader = try!(edge_path_msg.read_schema());
 
-        let c_path = try!(edge_path.get_path());
+        let c_path: String = match try!(edge_path.which()) {
+            option_path::Path(p) => { try!(p).into() },
+            option_path::None(()) => { "".to_string() }
+        };
+
         let c_path = format!("{}/src/edge.capnp", c_path);
 
         let mut edge_list: Vec<&str>;
