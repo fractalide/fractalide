@@ -15,6 +15,7 @@ pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Debug)]
 pub enum Error {
+    BadSchema(String, String, String, String, String, String),
     Capnp(capnp::Error),
     CapnpNIS(capnp::NotInSchema),
     IO(io::Error),
@@ -37,6 +38,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Error::BadSchema(ref oc, ref op, ref os, ref ic, ref ip, ref is) => write!(f, "Cap'n Proto Schema mismatch between {}() {} -> {} {}(), found {} -> {}", oc, op, ip, ic, os, is),
             Error::Capnp(ref err) => write!(f, "Cap'n Proto error: {}", err),
             Error::CapnpNIS(ref err) => write!(f, "Cap'n Proto error: {}", err),
             Error::IO(ref err) => write!(f, "IO error : {}", err),
@@ -61,6 +63,7 @@ impl fmt::Display for Error {
 impl error::Error for Error {
     fn description(&self) -> &str {
         match *self {
+            Error::BadSchema(..) => "Bad schema",
             Error::Capnp(ref err) => err.description(),
             Error::CapnpNIS(ref err) => err.description(),
             Error::IO(ref err) => err.description(),
