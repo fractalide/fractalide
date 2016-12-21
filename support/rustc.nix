@@ -39,7 +39,7 @@ in stdenv.mkCachedDerivation (args // rec {
       done
       ${rustNightly}/bin/rustc lib.rs \
       --crate-type dylib \
-      -A dead_code -A unused_imports \
+      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
       --emit=dep-info,link \
       --crate-name agent \
       -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
@@ -48,7 +48,7 @@ in stdenv.mkCachedDerivation (args // rec {
     else if type == "executable" then ''
       ${rustNightly}/bin/rustc src/main.rs \
       --crate-type bin \
-      -A dead_code -A unused_imports \
+      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
       --emit=dep-info,link \
       --crate-name ${crates-support.normalizeName compName} \
       -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
@@ -57,7 +57,7 @@ in stdenv.mkCachedDerivation (args // rec {
     else if type == "crate" then ''
       ${rustNightly}/bin/rustc src/lib.rs \
       --crate-type lib \
-      -A dead_code -A unused_imports \
+      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
       --emit=dep-info,link \
       --crate-name ${crates-support.normalizeName compName} \
       -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
