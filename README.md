@@ -13,11 +13,18 @@ Though, *simple to reason about* is not enough, we aim higher, we'd like [simpli
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
-### Donations
-Help keep us strong by donating Bitcoin to [15g3WQqYtcrqrno3oxGPi8nNe3hP6rJHo6](https://keybase.io/fractalide).
+## Features
+Fractalide stands on the shoulders of giants by combining the strengths of each language into one programming model.
 
-### Social
-Follow us on [twitter](https://twitter.com/fractalide)
+|Op |Programming Language|Safe|Zero-cost abstractions|Reusable|Reproducible|Distributed Type System| Concurrent
+|---|--------------------|-----|----------------------|---------|----------|-----------------|----------|
+|   |Nix Expressions     |     |                      |         |✔         |                 |          |
+|+  |Rust Language       |✔    |✔                    |         |          |                 |✔         |
+|+  |Flow-based Programming|   |                      |✔       |          |                 |✔         |
+|+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
+|=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
+
+As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because the `agents` make take advantage of zero-cost libraries, but they themselves must be run by a runtime.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
@@ -74,10 +81,9 @@ Follow us on [twitter](https://twitter.com/fractalide)
 - [x] Remove cargo.
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.
-- [ ] Only Information Packets make heap allocations.
+- [ ] Reduce heap allocations.
 - [ ] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.
-- [ ] Community collaboration: Please do send useful, well documented, well implemented `nodes` upstream. This is a [living system](https://hintjens.gitbooks.io/social-architecture/content/chapter6.html) that uses the [C4](http://rfc.zeromq.org/spec:42/C4/) so we'll all benefit from your `nodes`.
 
 ### Quick start
 Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
@@ -87,24 +93,9 @@ This codebase is currently in huge flux before stabilization, but at least you c
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ nix-build --argstr node test_sjm
+$ nix-build --argstr node workbench
 $ ./result
 ```
-
-### Building your own fractals
-
-A `fractal` is a fractalide 3rd party library. [Learn more](fractals/README.md)
-
-### Consulting and Support
-Name | Info | Language
------|------|---------
-[Stewart Mackenzie](mailto:setori88@gmail.com) | Founder and maintainer of Fractalide | English
-[Denis Michiels](mailto:dmichiels@mailoo.org) | Founder and maintainer of Fractalide | French
-
-### Contributing to Fractalide
-* The contributors are listed in [AUTHORS](./AUTHORS) (add yourself).
-* Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
-* Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
 ### Documentation
 * [Nodes](./nodes/README.md)
@@ -113,9 +104,23 @@ Name | Info | Language
 * [Fractals](./fractals/README.md)
 * [RustFBP](https://docs.rs/rustfbp)
 
+### Contributing to Fractalide
+* The contributors are listed in [AUTHORS](./AUTHORS) (add yourself).
+* Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
+* Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
+
+### Consulting and Support
+Name | Info | Language
+-----|------|---------
+[Stewart Mackenzie](mailto:setori88@gmail.com) | Founder and maintainer of Fractalide | English
+[Denis Michiels](mailto:dmichiels@mailoo.org) | Founder and maintainer of Fractalide | French
+
 ### License
 The project license is specified in LICENSE.
 Fractalide is free software; you can redistribute it and/or modify it under the terms of the Mozilla Public License Version 2 as approved by the Free Software Foundation.
+
+### Social
+Follow us on [twitter](https://twitter.com/fractalide)
 
 ### Thanks
 * Peter Van Roy
