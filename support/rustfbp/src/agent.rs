@@ -128,29 +128,6 @@ macro_rules! agent {
             }
             )*
 
-            pub fn send_action(&mut self, output: &str, msg: Msg) -> Result<()> {
-                if let Some(sender) = {
-                    match output {
-                        $($(
-                            stringify!($output_a_name) =>  { self.outarr.$output_a_name.get(&msg.action) }
-                        )*)*
-                            _ => None
-                    }
-                } // End of the if let Some = { ... }
-                {
-                    let s: &MsgSender = sender;
-                    try!(s.send(msg));
-                }
-                else {
-                    match output {
-                        $($(
-                            stringify!($output_name) => { self.output.$output_name.send(msg);}
-                        )*)*
-                            _ => { return Err(result::Error::PortDontExist(output.into())); }
-                    }
-                }
-                Ok(())
-            }
         }
 
         impl Agent for ThisAgent {
@@ -361,4 +338,15 @@ macro_rules! agent {
             }
         }
     }
+}
+
+#[macro_export]
+macro_rules! send_action {
+    ($agent: ident, $port:ident, $msg:ident) => {{
+        if let Some(sender) = $agent.outarr.$port.get(&$msg.action) {
+            sender.send($msg)
+        } else {
+            $agent.output.$port.send($msg)
+        }
+    }}
 }
