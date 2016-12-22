@@ -7,7 +7,7 @@ agent! {
     output(output: any),
     outarr(output: any),
     fn run(&mut self) -> Result<Signal> {
-        let msg = try!(self.ports.recv("input"));
+        let msg = try!(self.input.input.recv());
         let _ = self.send_action("output", msg);
         Ok(End)
     }
