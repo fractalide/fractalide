@@ -24,7 +24,7 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 |+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
 |=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
 
-As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because the `agents` make take advantage of zero-cost libraries, but they themselves must be run by a runtime.
+As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because `agents` take advantage of zero-cost libraries, but they themselves must be run by the fractalide runtime.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.

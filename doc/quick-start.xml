@@ -218,12 +218,12 @@ touch default.nix
 </screen>
 Then insert the below into <filename>default.nix</filename>:
 <screen>
-{ stdenv, subnet, upkeepers, ip_clone, maths_boolean_nand, ...}:
+{ stdenv, subnet, upkeepers, msg_clone, maths_boolean_nand, ...}:
 
 subnet rec {
   src = ./.;
   subnet = ''
-  input => input clone(${ip_clone})
+  input => input clone(${msg_clone})
   clone() clone[1] -> a nand(${maths_boolean_nand}) output => output
   clone() clone[2] -> b nand()
   '';
@@ -239,11 +239,11 @@ subnet rec {
 </screen>
 </para>
 <para>
-Notice the <filename>${maths_boolean_nand}</filename> and <filename>${ip_clone}</filename>? Nix will replace these to a the proper path just before compile time.
+Notice the <filename>${maths_boolean_nand}</filename> and <filename>${msg_clone}</filename>? Nix will replace these to a the proper path just before compile time.
 This will compile to :
 </para>
 <screen>
-input => input clone(/nix/store/wb6fgpz9hk7fg1f6p9if81s1xhflhy2x-ip_clone)
+input => input clone(/nix/store/wb6fgpz9hk7fg1f6p9if81s1xhflhy2x-msg_clone)
 clone() clone[1] -> a nand(/nix/store/bi0jacqxz1az1bbrc8470jbl7z3cmwdn-maths_boolean_nand) output => output
 clone() clone[2] -> b nand()
 </screen>

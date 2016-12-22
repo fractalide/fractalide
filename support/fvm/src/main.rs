@@ -28,16 +28,16 @@ fn run(path_fbp: &str) {
 
     let mut sched = Scheduler::new();
     sched.add_node("open", "fs_file_open.so").expect("cannot add node");
-    sched.add_node("lex", "nucleus_flow_parser_lexical.so").expect("cannot add node");
-    sched.add_node("sem", "nucleus_flow_parser_semantic.so").expect("cannot add node");
-    sched.add_node("vm", "nucleus_flow_vm.so").expect("cannot add node");
-    sched.add_node("errors", "nucleus_flow_errors.so").expect("cannot add node");
-    sched.add_node("graph_print", "nucleus_flow_parser_graph_print.so").expect("cannot add node");
-    sched.add_node("graph_check", "nucleus_flow_parser_graph_check.so").expect("cannot add node");
-    sched.add_node("sched", "nucleus_flow_scheduler.so").expect("cannot add node");
-    sched.add_node("imsg", "nucleus_capnp_encode.so").expect("cannot add node");
-    sched.add_node("nucleus_find_edge", "nucleus_find_edge.so").expect("cannot add node");
-    sched.add_node("nucleus_find_node", "nucleus_find_node.so").expect("cannot add node");
+    sched.add_node("lex", "core_parser_lexical.so").expect("cannot add node");
+    sched.add_node("sem", "core_parser_semantic.so").expect("cannot add node");
+    sched.add_node("vm", "core_vm.so").expect("cannot add node");
+    sched.add_node("errors", "core_errors.so").expect("cannot add node");
+    sched.add_node("graph_print", "core_parser_graph_print.so").expect("cannot add node");
+    sched.add_node("graph_check", "core_parser_graph_check.so").expect("cannot add node");
+    sched.add_node("sched", "core_scheduler.so").expect("cannot add node");
+    sched.add_node("imsg", "core_capnp_encode.so").expect("cannot add node");
+    sched.add_node("core_find_edge", "core_find_edge.so").expect("cannot add node");
+    sched.add_node("core_find_node", "core_find_node.so").expect("cannot add node");
 
     sched.connect("open", "output", "lex", "input").expect("cannot connect");
     sched.connect("lex", "output", "sem", "input").expect("cannot connect");
@@ -59,11 +59,11 @@ fn run(path_fbp: &str) {
     // Without Graph print
     sched.connect("vm", "output", "sched", "graph").expect("cannot connect");
 
-    sched.connect("sched", "ask_path", "nucleus_find_edge", "input").expect("cannot connect");
-    sched.connect("nucleus_find_edge", "output", "sched", "edge_path").expect("cannot connect");
+    sched.connect("sched", "ask_path", "core_find_edge", "input").expect("cannot connect");
+    sched.connect("core_find_edge", "output", "sched", "edge_path").expect("cannot connect");
 
-    sched.connect("vm", "ask_path", "nucleus_find_node", "input").expect("cannot connect");
-    sched.connect("nucleus_find_node", "output", "vm", "new_path").expect("cannot connect");
+    sched.connect("vm", "ask_path", "core_find_node", "input").expect("cannot connect");
+    sched.connect("core_find_node", "output", "vm", "new_path").expect("cannot connect");
 
     // IMsg part
     sched.connect("sched", "imsg_path", "imsg", "path").expect("cannot connect");
