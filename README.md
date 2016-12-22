@@ -24,7 +24,11 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 |+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
 |=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
 
-As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because `agents` take advantage of zero-cost libraries, but they themselves must be run by the fractalide runtime.
+The most unique and interesting combination is that of the `Reproducible` and `Reusable` features. Reusable dataflow functions, compiled to shared objects occupy nix derivations, it's these derivations that make true reproducibility possible. This is no small feat!
+
+Though all is not well! We were forced to partially compromise the zero-cost abstractions feature as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
+
+We've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
@@ -125,4 +129,4 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ### Thanks
 * Peter Van Roy
 * Pieter Hintjens
-* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) for implementing [nixcrates](https://github.com/fractalide/nixcrates)
+* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) who we commissioned to implement  [nixcrates](https://github.com/fractalide/nixcrates)
