@@ -23,8 +23,8 @@ subgraph {
    '${generic_text}:(text="${app_counter_card}")' -> option gflex()
    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input gflex()
 
-   button_add() output[click] -> input add(${ip_replace}) output -> input gflex()
-   button_remove() output[click] -> input minus(${ip_action}) output -> input gflex()
+   button_add() output[click] -> input add(${msg_replace}) output -> input gflex()
+   button_remove() output[click] -> input minus(${msg_action}) output -> input gflex()
    '${generic_text}:(text="remove")' -> option minus()
    '${app_counter}:(value=0)~add' -> option add()
 

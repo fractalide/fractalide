@@ -3,7 +3,7 @@
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-   input => input in_dispatch(${ip_dispatcher}) output -> input out_dispatch(${ip_dispatcher}) output => output
+   input => input in_dispatch(${msg_dispatcher}) output -> input out_dispatch(${msg_dispatcher}) output => output
 
    td(${ui_js_nodes.flex}) output -> input out_dispatch()
 
@@ -15,15 +15,15 @@ subgraph {
 
    in_dispatch() output[model] -> input viewer(${app_counter_viewer}) label -> input text()
 
-   button() output[click] -> input minus(${ip_action}) output -> input out_dispatch()
-   button2() output[click] -> input add(${ip_action}) output -> input out_dispatch()
+   button() output[click] -> input minus(${msg_action}) output -> input out_dispatch()
+   button2() output[click] -> input add(${msg_action}) output -> input out_dispatch()
    '${generic_text}:(text="minus")' -> option minus()
    '${generic_text}:(text="add")' -> option add()
 
 
    input(${ui_js_nodes.tag}) output -> places[1] td()
 
-   input() output[input] -> input delta(${ip_action}) output -> input out_dispatch()
+   input() output[input] -> input delta(${msg_action}) output -> input out_dispatch()
    '${generic_text}:(text="delta")' -> option delta()
 
    viewer() delta -> input input()
