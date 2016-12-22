@@ -14,12 +14,18 @@ Though, *simple to reason about* is not enough, we aim higher, we'd like [simpli
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
 ## Features
-|Programming Language| Pure   | Safe   | zero-cost abstraction | Reusable   | Reproducible    |
-|--------------------|--------|--------|-----------------------|-------------|-----------------|
-|Nix Expressions     |    X   |        |                       |     X       |        X        |
-|Rust Language       |        |   X    |          X            |             |                 |
-|Flow-based Programming|      |        |                       |     X       |                 |
-|Fractalide          |   X    |   X    |          X            |     X       |        X        |
+Fractalide stands on the shoulders of giants by combining the strengths of each language into one programming model.
+
+|Op |Programming Language|Safe|Zero-cost abstractions|Reusable|Reproducible|Distributed Type System| Concurrent
+|---|--------------------|-----|----------------------|---------|----------|-----------------|----------|
+|   |Nix Expressions     |     |                      |         |✔         |                 |          |
+|+  |Rust Language       |✔    |✔                    |         |          |                 |✔         |
+|+  |Flow-based Programming|   |                      |✔       |          |                 |✔         |
+|+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
+|=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
+
+As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because the `agents` make take advantage of zero-cost libraries, but they themselves must be run by a runtime.
+
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
 
