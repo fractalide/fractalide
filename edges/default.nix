@@ -2,8 +2,12 @@
 let
   callPackage = buffet.pkgs.lib.callPackageWith ( buffet.support // buffet );
 in
-# insert in alphabetical order to reduce conflicts
+# insert in alphabetical order in relevant section to reduce conflicts
+# Schemas will undergo stability changes depending on any node (node-x) in any fractal becoming stable.
+# It is the responsibility of that node-x's author to discuss with the author of the schema in question
+# to stabilize the schema.
 rec {
+  # experimental
   app_counter = callPackage ./app/counter {};
   app_todo_edges = buffet.fractals.app_todo.edges;
   command = callPackage ./command {};
@@ -40,4 +44,9 @@ rec {
   url = callPackage ./url {};
   value_int64 = callPackage ./value/int64 {};
   value_string = callPackage ./value/string {};
+  # stable
+
+  # deprecated
+
+  # legacy
 }

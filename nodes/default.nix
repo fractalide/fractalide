@@ -1,8 +1,22 @@
 { buffet }:
 let
 callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet.support.crates-support // buffet );
-# insert in alphabetical order to reduce conflicts
-self = rec { # use one line only to insert a node (utils/new_node.py sorts this list)
+# Insert in alphabetical order in relevant section to reduce conflicts
+# This system is an ever growing accretion of nodes.
+# Once a node is declared stable, it is _/forbidden/_ to:
+# * change the node name
+# * change any port name
+# * delete a node, or port
+# * change or delete items in the schema on any port, though additions of schema items are accepted
+# * backtrack towards the experimental category
+# Once a node becomes stable, all associated schemas also become stable.
+# Changing names after experimental upgrade is a breaking change, we do not do that here.
+self = rec {
+  # EXPERIMENTAL SECTION
+  # -   anything here can change, provide feedback to node authors
+  # -   help them make it as reusable as possible
+  # -   use at own risk, things can change at any time.
+  # -   You have been warned.
   app_counter_add = callPackage ./app/counter/add {};
   app_counter_card = callPackage ./app/counter/card {};
   app_counter_counter = callPackage ./app/counter/counter {};
@@ -26,16 +40,7 @@ self = rec { # use one line only to insert a node (utils/new_node.py sorts this 
   drop_ip = callPackage ./drop/ip {};
   dt_vector_split_by_outarr_count = callPackage ./dt/vector/split/by/outarr/count {};
   example_wrangle = buffet.fractals.example_wrangle.nodes.example_wrangle;
-  fs_dir_list = callPackage ./fs/dir/list {};
-  fs_file_open = callPackage ./fs/file/open {};
   lain = callPackage ./shells/lain {};
-  halter = callPackage ./halter {};
-  io_print = callPackage ./io/print {};
-  msg_action = callPackage ./msg/action {};
-  msg_clone = callPackage ./msg/clone {};
-  msg_delay = callPackage ./msg/delay {};
-  msg_dispatcher = callPackage ./msg/dispatcher {};
-  msg_replace = callPackage ./msg/replace {};
   nanomsg_nodes = buffet.fractals.nanomsg.nodes;
   nanomsg_test = buffet.fractals.nanomsg.nodes.test;
   maths_boolean_and = callPackage ./maths/boolean/and {};
@@ -49,17 +54,6 @@ self = rec { # use one line only to insert a node (utils/new_node.py sorts this 
   net_http_test = buffet.fractals.net_http.nodes.test;
   net_ndn = buffet.fractals.net_ndn.nodes.ndn;
   net_ndn_test = buffet.fractals.net_ndn.nodes.test;
-  core_capnp_encode = callPackage ./core/capnp/encode {};
-  core_find_node = callPackage ./core/find/node {};
-  core_find_edge = callPackage ./core/find/edge {};
-  core_errors = callPackage ./core/errors {};
-  core_parser_graph_check = callPackage ./core/parser/graph/check {};
-  core_parser_graph_print = callPackage ./core/parser/graph/print {};
-  core_parser_lexical = callPackage ./core/parser/lexical {};
-  core_parser_semantic = callPackage ./core/parser/semantic {};
-  core_scheduler = callPackage ./core/scheduler {};
-  core_subgraph = callPackage ./core/subgraph {};
-  core_vm = callPackage ./core/vm {};
   print_file_with_feedback = callPackage ./print/file/with/feedback {};
   print_with_feedback = callPackage ./print/with/feedback {};
   shells_lain_commands = callPackage ./shells/lain/commands {};
@@ -74,6 +68,37 @@ self = rec { # use one line only to insert a node (utils/new_node.py sorts this 
   web_server = callPackage ./web/server {};
   workbench = buffet.fractals.workbench.nodes.workbench;
   workbench_test = buffet.fractals.workbench.nodes.test;
-}; # use one line only to insert a node (utils/new_node.py sorts this list)
+  # STABLE SECTION
+  # -   do not change names of ports, agents nor subgraphs,
+  # -   you may add names, but never change, nor remove names
+  core_capnp_encode = callPackage ./core/capnp/encode {};
+  core_find_node = callPackage ./core/find/node {};
+  core_find_edge = callPackage ./core/find/edge {};
+  core_errors = callPackage ./core/errors {};
+  core_parser_graph_check = callPackage ./core/parser/graph/check {};
+  core_parser_graph_print = callPackage ./core/parser/graph/print {};
+  core_parser_lexical = callPackage ./core/parser/lexical {};
+  core_parser_semantic = callPackage ./core/parser/semantic {};
+  core_scheduler = callPackage ./core/scheduler {};
+  core_subgraph = callPackage ./core/subgraph {};
+  core_vm = callPackage ./core/vm {};
+  fs_dir_list = callPackage ./fs/dir/list {};
+  fs_file_open = callPackage ./fs/file/open {};
+  halter = callPackage ./halter {};
+  io_print = callPackage ./io/print {};
+  msg_action = callPackage ./msg/action {};
+  msg_clone = callPackage ./msg/clone {};
+  msg_delay = callPackage ./msg/delay {};
+  msg_dispatcher = callPackage ./msg/dispatcher {};
+  msg_replace = callPackage ./msg/replace {};
+  # DEPRECATED SECTION
+  # -   do not change names of ports, agents nor subgraphs.
+  # -   keep implemenation functioning
+  # -   print a warning message and tell users to use replacement node
+
+  # LEGACY SECTION
+  # -   do not change names of ports, agents nor subgraphs.
+  # -   assert and remove implementation
+};
 in
 self
