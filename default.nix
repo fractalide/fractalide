@@ -107,8 +107,8 @@ pkgs = pkgsOld.overridePackages(self: super: {
 nix-crates-index = pkgs.fetchFromGitHub {
   owner = "fractalide";
   repo = "nix-crates-index";
-  rev = "e1e8534b45390bde7887b74a895d1ffa95414d59";
-  sha256 = "0icxam03bhb11rdav8wbf2h6mcsspck1cyb35wpp1faiyiicmspg";
+  rev = "57d60b2156690ebddfed75eda93ed32db545be23";
+  sha256 = "14gm8f91pxxkdpyqbkqnpzyj1vyg3262fr9glnn49sfbghbn92nh";
 };
 origCrates = pkgs.recurseIntoAttrs (pkgs.callPackage (nix-crates-index + /all-carg-packages.nix) { });
 crates = if local-rustfbp == "true" then origCrates // { rustfbp = support.rustfbp;} else origCrates;
