@@ -107,7 +107,7 @@ Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives
 * This standardized API is key to `agent` composition and is achieved via a coordination layer called a `subgraph`, which describes how `agents` are connected and compose together. A `subgraph`, from an interface perspective, is indistinguishable from a Rust `agent`, this, neatly, allows for layers of abstraction which fall away at runtime.
 * These `agents` are black boxes which are only dependent on data and not any other `agent`.
 * Fractalide [agents](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
-* Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many 100 millisecond RPC here.
+* Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many any Remote Method Invocation here.
 
 ## Problem 2
 * It's easy to disrespect API contracts in many microservices setups.
