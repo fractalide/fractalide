@@ -68,7 +68,7 @@ macro_rules! agent {
         $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
         $( portal( $portal_type:ty => $portal_value:expr ), )*
         $( option($option:ident), )*
-        $( accumulator($acc:ident ), )*
+        $( accumulator($accumulator:ident ), )*
         fn run(&mut $arg:ident) -> Result<Signal> $fun:block
     )
         =>
@@ -190,7 +190,7 @@ macro_rules! agent {
 
         pub struct Input {
             option: MsgReceiver,
-            acc: MsgReceiver,
+            accumulator: MsgReceiver,
             $($(
                 $input_name: MsgReceiver,
             )*)*
@@ -203,7 +203,7 @@ macro_rules! agent {
         }
 
         pub struct Output {
-            acc: Option<MsgSender>,
+            accumulator: Option<MsgSender>,
             $($(
                 $output_name: Option<MsgSender>,
             )*)*
@@ -238,15 +238,15 @@ macro_rules! agent {
             let mut senders: HashMap<String, MsgSender> = HashMap::new();
             let option = MsgReceiver::new(name.clone(), sched.clone(), false);
             senders.insert("option".to_string(), option.1);
-            let acc = MsgReceiver::new(name.clone(), sched.clone(), false);
-            senders.insert("acc".to_string(), acc.1.clone());
+            let accumulator = MsgReceiver::new(name.clone(), sched.clone(), false);
+            senders.insert("accumulator".to_string(), accumulator.1.clone());
             $($(
                 let $input_name = MsgReceiver::new(name.clone(), sched.clone(), true);
                 senders.insert(stringify!($input_name).to_string(), $input_name.1);
             )*)*
             let input = Input {
                 option: option.0,
-                acc: acc.0,
+                accumulator: accumulator.0,
                 $($(
                     $input_name: $input_name.0,
                 )*)*
@@ -259,7 +259,7 @@ macro_rules! agent {
             };
 
             let output = Output {
-                acc: Some(acc.1),
+                accumulator: Some(accumulator.1),
                 $($(
                     $output_name: None,
                 )*)*
@@ -302,7 +302,7 @@ macro_rules! agent {
                     "option" => Ok(stringify!($option).into()),
                 )*
                 $(
-                    "acc" => Ok(stringify!($acc).into()),
+                    "accumulator" => Ok(stringify!($accumulator).into()),
                 )*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }

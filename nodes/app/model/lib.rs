@@ -20,9 +20,9 @@ agent! {
             let mut new_msg = msg_acc.clone();
             new_msg.action = action;
             try!(self.output.output.send(new_msg));
-            try!(self.output.acc.send(msg_acc));
+            try!(self.output.accumulator.send(msg_acc));
         } else if msg_input.action == "create" {
-            try!(self.output.acc.send(msg_input));
+            try!(self.output.accumulator.send(msg_input));
         } else {
             let action: &str = &msg_input.action.clone();
             let sender = try!(self.outarr.compute.get(action)
@@ -34,9 +34,9 @@ agent! {
                 let mut msg_out = msg_new_acc.clone();
                 msg_out.action = "model".into();
                 try!(self.output.output.send(msg_out));
-                try!(self.output.acc.send(msg_new_acc));
+                try!(self.output.accumulator.send(msg_new_acc));
             } else {
-                try!(self.output.acc.send(msg_acc));
+                try!(self.output.accumulator.send(msg_acc));
             }
         }
 

@@ -185,7 +185,7 @@ impl Scheduler {
         let (comp, senders) = self.cache.create_comp(&sort, name.clone(), self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
         self.sender.send(CompMsg::NewAgent(name.clone(), comp)).expect("Cannot send to sched state");
-        let s_acc = try!(senders.get("acc").ok_or(result::Error::PortNotFound(name.clone(), "acc".into()))).clone();
+        let s_acc = try!(senders.get("accumulator").ok_or(result::Error::PortNotFound(name.clone(), "accumulator".into()))).clone();
         self.agents.insert(name.clone(),
                                Comp {
                                    inputs: senders,
@@ -193,7 +193,7 @@ impl Scheduler {
                                    sort: sort,
                                    start: start,
                                });
-        self.sender.send(CompMsg::ConnectOutputPort(name, "acc".into(), s_acc)).expect("Cannot send to sched state");
+        self.sender.send(CompMsg::ConnectOutputPort(name, "accumulator".into(), s_acc)).expect("Cannot send to sched state");
         Ok(())
     }
 

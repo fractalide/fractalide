@@ -9,9 +9,10 @@
 
 **Fractalide provides a Flow-based programming language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
 
-Though, *simple to reason about* is not enough, we aim higher, we'd like [simplicity to be made easy](https://www.infoq.com/presentations/Simple-Made-Easy).
-
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
+
+Rich Hickey almost exactly describes how Fractalide works [here](https://www.youtube.com/watch?v=ROor6_NGIWU).
+Once you've absorbed what he has to say, it'll be much easier to approach this material.
 
 ## Features
 Fractalide stands on the shoulders of giants by combining the strengths of each language into one programming model.
@@ -24,7 +25,75 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 |+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
 |=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
 
-As we had to implement a Flow-based runtime in the Rust language we lose some of the zero-cost abstractions but gain an inherently concurrent system with `agents` that are entirely reusable. We check zero-cost abstractions because `agents` take advantage of zero-cost libraries, but they themselves must be run by the fractalide runtime.
+The most unique and interesting combination is that of the `Reproducible` and `Reusable` features. Reusable dataflow functions, compiled to shared objects occupy nix derivations, it's these derivations that make true reproducibility possible. This is no small feat!
+
+Though all is not well! We were forced to partially compromise the zero-cost abstractions feature during graph load time as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
+
+#### Graph setup and tear down:
+* First remove the `imsg` specifically the `'${generic_u64}:(number=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+```
+$ nix-build --argstr node bench
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+
+ Performance counter stats for './result' (10 runs):
+
+       7966.886634      task-clock (msec)         #    1.443 CPUs utilized            ( +-  0.90% )
+           229,756      context-switches          #    0.029 M/sec                    ( +-  0.90% )
+             3,345      cpu-migrations            #    0.420 K/sec                    ( +- 19.95% )
+            45,195      page-faults               #    0.006 M/sec                    ( +-  0.04% )
+    22,673,131,193      cycles                    #    2.846 GHz                      ( +-  0.85% )  (49.98%)
+   <not supported>      stalled-cycles-frontend
+   <not supported>      stalled-cycles-backend
+    22,445,337,760      instructions              #    0.99  insns per cycle          ( +-  0.13% )  (62.47%)
+     3,903,987,111      branches                  #  490.027 M/sec                    ( +-  0.09% )  (74.03%)
+        16,558,355      branch-misses             #    0.42% of all branches          ( +-  0.67% )  (73.90%)
+     8,494,547,338      L1-dcache-loads           # 1066.232 M/sec                    ( +-  0.37% )  (62.92%)
+       166,355,862      L1-dcache-load-misses     #    1.96% of all L1-dcache hits    ( +-  0.90% )  (31.23%)
+        51,443,885      LLC-loads                 #    6.457 M/sec                    ( +-  1.76% )  (26.28%)
+         2,318,455      LLC-load-misses           #    4.51% of all LL-cache hits     ( +-  2.74% )  (37.46%)
+
+       5.522271738 seconds time elapsed                                          ( +-  0.90% )
+
+
+```
+5.522271738 seconds to setup and tear down 10,000 `agents`.
+
+#### Graph setup, tear down, message pass and compute:
+* Next return the `'${generic_u64}:(number=0)' ->  input ` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+
+```
+$ nix-build --argstr node bench
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+
+ Performance counter stats for './result' (10 runs):
+
+       8711.517077      task-clock (msec)         #    1.424 CPUs utilized            ( +-  1.02% )
+           272,291      context-switches          #    0.031 M/sec                    ( +-  0.74% )
+             3,134      cpu-migrations            #    0.360 K/sec                    ( +- 19.17% )
+            82,349      page-faults               #    0.009 M/sec                    ( +-  0.02% )
+    24,138,814,164      cycles                    #    2.771 GHz                      ( +-  0.98% )  (49.95%)
+   <not supported>      stalled-cycles-frontend
+   <not supported>      stalled-cycles-backend
+    23,696,617,696      instructions              #    0.98  insns per cycle          ( +-  0.12% )  (62.41%)
+     4,115,609,490      branches                  #  472.433 M/sec                    ( +-  0.11% )  (73.96%)
+        17,832,792      branch-misses             #    0.43% of all branches          ( +-  0.95% )  (74.08%)
+     8,991,313,250      L1-dcache-loads           # 1032.118 M/sec                    ( +-  0.21% )  (63.30%)
+       190,076,809      L1-dcache-load-misses     #    2.11% of all L1-dcache hits    ( +-  1.36% )  (31.77%)
+        59,594,143      LLC-loads                 #    6.841 M/sec                    ( +-  1.69% )  (26.08%)
+         2,798,426      LLC-load-misses           #    4.70% of all LL-cache hits     ( +-  1.79% )  (37.58%)
+
+       6.117242097 seconds time elapsed                                          ( +-  0.85% )
+
+```
+6.117242097 seconds to setup, tear down and relay an incrementing integer daisy chain style between 10,000 `agents`.
+
+#### Message pass and compute:
+```
+>>> 6.117242097 - 5.522271738
+0.5949703590000004
+```
+
+We've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
@@ -93,7 +162,7 @@ This codebase is currently in huge flux before stabilization, but at least you c
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ nix-build --argstr node workbench
+$ nix-build --argstr node workbench_test
 $ ./result
 ```
 
@@ -125,4 +194,4 @@ Follow us on [twitter](https://twitter.com/fractalide)
 ### Thanks
 * Peter Van Roy
 * Pieter Hintjens
-* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) for implementing [nixcrates](https://github.com/fractalide/nixcrates)
+* Joachim Schiele & Paul Seitz of [Nixcloud](https://nixcloud.io) who we commissioned to implement  [nixcrates](https://github.com/fractalide/nixcrates)
