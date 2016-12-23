@@ -6,87 +6,92 @@ extern crate capnp;
 extern crate nom;
 
 #[derive(Debug)]
-enum Literal {
+enum Literal<'a> {
     Comment,
     Bind,
     External,
-    Comp(String, String),
-    Port(String, Option<String>),
-    IMSG(String),
+    Comp(&'a str, &'a str),
+    Port(&'a str, Option<&'a str>),
+    IMSG(&'a str),
 }
 
 use nom::{IResult, AsBytes};
 use nom::multispace;
 
-fn ret_bind(i: &[u8]) -> Literal { Literal::Bind }
-fn ret_external(i: &[u8]) -> Literal { Literal::External }
+named!(comment<&[u8], Literal>, do_parse!(
+    many0!(multispace) >>
+    tag!(b"//") >>
+    is_not!("\n") >>
+    ( Literal::Comment )
+));
 
-named!(comment<&[u8], Literal>, chain!(
-    multispace? ~
-        tag!(b"//") ~
-        is_not!(&[b'\n']),
-    || { Literal::Comment }
-    ));
-named!(bind<&[u8], Literal>, chain!(
-    multispace? ~
-        bind: map!(tag!(b"->"), ret_bind) ~
-        multispace?
-    , || { bind }
-    ));
-named!(external<&[u8], Literal>, chain!(
-    multispace? ~
-        external: map!(tag!(b"=>"), ret_external) ~
-        multispace?
-    , || { external }
-    ));
-named!(imsg<&[u8], Literal>, chain!(
-    multispace? ~
-        tag!(b"'") ~
-        imsg: is_not!(b"'") ~
-        tag!(b"'") ~
-        multispace
-        , || { Literal::IMSG(String::from_utf8(imsg.to_vec()).expect("not utf8"))}
-    ));
-named!(name, is_not!(b"[ ("));
-named!(selection, chain!(
-    multispace? ~
-        tag!(b"[") ~
-        selection: is_not!(b"]") ~
-        tag!(b"]") ~
-        multispace?
-    ,
-    || { selection }
-    ));
-named!(sort, chain!(
-    multispace? ~
-        tag!(b"(") ~
-        sort: is_not!(b")")? ~
-        tag!(b")") ~
-        multispace?
-    , || {
-        if sort.is_some() { sort.unwrap() }
-        else { &[][..] }
-    }
-    ));
+named!(bind<&[u8], Literal>, do_parse!(
+    ws!(tag!(b"->")) >>
+    ( Literal::Bind )
+));
 
-named!(comp_or_port<&[u8], Literal>, chain!(
-    multispace? ~
-        name: name ~
-        sort: opt!(complete!(sort)) ~
-        selection: opt!(complete!(selection)) ~
-        multispace?
-    , || {
+named!(external<&[u8], Literal>, do_parse!(
+    ws!(tag!(b"=>")) >>
+    ( Literal::External )
+));
+
+named!(imsg<&[u8], Literal>, do_parse!(
+    many0!(multispace) >>
+    tag!(b"'") >>
+    imsg: map_res!(
+        take_until!("'"),
+        std::str::from_utf8
+    ) >>
+    tag!(b"'") >>
+    many0!(multispace) >>
+    ( Literal::IMSG(imsg) )
+));
+
+named!(name<&str>,
+    map_res!(
+        is_not!(" [("),
+        std::str::from_utf8
+    )
+);
+
+named!(selection<&str>, do_parse!(
+    many0!(multispace) >>
+    tag!(b"[") >>
+    selection: map_res!(
+        take_until!("]"),
+        std::str::from_utf8
+    ) >>
+    tag!(b"]") >>
+    many0!(multispace) >>
+    ( selection )
+));
+
+named!(sort<&str>, do_parse!(
+    many0!(multispace) >>
+    tag!(b"(") >>
+    sort: map_res!(
+        take_until!(")"),
+        std::str::from_utf8
+    ) >>
+    tag!(b")") >>
+    many0!(multispace) >>
+    ( sort )
+));
+
+named!(comp_or_port<&[u8], Literal>, do_parse!(
+    many0!(multispace) >>
+    name: name >>
+    sort: opt!(complete!(sort)) >>
+    selection: opt!(complete!(selection)) >>
+    many0!(multispace) >>
+    (
         if sort.is_some() {
-            Literal::Comp(String::from_utf8(name.to_vec()).expect("not utf8"), String::from_utf8(sort.unwrap().to_vec()).expect("not utf8"))
+            Literal::Comp(name, sort.unwrap())
         } else {
-            if selection.is_some() {
-                Literal::Port(String::from_utf8(name.to_vec()).expect("not utf8"), Some(String::from_utf8(selection.unwrap().to_vec()).expect("not utf8")))
-            } else {
-                Literal::Port(String::from_utf8(name.to_vec()).expect("not utf8"), None)
-            }
+            Literal::Port(name, selection)
         }
-    }
-    ));
+    )
+));
 
 named!(literal<&[u8], Literal>, alt!(comment | imsg | bind | external | comp_or_port));
 
