@@ -151,7 +151,7 @@ We've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a he
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.
 - [ ] Reduce heap allocations.
-- [ ] Upgrade `nom` parser combinator to 2.0.
+- [X] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.
 
 ### Quick start
