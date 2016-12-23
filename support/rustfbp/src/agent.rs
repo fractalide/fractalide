@@ -220,7 +220,7 @@ macro_rules! agent {
         #[allow(dead_code)]
         #[allow(non_camel_case_types)]
         pub struct ThisAgent {
-            name: String,
+            id: usize,
             pub input: Input,
             pub inarr: Inarr,
             pub output: Output,
@@ -233,15 +233,15 @@ macro_rules! agent {
         }
 
         #[allow(dead_code)]
-        pub fn new(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+        pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
 
             let mut senders: HashMap<String, MsgSender> = HashMap::new();
-            let option = MsgReceiver::new(name.clone(), sched.clone(), false);
+            let option = MsgReceiver::new(id, sched.clone(), false);
             senders.insert("option".to_string(), option.1);
-            let accumulator = MsgReceiver::new(name.clone(), sched.clone(), false);
+            let accumulator = MsgReceiver::new(id, sched.clone(), false);
             senders.insert("accumulator".to_string(), accumulator.1.clone());
             $($(
-                let $input_name = MsgReceiver::new(name.clone(), sched.clone(), true);
+                let $input_name = MsgReceiver::new(id, sched.clone(), true);
                 senders.insert(stringify!($input_name).to_string(), $input_name.1);
             )*)*
             let input = Input {
@@ -272,7 +272,7 @@ macro_rules! agent {
             };
 
             let agent= ThisAgent {
-                name: name,
+                id: id,
                 input: input,
                 inarr: inarr,
                 output: output,
@@ -288,8 +288,8 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn create_agent(name: String, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
-            new(name, sched)
+        pub extern fn create_agent(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+            new(id, sched)
         }
 
         #[no_mangle]

@@ -143,9 +143,10 @@ pub struct MsgSender {
     /// The SyncSender, connected to a receiver in another agent
     pub sender: SyncSender<Msg>,
     /// The name of the agent owning the receiver
-    pub dest: String,
+    pub dest: usize,
     /// A Sender to the scheduler, to signal that the receiver must be run
     pub sched: Sender<CompMsg>,
+    must_sched: bool,
 }
 
 impl MsgSender {
@@ -153,8 +154,8 @@ impl MsgSender {
     pub fn send(&self, mut msg: Msg) -> Result<()> {
         try!(msg.before_send());
         try!(self.sender.send(msg));
-        if self.dest != "" {
-            try!(self.sched.send(CompMsg::Inc(self.dest.clone())));
+        if self.must_sched {
+            try!(self.sched.send(CompMsg::Inc(self.dest)));
         }
         Ok(())
     }
@@ -177,7 +178,7 @@ impl OutputSend for Option<MsgSender> {
 
 
 pub struct MsgReceiver {
-    name: String,
+    id: usize,
     recv: Receiver<Msg>,
     sender: MsgSender,
     sched: Sender<CompMsg>,
@@ -185,16 +186,17 @@ pub struct MsgReceiver {
 }
 
 impl MsgReceiver {
-    pub fn new(name: String, sched: Sender<CompMsg>, must_sched: bool) -> (MsgReceiver, MsgSender) {
+    pub fn new(id: usize, sched: Sender<CompMsg>, must_sched: bool) -> (MsgReceiver, MsgSender) {
         let (s, r) = sync_channel(25);
         let s = MsgSender {
             sender: s,
-            dest: if must_sched { name.clone() } else { "".into() },
+            dest: id,
+            must_sched: must_sched,
             sched: sched.clone(),
         };
         let r = MsgReceiver {
             recv: r,
-            name: name,
+            id: id,
             sender: s.clone(),
             sched: sched,
             must_sched: must_sched,
@@ -205,7 +207,7 @@ impl MsgReceiver {
     pub fn recv(&self) -> Result<Msg> {
         let msg = try!(self.recv.recv());
         if self.must_sched {
-            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+            try!(self.sched.send(CompMsg::Dec(self.id)));
         }
         Ok(msg)
     }
@@ -213,7 +215,7 @@ impl MsgReceiver {
     pub fn try_recv(&self) -> Result<Msg> {
         let msg = self.recv.try_recv()?;
         if self.must_sched {
-            try!(self.sched.send(CompMsg::Dec(self.name.clone())));
+            try!(self.sched.send(CompMsg::Dec(self.id)));
         }
         Ok(msg)
     }

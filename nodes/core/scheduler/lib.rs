@@ -119,7 +119,8 @@ agent! {
                 }
                 let sender = try!(self.outarr.outputs.get(try!(connect.get_output()))
                     .ok_or(result::Error::Misc("Element not found".into())));
-                try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender.clone())));
+                // TODO
+                // try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender.clone())));
             },
             fbp_action::Which::Send(send) => {
                 let send = try!(send);

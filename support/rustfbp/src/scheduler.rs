@@ -38,37 +38,37 @@ pub type BoxedComp = Box<Agent + Send>;
 /// All the messages that can be send between the "exterior scheduler" and the "interior scheduler".
 pub enum CompMsg {
     /// Add a new agent. The String is the name, the BoxedComp is the agent itself
-    NewAgent(String, BoxedComp),
+    NewAgent(usize, String, BoxedComp),
     /// Stop the scheduler
     Halt,
     /// Try to stop the sheduler state
     HaltState,
     /// Start a agent
-    Start(String),
+    Start(usize),
     /// Connect the output port
-    ConnectOutputPort(String, String, MsgSender),
+    ConnectOutputPort(usize, String, MsgSender),
     /// Connect the array output port
-    ConnectOutputArrayPort(String, String, String, MsgSender),
+    ConnectOutputArrayPort(usize, String, String, MsgSender),
     /// Disconnect an output port
-    Disconnect(String, String),
+    Disconnect(usize, String),
     /// Disconnect an array output port
-    DisconnectArray(String, String, String),
+    DisconnectArray(usize, String, String),
     /// Add an element in an array input port
-    AddInputArrayElement(String, String, String, MsgReceiver),
+    AddInputArrayElement(usize, String, String, MsgReceiver),
     /// Remove an element in an array input port
-    RemoveInputArrayElement(String, String, String),
+    RemoveInputArrayElement(usize, String, String),
     /// Add an element in an array output port
-    AddOutputArrayElement(String, String, String),
+    AddOutputArrayElement(usize, String, String),
     /// Signal the end of an execution
-    RunEnd(String, BoxedComp, Result<Signal>),
+    RunEnd(usize, BoxedComp, Result<Signal>),
     /// Set the receiver of an input port
-    SetReceiver(String, String, Receiver<Msg>),
+    SetReceiver(usize, String, Receiver<Msg>),
     /// The agent received an Msg
-    Inc(String),
+    Inc(usize),
     /// The agent read an Msg
-    Dec(String),
+    Dec(usize),
     /// Remove a agent
-    Remove(String, Sender<SyncMsg>),
+    Remove(usize, Sender<SyncMsg>),
 }
 
 pub enum Signal {
@@ -80,6 +80,7 @@ pub enum Signal {
 ///
 /// These information must be accessible for the user of the scheduler
 pub struct Comp {
+    pub id: usize,
     /// Keep the MsgSender of the input ports
     pub inputs: HashMap<String, MsgSender>,
     /// Keep the MsgSender of the array input ports
@@ -100,6 +101,7 @@ pub struct Scheduler {
     pub sender: Sender<CompMsg>,
     /// Received the error from the "interior scheduler"
     pub error_receiver: Receiver<result::Error>,
+    id: usize,
     th: JoinHandle<()>,
 }
 
@@ -119,7 +121,7 @@ impl Scheduler {
             loop {
                 let msg = r.recv().unwrap();
                 let res: Result<()> = match msg {
-                    CompMsg::NewAgent(name, comp) => { sched_s.new_agent(name, comp) },
+                    CompMsg::NewAgent(id, name, comp) => { sched_s.new_agent(id, name, comp) },
                     CompMsg::Start(name) => { sched_s.start(name) },
                     CompMsg::Halt => { break; },
                     CompMsg::HaltState => { sched_s.halt() },
@@ -164,6 +166,7 @@ impl Scheduler {
             sender: s,
             error_receiver: error_r,
             th: th,
+            id: 0,
         }
     }
 
@@ -182,18 +185,20 @@ impl Scheduler {
     {
         let name = name.into().into_owned();
         let sort = sort.into().into_owned();
-        let (comp, senders) = self.cache.create_comp(&sort, name.clone(), self.sender.clone()).expect("cannot create comp");
+        let (comp, senders) = self.cache.create_comp(&sort, self.id, self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
-        self.sender.send(CompMsg::NewAgent(name.clone(), comp)).expect("Cannot send to sched state");
+        self.sender.send(CompMsg::NewAgent(self.id, name.clone(), comp)).expect("Cannot send to sched state");
         let s_acc = try!(senders.get("accumulator").ok_or(result::Error::PortNotFound(name.clone(), "accumulator".into()))).clone();
         self.agents.insert(name.clone(),
                                Comp {
+                                   id: self.id,
                                    inputs: senders,
                                    inputs_array: HashMap::new(),
                                    sort: sort,
                                    start: start,
                                });
-        self.sender.send(CompMsg::ConnectOutputPort(name, "accumulator".into(), s_acc)).expect("Cannot send to sched state");
+        self.sender.send(CompMsg::ConnectOutputPort(self.id, "accumulator".into(), s_acc)).expect("Cannot send to sched state");
+        self.id += 1;
         Ok(())
     }
 
@@ -207,9 +212,9 @@ impl Scheduler {
     /// sched.start();
     /// ```
     pub fn start(&self) {
-        for (name, comp) in &self.agents {
+        for comp in self.agents.values() {
             if comp.start {
-                self.sender.send(CompMsg::Start(name.clone())).expect("start: unable to send to sched state");
+                self.sender.send(CompMsg::Start(comp.id)).expect("start: unable to send to sched state");
             }
         }
     }
@@ -226,7 +231,7 @@ impl Scheduler {
         self.agents.get(&name).ok_or(result::Error::AgentNotFound(name.clone()))
             .and_then(|comp| {
                 if comp.start {
-                    self.sender.send(CompMsg::Start(name)).expect("start_if_needed");
+                    self.sender.send(CompMsg::Start(comp.id)).expect("start_if_needed");
                 }
                 Ok(())
             })
@@ -238,8 +243,13 @@ impl Scheduler {
     /// ```rust,ignore
     /// sched.start_agent("add");
     /// ```
-    pub fn start_agent<'a, A: Into<Cow<'a, str>>>(&self, name: A) {
-        self.sender.send(CompMsg::Start(name.into().into_owned())).expect("start: unable to send to sched state");
+    pub fn start_agent<'a, A>(&self, name: A) -> Result<()> where
+        A: Into<Cow<'a, str>>
+    {
+        let name = name.into();
+        let comp = self.agents.get(&name as &str).ok_or(result::Error::AgentNotFound(name.into_owned()))?;
+        self.sender.send(CompMsg::Start(comp.id)).expect("start: unable to send to sched state");
+        Ok(())
     }
 
     /// Remove a agent form the scheduler and retrieve all the information
@@ -252,14 +262,17 @@ impl Scheduler {
     pub fn remove_agent<'a, A: Into<Cow<'a, str>>>(&mut self, name: A) -> Result<(BoxedComp, Comp)>{
         let name = name.into().into_owned();
         let (s, r) = channel();
-        self.sender.send(CompMsg::Remove(name.clone(), s)).expect("Scheduler remove_agent: cannot send to the state");
+        {
+            let comp = self.agents.get(&name).ok_or(result::Error::AgentNotFound(name.clone()))?;
+            self.sender.send(CompMsg::Remove(comp.id, s)).expect("Scheduler remove_agent: cannot send to the state");
+        }
         let response = try!(r.recv());
         match response {
             SyncMsg::Remove(boxed_comp) => {
                 Ok((boxed_comp, try!(self.agents.remove(&name).ok_or(result::Error::AgentNotFound(name.into())))))
             },
             SyncMsg::CannotRemove => {
-                Err(result::Error::CannotRemove(name.into()))
+                Err(result::Error::CannotRemove(name))
             },
         }
     }
@@ -290,7 +303,8 @@ impl Scheduler {
         }
 
         let sender = try!(self.get_sender(comp_in, port_in));
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to sched state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::ConnectOutputPort(comp.id, port_out, sender)).ok().expect("Scheduler connect: unable to send to sched state");
         Ok(())
     }
 
@@ -322,7 +336,8 @@ impl Scheduler {
         }
 
         let sender = try!(self.get_sender(comp_in, port_in));
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp.id, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -354,7 +369,8 @@ impl Scheduler {
         }
 
         let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
-        self.sender.send(CompMsg::ConnectOutputPort(comp_out, port_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::ConnectOutputPort(comp.id, port_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -388,7 +404,8 @@ impl Scheduler {
         }
 
         let sender = try!(self.get_array_sender(comp_in, port_in, element_in));
-        self.sender.send(CompMsg::ConnectOutputArrayPort(comp_out, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::ConnectOutputArrayPort(comp.id, port_out, element_out, sender)).ok().expect("Scheduler connect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -404,7 +421,8 @@ impl Scheduler {
     {
         let comp_out = comp_out.into().into_owned();
         let port_out = port_out.into().into_owned();
-        self.sender.send(CompMsg::Disconnect(comp_out, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::Disconnect(comp.id, port_out)).ok().expect("Scheduler disconnect: unable to send to scheduler state");
         Ok(())
     }
 
@@ -422,7 +440,8 @@ impl Scheduler {
         let comp_out = comp_out.into().into_owned();
         let port_out = port_out.into().into_owned();
         let element = element.into().into_owned();
-        self.sender.send(CompMsg::DisconnectArray(comp_out, port_out, element)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
+        let comp = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
+        self.sender.send(CompMsg::DisconnectArray(comp.id, port_out, element)).ok().expect("Scheduler disconnect_array: unable to send to scheduler state");
         Ok(())
     }
 
@@ -440,8 +459,10 @@ impl Scheduler {
         let comp_name = comp_name.into().into_owned();
         let port = port.into().into_owned();
         let element = element.into().into_owned();
+
+        let comp_id = self.agents.get(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))?.id;
         let (r, s) = MsgReceiver::new(
-            comp_name.clone(),
+            comp_id,
             self.sender.clone(),
             true
         );
@@ -456,7 +477,7 @@ impl Scheduler {
                         Ok(())
                     })
             }));
-        self.sender.send(CompMsg::AddInputArrayElement(comp_name, port, element, r)).ok().expect("Scheduler add_input_array_element : Unable to send to scheduler state");
+        self.sender.send(CompMsg::AddInputArrayElement(comp_id, port, element, r)).ok().expect("Scheduler add_input_array_element : Unable to send to scheduler state");
         Ok(())
     }
 
@@ -504,12 +525,16 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.add_output_array_element("add".into(), "inputs".into(), "1".into()));
     /// ```
-    pub fn add_output_array_element<A, B, C>(&self, comp: A, port: B, element: C) -> Result<()> where
-        A: Into<String>,
-        B: Into<String>,
-        C: Into<String>
+    pub fn add_output_array_element<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>
     {
-        self.sender.send(CompMsg::AddOutputArrayElement(comp.into(), port.into(), element.into())).ok().expect("Scheduler add_output_array_element : Unable to send to scheduler state");
+        let comp = comp.into();
+        let port = port.into().into_owned();
+        let element = element.into().into_owned();
+        let comp = self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.into_owned()))?;
+        self.sender.send(CompMsg::AddOutputArrayElement(comp.id, port, element)).ok().expect("Scheduler add_output_array_element : Unable to send to scheduler state");
         Ok(())
     }
 
@@ -521,11 +546,14 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver<A, B>(&self, comp: A, port: B, receiver: Receiver<Msg>) -> Result<()> where
-        A: Into<String>,
-        B: Into<String>,
+    pub fn set_receiver<'a, A, B>(&self, comp: A, port: B, receiver: Receiver<Msg>) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
     {
-        self.sender.send(CompMsg::SetReceiver(comp.into(), port.into(), receiver)).expect("scheduler cannot send");
+        let comp = comp.into();
+        let port = port.into().into_owned();
+        let comp = self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.into_owned()))?;
+        self.sender.send(CompMsg::SetReceiver(comp.id, port, receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -537,12 +565,16 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver<A, B, C>(&self, comp: A, port: B, element: C, receiver: MsgReceiver) -> Result<()> where
-        A: Into<String>,
-        B: Into<String>,
-        C: Into<String>
+    pub fn set_array_receiver<'a, A, B, C>(&self, comp: A, port: B, element: C, receiver: MsgReceiver) -> Result<()> where
+        A: Into<Cow<'a, str>>,
+        B: Into<Cow<'a, str>>,
+        C: Into<Cow<'a, str>>
     {
-        self.sender.send(CompMsg::AddInputArrayElement(comp.into(), port.into(), element.into(), receiver)).expect("scheduler cannot send");
+        let comp = comp.into();
+        let port = port.into().into_owned();
+        let element = element.into().into_owned();
+        let comp = self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.into_owned()))?;
+        self.sender.send(CompMsg::AddInputArrayElement(comp.id, port, element, receiver)).expect("scheduler cannot send");
         Ok(())
     }
 
@@ -694,6 +726,7 @@ pub enum SyncMsg {
 /// Internal representation of a agent
 struct CompState {
     comp: Option<BoxedComp>,
+    name: String,
     // TODO : manage can_run
     is_run: bool,
     can_run: bool,
@@ -704,7 +737,7 @@ struct CompState {
 /// The state of the internal scheduler
 struct SchedState {
     sched_sender: Sender<CompMsg>,
-    agents: HashMap<String, CompState>,
+    agents: HashMap<usize, CompState>,
     running: usize,
     can_halt: bool,
     pool: ThreadPool,
@@ -721,28 +754,29 @@ impl SchedState {
         }
     }
 
-    fn inc(&mut self, name: String) -> Result<()> {
+    fn inc(&mut self, id: usize) -> Result<()> {
         // silent error for exterior ports
         let mut start = false;
-        if let Some(ref mut comp) = self.agents.get_mut(&name) {
+        if let Some(ref mut comp) = self.agents.get_mut(&id) {
             comp.ips += 1;
             start = comp.ips > 0 && comp.comp.is_some();
         }
-        if start { self.run(name); }
+        if start { self.run(id); }
         Ok(())
     }
 
-    fn dec(&mut self, name: String) -> Result<()> {
+    fn dec(&mut self, id: usize) -> Result<()> {
         // silent error for exterior ports
-        if let Some(ref mut comp) = self.agents.get_mut(&name) {
+        if let Some(ref mut comp) = self.agents.get_mut(&id) {
             comp.ips -= 1;
         }
         Ok(())
     }
 
-    fn new_agent(&mut self, name: String, comp: BoxedComp) -> Result<()> {
-        self.agents.insert(name, CompState {
+    fn new_agent(&mut self, id: usize, name: String, comp: BoxedComp) -> Result<()> {
+        self.agents.insert(id, CompState {
             comp: Some(comp),
+            name: name,
             is_run: false,
             can_run: false,
             edit_msgs: vec![],
@@ -751,9 +785,9 @@ impl SchedState {
         Ok(())
     }
 
-    fn remove(&mut self, name: String, sync_sender: Sender<SyncMsg>) -> Result<()>{
+    fn remove(&mut self, id: usize, sync_sender: Sender<SyncMsg>) -> Result<()>{
         let must_remove = {
-            let mut o_comp = self.agents.get_mut(&name).expect("SchedState remove : agent doesn't exist");
+            let mut o_comp = self.agents.get_mut(&id).expect("SchedState remove : agent doesn't exist");
             let b_comp = mem::replace(&mut o_comp.comp, None);
             if let Some(boxed_comp) = b_comp {
                 sync_sender.send(SyncMsg::Remove(boxed_comp)).expect("SchedState remove : cannot send to the channel");
@@ -763,18 +797,18 @@ impl SchedState {
                 false
             }
         };
-        if must_remove { self.agents.remove(&name); }
+        if must_remove { self.agents.remove(&id); }
         Ok(())
     }
 
-    fn start(&mut self, name: String) -> Result<()> {
+    fn start(&mut self, id: usize) -> Result<()> {
         let start = {
-            let mut comp = self.agents.get_mut(&name).expect("SchedState start : agent not found");
+            let mut comp = self.agents.get_mut(&id).expect("SchedState start : agent not found");
             comp.can_run = true;
             comp.comp.is_some()
         };
         if start {
-            self.run(name);
+            self.run(id);
         }
         Ok(())
     }
@@ -787,11 +821,10 @@ impl SchedState {
         Ok(())
     }
 
-    fn run_end(&mut self, name: String, mut box_comp: BoxedComp, res: Result<Signal>) -> Result<()>{
+    fn run_end(&mut self, id: usize, mut box_comp: BoxedComp, res: Result<Signal>) -> Result<()>{
         let must_restart = {
-            let mut comp = self.agents.get_mut(&name).expect("SchedState RunEnd : agent doesn't exist");
-            let vec = mem::replace(&mut comp.edit_msgs, vec![]);
-            for msg in vec {
+            let mut comp = self.agents.get_mut(&id).expect("SchedState RunEnd : agent doesn't exist");
+            for msg in comp.edit_msgs.drain(..) {
                 try!(Self::edit_one_comp(&mut box_comp, msg));
             }
             let must_restart = comp.ips > 0;
@@ -802,12 +835,12 @@ impl SchedState {
                     comp.is_run = false;
                 }
             } else if let Err(e) = res {
-                println!("{} fails : {}", name, e);
+                println!("{} fails : {}", comp.name, e);
             }
             must_restart
         };
         if must_restart {
-            self.run(name);
+            self.run(id);
         } else {
             if self.running <= 0 && self.can_halt {
                 self.sched_sender.send(CompMsg::Halt).ok().expect("SchedState RunEnd : Cannot send Halt");
@@ -816,8 +849,8 @@ impl SchedState {
         Ok(())
     }
     #[allow(unused_must_use)]
-    fn run(&mut self, name: String) {
-        let mut o_comp = self.agents.get_mut(&name).expect("SchedSate run : agent doesn't exist");
+    fn run(&mut self, id: usize) {
+        let mut o_comp = self.agents.get_mut(&id).expect("SchedSate run : agent doesn't exist");
         if let Some(mut b_comp) = mem::replace(&mut o_comp.comp, None) {
             if !o_comp.is_run {
                 self.running += 1;
@@ -826,13 +859,13 @@ impl SchedState {
             let sched_s = self.sched_sender.clone();
             self.pool.execute(move || {
                 let res = b_comp.run();
-                sched_s.send(CompMsg::RunEnd(name, b_comp, res)).expect("SchedState run : unable to send RunEnd");
+                sched_s.send(CompMsg::RunEnd(id, b_comp, res)).expect("SchedState run : unable to send RunEnd");
             });
         };
     }
 
-    fn edit_agent(&mut self, name: String, msg: EditCmp) -> Result<()> {
-        let mut comp = self.agents.get_mut(&name).expect("SchedState edit_agent : agent doesn't exist");
+    fn edit_agent(&mut self, id: usize, msg: EditCmp) -> Result<()> {
+        let mut comp = self.agents.get_mut(&id).expect("SchedState edit_agent : agent doesn't exist");
         if let Some(ref mut c) = comp.comp {
             let mut c = c;
             try!(Self::edit_one_comp(&mut c, msg));
@@ -884,7 +917,7 @@ impl SchedState {
 #[allow(dead_code)]
 pub struct AgentLoader {
     lib: libloading::Library,
-    create: extern "C" fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)>,
+    create: extern "C" fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)>,
     get_schema_input: extern "C" fn(&str) -> Result<String>,
     get_schema_input_array: extern "C" fn(&str) -> Result<String>,
     get_schema_output: extern "C" fn(&str) -> Result<String>,
@@ -915,11 +948,11 @@ impl AgentCache {
     /// ```rust,ignore
     /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, name: String, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+    pub fn create_comp(&mut self, path: &str, id: usize, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
 
-            let new_comp: extern fn(String, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> = unsafe {
+            let new_comp: extern fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> = unsafe {
                 *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
             };
 
@@ -950,7 +983,7 @@ impl AgentCache {
                               });
         }
         if let Some(loader) = self.cache.get(path){
-            (loader.create)(name, sender)
+            (loader.create)(id, sender)
         } else {
             unreachable!()
         }
