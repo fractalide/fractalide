@@ -1,12 +1,12 @@
 { buffet }:
 
 let
-  /*fractal = buffet.pkgs.fetchFromGitHub {
+  fractal = buffet.pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_nanomsg";
-    rev = "d0c0dfbfd99a3588587ea91aca3fe78d4f82f012";
-    sha256 = "18raw44cn67f6dwl7b63y1m470y63vbr5h689c5z3nsakigv0ydc";
-  };*/
-  fractal = ../../../fractals/fractal_nanomsg;
+    rev = "4eb0d91769513860acb37e11e507c9c4f1c8f2b7";
+    sha256 = "0pk8310xjyqfp81fd9md9p7x3zbmwxmc6bfdfbvn3zz80hkd0c1b";
+  };
+  /*fractal = ../../../fractals/fractal_nanomsg;*/
 in
   import fractal {inherit buffet; fractalide = null;}
