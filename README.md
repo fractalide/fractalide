@@ -30,36 +30,36 @@ The most unique and interesting combination is that of the `Reproducible` and `R
 Though all is not well! We were forced to partially compromise the zero-cost abstractions feature during graph load time as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
 
 #### Graph setup and tear down:
-* First remove the `imsg` specifically the `'${generic_u64}:(number=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+* First remove the `'${generic_u64}:(number=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+
 ```
 $ nix-build --argstr node bench
 $ sudo nice -n -20 perf stat -r 10 -d ./result
 
  Performance counter stats for './result' (10 runs):
 
-       7966.886634      task-clock (msec)         #    1.443 CPUs utilized            ( +-  0.90% )
-           229,756      context-switches          #    0.029 M/sec                    ( +-  0.90% )
-             3,345      cpu-migrations            #    0.420 K/sec                    ( +- 19.95% )
-            45,195      page-faults               #    0.006 M/sec                    ( +-  0.04% )
-    22,673,131,193      cycles                    #    2.846 GHz                      ( +-  0.85% )  (49.98%)
+       7890.225492      task-clock (msec)         #    1.438 CPUs utilized            ( +-  0.50% )
+           233,755      context-switches          #    0.030 M/sec                    ( +-  0.44% )
+             2,310      cpu-migrations            #    0.293 K/sec                    ( +- 20.29% )
+            45,226      page-faults               #    0.006 M/sec                    ( +-  0.04% )
+    22,499,581,894      cycles                    #    2.852 GHz                      ( +-  0.56% )  (50.24%)
    <not supported>      stalled-cycles-frontend
    <not supported>      stalled-cycles-backend
-    22,445,337,760      instructions              #    0.99  insns per cycle          ( +-  0.13% )  (62.47%)
-     3,903,987,111      branches                  #  490.027 M/sec                    ( +-  0.09% )  (74.03%)
-        16,558,355      branch-misses             #    0.42% of all branches          ( +-  0.67% )  (73.90%)
-     8,494,547,338      L1-dcache-loads           # 1066.232 M/sec                    ( +-  0.37% )  (62.92%)
-       166,355,862      L1-dcache-load-misses     #    1.96% of all L1-dcache hits    ( +-  0.90% )  (31.23%)
-        51,443,885      LLC-loads                 #    6.457 M/sec                    ( +-  1.76% )  (26.28%)
-         2,318,455      LLC-load-misses           #    4.51% of all LL-cache hits     ( +-  2.74% )  (37.46%)
+    22,888,513,721      instructions              #    1.02  insns per cycle          ( +-  0.12% )  (62.66%)
+     3,862,239,901      branches                  #  489.497 M/sec                    ( +-  0.05% )  (74.09%)
+        15,973,363      branch-misses             #    0.41% of all branches          ( +-  0.85% )  (74.19%)
+     8,666,236,052      L1-dcache-loads           # 1098.351 M/sec                    ( +-  0.35% )  (63.78%)
+       167,742,960      L1-dcache-load-misses     #    1.94% of all L1-dcache hits    ( +-  1.20% )  (30.47%)
+        50,599,472      LLC-loads                 #    6.413 M/sec                    ( +-  1.23% )  (26.61%)
+         2,381,819      LLC-load-misses           #    4.71% of all LL-cache hits     ( +-  2.48% )  (37.83%)
 
-       5.522271738 seconds time elapsed                                          ( +-  0.90% )
-
+       5.485212375 seconds time elapsed                                          ( +-  0.53% )
 
 ```
-5.522271738 seconds to setup and tear down 10,000 `agents`.
+5.485212375 seconds to setup and tear down 10,000 `agents`.
 
 #### Graph setup, tear down, message pass and compute:
-* Next return the `'${generic_u64}:(number=0)' ->  input ` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+* Next, insert `'${generic_u64}:(number=0)' ->  input` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
 
 ```
 $ nix-build --argstr node bench
@@ -67,33 +67,36 @@ $ sudo nice -n -20 perf stat -r 10 -d ./result
 
  Performance counter stats for './result' (10 runs):
 
-       8711.517077      task-clock (msec)         #    1.424 CPUs utilized            ( +-  1.02% )
-           272,291      context-switches          #    0.031 M/sec                    ( +-  0.74% )
-             3,134      cpu-migrations            #    0.360 K/sec                    ( +- 19.17% )
-            82,349      page-faults               #    0.009 M/sec                    ( +-  0.02% )
-    24,138,814,164      cycles                    #    2.771 GHz                      ( +-  0.98% )  (49.95%)
+       8852.363289      task-clock (msec)         #    1.429 CPUs utilized            ( +-  0.75% )
+           276,398      context-switches          #    0.031 M/sec                    ( +-  0.56% )
+             2,770      cpu-migrations            #    0.313 K/sec                    ( +- 19.76% )
+            82,334      page-faults               #    0.009 M/sec                    ( +-  0.02% )
+    24,528,934,839      cycles                    #    2.771 GHz                      ( +-  0.78% )  (49.99%)
    <not supported>      stalled-cycles-frontend
    <not supported>      stalled-cycles-backend
-    23,696,617,696      instructions              #    0.98  insns per cycle          ( +-  0.12% )  (62.41%)
-     4,115,609,490      branches                  #  472.433 M/sec                    ( +-  0.11% )  (73.96%)
-        17,832,792      branch-misses             #    0.43% of all branches          ( +-  0.95% )  (74.08%)
-     8,991,313,250      L1-dcache-loads           # 1032.118 M/sec                    ( +-  0.21% )  (63.30%)
-       190,076,809      L1-dcache-load-misses     #    2.11% of all L1-dcache hits    ( +-  1.36% )  (31.77%)
-        59,594,143      LLC-loads                 #    6.841 M/sec                    ( +-  1.69% )  (26.08%)
-         2,798,426      LLC-load-misses           #    4.70% of all LL-cache hits     ( +-  1.79% )  (37.58%)
+    24,190,047,542      instructions              #    0.99  insns per cycle          ( +-  0.13% )  (62.46%)
+     4,085,706,131      branches                  #  461.538 M/sec                    ( +-  0.09% )  (74.10%)
+        17,515,189      branch-misses             #    0.43% of all branches          ( +-  0.58% )  (74.18%)
+     9,269,142,016      L1-dcache-loads           # 1047.081 M/sec                    ( +-  0.33% )  (64.24%)
+       194,587,384      L1-dcache-load-misses     #    2.10% of all L1-dcache hits    ( +-  0.58% )  (30.41%)
+        60,394,475      LLC-loads                 #    6.822 M/sec                    ( +-  1.38% )  (26.17%)
+         2,946,358      LLC-load-misses           #    4.88% of all LL-cache hits     ( +-  2.99% )  (37.57%)
 
-       6.117242097 seconds time elapsed                                          ( +-  0.85% )
+       6.195577571 seconds time elapsed                                          ( +-  0.63% )
 
 ```
-6.117242097 seconds to setup, tear down and relay an incrementing integer daisy chain style between 10,000 `agents`.
+6.195577571 seconds to setup, tear down and relay an incrementing integer daisy chain style between 10,000 `agents`.
 
 #### Message pass and compute:
 ```
->>> 6.117242097 - 5.522271738
-0.5949703590000004
+>>> 6.195577571 - 5.485212375
+0.7103651960000006
 ```
+This just gives you a feel for the system, 0.7 seconds to do 10,000 message sends and increments.
 
-We've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising.
+An important note, we've done *no* optimizations yet.
+
+Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising as a large majority of the top downloaded crates are buildable.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
