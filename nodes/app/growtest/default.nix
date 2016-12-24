@@ -2,6 +2,7 @@
 
 subgraph {
   src = ./.;
+  edges = with edges; [ js_create prim_text app_counter ];
   flowscript = with nodes; with edges; ''
 
    td(${ui_js_nodes.flex}) output -> input page(${ui_js_nodes.page})

@@ -2,6 +2,7 @@
 
 subgraph {
   src = ./.;
+  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
    // Basic output
    open(${fs_file_open}) output -> input lex(${core_parser_lexical})

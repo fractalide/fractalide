@@ -2,6 +2,7 @@
 
 subgraph {
   src = ./.;
+  edges = with edges; [ generic_i64 ];
   flowscript = with nodes; with edges; ''
    input => input in_dispatch(${msg_dispatcher}) output -> input out_dispatch(${msg_dispatcher}) output => output
 

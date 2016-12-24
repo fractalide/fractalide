@@ -2,6 +2,7 @@
 
 subgraph {
  src = ./.;
+ edges = with edges; [ generic_u64 ];
  flowscript = with nodes; with edges; ''
  '${generic_u64}:(number=0)' ->  input inc1(${bench_inc_1000})
  inc1() output -> input inc2(${bench_inc_1000})

@@ -2,6 +2,7 @@
 
 subgraph {
   src = ./.;
+  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
   a => input clone1(${msg_clone})
   b => input clone2(${msg_clone})
