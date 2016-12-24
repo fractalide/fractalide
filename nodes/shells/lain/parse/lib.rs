@@ -18,8 +18,8 @@ struct Command {
 }
 
 agent! {
-    shells_lain_parse, edges(generic_text, list_command)
-    inputs(input: generic_text),
+    shells_lain_parse, edges(prim_text, list_command)
+    inputs(input: prim_text),
     inputs_array(),
     outputs(output: list_command),
     outputs_array(),
@@ -28,7 +28,7 @@ agent! {
     fn run(&mut self) -> Result<()> {
         let mut ip_input = self.ports.recv("input")?;
         let raw_command = {
-            let input_reader: generic_text::Reader = ip_input.read_schema()?;
+            let input_reader: prim_text::Reader = ip_input.read_schema()?;
             input_reader.get_text()
         };
         //let parsed_commands = parse_lain_lang(raw_command?);

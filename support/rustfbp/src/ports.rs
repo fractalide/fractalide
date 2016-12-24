@@ -49,7 +49,7 @@ impl Msg {
     /// ```rust,ignore
     /// let msg = an_initialized_msg;
     /// {
-    ///     let reader: generic_text::Reader = try!(msg.read_schema());
+    ///     let reader: prim_text::Reader = try!(msg.read_schema());
     ///     let text = try!(reader.get_text());
     /// }
     /// ```
@@ -67,7 +67,7 @@ impl Msg {
     /// let mut msg = Msg::new();
     /// // Initialize the Msg
     /// {
-    ///     let mut builder: generic_text::Builder = msg.build_schema();
+    ///     let mut builder: prim_text::Builder = msg.build_schema();
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
@@ -84,7 +84,7 @@ impl Msg {
     /// ```rust,ignore
     /// let mut msg = an_initialized_msg;
     /// {
-    ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_edge::<prim_text::Builder, prim_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// ```
@@ -108,7 +108,7 @@ impl Msg {
     /// ```rust,ignore
     /// let mut msg = an_initialized_msg;
     /// {
-    ///     let mut builder = try!(edit_edge::<generic_text::Builder, generic_text::Reader>());
+    ///     let mut builder = try!(edit_edge::<prim_text::Builder, prim_text::Reader>());
     ///     builder.set_text("Hello Fractalide!");
     /// }
     /// try!(msg.before_send());

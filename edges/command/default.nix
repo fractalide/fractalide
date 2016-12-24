@@ -2,16 +2,18 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ tuple ];
+  edges =  with edges; [ ntuple_tuple_tt list_text prim_text ];
   schema = with edges; ''
     @0xdfa17455eb3bee21;
-    using Tuple = import "${tuple}/src/edge.capnp";
+    using ListNtupleTupleTt = import "${list_ntuple_tuple_tt}/src/edge.capnp";
+    using ListText = import "${list_text}/src/edge.capnp";
+    using Text = import "${prim_text}/src/edge.capnp";
 
     struct Command {
-      name @0 : Text;
-      singles @1 : List(Text);
-      kvs @2 : List(Tuple.Tuple);
-      iips @3 : List(Text);
+      name @0 : Text.Text;
+      singles @1 : ListText.ListText;
+      kvs @2 : ListNtupleTupleTt.ListNtupleTupleTt;
+      iips @3 : ListText.ListText;
     }
   '';
 }

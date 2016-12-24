@@ -4,10 +4,10 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-    @0xcd25af61b5d6c76b;
+    @0x952473e6e0df4da8;
 
-    struct GenericU64 {
-            number @0 :UInt64;
+    struct PrimI8 {
+            i8 @0 :Int8;
     }
   '';
 }

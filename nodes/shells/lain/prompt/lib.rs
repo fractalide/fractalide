@@ -56,10 +56,10 @@ impl Prompt {
 }
 
 agent! {
-  shells_lain_prompt, edges(generic_text)
+  shells_lain_prompt, edges(prim_text)
   inputs(),
   inputs_array(),
-  outputs(output: generic_text),
+  outputs(output: prim_text),
   outputs_array(),
   option(),
   acc(),
@@ -87,7 +87,7 @@ agent! {
         }
         let mut out_ip_output = IP::new();
         {
-          let mut variable = out_ip_output.build_schema::<generic_text::Builder>();
+          let mut variable = out_ip_output.build_schema::<prim_text::Builder>();
           variable.set_text(command.as_str());
         }
         self.ports.send("output", out_ip_output)?;

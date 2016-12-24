@@ -4,10 +4,10 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-    @0x87496148360d604f;
+    @0xc5c23ce1a149964f;
 
-    struct GenericBool {
-            bool @0 :Bool;
+    struct PrimU16 {
+            u16 @0 :UInt16;
     }
   '';
 }

@@ -7,7 +7,7 @@ use std::thread;
 
 agent! {
     input(input: app_counter),
-    output(label: generic_text, delta: generic_text),
+    output(label: prim_text, delta: prim_text),
     fn run(&mut self) -> Result<Signal> {
         let mut msg_input = try!(self.input.input.recv());
 
@@ -16,7 +16,7 @@ agent! {
             (reader.get_value(), reader.get_delta())
         };
         {
-            let mut builder = msg_input.build_schema::<generic_text::Builder>();
+            let mut builder = msg_input.build_schema::<prim_text::Builder>();
             builder.set_text(&format!("{}", number));
         }
         msg_input.action = "set_text".into();

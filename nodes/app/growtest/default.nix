@@ -20,12 +20,12 @@ subgraph {
    gflex(${ui_js_nodes.growing_flex}) output -> places[2] td()
    gflex() scheduler -> action sched(${core_subgraph})
    sched() outputs[flex] -> places[2] td()
-   '${generic_text}:(text="${app_counter_card}")' -> option gflex()
+   '${prim_text}:(text="${app_counter_card}")' -> option gflex()
    '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input gflex()
 
    button_add() output[click] -> input add(${msg_replace}) output -> input gflex()
    button_remove() output[click] -> input minus(${msg_action}) output -> input gflex()
-   '${generic_text}:(text="remove")' -> option minus()
+   '${prim_text}:(text="remove")' -> option minus()
    '${app_counter}:(value=0)~add' -> option add()
 
    '';

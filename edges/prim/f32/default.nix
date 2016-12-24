@@ -4,11 +4,10 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-   @0xf6e41344bb789d96;
+    @0xfcc3cc0c82c4e48c;
 
-    struct Tuple {
-      first @0 : Text;
-      second @1 : Text;
+    struct PrimF32 {
+            f32 @0 :Float32;
     }
   '';
 }

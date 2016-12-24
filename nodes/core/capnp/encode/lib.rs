@@ -9,7 +9,7 @@ use std::path::Path;
 use std::env;
 
 agent! {
-    input(path: path, edge: generic_text, input: generic_text),
+    input(path: path, edge: prim_text, input: prim_text),
     output(output: any),
     fn run(&mut self) -> Result<Signal>{
 
@@ -18,11 +18,11 @@ agent! {
         let path = try!(path.get_path());
 
         let mut edge_msg = try!(self.input.edge.recv());
-        let edge: generic_text::Reader = try!(edge_msg.read_schema());
+        let edge: prim_text::Reader = try!(edge_msg.read_schema());
         let f_edge = try!(edge.get_text());
 
         let mut input_msg = try!(self.input.input.recv());
-        let input: generic_text::Reader = try!(input_msg.read_schema());
+        let input: prim_text::Reader = try!(input_msg.read_schema());
         let input = try!(input.get_text());
 
         let mut child = try!(Command::new("capnp_path" )

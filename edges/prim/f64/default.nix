@@ -4,10 +4,10 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-    @0xcd25af61b5d6c76b;
+    @0xb20e72f38015e711;
 
-    struct GenericI64 {
-            number @0 :Int64;
+    struct PrimF64 {
+            f64 @0 :Float64;
     }
   '';
 }

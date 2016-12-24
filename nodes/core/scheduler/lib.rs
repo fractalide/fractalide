@@ -45,8 +45,8 @@ agent! {
             ask_graph: fbp_graph,
             ask_path: path,
             imsg_path: path,
-            imsg_edge: generic_text,
-            imsg_input: generic_text),
+            imsg_edge: prim_text,
+            imsg_input: prim_text),
     outarr(outputs: any),
     portal(Portal => Portal::new()),
     fn run(&mut self) -> Result<Signal> {
@@ -242,14 +242,14 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
 
         let mut new_out = Msg::new();
         {
-            let mut path = new_out.build_schema::<generic_text::Builder>();
+            let mut path = new_out.build_schema::<prim_text::Builder>();
             path.set_text(&edge_camel_case);
         }
         try!(agent.output.imsg_edge.send(new_out));
 
         let mut new_out = Msg::new();
         {
-            let mut path = new_out.build_schema::<generic_text::Builder>();
+            let mut path = new_out.build_schema::<prim_text::Builder>();
             path.set_text(&input);
         }
         try!(agent.output.imsg_input.send(new_out));

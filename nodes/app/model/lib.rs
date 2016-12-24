@@ -14,7 +14,7 @@ agent! {
 
         if msg_input.action == "get_model" {
             let action = {
-                let mut reader: generic_text::Reader = try!(msg_input.read_schema());
+                let mut reader: prim_text::Reader = try!(msg_input.read_schema());
                 try!(reader.get_text()).to_string()
             };
             let mut new_msg = msg_acc.clone();

@@ -17,14 +17,14 @@ subgraph {
 
    button() output[click] -> input minus(${msg_action}) output -> input out_dispatch()
    button2() output[click] -> input add(${msg_action}) output -> input out_dispatch()
-   '${generic_text}:(text="minus")' -> option minus()
-   '${generic_text}:(text="add")' -> option add()
+   '${prim_text}:(text="minus")' -> option minus()
+   '${prim_text}:(text="add")' -> option add()
 
 
    input(${ui_js_nodes.tag}) output -> places[1] td()
 
    input() output[input] -> input delta(${msg_action}) output -> input out_dispatch()
-   '${generic_text}:(text="delta")' -> option delta()
+   '${prim_text}:(text="delta")' -> option delta()
 
    viewer() delta -> input input()
 

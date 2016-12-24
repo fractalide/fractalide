@@ -17,7 +17,7 @@ agent! {
         }
 
         {
-            let mut reader: generic_text::Reader = try!(msg_delta.read_schema());
+            let mut reader: prim_text::Reader = try!(msg_delta.read_schema());
             let mut builder = try!(msg_actual.edit_schema::<app_counter::Builder, app_counter::Reader>());
             let mut text = try!(reader.get_text());
             if text == "" { text = "0"; }

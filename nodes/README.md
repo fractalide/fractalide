@@ -540,11 +540,11 @@ impl Portal {
 }
 
 agent! {
-  input(connect: generic_text, ip: any),
+  input(connect: prim_text, ip: any),
   portal(Portal => Portal::new()),
   fn run(&mut self) -> Result<Signal> {
     if let Ok(mut ip) = self.inputs.connect.try_recv() {
-        let reader: generic_text::Reader = ip.read_schema()?;
+        let reader: prim_text::Reader = ip.read_schema()?;
         let mut socket = Socket::new(Protocol::Push)
             .or(Err(result::Error::Misc("Cannot create socket".into())))?;
         socket.bind(reader.get_text()?)

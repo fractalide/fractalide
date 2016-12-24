@@ -4,10 +4,10 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-    @0xb1fc090ed4d12aee;
+    @0x9d9aba335f70cc13;
 
-    struct GenericText {
-            text @0 :Text;
+    struct PrimU8 {
+            u8 @0 :UInt8;
     }
   '';
 }

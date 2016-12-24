@@ -69,11 +69,11 @@ agent! {
             switches.push(formatted_args);
             if cmd_len == 1 { // only one command in the list
                 flow.push_str(format!("{0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
-                switches.push(format!("'generic_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
+                switches.push(format!("'prim_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
             } else { // more than one command
                 if cmd_len > 1 && cmd_count == 0 { // the first command of many in a list
                     flow.push_str(format!("{0}_{1}({0}) stdout -> ", cmd.get_name()?, cmd_count).as_str());
-                    switches.push(format!("'generic_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
+                    switches.push(format!("'prim_text:({0})' -> stdin {1}_{2}()", formatted_iips, cmd.get_name()?, cmd_count));
                 } else { // check if the last command or not
                     if (cmd_len - 1) == cmd_count { // last command
                         flow.push_str(format!("stdin {0}_{1}({0})", cmd.get_name()?, cmd_count).as_str());
