@@ -7,14 +7,14 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    input(input: path),
+    input(input: fs_path),
     output(output: file_desc, error: file_error),
     fn run(&mut self) -> Result<Signal> {
         // Get the path
         let mut msg = try!(self.input.input.recv());
-        let path: path::Reader = try!(msg.read_schema());
+        let path: fs_path::Reader = msg.read_schema()?;
 
-        let path = try!(path.get_path());
+        let path = path.get_path()?.get_text()?;
 
         let file = match File::open(path) {
             Ok(file) => { file },

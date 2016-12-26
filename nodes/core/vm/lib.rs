@@ -15,8 +15,8 @@ struct Graph {
 }
 
 agent! {
-    input(input: fbp_graph, new_path: option_path, error: any),
-    output(output: fbp_graph, ask_graph: path, ask_path: path),
+    input(input: fbp_graph, new_path: fs_path_option, error: any),
+    output(output: fbp_graph, ask_graph: fs_path, ask_path: path),
     fn run(&mut self) -> Result<Signal>{
         let mut graph = Graph { errors: false,
             nodes: vec![], edges: vec![], imsgs: vec![],
@@ -24,13 +24,13 @@ agent! {
         };
 
         // retrieve the asked graph
-        let mut msg = try!(self.input.input.recv());
-        let i_graph: fbp_graph::Reader = try!(msg.read_schema());
+        let mut msg = self.input.input.recv()?;
+        let i_graph: fbp_graph::Reader = msg.read_schema()?;
 
-        try!(add_graph(self, &mut graph, i_graph, ""));
+        add_graph(self, &mut graph, i_graph, "")?;
 
         if !graph.errors {
-            try!(send_graph(&self, &graph))
+            send_graph(&self, &graph)?
         }
         Ok(End)
     }
@@ -38,73 +38,73 @@ agent! {
 
 fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: fbp_graph::Reader, name: &str) -> Result<()> {
 
-    if try!(new_graph.get_path()) == "error" { graph.errors = true; }
+    if new_graph.get_path()? == "error" { graph.errors = true; }
 
-    for n in try!(new_graph.borrow().get_edges()).iter() {
+    for n in new_graph.borrow().get_edges()?.iter() {
         graph.edges.push((format!("{}-{}", name, try!(n.get_o_name())),
-        try!(n.get_o_port()).into(), try!(n.get_o_selection()).into(),
-        try!(n.get_i_port()).into(), try!(n.get_i_selection()).into(),
+        n.get_o_port()?.into(), n.get_o_selection()?.into(),
+        n.get_i_port()?.into(), n.get_i_selection()?.into(),
         format!("{}-{}", name, try!(n.get_i_name()))));
     }
-    for n in try!(new_graph.borrow().get_imsgs()).iter() {
-        graph.imsgs.push((try!(n.get_imsg()).into(),
-        try!(n.get_port()).into(), try!(n.get_selection()).into(),
-        format!("{}-{}", name, try!(n.get_comp())) ));
+    for n in new_graph.borrow().get_imsgs()?.iter() {
+        graph.imsgs.push((n.get_imsg()?.into(),
+        n.get_port()?.into(), n.get_selection()?.into(),
+        format!("{}-{}", name, n.get_comp()?) ));
     }
-    for n in try!(new_graph.borrow().get_external_inputs()).iter() {
-        let comp_name = format!("{}-{}", name, try!(n.get_comp()));
+    for n in new_graph.borrow().get_external_inputs()?.iter() {
+        let comp_name = format!("{}-{}", name, n.get_comp()?);
         for edge in &mut graph.edges {
             if edge.5 == name && edge.3 == try!(n.get_name()) {
                 edge.5 = comp_name.clone();
-                edge.3 = try!(n.get_port()).into();
+                edge.3 = n.get_port()?.into();
             }
         }
 
         for imsg in &mut graph.imsgs {
             if imsg.3 == name && imsg.1 == try!(n.get_name()) {
                 imsg.3 = comp_name.clone();
-                imsg.1 = try!(n.get_port()).into();
-                imsg.2 = try!(n.get_selection()).into();
+                imsg.1 = n.get_port()?.into();
+                imsg.2 = n.get_selection()?.into();
             }
         }
 
         // add only if it's the main subnet
         if graph.nodes.len() < 1 {
-            graph.ext_in.push((try!(n.get_name()).into(), comp_name, try!(n.get_port()).into(), try!(n.get_selection()).into()));
+            graph.ext_in.push((n.get_name()?.into(), comp_name, n.get_port()?.into(), n.get_selection()?.into()));
         }
     }
-    for n in try!(new_graph.borrow().get_external_outputs()).iter() {
-        let comp_name = format!("{}-{}", name, try!(n.get_comp()));
+    for n in new_graph.borrow().get_external_outputs()?.iter() {
+        let comp_name = format!("{}-{}", name, n.get_comp()?);
         for edge in &mut graph.edges {
-            if edge.0 == name && edge.1 == try!(n.get_name()) {
+            if edge.0 == name && edge.1 == n.get_name()? {
                 edge.0 = comp_name.clone();
-                edge.1 = try!(n.get_port()).into();
+                edge.1 = n.get_port()?.into();
             }
         }
 
         // add only if it's the main subnet
         if graph.nodes.len() < 1 {
-            graph.ext_out.push((try!(n.get_name()).into(), comp_name, try!(n.get_port()).into(), try!(n.get_selection()).into()));
+            graph.ext_out.push((n.get_name()?.into(), comp_name, n.get_port()?.into(), n.get_selection()?.into()));
         }
     }
 
-    for n in try!(new_graph.borrow().get_nodes()).iter() {
-        let c_sort = try!(n.get_sort());
-        let c_name = try!(n.get_name());
+    for n in new_graph.borrow().get_nodes()?.iter() {
+        let c_sort = n.get_sort()?;
+        let c_name = n.get_name()?;
 
         let mut msg = Msg::new();
         {
-            let mut path = msg.build_schema::<path::Builder>();
-            path.set_path(&c_sort);
+            let mut path = msg.build_schema::<fs_path::Builder>();
+            path.get_path()?.set_text(&c_sort);
         }
-        try!(agent.output.ask_path.send(msg));
+        agent.output.ask_path.send(msg)?;
 
-        let mut msg = try!(agent.input.new_path.recv());
-        let i_graph: option_path::Reader = try!(msg.read_schema());
+        let mut msg = agent.input.new_path.recv()?;
+        let i_graph: fs_path_option::Reader = msg.read_schema()?;
 
-        let new_path: Option<String> = match try!(i_graph.which()) {
-            option_path::Path(p) => { Some(try!(p).into()) },
-            option_path::None(()) => { None }
+        let new_path: Option<String> = match i_graph.which()? {
+            fs_path_option::Path(p) => { Some(p?.get_text()?.into()) },
+            fs_path_option::None(p) => { None }
         };
         let mut is_subgraph = true;
         let path = match new_path {
@@ -128,14 +128,14 @@ fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: fbp_graph::Rea
         if is_subgraph {
             let mut msg = Msg::new();
             {
-                let mut number = msg.build_schema::<path::Builder>();
-                number.set_path(&path);
+                let mut number = msg.build_schema::<fs_path::Builder>();
+                number.get_path()?.set_text(&path);
             }
-            try!(agent.output.ask_graph.send(msg));
+            agent.output.ask_graph.send(msg)?;
 
             // retrieve the asked graph
-            let mut msg = try!(agent.input.input.recv());
-            let i_graph: fbp_graph::Reader = try!(msg.read_schema());
+            let mut msg = agent.input.input.recv()?;
+            let i_graph: fbp_graph::Reader = msg.read_schema()?;
 
             add_graph(agent, &mut graph, i_graph, &format!("{}-{}", name, c_name));
         } else {

@@ -20,7 +20,7 @@ fvm  = buffet.support.executable {
     substituteInPlace src/main.rs --replace "core_find_edge.so" "${core_find_edge}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "core_find_node.so" "${core_find_node}/lib/libagent.so"
 
-    substituteInPlace src/main.rs --replace "path_capnp.rs" "${path}/src/edge_capnp.rs"
+    substituteInPlace src/main.rs --replace "path_capnp.rs" "${fs_path}/src/edge_capnp.rs"
     substituteInPlace src/main.rs --replace "fbp_action.rs" "${fbp_action}/src/edge_capnp.rs"
   '';
 };

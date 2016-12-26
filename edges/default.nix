@@ -41,8 +41,8 @@ rec {
   maths_number = callPackage ./maths/number {};
   net_http_edges = buffet.fractals.net_http.edges;
   net_ndn_edges = buffet.fractals.net_ndn.edges;
-  option_path = callPackage ./option_path {};
-  path = callPackage ./path {};
+  fs_path_option = callPackage ./fs/path/option {};
+  fs_path = callPackage ./fs/path {};
   protocol_domain_port = callPackage ./protocol_domain_port {};
   shell_commands = callPackage ./shell/commands {};
   ntuple_tuple_tt = callPackage ./ntuple/tuple/tt {};
