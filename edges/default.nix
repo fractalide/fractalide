@@ -33,9 +33,8 @@ rec {
   prim_text = callPackage ./prim/text {};
   prim_data = callPackage ./prim/data {};
   prim_void = callPackage ./prim/void {};
-  prim_tuple_text = callPackage ./prim/tuple_text {};
-  js_create = callPackage ./js/create {};
-  key_value = callPackage ./key/value {};
+  key_t_val_t = callPackage ./key/t/val/t {};
+  key_t_val_i64 = callPackage ./key/t/val/i64 {};
   list_text = callPackage ./list/text {};
   list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
@@ -47,8 +46,11 @@ rec {
   protocol_domain_port = callPackage ./protocol_domain_port {};
   shell_commands = callPackage ./shell/commands {};
   ntuple_tuple_tt = callPackage ./ntuple/tuple/tt {};
+  ntuple_tuple_tb = callPackage ./ntuple/tuple/tb {};
+  list_ntuple_tuple_tb = callPackage ./list/ntuple/tuple/tb {};
   ntuple_triple_ttt = callPackage ./ntuple/triple/ttt {};
   list_ntuple_tuple_tt = callPackage ./list/ntuple/tuple/tt {};
+  list_key_t_val_t = callPackage ./list/key/t/val/t {};
   list_ntuple_triple_ttt = callPackage ./list/ntuple/triple/ttt {};
   ntuple_quadruple_u32u32u32f32 = callPackage ./ntuple/quadruple/u32u32u32f32 {};
   url = callPackage ./url {};

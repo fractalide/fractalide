@@ -13,21 +13,11 @@ callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support //
 # Nodes should function reliably decades from now.
 # Changing names after experimental upgrade is a breaking change, we do not do that here.
 self = rec {
+
   # RAW NODES
   # -   are incomplete and immature, they may wink into and out of existance
   # -   use at own risk, anything in this section can change at any time.
-  # -   You have been warned.
-  app_counter_add = callPackage ./app/counter/add {};
-  app_counter_card = callPackage ./app/counter/card {};
-  app_counter_counter = callPackage ./app/counter/counter {};
-  app_counter_create = callPackage ./app/counter/create {};
-  app_counter_delta = callPackage ./app/counter/delta {};
-  app_counter_minus = callPackage ./app/counter/minus {};
-  app_counter_view = callPackage ./app/counter/view { };
-  app_counter_viewer = callPackage ./app/counter/viewer {};
-  app_growtest = callPackage ./app/growtest {};
-  app_model = callPackage ./app/model {};
-  app_test = callPackage ./app/test {};
+  
   app_todo_nodes = buffet.fractals.app_todo.nodes;
   app_todo_model_test = buffet.fractals.app_todo_model.nodes.test;
   app_todo_controller_test = buffet.fractals.app_todo_controller.nodes.test;
