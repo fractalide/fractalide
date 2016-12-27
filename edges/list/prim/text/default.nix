@@ -8,7 +8,7 @@ edge {
 
     using PrimText = import "${prim_text}/src/edge.capnp";
 
-    struct ListText {
+    struct ListPrimText {
             list @0 :List(PrimText.PrimText);
     }
   '';

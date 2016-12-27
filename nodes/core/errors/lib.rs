@@ -13,10 +13,10 @@ agent! {
             Ok(mut msg) => {
                 let error: fbp_semantic_error::Reader = try!(msg.read_schema());
 
-                println!("Graph at : {}", try!(error.get_path()));
-                let parsing = try!(error.get_parsing());
-                for i in 0..parsing.len() {
-                    println!("  {}", try!(parsing.get(i)));
+                println!("Graph at : {}", try!(error.get_path()?.get_text()));
+                let parsing = error.get_parsing()?.get_list()?.iter();
+                for error in parsing {
+                    println!("  {}", error.get_text()?);
                 }
                 println!("");
             }
@@ -26,7 +26,7 @@ agent! {
         match self.input.file_error.try_recv() {
             Ok(mut msg) => {
                 let error: file_error::Reader = try!(msg.read_schema());
-                println!("Subgraph doesn't exist at file location : {}\n", try!(error.get_not_found()));
+                println!("Subgraph doesn't exist at file location : {}\n", try!(error.get_not_found()?.get_text()));
             }
             _ => {}
         };

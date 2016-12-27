@@ -2,28 +2,31 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [];
+  edges =  with edges; [ prim_text prim_void ];
   schema = with edges; ''
     @0x9c951b3548fca4c2;
 
+    using PrimText = import "${prim_text}/src/edge.capnp";
+    using PrimVoid = import "${prim_void}/src/edge.capnp";
+
     struct FbpLexical {
       union {
-        start @0 :Text;
-        end @1 :Text;
-        notFound @2 :Text;
+        start @0 :PrimText.PrimText;
+        end @1 :PrimText.PrimText;
+        notFound @2 :PrimText.PrimText;
         token :union {
-          bind @3 :Void;
-          external @4 :Void;
+          bind @3 :PrimVoid.PrimVoid;
+          external @4 :PrimVoid.PrimVoid;
           comp :group {
-            name @5 :Text;
-            sort @6 :Text;
+            name @5 :PrimText.PrimText;
+            sort @6 :PrimText.PrimText;
           }
           port :group {
-            name @7 :Text;
-            selection @8 :Text;
+            name @7 :PrimText.PrimText;
+            selection @8 :PrimText.PrimText;
           }
-          imsg @9 :Text;
-          break @10 :Void;
+          imsg @9 :PrimText.PrimText;
+          break @10 :PrimVoid.PrimVoid;
         }
       }
     }

@@ -46,7 +46,7 @@ agent! {
                         let mut new_msg = Msg::new();
                         {
                             let mut msg = new_msg.build_schema::<fbp_semantic_error::Builder>();
-                            msg.set_path(path?);
+                            msg.get_path()?.set_text(path?);
                             {
                                 let mut nodes = msg.init_parsing(errors.len() as u32);
                                 let mut i = 0;
@@ -114,7 +114,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                         };
                     },
                     fbp_lexical::token::Port(port) => {
-                        stack.push(Literal::Port(port.get_name()?.to_string(), port.get_selection()?.to_string()));
+                        stack.push(Literal::Port(port.get_name()?.get_text()?.to_string(), port.get_selection()?.get_text()?.to_string()));
                         state = match state {
                             Compo => { CompPort },
                             CompPortBind => { CompPortBindPort },
@@ -134,16 +134,16 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             ErrorS => { ErrorS },
                             IMSGBind => { IMSGBindPort },
                             _ => {
-                                errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?.get_text()?, port.get_selection()?.get_text()?, get_expected(&state)));
                                 ErrorS
                             },
                         };
                     },
                     fbp_lexical::token::Comp(comp) => {
-                        if comp.get_sort()? != "" {
-                            graph.nodes.push((comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
+                        if comp.get_sort()?.get_text()? != "" {
+                            graph.nodes.push((comp.get_name()?.get_text()?.to_string(), comp.get_sort()?.get_text()?.to_string()));
                         }
-                        stack.push(Literal::Comp(comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
+                        stack.push(Literal::Comp(comp.get_name()?.get_text()?.to_string(), comp.get_sort()?.get_text()?.to_string()));
                         state = match state {
                             CompPortBindPort => {
                                 let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
@@ -189,14 +189,14 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             Break => { Compo },
                             ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Compo },
                             _ => {
-                                errors.push(format!("line {} : Found agent \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found agent \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?.get_text()?, comp.get_sort()?.get_text()?, get_expected(&state)));
                                 ErrorS
                             },
                         }
                     },
                     fbp_lexical::token::Imsg(imsg) => {
                         let imsg = imsg?;
-                        stack.push(Literal::IMSG(imsg.to_string()));
+                        stack.push(Literal::IMSG(imsg.get_text()?.to_string()));
                         state = match state {
                             ErrorS => { IMSG },
                             Break => { IMSG },

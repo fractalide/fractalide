@@ -17,7 +17,7 @@ rec {
   fbp_lexical = callPackage ./fbp/lexical {};
   fbp_semantic_error = callPackage ./fbp/semantic_error {};
   file_desc = callPackage ./file/desc {};
-  file_error = callPackage ./file_error {};
+  file_error = callPackage ./file/error {};
   file_list = callPackage ./file/list {};
   prim_bool = callPackage ./prim/bool {};
   prim_i8 = callPackage ./prim/i8 {};
@@ -35,7 +35,7 @@ rec {
   prim_void = callPackage ./prim/void {};
   key_t_val_t = callPackage ./key/t/val/t {};
   key_t_val_i64 = callPackage ./key/t/val/i64 {};
-  list_text = callPackage ./list/text {};
+  list_prim_text = callPackage ./list/prim/text {};
   list_command = callPackage ./list/command {};
   maths_boolean = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};

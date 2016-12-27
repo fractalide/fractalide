@@ -24,7 +24,7 @@ agent! {
 
                 {
                     let mut msg = new_msg.build_schema::<file_error::Builder>();
-                    msg.set_not_found(&path);
+                    msg.get_not_found()?.set_text(&path);
                 }
                 let _ = self.output.error.send(new_msg);
                 return Ok(End);
@@ -36,7 +36,7 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let mut msg = new_msg.build_schema::<file_desc::Builder>();
-            msg.set_start(&path);
+            msg.init_start().set_text(&path);
         }
         try!(self.output.output.send(new_msg));
 
@@ -46,8 +46,8 @@ agent! {
             let l = try!(line);
             let mut new_msg = Msg::new();
             {
-                let mut msg = new_msg.build_schema::<file_desc::Builder>();
-                msg.set_text(&l);
+                let msg = new_msg.build_schema::<file_desc::Builder>();
+                msg.init_text().set_text(&l);
             }
             try!(self.output.output.send(new_msg));
         }
@@ -56,7 +56,7 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let mut msg = new_msg.build_schema::<file_desc::Builder>();
-            msg.set_end(&path);
+            msg.init_end().set_text(&path);
         }
         try!(self.output.output.send(new_msg));
 

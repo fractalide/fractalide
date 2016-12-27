@@ -2,14 +2,14 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [];
+  edges =  with edges; [ prim_text ];
   schema = with edges; ''
-    @0xc5286a3290514068;
+    @0x9deaa106a95c1af8;
 
     using PrimText = import "${prim_text}/src/edge.capnp";
 
-    struct FileList {
-        list @0 :List(PrimText);
+    struct FileError {
+        notFound @0 :PrimText.PrimText;
     }
   '';
 }
