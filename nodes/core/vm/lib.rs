@@ -16,7 +16,7 @@ struct Graph {
 
 agent! {
     input(input: fbp_graph, new_path: fs_path_option, error: any),
-    output(output: fbp_graph, ask_graph: fs_path, ask_path: path),
+    output(output: fbp_graph, ask_graph: fs_path, ask_path: fs_path),
     fn run(&mut self) -> Result<Signal>{
         let mut graph = Graph { errors: false,
             nodes: vec![], edges: vec![], imsgs: vec![],

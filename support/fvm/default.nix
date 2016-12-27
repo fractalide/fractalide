@@ -5,6 +5,7 @@ fvm  = buffet.support.executable {
   name = "fvm";
   src = ./.;
   crates = with buffet.crates; [ rustfbp capnp ];
+  edges = with buffet.edges; [ fs_path fbp_action ];
   configurePhase = with buffet.nodes; with buffet.edges; ''
     runHook preConfigure
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"

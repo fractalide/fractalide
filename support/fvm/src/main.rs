@@ -18,8 +18,7 @@ fn main() {
 }
 
 mod edge_capnp {
-    include!("path_capnp.rs");
-    include!("fbp_action.rs");
+    include!("edge_capnp.rs");
 }
 use edge_capnp::fbp_action;
 
