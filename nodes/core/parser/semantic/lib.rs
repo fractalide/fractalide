@@ -34,24 +34,25 @@ agent! {
     input(input: fbp_lexical),
     output(output: fbp_graph, error: fbp_semantic_error),
     fn run(&mut self) -> Result<Signal> {
-        let mut msg = try!(self.input.input.recv());
-        let literal: fbp_lexical::Reader = try!(msg.read_schema());
-        let literal = try!(literal.which());
+        let mut msg = self.input.input.recv()?;
+        let literal: fbp_lexical::Reader = msg.read_schema()?;
+        let literal = literal.which()?;
 
         match literal {
             fbp_lexical::Start(path) => {
                 match handle_stream(&self)? {
-                    Ok(graph) => { send_graph(&self, try!(path), &graph)? },
+                    Ok(graph) => { send_graph(&self, path?.get_text()?, &graph)? },
                     Err(errors) => {
                         let mut new_msg = Msg::new();
                         {
                             let mut msg = new_msg.build_schema::<fbp_semantic_error::Builder>();
-                            msg.get_path()?.set_text(path?);
+                            // msg.get_path()?.set_text(path?);
+                            msg.borrow().get_path()?.set_text(path?.get_text()?);
                             {
-                                let mut nodes = msg.init_parsing(errors.len() as u32);
+                                let mut nodes = msg.borrow().init_parsing().init_list(errors.len() as u32);
                                 let mut i = 0;
                                 for n in &errors {
-                                    nodes.borrow().set(i, &n[..]);
+                                    nodes.borrow().get(i).set_text(&n[..]);
                                     i += 1;
                                 }
                             }
@@ -201,7 +202,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             ErrorS => { IMSG },
                             Break => { IMSG },
                             _ => {
-                                errors.push(format!("line {} : Found an IMSG \"{}\", when \"{}\" was expected.", line, imsg, get_expected(&state)));
+                                errors.push(format!("line {} : Found an IMSG \"{}\", when \"{}\" was expected.", line, imsg.get_text()?, get_expected(&state)));
                                 ErrorS
                             },
                         };
