@@ -96,20 +96,20 @@ named!(comp_or_port<&[u8], Literal>, do_parse!(
 named!(literal<&[u8], Literal>, alt!(comment | imsg | bind | external | comp_or_port));
 
 agent! {
-    input(input: file_desc),
-    output(output: fbp_lexical),
+    input(input: fs_file_desc),
+    output(output: core_lexical),
     fn run(&mut self) -> Result<Signal>{
         // Get one MSG
         let mut msg = try!(self.input.input.recv());
-        let file: file_desc::Reader = try!(msg.read_schema());
+        let file: fs_file_desc::Reader = try!(msg.read_schema());
 
         // print it
         match try!(file.which()) {
-            file_desc::Start(path) => {
+            fs_file_desc::Start(path) => {
                 let path = path?;
                 let mut new_msg = Msg::new();
                 {
-                    let mut msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    let mut msg = new_msg.build_schema::<core_lexical::Builder>();
                     msg.init_start().set_text(&path.get_text()?);
                 }
                 let _ = self.output.output.send(new_msg);
@@ -126,18 +126,18 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
     loop {
         // Get one Msg
         let mut msg = try!(comp.input.input.recv());
-        let file: file_desc::Reader = try!(msg.read_schema());
+        let file: fs_file_desc::Reader = try!(msg.read_schema());
 
         // print it
         match try!(file.which()) {
-            file_desc::Text(text) => {
+            fs_file_desc::Text(text) => {
                 let mut text = text?.get_text()?.as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
                             let mut send_msg = Msg::new();
                             {
-                                let msg = send_msg.build_schema::<fbp_lexical::Builder>();
+                                let msg = send_msg.build_schema::<core_lexical::Builder>();
                                 match lit {
                                     Literal::Bind => { msg.init_token().init_bind().set_void(()); },
                                     Literal::External => {msg.init_token().init_external().set_void(()); },
@@ -169,16 +169,16 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
                 }
                 let mut new_msg = Msg::new();
                 {
-                    let msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    let msg = new_msg.build_schema::<core_lexical::Builder>();
                     msg.init_token().init_break().set_void(());
                 }
                 let _ = comp.output.output.send(new_msg);
             },
-            file_desc::End(path) => {
+            fs_file_desc::End(path) => {
                 let path = path?;
                 let mut new_msg = Msg::new();
                 {
-                    let mut msg = new_msg.build_schema::<fbp_lexical::Builder>();
+                    let mut msg = new_msg.build_schema::<core_lexical::Builder>();
                     msg.init_end().set_text(&path.get_text()?);
                 }
                 let _ = comp.output.output.send(new_msg);

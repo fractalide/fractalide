@@ -37,12 +37,12 @@ impl Portal {
 }
 
 agent! {
-    input(action: fbp_action,
-           graph: fbp_graph,
+    input(action: core_action,
+           graph: core_graph,
            edge_path: fs_path_option,
            imsg: any),
     output(error: error,
-            ask_graph: fbp_graph,
+            ask_graph: core_graph,
             ask_path: fs_path,
             imsg_path: fs_path,
             imsg_edge: prim_text,
@@ -52,18 +52,18 @@ agent! {
     fn run(&mut self) -> Result<Signal> {
 
         let mut msg = self.input.action.recv()?;
-        let mut reader: fbp_action::Reader = msg.read_schema()?;
+        let mut reader: core_action::Reader = msg.read_schema()?;
 
         match reader.which()? {
-            fbp_action::Which::Add(add) => {
+            core_action::Which::Add(add) => {
                 let mut add = add?;
-                let name = add.get_name()?;
+                let name = add.get_name()?.get_text()?;
                 let mut ask_msg = Msg::new();
                 {
-                    let mut builder: fbp_graph::Builder = ask_msg.build_schema();
+                    let mut builder: core_graph::Builder = ask_msg.build_schema();
                     builder.set_path(add.get_comp()?);
                     {
-                        let mut nodes = builder.borrow().init_nodes(1);
+                        let mut nodes = builder.borrow().init_nodes().init_list(1);
                         nodes.borrow().get(0).set_name(add.get_name()?);
                         nodes.borrow().get(0).set_sort(add.get_comp()?);
                     }
@@ -71,8 +71,8 @@ agent! {
                 self.output.ask_graph.send(ask_msg)?;
                 add_graph(self, name)?;
             },
-            fbp_action::Which::Remove(remove) => {
-                let name = remove?;
+            core_action::Which::Remove(remove) => {
+                let name = remove?.get_text()?;
                 if let Some(subnet) = self.portal.subnet.remove(name) {
                     for node in subnet.nodes {
                         self.portal.sched.remove_agent(node)?;
@@ -81,20 +81,20 @@ agent! {
                     self.portal.sched.remove_agent(name)?;
                 }
             },
-            fbp_action::Which::Connect(connect) => {
+            core_action::Which::Connect(connect) => {
                 let connect = connect?;
-                let mut o_name = connect.get_o_name()?;
-                let mut o_port = connect.get_o_port()?;
-                let o_selection = connect.get_o_selection()?;
+                let mut o_name = connect.get_o_name()?.get_text()?;
+                let mut o_port = connect.get_o_port()?.get_text()?;
+                let o_selection = connect.get_o_selection()?.get_text()?;
                 if let Some(subnet) = self.portal.subnet.get(o_name) {
                     if let Some(port) = subnet.ext_out.get(o_port) {
                         o_name = &port.0;
                         o_port = &port.1;
                     }
                 }
-                let mut i_name = connect.get_i_name()?;
-                let mut i_port = connect.get_i_port()?;
-                let i_selection = connect.get_i_selection()?;
+                let mut i_name = connect.get_i_name()?.get_text()?;
+                let mut i_port = connect.get_i_port()?.get_text()?;
+                let i_selection = connect.get_i_selection()?.get_text()?;
                 if let Some(subnet) = self.portal.subnet.get(i_name) {
                     if let Some(port) = subnet.ext_in.get(i_port) {
                         i_name = &port.0;
@@ -106,27 +106,27 @@ agent! {
                         i_name, i_port, i_selection));
             },
             // TODO : add selection (array port management)
-            fbp_action::Which::ConnectSender(connect) => {
+            core_action::Which::ConnectSender(connect) => {
                 let connect = connect?;
-                let mut name: String = connect.get_name()?.into();
-                let mut port: String = connect.get_port()?.into();
-                let selection: String = connect.get_selection()?.into();
+                let mut name: String = connect.get_name()?.get_text()?.into();
+                let mut port: String = connect.get_port()?.get_text()?.into();
+                let selection: String = connect.get_selection()?.get_text()?.into();
                 if let Some(subnet) = self.portal.subnet.get(&name) {
                     if let Some(p) = subnet.ext_out.get(&port) {
                         name = p.0.clone();
                         port = p.1.clone();
                     }
                 }
-                let sender = self.outarr.outputs.get(connect.get_output()?)
+                let sender = self.outarr.outputs.get(connect.get_output()?.get_text()?)
                     .ok_or(result::Error::Misc("Element not found".into()))?;
                 // TODO
                 // try!(self.portal.sched.sender.send(CompMsg::ConnectOutputPort(name, port, sender.clone())));
             },
-            fbp_action::Which::Send(send) => {
+            core_action::Which::Send(send) => {
                 let send = send?;
-                let mut comp = send.get_comp()?;
-                let mut port = send.get_port()?;
-                let selection = send.get_selection()?;
+                let mut comp = send.get_comp()?.get_text()?;
+                let mut port = send.get_port()?.get_text()?;
+                let selection = send.get_selection()?.get_text()?;
                 if let Some(subnet) = self.portal.subnet.get(comp) {
                     if let Some(subnet_port) = subnet.ext_in.get(port) {
                         comp = &subnet_port.0;
@@ -141,7 +141,7 @@ agent! {
                 };
                 sender.send(msg)?;
             },
-            fbp_action::Which::Halt(()) => {
+            core_action::Which::Halt(v) => {
                 let sched = mem::replace(&mut self.portal.sched, Scheduler::new());
                 sched.join();
                 return Ok(End);
@@ -153,45 +153,45 @@ agent! {
 
 fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
     let mut msg = agent.input.graph.recv()?;
-    let i_graph: fbp_graph::Reader = msg.read_schema()?;
+    let i_graph: core_graph::Reader = msg.read_schema()?;
 
     let mut subnet = Subgraph::new();
-    for n in i_graph.borrow().get_nodes()?.iter() {
-        subnet.nodes.push(n.get_name()?.into());
-        agent.portal.sched.add_node(n.get_name()?, n.get_sort()?);
+    for n in i_graph.borrow().get_nodes()?.get_list()?.iter() {
+        subnet.nodes.push(n.get_name()?.get_text()?.into());
+        agent.portal.sched.add_node(n.get_name()?.get_text()?, n.get_sort()?.get_text()?);
     }
 
-    for e in i_graph.borrow().get_edges()?.iter() {
-        let o_name = e.get_o_name()?;
-        let o_port = e.get_o_port()?;
-        let o_selection = e.get_o_selection()?;
-        let i_port = e.get_i_port()?;
-        let i_selection = e.get_i_selection()?;
-        let i_name = e.get_i_name()?;
+    for e in i_graph.borrow().get_edges()?.get_list()?.iter() {
+        let o_name = e.get_o_name()?.get_text()?;
+        let o_port = e.get_o_port()?.get_text()?;
+        let o_selection = e.get_o_selection()?.get_text()?;
+        let i_port = e.get_i_port()?.get_text()?;
+        let i_selection = e.get_i_selection()?.get_text()?;
+        let i_name = e.get_i_name()?.get_text()?;
 
         connect_ports(&mut agent.portal.sched,
                 o_name, o_port, o_selection,
                 i_name, i_port, i_selection)?;
     }
 
-    for ext in i_graph.borrow().get_external_inputs()?.iter() {
-        let name = ext.get_name()?;
-        let comp = ext.get_comp()?;
-        let port = ext.get_port()?;
+    for ext in i_graph.borrow().get_external_inputs()?.get_list()?.iter() {
+        let name = ext.get_name()?.get_text()?;
+        let comp = ext.get_comp()?.get_text()?;
+        let port = ext.get_port()?.get_text()?;
         subnet.ext_in.insert(name.into(), (comp.into(), port.into()));
     }
-    for ext in i_graph.borrow().get_external_outputs()?.iter() {
-        let name = ext.get_name()?;
-        let comp = ext.get_comp()?;
-        let port = ext.get_port()?;
+    for ext in i_graph.borrow().get_external_outputs()?.get_list()?.iter() {
+        let name = ext.get_name()?.get_text()?;
+        let comp = ext.get_comp()?.get_text()?;
+        let port = ext.get_port()?.get_text()?;
         subnet.ext_out.insert(name.into(), (comp.into(), port.into()));
     }
 
-    for imsg in i_graph.borrow().get_imsgs()?.iter() {
+    for imsg in i_graph.borrow().get_imsgs()?.get_list()?.iter() {
 
-        let comp = imsg.get_comp()?;
-        let port = imsg.get_port()?;
-        let input = imsg.get_imsg()?;
+        let comp = imsg.get_comp()?.get_text()?;
+        let port = imsg.get_port()?.get_text()?;
+        let input = imsg.get_imsg()?.get_text()?;
 
         let (edge, input, option_action) = split_input(input)?;
 
@@ -227,10 +227,10 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
 
         let edge_camel_case = to_camel_case(&c_name);
 
-        let sender = if imsg.get_selection()? == "" {
-            agent.portal.sched.get_sender(imsg.get_comp()?, imsg.get_port()?)?
+        let sender = if imsg.get_selection()?.get_text()? == "" {
+            agent.portal.sched.get_sender(imsg.get_comp()?.get_text()?, imsg.get_port()?.get_text()?)?
         } else {
-            agent.portal.sched.get_array_sender(imsg.get_comp()?, imsg.get_port()?, imsg.get_selection()?)?
+            agent.portal.sched.get_array_sender(imsg.get_comp()?.get_text()?, imsg.get_port()?.get_text()?, imsg.get_selection()?.get_text()?)?
         };
 
         let mut new_out = Msg::new();

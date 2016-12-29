@@ -3,11 +3,11 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-    input(input: file_list),
-    outarr(output: file_list),
+    input(input: fs_list_path),
+    outarr(output: fs_list_path),
     fn run(&mut self) -> Result<Signal> {
         let mut msg = try!(self.input.input.recv());
-        let list: file_list::Reader = try!(msg.read_schema());
+        let list: fs_list_path::Reader = try!(msg.read_schema());
         let list = try!(list.get_files());
 
         let mut v = Vec::with_capacity(list.len() as usize);
@@ -22,7 +22,7 @@ agent! {
         {
             let mut new_msg = Msg::new();
             {
-                let msg = new_msg.build_schema::<file_list::Builder>();
+                let msg = new_msg.build_schema::<fs_list_path::Builder>();
                 let mut files = msg.init_files(chunk.len() as u32);
                 let mut i: u32 = 0;
                 for path in chunk {

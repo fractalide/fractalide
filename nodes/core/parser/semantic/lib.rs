@@ -31,21 +31,21 @@ enum Literal {
 }
 
 agent! {
-    input(input: fbp_lexical),
-    output(output: fbp_graph, error: fbp_semantic_error),
+    input(input: core_lexical),
+    output(output: core_graph, error: core_semantic_error),
     fn run(&mut self) -> Result<Signal> {
         let mut msg = self.input.input.recv()?;
-        let literal: fbp_lexical::Reader = msg.read_schema()?;
+        let literal: core_lexical::Reader = msg.read_schema()?;
         let literal = literal.which()?;
 
         match literal {
-            fbp_lexical::Start(path) => {
+            core_lexical::Start(path) => {
                 match handle_stream(&self)? {
                     Ok(graph) => { send_graph(&self, path?.get_text()?, &graph)? },
                     Err(errors) => {
                         let mut new_msg = Msg::new();
                         {
-                            let mut msg = new_msg.build_schema::<fbp_semantic_error::Builder>();
+                            let mut msg = new_msg.build_schema::<core_semantic_error::Builder>();
                             // msg.get_path()?.set_text(path?);
                             msg.borrow().get_path()?.set_text(path?.get_text()?);
                             {
@@ -83,16 +83,16 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
     loop {
 
         let mut msg = comp.input.input.recv()?;
-        let literal: fbp_lexical::Reader = msg.read_schema()?;
+        let literal: core_lexical::Reader = msg.read_schema()?;
         let literal = literal.which()?;
         match literal {
-            fbp_lexical::End(_) => {
+            core_lexical::End(_) => {
                 break;
             },
-            fbp_lexical::Token(t) => {
+            core_lexical::Token(t) => {
                 let token = t.which()?;
                 match token {
-                    fbp_lexical::token::Bind(_) => {
+                    core_lexical::token::Bind(_) => {
                         state = match state {
                             CompPort => { CompPortBind },
                             ErrorS => { ErrorS },
@@ -103,7 +103,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             },
                         };
                     },
-                    fbp_lexical::token::External(_) => {
+                    core_lexical::token::External(_) => {
                         state = match state {
                             CompPort => { CompPortExternal },
                             Port => { PortExternal },
@@ -114,7 +114,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             },
                         };
                     },
-                    fbp_lexical::token::Port(port) => {
+                    core_lexical::token::Port(port) => {
                         stack.push(Literal::Port(port.get_name()?.get_text()?.to_string(), port.get_selection()?.get_text()?.to_string()));
                         state = match state {
                             Compo => { CompPort },
@@ -140,7 +140,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             },
                         };
                     },
-                    fbp_lexical::token::Comp(comp) => {
+                    core_lexical::token::Comp(comp) => {
                         if comp.get_sort()?.get_text()? != "" {
                             graph.nodes.push((comp.get_name()?.get_text()?.to_string(), comp.get_sort()?.get_text()?.to_string()));
                         }
@@ -195,7 +195,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             },
                         }
                     },
-                    fbp_lexical::token::Imsg(imsg) => {
+                    core_lexical::token::Imsg(imsg) => {
                         let imsg = imsg?;
                         stack.push(Literal::IMSG(imsg.get_text()?.to_string()));
                         state = match state {
@@ -207,7 +207,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             },
                         };
                     },
-                    fbp_lexical::token::Break(_) => {
+                    core_lexical::token::Break(_) => {
                         line += 1;
                         state = match state {
                             CompPortBind => { state },
@@ -256,60 +256,60 @@ fn get_expected(state: &State) -> String {
 fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
     let mut new_msg = Msg::new();
     {
-        let mut msg = new_msg.build_schema::<fbp_graph::Builder>();
-        msg.set_path(path);
+        let mut msg = new_msg.build_schema::<core_graph::Builder>();
+        msg.borrow().get_path()?.set_text(path);
         {
-            let mut nodes = msg.borrow().init_nodes(graph.nodes.len() as u32);
+            let mut nodes = msg.borrow().init_nodes().init_list(graph.nodes.len() as u32);
             let mut i = 0;
             for n in &graph.nodes {
-                nodes.borrow().get(i).set_name(&n.0[..]);
-                nodes.borrow().get(i).set_sort(&n.1[..]);
+                nodes.borrow().get(i).get_name()?.set_text(&n.0[..]);
+                nodes.borrow().get(i).get_sort()?.set_text(&n.1[..]);
                 i += 1;
             }
         }
         {
-            let mut edges = msg.borrow().init_edges(graph.edges.len() as u32);
+            let mut edges = msg.borrow().init_edges().init_list(graph.edges.len() as u32);
             let mut i = 0;
             for e in &graph.edges {
-                edges.borrow().get(i).set_o_name(&e.0[..]);
-                edges.borrow().get(i).set_o_port(&e.1[..]);
-                edges.borrow().get(i).set_o_selection(&e.2[..]);
-                edges.borrow().get(i).set_i_port(&e.3[..]);
-                edges.borrow().get(i).set_i_selection(&e.4[..]);
-                edges.borrow().get(i).set_i_name(&e.5[..]);
+                edges.borrow().get(i).get_o_name()?.set_text(&e.0[..]);
+                edges.borrow().get(i).get_o_port()?.set_text(&e.1[..]);
+                edges.borrow().get(i).get_o_selection()?.set_text(&e.2[..]);
+                edges.borrow().get(i).get_i_port()?.set_text(&e.3[..]);
+                edges.borrow().get(i).get_i_selection()?.set_text(&e.4[..]);
+                edges.borrow().get(i).get_i_name()?.set_text(&e.5[..]);
                 i += 1;
             }
         }
         {
-            let mut imsgs = msg.borrow().init_imsgs(graph.imsgs.len() as u32);
+            let mut imsgs = msg.borrow().init_imsgs().init_list(graph.imsgs.len() as u32);
             let mut i = 0;
             for imsg in &graph.imsgs {
-                imsgs.borrow().get(i).set_imsg(&imsg.0[..]);
-                imsgs.borrow().get(i).set_port(&imsg.1[..]);
-                imsgs.borrow().get(i).set_selection(&imsg.2[..]);
-                imsgs.borrow().get(i).set_comp(&imsg.3[..]);
+                imsgs.borrow().get(i).get_imsg()?.set_text(&imsg.0[..]);
+                imsgs.borrow().get(i).get_port()?.set_text(&imsg.1[..]);
+                imsgs.borrow().get(i).get_selection()?.set_text(&imsg.2[..]);
+                imsgs.borrow().get(i).get_comp()?.set_text(&imsg.3[..]);
                 i += 1;
             }
         }
         {
-            let mut ext = msg.borrow().init_external_inputs(graph.ext_in.len() as u32);
+            let mut ext = msg.borrow().init_external_inputs().init_list(graph.ext_in.len() as u32);
             let mut i = 0;
             for e in &graph.ext_in {
-                ext.borrow().get(i).set_name(&e.0[..]);
-                ext.borrow().get(i).set_port(&e.1[..]);
-                ext.borrow().get(i).set_selection(&e.2[..]);
-                ext.borrow().get(i).set_comp(&e.3[..]);
+                ext.borrow().get(i).get_name()?.set_text(&e.0[..]);
+                ext.borrow().get(i).get_port()?.set_text(&e.1[..]);
+                ext.borrow().get(i).get_selection()?.set_text(&e.2[..]);
+                ext.borrow().get(i).get_comp()?.set_text(&e.3[..]);
                 i += 1;
             }
         }
         {
-            let mut ext = msg.borrow().init_external_outputs(graph.ext_out.len() as u32);
+            let mut ext = msg.borrow().init_external_outputs().init_list(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
-                ext.borrow().get(i).set_comp(&e.0[..]);
-                ext.borrow().get(i).set_port(&e.1[..]);
-                ext.borrow().get(i).set_selection(&e.2[..]);
-                ext.borrow().get(i).set_name(&e.3[..]);
+                ext.borrow().get(i).get_comp()?.set_text(&e.0[..]);
+                ext.borrow().get(i).get_port()?.set_text(&e.1[..]);
+                ext.borrow().get(i).get_selection()?.set_text(&e.2[..]);
+                ext.borrow().get(i).get_name()?.set_text(&e.3[..]);
                 i += 1;
             }
         }

@@ -26,7 +26,7 @@ When developing a `subgraph` there comes a time when the developer wants to inje
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    '${maths_boolean}:(boolean=true)' -> INPUT_PORT NAME()
+    '${prim_bool}:(boolean=true)' -> INPUT_PORT NAME()
   '';
 }
 ```

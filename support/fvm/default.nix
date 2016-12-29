@@ -5,7 +5,7 @@ fvm  = buffet.support.executable {
   name = "fvm";
   src = ./.;
   crates = with buffet.crates; [ rustfbp capnp ];
-  edges = with buffet.edges; [ fs_path fbp_action ];
+  edges = with buffet.edges; [ fs_path core_action ];
   configurePhase = with buffet.nodes; with buffet.edges; ''
     runHook preConfigure
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"
@@ -22,7 +22,7 @@ fvm  = buffet.support.executable {
     substituteInPlace src/main.rs --replace "core_find_node.so" "${core_find_node}/lib/libagent.so"
 
     substituteInPlace src/main.rs --replace "path_capnp.rs" "${fs_path}/src/edge_capnp.rs"
-    substituteInPlace src/main.rs --replace "fbp_action.rs" "${fbp_action}/src/edge_capnp.rs"
+    substituteInPlace src/main.rs --replace "core_action.rs" "${core_action}/src/edge_capnp.rs"
   '';
 };
 in

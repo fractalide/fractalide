@@ -17,7 +17,7 @@ self = rec {
   # RAW NODES
   # -   are incomplete and immature, they may wink into and out of existance
   # -   use at own risk, anything in this section can change at any time.
-  
+
   app_todo_nodes = buffet.fractals.app_todo.nodes;
   app_todo_model_test = buffet.fractals.app_todo_model.nodes.test;
   app_todo_controller_test = buffet.fractals.app_todo_controller.nodes.test;
@@ -46,12 +46,6 @@ self = rec {
   net_ndn_test = buffet.fractals.net_ndn.nodes.test;
   print_file_with_feedback = callPackage ./print/file/with/feedback {};
   print_with_feedback = callPackage ./print/with/feedback {};
-  shells_lain_commands = callPackage ./shells/lain/commands {};
-  shells_lain_commands_print = callPackage ./shells/lain/commands/print {};
-  shells_lain_commands_dirname = callPackage ./shells/lain/commands/dirname {};
-  shells_lain_flow = callPackage ./shells/lain/flow {};
-  shells_lain_parse = callPackage ./shells/lain/parse {};
-  shells_lain_prompt = callPackage ./shells/lain/prompt {};
   test_dm = callPackage ./test/dm {};
   test_sjm = callPackage ./test/sjm {};
   ui_js_nodes = buffet.fractals.ui_js.nodes;
@@ -75,7 +69,7 @@ self = rec {
   core_scheduler = callPackage ./core/scheduler {};
   core_subgraph = callPackage ./core/subgraph {};
   core_vm = callPackage ./core/vm {};
-  fs_dir_list = callPackage ./fs/dir/list {};
+  fs_list_dir = callPackage ./fs/list/dir {};
   fs_file_open = callPackage ./fs/file/open {};
   halter = callPackage ./halter {};
   io_print = callPackage ./io/print {};

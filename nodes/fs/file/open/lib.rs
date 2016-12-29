@@ -8,7 +8,7 @@ use std::io::BufRead;
 
 agent! {
     input(input: fs_path),
-    output(output: file_desc, error: file_error),
+    output(output: fs_file_desc, error: fs_file_error),
     fn run(&mut self) -> Result<Signal> {
         // Get the path
         let mut msg = try!(self.input.input.recv());
@@ -23,7 +23,7 @@ agent! {
                 let mut new_msg = Msg::new();
 
                 {
-                    let mut msg = new_msg.build_schema::<file_error::Builder>();
+                    let mut msg = new_msg.build_schema::<fs_file_error::Builder>();
                     msg.get_not_found()?.set_text(&path);
                 }
                 let _ = self.output.error.send(new_msg);
@@ -35,7 +35,7 @@ agent! {
         // Send start
         let mut new_msg = Msg::new();
         {
-            let mut msg = new_msg.build_schema::<file_desc::Builder>();
+            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
             msg.init_start().set_text(&path);
         }
         try!(self.output.output.send(new_msg));
@@ -46,7 +46,7 @@ agent! {
             let l = try!(line);
             let mut new_msg = Msg::new();
             {
-                let msg = new_msg.build_schema::<file_desc::Builder>();
+                let msg = new_msg.build_schema::<fs_file_desc::Builder>();
                 msg.init_text().set_text(&l);
             }
             try!(self.output.output.send(new_msg));
@@ -55,7 +55,7 @@ agent! {
         // Send stop
         let mut new_msg = Msg::new();
         {
-            let mut msg = new_msg.build_schema::<file_desc::Builder>();
+            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
             msg.init_end().set_text(&path);
         }
         try!(self.output.output.send(new_msg));

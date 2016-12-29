@@ -76,16 +76,16 @@ in
 # insert in alphabetical order to reduce conflicts
 rec {
   ...
-  generic_text = callPackage ./generic/text {};
-  maths_boolean = callPackage ./maths/boolean {};
+  prim_text = callPackage ./generic/text {};
+  prim_bool = callPackage ./maths/boolean {};
   maths_number = callPackage ./maths/number {};
   ...
 }
   </screen>
   You can do a test compilation of your component with this command:
-<screen>$ nix-build --argstr debug true -A contracts.maths_boolean</screen>
+<screen>$ nix-build --argstr debug true -A contracts.prim_bool</screen>
 If you see something like the below, then it worked.
-<screen>/nix/store/jy9yjnnmlpc7bzaq5ihjqwiywrx59fw4-maths_boolean</screen>
+<screen>/nix/store/jy9yjnnmlpc7bzaq5ihjqwiywrx59fw4-prim_bool</screen>
 Example: <link xlink:href="https://github.com/fractalide/fractalide/blob/master/contracts/default.nix#L15"><filename>contracts/default.nix</filename></link>.
 </para>
 </listitem>
@@ -126,28 +126,28 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  maths_boolean_nand, edges(maths_boolean)
-  inputs(a: maths_boolean, b: maths_boolean),
+  maths_boolean_nand, edges(prim_bool)
+  inputs(a: prim_bool, b: prim_bool),
   inputs_array(),
-  outputs(output: maths_boolean),
+  outputs(output: prim_bool),
   outputs_array(),
   option(),
   acc(),
   fn run(&amp;mut self) -> Result&lt;()> {
     let a = {
         let mut ip_a = try!(self.ports.recv("a"));
-        let a_reader: maths_boolean::Reader = try!(ip_a.read_schema());
+        let a_reader: prim_bool::Reader = try!(ip_a.read_schema());
         a_reader.get_boolean()
     };
     let b = {
         let mut ip_b = try!(self.ports.recv("b"));
-        let b_reader: maths_boolean::Reader = try!(ip_b.read_schema());
+        let b_reader: prim_bool::Reader = try!(ip_b.read_schema());
         b_reader.get_boolean()
     };
 
     let mut out_ip = IP::new();
     {
-      let mut boolean = out_ip.build_schema::&lt;maths_boolean::Builder>();
+      let mut boolean = out_ip.build_schema::&lt;prim_bool::Builder>();
       boolean.set_boolean(if a == true &amp;&amp; b == true {false} else {true});
     }
     try!(self.ports.send("output", out_ip));
@@ -155,7 +155,7 @@ agent! {
   }
 }
 </screen>
-Notice the <filename>edges(maths_boolean)</filename> line:
+Notice the <filename>edges(prim_bool)</filename> line:
 This is where we reference our contracts we made earlier. But we still have not tied the contract with this <filename>NAND</filename> implemenation. This is done in the next section.
 </para>
 </listitem>
@@ -172,10 +172,10 @@ Then insert this into the <filename>default.nix</filename>
 
 agent {
   src = ./.;
-  edges = with edges; [ maths_boolean ];
+  edges = with edges; [ prim_bool ];
 }
 </screen>
-Notice <filename>contracts = [ maths_boolean ];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-maths_boolean-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
+Notice <filename>contracts = [ prim_bool ];</filename> here is where we will compile the <filename>capnproto</filename> contract and copy it into the <filename>/tmp/nix-build-prim_bool-*-drv/</filename> directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
 </para>
   </listitem>
 
@@ -289,7 +289,7 @@ First, edit <filename>fractalide/components/development/test/default.nix</filena
 subnet rec {
   src = ./.;
   subnet = ''
-'maths_boolean:(boolean=true)' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
+'prim_bool:(boolean=true)' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
   '';
 
   meta = with stdenv.lib; {
