@@ -2,17 +2,14 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text prim_void ];
+  edges =  with edges; [ ];
   schema = with edges; ''
     @0xa564e75d2890765e;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-    using PrimVoid = import "${prim_void}/src/edge.capnp";
-
     struct FsPathOption {
         union {
-            path @0 :PrimText.PrimText;
-            none @1 :PrimVoid.PrimVoid;
+            path @0 :Text;
+            none @1 :Void;
         }
     }
   '';

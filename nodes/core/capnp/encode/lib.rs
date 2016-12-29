@@ -15,7 +15,7 @@ agent! {
 
         let mut path_msg = self.input.path.recv()?;
         let path: fs_path::Reader = path_msg.read_schema()?;
-        let path = path.get_path()?.get_text()?;
+        let path = path.get_path()?;
 
         let mut edge_msg = self.input.edge.recv()?;
         let edge: prim_text::Reader = edge_msg.read_schema()?;

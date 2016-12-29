@@ -6,27 +6,24 @@ edge {
   schema = with edges; ''
     @0x9c951b3548fca4c2;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-    using PrimVoid = import "${prim_void}/src/edge.capnp";
-
     struct CoreLexical {
       union {
-        start @0 :PrimText.PrimText;
-        end @1 :PrimText.PrimText;
-        notFound @2 :PrimText.PrimText;
+        start @0 :Text;
+        end @1 :Text;
+        notFound @2 :Text;
         token :union {
-          bind @3 :PrimVoid.PrimVoid;
-          external @4 :PrimVoid.PrimVoid;
+          bind @3 :Void;
+          external @4 :Void;
           comp :group {
-            name @5 :PrimText.PrimText;
-            sort @6 :PrimText.PrimText;
+            name @5 :Text;
+            sort @6 :Text;
           }
           port :group {
-            name @7 :PrimText.PrimText;
-            selection @8 :PrimText.PrimText;
+            name @7 :Text;
+            selection @8 :Text;
           }
-          imsg @9 :PrimText.PrimText;
-          break @10 :PrimVoid.PrimVoid;
+          imsg @9 :Text;
+          break @10 :Void;
         }
       }
     }

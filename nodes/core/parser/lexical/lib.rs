@@ -110,7 +110,7 @@ agent! {
                 let mut new_msg = Msg::new();
                 {
                     let mut msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.init_start().set_text(&path.get_text()?);
+                    msg.set_start(&path);
                 }
                 let _ = self.output.output.send(new_msg);
                 try!(handle_stream(&self));
@@ -131,7 +131,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
         // print it
         match try!(file.which()) {
             fs_file_desc::Text(text) => {
-                let mut text = text?.get_text()?.as_bytes();
+                let mut text = text?.as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
@@ -139,24 +139,24 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
                             {
                                 let msg = send_msg.build_schema::<core_lexical::Builder>();
                                 match lit {
-                                    Literal::Bind => { msg.init_token().init_bind().set_void(()); },
-                                    Literal::External => {msg.init_token().init_external().set_void(()); },
+                                    Literal::Bind => { msg.init_token().set_bind(()); },
+                                    Literal::External => {msg.init_token().set_external(()); },
                                     Literal::Port(name, selection) => {
                                         let mut port = msg.init_token().init_port();
-                                        port.borrow().get_name()?.set_text(&name);
+                                        port.borrow().set_name(&name);
                                         if let Some(s) = selection {
-                                            port.borrow().get_selection()?.set_text(&s);
+                                            port.borrow().set_selection(&s);
                                         } else {
-                                            port.borrow().get_selection()?.set_text("");
+                                            port.borrow().set_selection("");
                                         }
                                     },
                                     Literal::Comp(name, sort) => {
                                         let mut comp = msg.init_token().init_comp();
-                                        comp.borrow().get_name()?.set_text(&name);
-                                        comp.borrow().get_sort()?.set_text(&sort);
+                                        comp.borrow().set_name(&name);
+                                        comp.borrow().set_sort(&sort);
                                     },
                                     Literal::IMSG(imsg) => {
-                                        msg.init_token().init_imsg().set_text(&imsg);
+                                        msg.init_token().set_imsg(&imsg);
                                     }
                                     Literal::Comment => { break; }
                                 }
@@ -170,7 +170,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
                 let mut new_msg = Msg::new();
                 {
                     let msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.init_token().init_break().set_void(());
+                    msg.init_token().set_break(());
                 }
                 let _ = comp.output.output.send(new_msg);
             },
@@ -179,7 +179,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
                 let mut new_msg = Msg::new();
                 {
                     let mut msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.init_end().set_text(&path.get_text()?);
+                    msg.set_end(&path);
                 }
                 let _ = comp.output.output.send(new_msg);
                 break;

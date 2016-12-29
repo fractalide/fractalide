@@ -2,17 +2,15 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ ];
   schema = with edges; ''
     @0x81458f10b34067d8;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-
     struct CoreGraphExt {
-           name @0 :PrimText.PrimText;
-           comp @1 :PrimText.PrimText;
-           port @2 :PrimText.PrimText;
-           selection @3 :PrimText.PrimText;
+           name @0 :Text;
+           comp @1 :Text;
+           port @2 :Text;
+           selection @3 :Text;
     }
   '';
 }

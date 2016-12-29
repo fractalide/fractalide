@@ -41,18 +41,18 @@ agent! {
         match literal {
             core_lexical::Start(path) => {
                 match handle_stream(&self)? {
-                    Ok(graph) => { send_graph(&self, path?.get_text()?, &graph)? },
+                    Ok(graph) => { send_graph(&self, path?, &graph)? },
                     Err(errors) => {
                         let mut new_msg = Msg::new();
                         {
                             let mut msg = new_msg.build_schema::<core_semantic_error::Builder>();
-                            // msg.get_path()?.set_text(path?);
-                            msg.borrow().get_path()?.set_text(path?.get_text()?);
+                            // msg.set_path(path?);
+                            msg.borrow().set_path(path?);
                             {
-                                let mut nodes = msg.borrow().init_parsing().init_list(errors.len() as u32);
+                                let mut nodes = msg.borrow().init_parsing(errors.len() as u32);
                                 let mut i = 0;
                                 for n in &errors {
-                                    nodes.borrow().get(i).set_text(&n[..]);
+                                    nodes.borrow().set(i, &n[..]);
                                     i += 1;
                                 }
                             }
@@ -115,7 +115,7 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                         };
                     },
                     core_lexical::token::Port(port) => {
-                        stack.push(Literal::Port(port.get_name()?.get_text()?.to_string(), port.get_selection()?.get_text()?.to_string()));
+                        stack.push(Literal::Port(port.get_name()?.to_string(), port.get_selection()?.to_string()));
                         state = match state {
                             Compo => { CompPort },
                             CompPortBind => { CompPortBindPort },
@@ -135,16 +135,16 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             ErrorS => { ErrorS },
                             IMSGBind => { IMSGBindPort },
                             _ => {
-                                errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?.get_text()?, port.get_selection()?.get_text()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found port \"{}[{}]\", when \"{}\" was expected.", line, port.get_name()?, port.get_selection()?, get_expected(&state)));
                                 ErrorS
                             },
                         };
                     },
                     core_lexical::token::Comp(comp) => {
-                        if comp.get_sort()?.get_text()? != "" {
-                            graph.nodes.push((comp.get_name()?.get_text()?.to_string(), comp.get_sort()?.get_text()?.to_string()));
+                        if comp.get_sort()? != "" {
+                            graph.nodes.push((comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
                         }
-                        stack.push(Literal::Comp(comp.get_name()?.get_text()?.to_string(), comp.get_sort()?.get_text()?.to_string()));
+                        stack.push(Literal::Comp(comp.get_name()?.to_string(), comp.get_sort()?.to_string()));
                         state = match state {
                             CompPortBindPort => {
                                 let in_c = stack.pop().ok_or(result::Error::Misc("stack problem".into()))?;
@@ -190,19 +190,19 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<Graph, Vec<Stri
                             Break => { Compo },
                             ErrorS => { stack = vec![stack.pop().ok_or(result::Error::Misc("stack problem".into()))?]; Compo },
                             _ => {
-                                errors.push(format!("line {} : Found agent \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?.get_text()?, comp.get_sort()?.get_text()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found agent \"{}({})\", when \"{}\" was expected.", line, comp.get_name()?, comp.get_sort()?, get_expected(&state)));
                                 ErrorS
                             },
                         }
                     },
                     core_lexical::token::Imsg(imsg) => {
                         let imsg = imsg?;
-                        stack.push(Literal::IMSG(imsg.get_text()?.to_string()));
+                        stack.push(Literal::IMSG(imsg.to_string()));
                         state = match state {
                             ErrorS => { IMSG },
                             Break => { IMSG },
                             _ => {
-                                errors.push(format!("line {} : Found an IMSG \"{}\", when \"{}\" was expected.", line, imsg.get_text()?, get_expected(&state)));
+                                errors.push(format!("line {} : Found an IMSG \"{}\", when \"{}\" was expected.", line, imsg, get_expected(&state)));
                                 ErrorS
                             },
                         };
@@ -257,13 +257,13 @@ fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
     let mut new_msg = Msg::new();
     {
         let mut msg = new_msg.build_schema::<core_graph::Builder>();
-        msg.borrow().get_path()?.set_text(path);
+        msg.borrow().set_path(path);
         {
             let mut nodes = msg.borrow().init_nodes().init_list(graph.nodes.len() as u32);
             let mut i = 0;
             for n in &graph.nodes {
-                nodes.borrow().get(i).get_name()?.set_text(&n.0[..]);
-                nodes.borrow().get(i).get_sort()?.set_text(&n.1[..]);
+                nodes.borrow().get(i).set_name(&n.0[..]);
+                nodes.borrow().get(i).set_sort(&n.1[..]);
                 i += 1;
             }
         }
@@ -271,12 +271,12 @@ fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
             let mut edges = msg.borrow().init_edges().init_list(graph.edges.len() as u32);
             let mut i = 0;
             for e in &graph.edges {
-                edges.borrow().get(i).get_o_name()?.set_text(&e.0[..]);
-                edges.borrow().get(i).get_o_port()?.set_text(&e.1[..]);
-                edges.borrow().get(i).get_o_selection()?.set_text(&e.2[..]);
-                edges.borrow().get(i).get_i_port()?.set_text(&e.3[..]);
-                edges.borrow().get(i).get_i_selection()?.set_text(&e.4[..]);
-                edges.borrow().get(i).get_i_name()?.set_text(&e.5[..]);
+                edges.borrow().get(i).set_o_name(&e.0[..]);
+                edges.borrow().get(i).set_o_port(&e.1[..]);
+                edges.borrow().get(i).set_o_selection(&e.2[..]);
+                edges.borrow().get(i).set_i_port(&e.3[..]);
+                edges.borrow().get(i).set_i_selection(&e.4[..]);
+                edges.borrow().get(i).set_i_name(&e.5[..]);
                 i += 1;
             }
         }
@@ -284,10 +284,10 @@ fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
             let mut imsgs = msg.borrow().init_imsgs().init_list(graph.imsgs.len() as u32);
             let mut i = 0;
             for imsg in &graph.imsgs {
-                imsgs.borrow().get(i).get_imsg()?.set_text(&imsg.0[..]);
-                imsgs.borrow().get(i).get_port()?.set_text(&imsg.1[..]);
-                imsgs.borrow().get(i).get_selection()?.set_text(&imsg.2[..]);
-                imsgs.borrow().get(i).get_comp()?.set_text(&imsg.3[..]);
+                imsgs.borrow().get(i).set_imsg(&imsg.0[..]);
+                imsgs.borrow().get(i).set_port(&imsg.1[..]);
+                imsgs.borrow().get(i).set_selection(&imsg.2[..]);
+                imsgs.borrow().get(i).set_comp(&imsg.3[..]);
                 i += 1;
             }
         }
@@ -295,10 +295,10 @@ fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
             let mut ext = msg.borrow().init_external_inputs().init_list(graph.ext_in.len() as u32);
             let mut i = 0;
             for e in &graph.ext_in {
-                ext.borrow().get(i).get_name()?.set_text(&e.0[..]);
-                ext.borrow().get(i).get_port()?.set_text(&e.1[..]);
-                ext.borrow().get(i).get_selection()?.set_text(&e.2[..]);
-                ext.borrow().get(i).get_comp()?.set_text(&e.3[..]);
+                ext.borrow().get(i).set_name(&e.0[..]);
+                ext.borrow().get(i).set_port(&e.1[..]);
+                ext.borrow().get(i).set_selection(&e.2[..]);
+                ext.borrow().get(i).set_comp(&e.3[..]);
                 i += 1;
             }
         }
@@ -306,10 +306,10 @@ fn send_graph(comp: &ThisAgent, path: &str, graph: &Graph) -> Result<()> {
             let mut ext = msg.borrow().init_external_outputs().init_list(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
-                ext.borrow().get(i).get_comp()?.set_text(&e.0[..]);
-                ext.borrow().get(i).get_port()?.set_text(&e.1[..]);
-                ext.borrow().get(i).get_selection()?.set_text(&e.2[..]);
-                ext.borrow().get(i).get_name()?.set_text(&e.3[..]);
+                ext.borrow().get(i).set_comp(&e.0[..]);
+                ext.borrow().get(i).set_port(&e.1[..]);
+                ext.borrow().get(i).set_selection(&e.2[..]);
+                ext.borrow().get(i).set_name(&e.3[..]);
                 i += 1;
             }
         }
