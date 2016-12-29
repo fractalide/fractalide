@@ -7,14 +7,14 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    input(input: path),
-    output(output: file_desc, error: file_error),
+    input(input: fs_path),
+    output(output: fs_file_desc, error: fs_file_error),
     fn run(&mut self) -> Result<Signal> {
         // Get the path
         let mut msg = try!(self.input.input.recv());
-        let path: path::Reader = try!(msg.read_schema());
+        let path: fs_path::Reader = msg.read_schema()?;
 
-        let path = try!(path.get_path());
+        let path = path.get_path()?.get_text()?;
 
         let file = match File::open(path) {
             Ok(file) => { file },
@@ -23,8 +23,8 @@ agent! {
                 let mut new_msg = Msg::new();
 
                 {
-                    let mut msg = new_msg.build_schema::<file_error::Builder>();
-                    msg.set_not_found(&path);
+                    let mut msg = new_msg.build_schema::<fs_file_error::Builder>();
+                    msg.get_not_found()?.set_text(&path);
                 }
                 let _ = self.output.error.send(new_msg);
                 return Ok(End);
@@ -35,8 +35,8 @@ agent! {
         // Send start
         let mut new_msg = Msg::new();
         {
-            let mut msg = new_msg.build_schema::<file_desc::Builder>();
-            msg.set_start(&path);
+            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
+            msg.init_start().set_text(&path);
         }
         try!(self.output.output.send(new_msg));
 
@@ -46,8 +46,8 @@ agent! {
             let l = try!(line);
             let mut new_msg = Msg::new();
             {
-                let mut msg = new_msg.build_schema::<file_desc::Builder>();
-                msg.set_text(&l);
+                let msg = new_msg.build_schema::<fs_file_desc::Builder>();
+                msg.init_text().set_text(&l);
             }
             try!(self.output.output.send(new_msg));
         }
@@ -55,8 +55,8 @@ agent! {
         // Send stop
         let mut new_msg = Msg::new();
         {
-            let mut msg = new_msg.build_schema::<file_desc::Builder>();
-            msg.set_end(&path);
+            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
+            msg.init_end().set_text(&path);
         }
         try!(self.output.output.send(new_msg));
 

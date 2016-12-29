@@ -55,8 +55,8 @@ subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
     nand(${maths_boolean_nand})
-    '${maths_boolean}:(boolean=true)' -> a nand()
-    '${maths_boolean}:(boolean=true)' -> b nand()
+    '${prim_bool}:(boolean=true)' -> a nand()
+    '${prim_bool}:(boolean=true)' -> b nand()
     nand() output -> input io_print(${maths_boolean_print})
   '';
 }
@@ -75,8 +75,8 @@ This is the output of the above `Subgraph`'s compilation:
 ```
 $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subgraph
 nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
-'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> a nand()
-'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-maths_boolean:(boolean=true)' -> b nand()
+'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-prim_bool:(boolean=true)' -> a nand()
+'/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-prim_bool:(boolean=true)' -> b nand()
 nand() output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
 ```
 
@@ -145,7 +145,7 @@ subgraph {
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    '${maths_boolean}:(boolean=true)' -> a agent(${name_of_agent})
+    '${prim_bool}:(boolean=true)' -> a agent(${name_of_agent})
   '';
 }
 ```
@@ -276,7 +276,7 @@ The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Frac
 
 Explanation of the `Subgraph`:
 
-This `Subgraph` takes an input of `Hidden Edge` type [maths_boolean](../edges/maths/boolean/default.nix) over the `input` port. A `Message` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `maths_boolean` data type, which is then sent over the `Subgraph` output port `output`.
+This `Subgraph` takes an input of `Hidden Edge` type [prim_bool](../edges/maths/boolean/default.nix) over the `input` port. A `Message` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `prim_bool` data type, which is then sent over the `Subgraph` output port `output`.
 
 The above implements the `not` boolean logic operation.
 
@@ -287,8 +287,8 @@ The above implements the `not` boolean logic operation.
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; ''
-    '${maths_boolean}:(boolean=true)' -> a nand(${maths_boolean_nand})
-    '${maths_boolean}:(boolean=true)' -> b nand()
+    '${prim_bool}:(boolean=true)' -> a nand(${maths_boolean_nand})
+    '${prim_bool}:(boolean=true)' -> b nand()
     nand() output -> input not(${maths_boolean_not})
     not() output -> input print(${maths_boolean_print})
   '';
@@ -391,7 +391,7 @@ The `agent` function in the `default.nix` requires you make decisions about thre
 
 agent {
   src = ./.;
-  edges = with edges; [ maths_boolean ];
+  edges = with edges; [ prim_bool ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [ openssl ];
 }
@@ -424,23 +424,23 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  input(a: maths_boolean, b: maths_boolean),
-  output(output: maths_boolean),
+  input(a: prim_bool, b: prim_bool),
+  output(output: prim_bool),
   fn run(&mut self) -> Result<Signal> {
     let a = {
       let mut ip_a = self.input.a.recv()?;
-      let a_reader: maths_boolean::Reader = ip_a.read_schema()?;
+      let a_reader: prim_bool::Reader = ip_a.read_schema()?;
       a_reader.get_boolean()
     };
     let b = {
       let mut ip_b = self.input.b.recv()?;
-      let b_reader: maths_boolean::Reader = ip_b.read_schema()?;
+      let b_reader: prim_bool::Reader = ip_b.read_schema()?;
       b_reader.get_boolean()
     };
 
     let mut out_ip = IP::new();
     {
-      let mut boolean = out_ip.build_schema::<maths_boolean::Builder>();
+      let mut boolean = out_ip.build_schema::<prim_bool::Builder>();
       boolean.set_boolean(if a == true && b == true {false} else {true});
     }
     self.output.output.send(out_ip)?;
@@ -455,11 +455,11 @@ All expresions are optional except for the `run` function.
 ##### `input`:
 ``` rust
 agent! {
-  input(input_name: maths_boolean),
+  input(input_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
     let a = {
       let mut a_msg = self.input.input_name.recv()?;
-      let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+      let a_reader: prim_bool::Reader = a_msg.read_schema()?;
       a_reader.get_boolean()
     };
     Ok(End)
@@ -471,12 +471,12 @@ The `input` port, is a bounded buffer simple input channel that carries Cap'n Pr
 ##### `inarr`:
 ``` rust
 agent! {
-  inarr(input_array_name: maths_boolean),
+  inarr(input_array_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
     for ins in self.inarr.input_array_name.values() {
       let a = {
         let mut a_msg = ins.recv()?;
-        let a_reader: maths_boolean::Reader = a_msg.read_schema()?;
+        let a_reader: prim_bool::Reader = a_msg.read_schema()?;
         a_reader.get_boolean()
       };
     }
@@ -490,11 +490,11 @@ They are used when the `Subgraph` developer needs multiple elements of a port, f
 ##### `output`:
 ``` rust
 agent! {
-  output(output_name: maths_boolean),
+  output(output_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
     let mut msg_out = msg::new();
     {
-      let mut boolean = msg_out.build_schema::<maths_boolean::Builder>();
+      let mut boolean = msg_out.build_schema::<prim_bool::Builder>();
       boolean.set_boolean(true);
     }
     self.output.output_name.send(msg_out)?;
@@ -540,11 +540,11 @@ impl Portal {
 }
 
 agent! {
-  input(connect: generic_text, ip: any),
+  input(connect: prim_text, ip: any),
   portal(Portal => Portal::new()),
   fn run(&mut self) -> Result<Signal> {
     if let Ok(mut ip) = self.inputs.connect.try_recv() {
-        let reader: generic_text::Reader = ip.read_schema()?;
+        let reader: prim_text::Reader = ip.read_schema()?;
         let mut socket = Socket::new(Protocol::Push)
             .or(Err(result::Error::Misc("Cannot create socket".into())))?;
         socket.bind(reader.get_text()?)
@@ -568,10 +568,10 @@ This feature is named after Valve's `portal` game. A `Portal` allows us to keep 
 ##### `option`:
 ``` rust
 agent! {
-  option(maths_boolean),
+  option(prim_bool),
   fn run(&mut self) -> Result<Signal> {
     let mut opt = self.option.recv();
-    let opt_reader: maths_boolean::Reader = opt.read_schema()?;
+    let opt_reader: prim_bool::Reader = opt.read_schema()?;
     let opt_boolean = opt_reader.get_boolean()?;
     Ok(End)
   }
@@ -582,10 +582,10 @@ The `option` port gives the `subgraph` developer a way to send in parameters suc
 ##### `accumulator`:
 ``` rust
 agent! {
-  accumulator(maths_boolean),
+  accumulator(prim_bool),
   fn run(&mut self) -> Result<Signal> {
     let mut acc = self.ports.accumulator.recv()?;
-    let acc_reader: maths_boolean::Reader = ip_acc.read_schema()?;
+    let acc_reader: prim_bool::Reader = ip_acc.read_schema()?;
     let acc_boolean = acc_reader.get_boolean()?;
     Ok(End)
   }

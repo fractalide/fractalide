@@ -18,10 +18,9 @@ fn main() {
 }
 
 mod edge_capnp {
-    include!("path_capnp.rs");
-    include!("fbp_action.rs");
+    include!("edge_capnp.rs");
 }
-use edge_capnp::fbp_action;
+use edge_capnp::core_action;
 
 #[allow(unused_must_use)]
 fn run(path_fbp: &str) {
@@ -78,18 +77,18 @@ fn run(path_fbp: &str) {
     // Send the first Msg to the scheduler
     let mut start_msg = Msg::new();
     {
-        let builder: fbp_action::Builder = start_msg.build_schema();
+        let builder: core_action::Builder = start_msg.build_schema();
         let mut add = builder.init_add();
-        add.set_name("main");
-        add.set_comp(&path_fbp);
+        add.borrow().init_name().set_text("main");
+        add.borrow().init_comp().set_text(&path_fbp);
     }
     add.send(start_msg).expect("cannot send start_msg");
 
     // Send the halt msg
     let mut halt_msg = Msg::new();
     {
-        let mut builder: fbp_action::Builder = halt_msg.build_schema();
-        builder.set_halt(());
+        let mut builder: core_action::Builder = halt_msg.build_schema();
+        builder.init_halt().set_void(());
     }
     add.send(halt_msg).expect("cannot send halt_msg");
 

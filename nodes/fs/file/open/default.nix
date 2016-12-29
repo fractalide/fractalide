@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ file_desc path file_error ];
+  edges = with edges; [ fs_file_desc fs_path fs_file_error ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }

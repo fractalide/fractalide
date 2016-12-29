@@ -39,16 +39,16 @@ pub trait Agent {
 /// agent! {
 ///    inputs(input: any),
 ///    outputs(output: any),
-///    option(generic_text),
+///    option(prim_text),
 ///    fn run(&mut self) -> Result<Signal> {
 ///        // Receive an IP
 ///        let msg = try!(self.input.input.recv());
 ///
-///        // Received an IP from the option port (a generic_text)
+///        // Received an IP from the option port (a prim_text)
 ///        let opt = self.recv_opt();
 ///
 ///        // Get the capn'p reader
-///        let reader: generic_text::Reader = try!(opt.read_schema());
+///        let reader: prim_text::Reader = try!(opt.read_schema());
 ///        // Print the option
 ///        println!("{}", try!(reader.get_text()));
 ///

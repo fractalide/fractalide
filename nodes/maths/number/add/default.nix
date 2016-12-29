@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ maths_number ];
+  edges = with edges; [ prim_i64 ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }

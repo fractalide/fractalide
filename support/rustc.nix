@@ -24,18 +24,18 @@ in stdenv.mkCachedDerivation (args // rec {
     echo "****** building: ${compName} "
     echo "*********************************************************************"
     ${crates-support.symlinkCalc (crates-support.cratesDeps [] crates)}
+    propagated=""
+    for i in $edges; do
+      findInputs $i propagated propagated-build-inputs
+    done
+    propagated1=""
+    for i in $propagated; do
+      propagated1="$propagated1 $i/src/edge_capnp.rs"
+    done
     ${ if type == "agent" then ''
-      propagated=""
-      for i in $edges; do
-        findInputs $i propagated propagated-build-inputs
-      done
-      propagated1=""
-      for i in $propagated; do
-        propagated1="$propagated1 $i/src/edge_capnp.rs"
-      done
       touch edge_capnp.rs
       for i in $propagated1; do
-        cat $i >> edge_capnp.rs
+      cat $i >> edge_capnp.rs
       done
       ${rustNightly}/bin/rustc lib.rs \
       --crate-type dylib \
@@ -46,6 +46,10 @@ in stdenv.mkCachedDerivation (args // rec {
       -o libagent.so
     ''
     else if type == "executable" then ''
+      touch src/edge_capnp.rs
+      for i in $propagated1; do
+      cat $i >> src/edge_capnp.rs
+      done
       ${rustNightly}/bin/rustc src/main.rs \
       --crate-type bin \
       --cap-lints "allow" -A dead_code -A unused_imports -A warnings \

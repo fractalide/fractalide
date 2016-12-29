@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ generic_text ];
+  edges = with edges; [ prim_text ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }

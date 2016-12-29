@@ -30,7 +30,7 @@ The most unique and interesting combination is that of the `Reproducible` and `R
 Though all is not well! We were forced to partially compromise the zero-cost abstractions feature during graph load time as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
 
 #### Graph setup and tear down:
-* First remove the `'${generic_u64}:(number=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+* First remove the `'${prim_u64}:(u64=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
 
 ```
 $ nix-build --argstr node bench
@@ -59,7 +59,7 @@ $ sudo nice -n -20 perf stat -r 10 -d ./result
 5.485212375 seconds to setup and tear down 10,000 `agents`.
 
 #### Graph setup, tear down, message pass and compute:
-* Next, insert `'${generic_u64}:(number=0)' ->  input` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
+* Next, insert `'${prim_u64}:(u64=0)' ->  input` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
 
 ```
 $ nix-build --argstr node bench

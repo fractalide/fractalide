@@ -4,14 +4,14 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    input(input: maths_boolean),
-    output(output: maths_boolean),
+    input(input: prim_bool),
+    output(output: prim_bool),
     fn run(&mut self) -> Result<Signal> {
         let mut msg_a = try!(self.input.input.recv());
 
         {
-            let a_reader: maths_boolean::Reader = try!(msg_a.read_schema());
-            let a = a_reader.get_boolean();
+            let a_reader: prim_bool::Reader = try!(msg_a.read_schema());
+            let a = a_reader.get_bool();
 
             println!("boolean : {:?}", a);
         }

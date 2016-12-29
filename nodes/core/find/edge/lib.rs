@@ -6,12 +6,12 @@ use std::fs;
 use std::process::Command;
 
 agent! {
-    input(input: path),
-    output(output: option_path),
+    input(input: fs_path),
+    output(output: fs_path_option),
     fn run(&mut self) -> Result<Signal> {
-        let mut msg = try!(self.input.input.recv());
-        let name: path::Reader = try!(msg.read_schema());
-        let is_path = try!(name.get_path());
+        let mut msg = self.input.input.recv()?;
+        let name: fs_path::Reader = msg.read_schema()?;
+        let is_path = name.get_path()?.get_text()?;
         let mut stdout: String = String::new();
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
@@ -21,10 +21,10 @@ agent! {
         };
         let mut new_msg = Msg::new();
         {
-            let mut msg = new_msg.build_schema::<option_path::Builder>();
+            let mut msg = new_msg.build_schema::<fs_path_option::Builder>();
             match new_path {
-                None => { msg.set_none(());},
-                Some(p) => { msg.set_path(p);}
+                None => { msg.init_none().set_void(()); },
+                Some(p) => { msg.init_path().set_text(p); }
             };
         }
         self.output.output.send(new_msg);
