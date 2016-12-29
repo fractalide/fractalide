@@ -13,10 +13,10 @@ agent! {
             Ok(mut msg) => {
                 let error: core_semantic_error::Reader = try!(msg.read_schema());
 
-                println!("Graph at : {}", try!(error.get_path()?.get_text()));
-                let parsing = error.get_parsing()?.get_list()?.iter();
+                println!("Graph at : {}", try!(error.get_path()));
+                let parsing = error.get_parsing()?.iter();
                 for error in parsing {
-                    println!("  {}", error.get_text()?);
+                    println!("  {}", error?);
                 }
                 println!("");
             }
@@ -26,7 +26,7 @@ agent! {
         match self.input.file_error.try_recv() {
             Ok(mut msg) => {
                 let error: fs_file_error::Reader = try!(msg.read_schema());
-                println!("Subgraph doesn't exist at file location : {}\n", try!(error.get_not_found()?.get_text()));
+                println!("Subgraph doesn't exist at file location : {}\n", try!(error.get_not_found()));
             }
             _ => {}
         };
@@ -35,7 +35,7 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let mut msg = new_msg.build_schema::<core_graph::Builder>();
-            msg.get_path()?.set_text("error");
+            msg.set_path("error");
         }
         let _ = self.output.output.send(new_msg);
         Ok(End)

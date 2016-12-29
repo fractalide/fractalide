@@ -12,14 +12,13 @@ edge {
   schema = with edges; ''
     @0x819d7d5061be5d17;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
     using CoreGraphListEdge = import "${core_graph_list_edge}/src/edge.capnp";
     using CoreGraphListExt = import "${core_graph_list_ext}/src/edge.capnp";
     using CoreGraphListImsg = import "${core_graph_list_imsg}/src/edge.capnp";
     using CoreGraphListNode = import "${core_graph_list_node}/src/edge.capnp";
 
     struct CoreGraph {
-      path @0 :PrimText.PrimText;
+      path @0 :Text;
       nodes @1 :CoreGraphListNode.CoreGraphListNode;
       edges @2 :CoreGraphListEdge.CoreGraphListEdge;
       imsgs @3 :CoreGraphListImsg.CoreGraphListImsg;

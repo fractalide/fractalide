@@ -3,7 +3,7 @@
 edge {
   src = ./.;
   edges =  with edges; [
-      prim_text 
+      prim_text
       prim_void
       core_action_add
       core_action_connect
@@ -13,8 +13,6 @@ edge {
   schema = with edges; ''
     @0xf61112f60e36f395;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-    using PrimVoid = import "${prim_void}/src/edge.capnp";
     using CoreActionAdd = import "${core_action_add}/src/edge.capnp";
     using CoreActionConnect = import "${core_action_connect}/src/edge.capnp";
     using CoreActionConnectSender = import "${core_action_connect_sender}/src/edge.capnp";
@@ -23,11 +21,11 @@ edge {
     struct CoreAction {
       union {
         add @0 :CoreActionAdd.CoreActionAdd;
-        remove @1 :PrimText.PrimText;
+        remove @1 :Text;
         connect @2 :CoreActionConnect.CoreActionConnect;
         send @3 :CoreActionSend.CoreActionSend;
         connectSender @4 :CoreActionConnectSender.CoreActionConnectSender;
-        halt @5 :PrimVoid.PrimVoid;
+        halt @5 :Void;
       }
     }
   '';

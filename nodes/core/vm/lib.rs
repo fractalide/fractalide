@@ -38,72 +38,72 @@ agent! {
 
 fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: core_graph::Reader, name: &str) -> Result<()> {
 
-    if new_graph.get_path()?.get_text()? == "error" { graph.errors = true; }
+    if new_graph.get_path()? == "error" { graph.errors = true; }
 
     for n in new_graph.borrow().get_edges()?.get_list()?.iter() {
-        graph.edges.push((format!("{}-{}", name, n.get_o_name()?.get_text()?),
-        n.get_o_port()?.get_text()?.into(), n.get_o_selection()?.get_text()?.into(),
-        n.get_i_port()?.get_text()?.into(), n.get_i_selection()?.get_text()?.into(),
-        format!("{}-{}", name, n.get_i_name()?.get_text()?)));
+        graph.edges.push((format!("{}-{}", name, n.get_o_name()?),
+        n.get_o_port()?.into(), n.get_o_selection()?.into(),
+        n.get_i_port()?.into(), n.get_i_selection()?.into(),
+        format!("{}-{}", name, n.get_i_name()?)));
     }
     for n in new_graph.borrow().get_imsgs()?.get_list()?.iter() {
-        graph.imsgs.push((n.get_imsg()?.get_text()?.into(),
-        n.get_port()?.get_text()?.into(), n.get_selection()?.get_text()?.into(),
-        format!("{}-{}", name, n.get_comp()?.get_text()?) ));
+        graph.imsgs.push((n.get_imsg()?.into(),
+        n.get_port()?.into(), n.get_selection()?.into(),
+        format!("{}-{}", name, n.get_comp()?) ));
     }
     for n in new_graph.borrow().get_external_inputs()?.get_list()?.iter() {
-        let comp_name = format!("{}-{}", name, n.get_comp()?.get_text()?);
+        let comp_name = format!("{}-{}", name, n.get_comp()?);
         for edge in &mut graph.edges {
-            if edge.5 == name && edge.3 == n.get_name()?.get_text()? {
+            if edge.5 == name && edge.3 == n.get_name()? {
                 edge.5 = comp_name.clone();
-                edge.3 = n.get_port()?.get_text()?.into();
+                edge.3 = n.get_port()?.into();
             }
         }
 
         for imsg in &mut graph.imsgs {
-            if imsg.3 == name && imsg.1 == n.get_name()?.get_text()? {
+            if imsg.3 == name && imsg.1 == n.get_name()? {
                 imsg.3 = comp_name.clone();
-                imsg.1 = n.get_port()?.get_text()?.into();
-                imsg.2 = n.get_selection()?.get_text()?.into();
+                imsg.1 = n.get_port()?.into();
+                imsg.2 = n.get_selection()?.into();
             }
         }
 
         // add only if it's the main subnet
         if graph.nodes.len() < 1 {
             graph.ext_in.push((
-                n.get_name()?.get_text()?.into()
+                n.get_name()?.into()
                 , comp_name
-                , n.get_port()?.get_text()?.into()
-                , n.get_selection()?.get_text()?.into()));
+                , n.get_port()?.into()
+                , n.get_selection()?.into()));
         }
     }
     for n in new_graph.borrow().get_external_outputs()?.get_list()?.iter() {
-        let comp_name = format!("{}-{}", name, n.get_comp()?.get_text()?);
+        let comp_name = format!("{}-{}", name, n.get_comp()?);
         for edge in &mut graph.edges {
-            if edge.0 == name && edge.1 == n.get_name()?.get_text()? {
+            if edge.0 == name && edge.1 == n.get_name()? {
                 edge.0 = comp_name.clone();
-                edge.1 = n.get_port()?.get_text()?.into();
+                edge.1 = n.get_port()?.into();
             }
         }
 
         // add only if it's the main subnet
         if graph.nodes.len() < 1 {
             graph.ext_out.push((
-                n.get_name()?.get_text()?.into()
+                n.get_name()?.into()
                 , comp_name
-                , n.get_port()?.get_text()?.into()
-                , n.get_selection()?.get_text()?.into()));
+                , n.get_port()?.into()
+                , n.get_selection()?.into()));
         }
     }
 
     for n in new_graph.borrow().get_nodes()?.get_list()?.iter() {
-        let c_sort = n.get_sort()?.get_text()?;
-        let c_name = n.get_name()?.get_text()?;
+        let c_sort = n.get_sort()?;
+        let c_name = n.get_name()?;
 
         let mut msg = Msg::new();
         {
             let mut path = msg.build_schema::<fs_path::Builder>();
-            path.get_path()?.set_text(&c_sort);
+            path.set_path(&c_sort);
         }
         agent.output.ask_path.send(msg)?;
 
@@ -111,7 +111,7 @@ fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: core_graph::Re
         let i_graph: fs_path_option::Reader = msg.read_schema()?;
 
         let new_path: Option<String> = match i_graph.which()? {
-            fs_path_option::Path(p) => { Some(p?.get_text()?.into()) },
+            fs_path_option::Path(p) => { Some(p?.into()) },
             fs_path_option::None(p) => { None }
         };
         let mut is_subgraph = true;
@@ -126,7 +126,7 @@ fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: core_graph::Re
                 }
             },
             None => {
-                println!("Error in : {}", new_graph.get_path()?.get_text()?);
+                println!("Error in : {}", new_graph.get_path()?);
                 println!("agent {}({}) doesn't exist", c_name, c_sort);
                 graph.errors = false;
                 continue;
@@ -137,7 +137,7 @@ fn add_graph(agent: &ThisAgent, mut graph: &mut Graph, new_graph: core_graph::Re
             let mut msg = Msg::new();
             {
                 let mut number = msg.build_schema::<fs_path::Builder>();
-                number.get_path()?.set_text(&path);
+                number.set_path(&path);
             }
             agent.output.ask_graph.send(msg)?;
 
@@ -157,13 +157,13 @@ fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
     let mut new_msg = Msg::new();
     {
         let mut msg = new_msg.build_schema::<core_graph::Builder>();
-        msg.borrow().get_path()?.set_text("");
+        msg.borrow().set_path("");
         {
             let mut nodes = msg.borrow().init_nodes().init_list(graph.nodes.len() as u32);
             let mut i = 0;
             for n in &graph.nodes {
-                nodes.borrow().get(i).get_name()?.set_text(&n.0[..]);
-                nodes.borrow().get(i).get_sort()?.set_text(&n.1[..]);
+                nodes.borrow().get(i).set_name(&n.0[..]);
+                nodes.borrow().get(i).set_sort(&n.1[..]);
                 i += 1;
             }
         }
@@ -171,12 +171,12 @@ fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
             let mut edges = msg.borrow().init_edges().init_list(graph.edges.len() as u32);
             let mut i = 0;
             for e in &graph.edges {
-                edges.borrow().get(i).get_o_name()?.set_text(&e.0[..]);
-                edges.borrow().get(i).get_o_port()?.set_text(&e.1[..]);
-                edges.borrow().get(i).get_o_selection()?.set_text(&e.2[..]);
-                edges.borrow().get(i).get_i_port()?.set_text(&e.3[..]);
-                edges.borrow().get(i).get_i_selection()?.set_text(&e.4[..]);
-                edges.borrow().get(i).get_i_name()?.set_text(&e.5[..]);
+                edges.borrow().get(i).set_o_name(&e.0[..]);
+                edges.borrow().get(i).set_o_port(&e.1[..]);
+                edges.borrow().get(i).set_o_selection(&e.2[..]);
+                edges.borrow().get(i).set_i_port(&e.3[..]);
+                edges.borrow().get(i).set_i_selection(&e.4[..]);
+                edges.borrow().get(i).set_i_name(&e.5[..]);
                 i += 1;
             }
         }
@@ -184,10 +184,10 @@ fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
             let mut imsgs = msg.borrow().init_imsgs().init_list(graph.imsgs.len() as u32);
             let mut i = 0;
             for imsg in &graph.imsgs {
-                imsgs.borrow().get(i).get_imsg()?.set_text(&imsg.0[..]);
-                imsgs.borrow().get(i).get_port()?.set_text(&imsg.1[..]);
-                imsgs.borrow().get(i).get_selection()?.set_text(&imsg.2[..]);
-                imsgs.borrow().get(i).get_comp()?.set_text(&imsg.3[..]);
+                imsgs.borrow().get(i).set_imsg(&imsg.0[..]);
+                imsgs.borrow().get(i).set_port(&imsg.1[..]);
+                imsgs.borrow().get(i).set_selection(&imsg.2[..]);
+                imsgs.borrow().get(i).set_comp(&imsg.3[..]);
                 i += 1;
             }
         }
@@ -195,10 +195,10 @@ fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
             let mut ext = msg.borrow().init_external_inputs().init_list(graph.ext_in.len() as u32);
             let mut i = 0;
             for e in &graph.ext_in {
-                ext.borrow().get(i).get_name()?.set_text(&e.0[..]);
-                ext.borrow().get(i).get_comp()?.set_text(&e.1[..]);
-                ext.borrow().get(i).get_port()?.set_text(&e.2[..]);
-                ext.borrow().get(i).get_selection()?.set_text(&e.3[..]);
+                ext.borrow().get(i).set_name(&e.0[..]);
+                ext.borrow().get(i).set_comp(&e.1[..]);
+                ext.borrow().get(i).set_port(&e.2[..]);
+                ext.borrow().get(i).set_selection(&e.3[..]);
                 i += 1;
             }
         }
@@ -206,10 +206,10 @@ fn send_graph(comp: &ThisAgent, graph: &Graph) -> Result<()> {
             let mut ext = msg.borrow().init_external_outputs().init_list(graph.ext_out.len() as u32);
             let mut i = 0;
             for e in &graph.ext_out {
-                ext.borrow().get(i).get_name()?.set_text(&e.0[..]);
-                ext.borrow().get(i).get_comp()?.set_text(&e.1[..]);
-                ext.borrow().get(i).get_port()?.set_text(&e.2[..]);
-                ext.borrow().get(i).get_selection()?.set_text(&e.3[..]);
+                ext.borrow().get(i).set_name(&e.0[..]);
+                ext.borrow().get(i).set_comp(&e.1[..]);
+                ext.borrow().get(i).set_port(&e.2[..]);
+                ext.borrow().get(i).set_selection(&e.3[..]);
                 i += 1;
             }
         }

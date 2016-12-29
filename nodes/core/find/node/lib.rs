@@ -12,7 +12,7 @@ agent! {
     fn run(&mut self) -> Result<Signal> {
         let mut msg = self.input.input.recv()?;
         let name: fs_path::Reader = msg.read_schema()?;
-        let is_path = name.get_path()?.get_text()?;
+        let is_path = name.get_path()?;
         let mut stdout: String = String::new();
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
@@ -24,8 +24,8 @@ agent! {
         {
             let mut msg = new_msg.build_schema::<fs_path_option::Builder>();
             match new_path {
-                None => { msg.init_none().set_void(()); },
-                Some(p) => { msg.init_path().set_text(p); }
+                None => { msg.set_none(()); },
+                Some(p) => { msg.set_path(p); }
             };
         }
         self.output.output.send(new_msg);

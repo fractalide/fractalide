@@ -79,8 +79,8 @@ fn run(path_fbp: &str) {
     {
         let builder: core_action::Builder = start_msg.build_schema();
         let mut add = builder.init_add();
-        add.borrow().init_name().set_text("main");
-        add.borrow().init_comp().set_text(&path_fbp);
+        add.set_name("main");
+        add.set_comp(&path_fbp);
     }
     add.send(start_msg).expect("cannot send start_msg");
 
@@ -88,7 +88,7 @@ fn run(path_fbp: &str) {
     let mut halt_msg = Msg::new();
     {
         let mut builder: core_action::Builder = halt_msg.build_schema();
-        builder.init_halt().set_void(());
+        builder.set_halt(());
     }
     add.send(halt_msg).expect("cannot send halt_msg");
 

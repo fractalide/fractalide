@@ -6,15 +6,13 @@ edge {
   schema = with edges; ''
     @0x8067311a5b6027d2;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-
     struct CoreActionConnect {
-           oName @0 :PrimText.PrimText;
-           oPort @1 :PrimText.PrimText;
-           oSelection @2 :PrimText.PrimText;
-           iName @3 :PrimText.PrimText;
-           iPort @4 :PrimText.PrimText;
-           iSelection @5 :PrimText.PrimText;
+           oName @0 :Text;
+           oPort @1 :Text;
+           oSelection @2 :Text;
+           iName @3 :Text;
+           iPort @4 :Text;
+           iSelection @5 :Text;
     }
   '';
 }

@@ -6,11 +6,9 @@ edge {
   schema = with edges; ''
     @0xf2f767a9f51e6095;
 
-    using PrimText = import "${prim_text}/src/edge.capnp";
-
     struct CoreGraphNode {
-           name @0 :PrimText.PrimText;
-           sort @1 :PrimText.PrimText;
+           name @0 :Text;
+           sort @1 :Text;
     }
 
   '';

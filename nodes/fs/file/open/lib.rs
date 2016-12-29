@@ -14,9 +14,9 @@ agent! {
         let mut msg = try!(self.input.input.recv());
         let path: fs_path::Reader = msg.read_schema()?;
 
-        let path = path.get_path()?.get_text()?;
+        let path = path.get_path()?;
 
-        let file = match File::open(path) {
+        let file = match File::open(&path) {
             Ok(file) => { file },
             Err(_) => {
                 // Prepare the output msg
@@ -24,7 +24,7 @@ agent! {
 
                 {
                     let mut msg = new_msg.build_schema::<fs_file_error::Builder>();
-                    msg.get_not_found()?.set_text(&path);
+                    msg.set_not_found(&path);
                 }
                 let _ = self.output.error.send(new_msg);
                 return Ok(End);
@@ -36,7 +36,7 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
-            msg.init_start().set_text(&path);
+            msg.set_start(&path);
         }
         try!(self.output.output.send(new_msg));
 
@@ -46,8 +46,8 @@ agent! {
             let l = try!(line);
             let mut new_msg = Msg::new();
             {
-                let msg = new_msg.build_schema::<fs_file_desc::Builder>();
-                msg.init_text().set_text(&l);
+                let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
+                msg.set_text(&l);
             }
             try!(self.output.output.send(new_msg));
         }
@@ -56,7 +56,7 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
-            msg.init_end().set_text(&path);
+            msg.set_end(&path);
         }
         try!(self.output.output.send(new_msg));
 
