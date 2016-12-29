@@ -8,9 +8,28 @@ in
 # to stabilize the schema.
 rec {
   # raw
-  app_counter = callPackage ./app/counter {};
-  app_todo_edges = buffet.fractals.app_todo.edges;
-  domain_port = callPackage ./domain_port {};
+  prim_list_text = callPackage ./prim/list/text {};
+  kv_key_t_val_t = callPackage ./kv/key/t/val/t {};
+  kv_key_t_val_i64 = callPackage ./kv/key/t/val/i64 {};
+  kv_list_key_t_val_t = callPackage ./kv/list/key/t/val/t {};
+  ntup_tuple_tt = callPackage ./ntup/tuple/tt {};
+  ntup_tuple_tb = callPackage ./ntup/tuple/tb {};
+  ntup_triple_ttt = callPackage ./ntup/triple/ttt {};
+  ntup_quadruple_u32u32u32f32 = callPackage ./ntup/quadruple/u32u32u32f32 {};
+  ntup_list_tuple_tt = callPackage ./ntup/list/tuple/tt {};
+  ntup_list_triple_ttt = callPackage ./ntup/list/triple/ttt {};
+  ntup_list_tuple_tb = callPackage ./ntup/list/tuple/tb {};
+  fs_list_path = callPackage ./fs/list/path {};
+  fs_path_option = callPackage ./fs/path/option {};
+  fs_path = callPackage ./fs/path {};
+  fs_file_desc = callPackage ./fs/file/desc {};
+  fs_file_error = callPackage ./fs/file/error {};
+  net_http_edges = buffet.fractals.net_http.edges;
+  net_ndn_edges = buffet.fractals.net_ndn.edges;
+  net_protocol_domain_port = callPackage ./net/protocol_domain_port {};
+  net_url = callPackage ./net/url {};
+
+  # draft
   core_action = callPackage ./core/action {};
   core_action_add = callPackage ./core/action/add {};
   core_action_send = callPackage ./core/action/send {};
@@ -41,30 +60,6 @@ rec {
   prim_text = callPackage ./prim/text {};
   prim_data = callPackage ./prim/data {};
   prim_void = callPackage ./prim/void {};
-  prim_list_text = callPackage ./prim/list/text {};
-  kv_key_t_val_t = callPackage ./kv/key/t/val/t {};
-  kv_key_t_val_i64 = callPackage ./kv/key/t/val/i64 {};
-  kv_list_key_t_val_t = callPackage ./kv/list/key/t/val/t {};
-  ntuple_tuple_tt = callPackage ./ntuple/tuple/tt {};
-  ntuple_tuple_tb = callPackage ./ntuple/tuple/tb {};
-  ntuple_triple_ttt = callPackage ./ntuple/triple/ttt {};
-  ntuple_quadruple_u32u32u32f32 = callPackage ./ntuple/quadruple/u32u32u32f32 {};
-  ntuple_list_tuple_tt = callPackage ./ntuple/list/tuple/tt {};
-  ntuple_list_triple_ttt = callPackage ./ntuple/list/triple/ttt {};
-  ntuple_list_tuple_tb = callPackage ./ntuple/list/tuple/tb {};
-  fs_list_path = callPackage ./fs/list/path {};
-  fs_path_option = callPackage ./fs/path/option {};
-  fs_path = callPackage ./fs/path {};
-  fs_file_desc = callPackage ./fs/file/desc {};
-  fs_file_error = callPackage ./fs/file/error {};
-  net_http_edges = buffet.fractals.net_http.edges;
-  net_ndn_edges = buffet.fractals.net_ndn.edges;
-  protocol_domain_port = callPackage ./protocol_domain_port {};
-  url = callPackage ./url {};
-  value_int64 = callPackage ./value/int64 {};
-  value_string = callPackage ./value/string {};
-
-  # draft
 
   # stable
 

@@ -16,10 +16,10 @@ agent! {
         let mut new_msg = Msg::new();
         {
             let msg = new_msg.build_schema::<fs_list_path::Builder>();
-            let mut listOfFiles = msg.init_list(fs::read_dir(path.get_path()?.get_text()?)?.count() as u32);
+            let mut listOfFiles = msg.init_list(fs::read_dir(path.get_path()?)?.count() as u32);
             let mut i: u32 = 0;
-            for path in fs::read_dir(path.get_path()?.get_text()?)? {
-                listOfFiles.borrow().get(i).get_path()?.set_text(path?.path().to_str().unwrap());
+            for path in fs::read_dir(path.get_path()?)? {
+                listOfFiles.borrow().get(i).set_path(path?.path().to_str().unwrap());
                 i += 1;
             }
         }

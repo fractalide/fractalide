@@ -16,16 +16,23 @@
     for i in $edges; do
       findInputs $i propagated propagated-build-inputs
     done
-    propagated1=""
+    propagatedRs=""
+    propagatedCapnp=""
     for i in $propagated; do
-      propagated1="$propagated1 $i/src/edge_capnp.rs"
+      propagatedRs="$propagatedRs $i/src/edge_capnp.rs"
+      propagatedCapnp="$propagatedCapnp $i/src/edge.capnp"
     done
     touch edge_capnp.rs
-    for i in $propagated1; do
+    touch edge.capnp
+    for i in $propagatedRs; do
       cat $i >> edge_capnp.rs
+    done
+    for i in $propagatedCapnp; do
+      cat $i >> edge.capnp
     done
     mkdir -p $out/lib
     cp  ${subgraph-txt} $out/lib/lib.subgraph
     cp edge_capnp.rs $out/lib/edge_capnp.rs
+    awk '/@0x/&&c++>0 {next} 1' edge.capnp > $out/lib/edge.capnp
     '';
   })
