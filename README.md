@@ -30,74 +30,79 @@ The most unique and interesting combination is that of the `Reproducible` and `R
 
 Though all is not well! We were forced to partially compromise the zero-cost abstractions feature during graph load time as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
 
-#### Graph setup and tear down:
-* First remove the `'${prim_u64}:(u64=0)' ->  input ` from [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
-
-```
-$ nix-build --argstr node bench
-$ sudo nice -n -20 perf stat -r 10 -d ./result
-
- Performance counter stats for './result' (10 runs):
-
-       7890.225492      task-clock (msec)         #    1.438 CPUs utilized            ( +-  0.50% )
-           233,755      context-switches          #    0.030 M/sec                    ( +-  0.44% )
-             2,310      cpu-migrations            #    0.293 K/sec                    ( +- 20.29% )
-            45,226      page-faults               #    0.006 M/sec                    ( +-  0.04% )
-    22,499,581,894      cycles                    #    2.852 GHz                      ( +-  0.56% )  (50.24%)
-   <not supported>      stalled-cycles-frontend
-   <not supported>      stalled-cycles-backend
-    22,888,513,721      instructions              #    1.02  insns per cycle          ( +-  0.12% )  (62.66%)
-     3,862,239,901      branches                  #  489.497 M/sec                    ( +-  0.05% )  (74.09%)
-        15,973,363      branch-misses             #    0.41% of all branches          ( +-  0.85% )  (74.19%)
-     8,666,236,052      L1-dcache-loads           # 1098.351 M/sec                    ( +-  0.35% )  (63.78%)
-       167,742,960      L1-dcache-load-misses     #    1.94% of all L1-dcache hits    ( +-  1.20% )  (30.47%)
-        50,599,472      LLC-loads                 #    6.413 M/sec                    ( +-  1.23% )  (26.61%)
-         2,381,819      LLC-load-misses           #    4.71% of all LL-cache hits     ( +-  2.48% )  (37.83%)
-
-       5.485212375 seconds time elapsed                                          ( +-  0.53% )
-
-```
-5.485212375 seconds to setup and tear down 10,000 `agents`.
-
-#### Graph setup, tear down, message pass and compute:
-* Next, insert `'${prim_u64}:(u64=0)' ->  input` to [here]( https://github.com/fractalide/fractalide/blob/master/nodes/bench/default.nix#L6)
-
-```
-$ nix-build --argstr node bench
-$ sudo nice -n -20 perf stat -r 10 -d ./result
-
- Performance counter stats for './result' (10 runs):
-
-       8852.363289      task-clock (msec)         #    1.429 CPUs utilized            ( +-  0.75% )
-           276,398      context-switches          #    0.031 M/sec                    ( +-  0.56% )
-             2,770      cpu-migrations            #    0.313 K/sec                    ( +- 19.76% )
-            82,334      page-faults               #    0.009 M/sec                    ( +-  0.02% )
-    24,528,934,839      cycles                    #    2.771 GHz                      ( +-  0.78% )  (49.99%)
-   <not supported>      stalled-cycles-frontend
-   <not supported>      stalled-cycles-backend
-    24,190,047,542      instructions              #    0.99  insns per cycle          ( +-  0.13% )  (62.46%)
-     4,085,706,131      branches                  #  461.538 M/sec                    ( +-  0.09% )  (74.10%)
-        17,515,189      branch-misses             #    0.43% of all branches          ( +-  0.58% )  (74.18%)
-     9,269,142,016      L1-dcache-loads           # 1047.081 M/sec                    ( +-  0.33% )  (64.24%)
-       194,587,384      L1-dcache-load-misses     #    2.10% of all L1-dcache hits    ( +-  0.58% )  (30.41%)
-        60,394,475      LLC-loads                 #    6.822 M/sec                    ( +-  1.38% )  (26.17%)
-         2,946,358      LLC-load-misses           #    4.88% of all LL-cache hits     ( +-  2.99% )  (37.57%)
-
-       6.195577571 seconds time elapsed                                          ( +-  0.63% )
-
-```
-6.195577571 seconds to setup, tear down and relay an incrementing integer daisy chain style between 10,000 `agents`.
-
-#### Message pass and compute:
-```
->>> 6.195577571 - 5.485212375
-0.7103651960000006
-```
-This just gives you a feel for the system, 0.7 seconds to do 10,000 message sends and increments.
-
-An important note, we've done *no* optimizations yet.
-
 Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising as a large majority of the top downloaded crates are buildable.
+
+## Quick feel of the system
+
+#### A = (Graph setup + tear down):
+
+```
+$ nix-build --argstr node bench_load
+/nix/store/ij8jri0z1k5n447f9s0x5yfx5p9iqnnf-bench_load
+
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+
+ Performance counter stats for './result' (10 runs):
+
+       5397.977660      task-clock (msec)         #    1.465 CPUs utilized            ( +-  0.63% )
+           204,241      context-switches          #    0.038 M/sec                    ( +-  0.73% )
+             3,400      cpu-migrations            #    0.630 K/sec                    ( +- 22.68% )
+            41,365      page-faults               #    0.008 M/sec                    ( +-  0.04% )
+    15,024,216,407      cycles                    #    2.783 GHz                      ( +-  0.82% )  (50.25%)
+   <not supported>      stalled-cycles-frontend  
+   <not supported>      stalled-cycles-backend   
+    15,651,196,604      instructions              #    1.04  insns per cycle          ( +-  0.15% )  (62.85%)
+     2,555,892,181      branches                  #  473.491 M/sec                    ( +-  0.09% )  (74.17%)
+        11,337,183      branch-misses             #    0.44% of all branches          ( +-  0.55% )  (74.11%)
+     5,914,501,986      L1-dcache-loads           # 1095.688 M/sec                    ( +-  0.37% )  (62.87%)
+       145,243,685      L1-dcache-load-misses     #    2.46% of all L1-dcache hits    ( +-  1.22% )  (30.43%)
+        38,047,116      LLC-loads                 #    7.048 M/sec                    ( +-  0.74% )  (26.35%)
+         2,309,527      LLC-load-misses           #    6.07% of all LL-cache hits     ( +-  1.71% )  (37.76%)
+
+       3.684139058 seconds time elapsed                                          ( +-  0.56% )
+```
+
+#### B = (Graph setup + tear down + message pass + increment):
+
+```
+
+$ nix-build --argstr node bench
+/nix/store/mfl206ccv86wvyi2ra5296l8n1bks24x-bench
+
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+
+ Performance counter stats for './result' (10 runs):
+
+       6638.755996      task-clock (msec)         #    1.443 CPUs utilized            ( +-  0.57% )
+           268,864      context-switches          #    0.040 M/sec                    ( +-  0.47% )
+             3,047      cpu-migrations            #    0.459 K/sec                    ( +- 10.08% )
+            82,417      page-faults               #    0.012 M/sec                    ( +-  0.03% )
+    18,012,749,608      cycles                    #    2.713 GHz                      ( +-  0.66% )  (50.10%)
+   <not supported>      stalled-cycles-frontend  
+   <not supported>      stalled-cycles-backend   
+    18,396,303,772      instructions              #    1.02  insns per cycle          ( +-  0.10% )  (62.48%)
+     3,008,536,908      branches                  #  453.178 M/sec                    ( +-  0.06% )  (73.97%)
+        13,396,472      branch-misses             #    0.45% of all branches          ( +-  1.01% )  (74.08%)
+     6,955,828,023      L1-dcache-loads           # 1047.761 M/sec                    ( +-  0.50% )  (63.04%)
+       184,998,022      L1-dcache-load-misses     #    2.66% of all L1-dcache hits    ( +-  0.81% )  (29.73%)
+        49,018,759      LLC-loads                 #    7.384 M/sec                    ( +-  0.99% )  (26.13%)
+         3,032,354      LLC-load-misses           #    6.19% of all LL-cache hits     ( +-  1.56% )  (37.74%)
+
+       4.601455409 seconds time elapsed                                          ( +-  0.66% )
+
+
+```
+#### (Message Passing + Increment) = B - A:
+
+```
+>>> 4.601455409 - 3.684139058
+0.9173163509999998
+```
+
+This just gives you a *feel* for the system:
+* `3.7 secs` to setup `10,000` [rust agents](./nodes/bench/inc/lib.rs) + teardown `10,000` agents.
+* `4.6 sces` to setup `10,000` agents + message pass `10,000` times + increment `10,000` times + teardown `10,000` `agents`.
+* `0.9 sec` to message pass `10,000` times + increment `10,000` times.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
@@ -154,7 +159,7 @@ Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives
 - [x] Remove cargo.
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.
-- [ ] Reduce heap allocations.
+- [x] Reduce heap allocations.
 - [X] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.
 
