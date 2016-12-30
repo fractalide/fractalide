@@ -17,13 +17,14 @@ Once you've absorbed what he has to say, it'll be much easier to approach this m
 ## Features
 Fractalide stands on the shoulders of giants by combining the strengths of each language into one programming model.
 
-|Op |Programming Language|Safe|Zero-cost abstractions|Reusable|Reproducible|Distributed Type System| Concurrent
-|---|--------------------|-----|----------------------|---------|----------|-----------------|----------|
-|   |Nix Expressions     |     |                      |         |✔         |                 |          |
-|+  |Rust Language       |✔    |✔                    |         |          |                 |✔         |
-|+  |Flow-based Programming|   |                      |✔       |          |                 |✔         |
-|+  |Cap'n Proto Schema  |     |                      |         |          |✔               |          |
-|=  |Fractalide Model    |✔   |✔                     |✔       |✔         |✔                |✔        |
+|Op |Technology |Safe|Zero-cost Abstractions|Reuse|Reproducible|Distributed Type System| Concurrent| Service Config Man.|
+|---|-----------|-----|----------------------|---------|----------|------------------------|----------|--------------------
+|   |NixOS      |     |                      |         |          |                        |          |✔
+|+  |Nix Expr   |     |                      |         |✔         |                        |          |
+|+  |Rust       |✔    |✔                    |         |          |                        |✔         |
+|+  |Flow-based Programming |    |           |✔       |          |                        |✔         |
+|+  |Cap'n Proto|     |                      |         |          |✔                      |          |
+|=  |Fractalide Model |✔   |✔                |✔       |✔         |✔                       |✔        |✔
 
 The most unique and interesting combination is that of the `Reproducible` and `Reusable` features. Reusable dataflow functions, compiled to shared objects occupy nix derivations, it's these derivations that make true reproducibility possible. This is no small feat!
 
