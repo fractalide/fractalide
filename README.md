@@ -164,16 +164,61 @@ This just gives you a *feel* for the system:
 - [ ] 1.0 Stabilization version.
 
 ### Quick start
-Fractalide supports whatever platform [Nix](http://nixos.org/nix) runs on. Quite possibly your package manager already has the `nix` [package](https://hydra.nixos.org/job/nix/master/release#tabs-constituents), please check first.
+Fractalide is meant to be run on [NixOS](http://nixos.org/nixos), though if you're not going to be doing any service configuration management then many of the `subgraphs` will execute on the [nix](http://nixos.org/nix) package manage which should be on your linux distro's package manager:
 For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 
-This codebase is currently in huge flux before stabilization, but at least you can build an agent using the new [nixcrates](https://github.com/fractalide/nixcrates) approach. Should hopefully be back to normal in a few days.
+So from a fresh install of NixOS (using the `nixos-unstable` channel) we'll build the `fractalide virtual machine (fvm)` and execute the humble NAND logic gate on it.
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ nix-build --argstr node workbench_test
+$ time nix-build --argstr node test_nand
+...
+/nix/store/zld4d7zc80wh38qhn00jqgc6lybd2cdi-test_nand
+
+real    2m40.590s
+user    0m0.338s
+sys     0m0.079s
 $ ./result
+boolean : false
 ```
+
+Let's benchmark the setup, teardown, message passes and increments of `10,000` messages between `10,000` agents, note the `fvm` is now already built, so it won't be built again unless you make a change to it.
+
+```
+$ time nix-build --argstr node bench
+/nix/store/r4gb7k9hsv2iblzh1pj21wbg6mc21xab-bench
+
+real    0m7.437s
+user    0m0.301s
+sys     0m0.048s
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+(see results above)
+```
+Now let's benchmark just the setup and teardown, note the `nodes/bench/inc` `agent` is previously built and tucked away in it's own `nix derivation`.
+
+```
+$ time nix-build --argstr node bench_load
+/nix/store/w1yln248p0788byxvhpmdw2y4cz44gvv-bench_load
+
+real    0m2.259s
+user    0m0.304s
+sys     0m0.038s
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+(see results above)
+```
+
+For the sake of consistency, let's increment `2` instead of `1` in `nodes/bench/inc`, and recompile:
+
+```
+$ time nix-build --argstr node bench
+/nix/store/cqzgazshva4j1rz9fqxjqak513ijggvm-bench
+
+real    0m7.103s
+user    0m0.300s
+sys     0m0.046s
+```
+
+The system will only lazily compile code that has changed. If you change a low level Cap'n Proto schema everything that depends on that called schema will be recompiled automatically.
 
 ### Documentation
 * [Nodes](./nodes/README.md)
