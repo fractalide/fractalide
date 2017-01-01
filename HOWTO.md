@@ -6,7 +6,8 @@ People interesting in programming Fractalide applications.
 
 ## Purpose
 
-To provide a real world example on how to program Fractalide applications.
+To provide a step-by-step indepth example on how to program Fractalide applications.
+We'll be building a simple backend for a Todo app.
 
 ## Prerequisites
 
@@ -33,9 +34,7 @@ Once logged into your virtualbox guest issue these commands:
 * `$ cd fractalide`
 * `$ nix-build`
 
-(the hash will probably be different)
-
-Let us inspect the content of the output folder.
+Let us inspect the content of the newly created symlink called `result`.
 
 ```
 $ readlink result
@@ -47,28 +46,40 @@ result
 └── bin
     └── fvm
 ```
+```
+$ file result/bin/fvm
+result/bin/fvm: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, interpreter /nix/store/8lbpq1vmajrbnc96xhv84r87fa4wvfds-glibc-2.24/lib/ld-linux-x86-64.so.2, for GNU/Linux 2.6.32, not stripped
+```
 
 #### Peek under the hood
 
+You shouldn't need to care too much about this during your everyday programming, but it's pleasant deviation from most normal workflows and thus should be explained.
+
+Let's build a `subgraph` that runs a contrived `maths_boolean_nand` `agent`.
+
 * `$ nix-build --argstr node test_nand`
 
-This replaces the `result` symlink with a new symlink pointing to generated file.
+This replaces the `result` symlink with a new symlink pointing to a generated file.
 ```
 $ readlink result
 /nix/store/zld4d7zc80wh38qhn00jqgc6lybd2cdi-test_nand
 ```
-Let's investigate the contents of this file:
+Let's investigate the contents of this executable file.
 ```
-$ cat /nix/store/zld4d7zc80wh38qhn00jqgc6lybd2cdi-test_nand
+$ cat result
 /nix/store/ymfqavzrgmj3q3aljgwvh769fq9dszp2-fvm/bin/fvm /nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand
 ```
-Notice that we're passing the path of the actual `test_nand` `subgraph` into the `fvm`, which was previously built.
+Notice that we're passing the path of the actual `test_nand` `subgraph` into the `fvm`.
 
-What does the contents of the actual `/nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand` file look like?
+What does the contents of the actual `/nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand` file look like (the argument to `fvm`)?
 ```
 $ cat /nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand/lib/lib.subgraph
 '/nix/store/ynm9ipggdvxhzi5l2kkz9cgiqgvq2g87-prim_bool:(bool=true)' -> a nand(/nix/store/y919fp98qw33w0cs2wn5wzwgwpwgbchs-maths_boolean_nand) output -> input io_print(/nix/store/4fnk9dmky6jni4f4sbrzl1xsj50m3mb0-maths_boolean_print)
 '/nix/store/ynm9ipggdvxhzi5l2kkz9cgiqgvq2g87-prim_bool:(bool=true)' -> b nand()
+```
+```
+$ file /nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand/lib/lib.subgraph
+/nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand/lib/lib.subgraph: ASCII text
 ```
 
 The `--argstr node xxx` are arguments passed into the `nix-build` executable. Specifically
@@ -83,22 +94,19 @@ $ man nix-build
 ...
 ```
 
-The name `node` refers to the top level `graph` to be executed by the `fvm`.
-Whatever that graph is `nix` compiles each of the `agents` and inserts their paths into `subgraphs`.
+The name `node` refers to the top level `graph` to be executed by the `fvm`. `nix` compiles each of the `agents` and inserts their paths into `subgraphs`. The `fvm` knows how how to recursively load the entire hierarchy of `subgraphs` which contain fully qualified paths to their composed `agents`.
 
 #### A Todo backend
 
-We will design an http server, that will host "todo" element. It will give the following features : GET, POST, PATCH/PUT, DELETE. The different "todos" will be saved in a `sqlite` database. The client will use `json` to deal with the "todos".
+We will design an http server, that will host `todo` element. It will provide the following HTTP features : GET, POST, PATCH/PUT, DELETE. The different `todos` themselves will be saved in a `sqlite` database. The client will use `json` to deal with the `todos`.
 
-A todo had the following fields :
+A `todo` had the following fields :
 * id : a unique integer id, that is used to retrieve, delete and patch the todos.
 * title : a string that represents the goal of the todo, the text to display.
-* completed : a boolean that remember if the todo is comple
-just use the latest version depending on whatever nasty semver string
-is passed to youted or not.
-* order : a positive integer that is used if the user want to display the todo in a certain order.
+* completed : a boolean to remember if the todo has been completed.
+* order : a positive integer used to display the todos in a certain order.
 
-The http server will respond to request like :
+The http server responds to these requests :
 * GET
 The request will look like `GET http://localhost:8000/todos/1`. With the http method "GET", and a numeric ID given, the server will respond the corresponding todo in the database, otherwise it will respond a 404 page.
 * POST
@@ -112,29 +120,51 @@ The request will be `DELETE http://localhost:8000/todos/1`. This will delete the
 
 ![the big picture](./doc/images/global_http.png)
 
-The main `agent` here is `http`. It will receive all the http requests, and dispatch them around four other `agents`, one for each feature. Each of these four `agents` will in fact be an other `subgraph`, to process the request and provide the response. Before we will look in them, we will look how work the `http` `agent`.
+The main `agent` here is `http` and will receive from the users and dispatch them to four other `subgraphs`, one for each HTTP feature. Each `subgraph` processes the request and provide a response. Before we approach the HTTP feature `subgraphs` let's take a look at the `http agent`.
 
 ##### The `HTTP agent`
+
+The implementation code can be found [here](https://github.com/fractalide/fractal_net_http/tree/master/nodes/http).
 
 The `http agent` is a tiny http server. It receives http requests, asks for responses, then replies to the user.
 
 ![The `http agent`](./doc/images/request_response.png)
 
-The `http agent` had one array output port by [HTTP method](https://docs.rs/tiny_http/0.5.5/tiny_http/enum.Method.html), and the "selection" is a [rust Regex](https://doc.rust-lang.org/regex/regex/index.html).
+The `http agent` has one [array output port](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/lib.rs#L57-L65) for each [HTTP method](https://docs.rs/tiny_http/0.5.5/tiny_http/enum.Method.html), and the `selection`/`elements` of each array output port is actually an insanely fast [rust regex](https://doc.rust-lang.org/regex/regex/index.html).
 
 For example, `http() GET[^/news/?$]` will match the request with method GET and url `http://.../news` or `http://../news/`.
 
-On the output port, it send an IP with the contract `request`. For here, we will just use the fields `id`, `url`, `content`. The `id` is the unique id for the request. It must be provided in the response corresponding to this request. The `url` is the url given by the user. The `content` is the content of the request, the data given by the user.
+On the output port, it send an `Msg` with the schema [request](https://github.com/fractalide/fractal_net_http/blob/master/edges/request/default.nix). For here, we will just use the fields `id`, `url`, `content`. The `id` is the unique id for the request. It must be provided in the response corresponding to this request. The `url` is the url given by the user. The `content` is the content of the request, the data given by the user.
 
-The `http agent` want an IP with the contract `response`. A `response` had a `id`, which correspond to the `request id`. It had a `status_code`, which is the response code of the request. By default, it's 200 (OK). The `content` is the data that are send back to the user.
+The `http agent` wants a `Msg` with the schema [response](https://github.com/fractalide/fractal_net_http/blob/master/edges/response/default.nix). A `response` has an `id`, which correspond to the `request id`. It also has a `status_code`, which is the response code of the request. By default, it's 200 (OK). The `content` is the data that are send back to the user.
 
-The `http agent` must be started with an IIP of type `address`. It specify on which address and port the server must listen :
+The `http agent` must be started with an `iMsg` of type [address](https://github.com/fractalide/fractal_net_http/blob/master/edges/address/default.nix). It specifies on which address and port the server listens:
 
 ![http listen](./doc/images/connect.png)
 
-##### The `GET subgraph`
+##### The `GET Subgraph`
 
 ![get](./doc/images/get.png)
+
+``` nix
+{ subgraph, nodes, edges }:
+
+subgraph {
+  src = ./.;
+  edges = with edges; [];
+  flowscript = with nodes; with edges; ''
+    db_path => db_path get_sql()
+    input => input id(${todo_get_id}) id -> get get_sql(${sqlite_local_get})
+    get_sql() id -> id todo_build_json(${todo_build_json})
+    get_sql() response -> todo todo_build_json()
+    id() req_id -> id todo_add_req_id(${todo_add_req_id})
+    todo_build_json() json -> playload build_resp(${todo_build_response})
+    get_sql() error -> error build_resp()
+    build_resp() response -> response todo_add_req_id() response => response
+   '';
+}
+```
+[source get implemenation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/get/default.nix)
 
 An request will follow the following path :
 * get into the `subgraph` by the virtual port `request`
@@ -154,6 +184,28 @@ Now we can connect the `http` `agent` to the `get` `subgraph`, to retrieve all t
 
 ![post](./doc/images/post.png)
 
+``` nix
+{ subgraph, nodes, edges }:
+
+subgraph {
+  src = ./.;
+  edges = with edges; [ ];
+  flowscript = with nodes; with edges; ''
+    db_path => db_path insert_todo()
+    input => input todo_get_todo(${todo_get_todo}) todo -> input cl_todo(${msg_clone})
+    cl_todo() clone[0] -> insert insert_todo(${sqlite_local_insert})
+    cl_todo() clone[1] -> todo todo_build_json(${todo_build_json})
+    insert_todo() response -> id todo_build_json()
+    todo_get_todo() req_id -> id todo_add_req_id(${todo_add_req_id})
+    todo_build_json() json -> playload todo_build_response(${todo_build_response})
+    todo_build_response() response -> response todo_add_req_id() response => response
+   '';
+}
+```
+
+[source post implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/post/default.nix)
+
+
 A request will go through :
 
 * In the `subgraph` by the virtual port `request`
@@ -172,6 +224,24 @@ The post `subgraph` is connect to the `http` output port :
 ##### The `DELETE subgraph`
 
 ![delete](./doc/images/delete.png)
+
+``` nix
+{ subgraph, nodes, edges }:
+
+subgraph {
+  src = ./.;
+  edges = with edges; [ ];
+  flowscript = with nodes; with edges; ''
+    input => input id(${todo_get_id})
+    db_path => db_path delete_sql()
+    id() id -> delete delete_sql(${sqlite_local_delete})
+    delete_sql() response -> playload build_resp(${todo_build_response})
+    id() req_id -> id todo_add_req_id(${todo_add_req_id})
+    build_resp() response -> response todo_add_req_id() response => response
+   '';
+}
+```
+[source delete implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/delete/default.nix),
 
 This `subgraph` is easier than the two before, so it is mainly self-explaining!
 
@@ -203,6 +273,31 @@ A solution is to add a `synch` `agent`. This `agent` receive the IP "old", "new"
 To simplify a little the graph, we ommit to speak about a connection : from `sql_get` to `patch_sql`. An IP is send from the former with the todo `id`, which need to be updated. But all the logic, with synch, is exactly the same. The complete figure is :
 
 ![patch_final](./doc/images/patch_final.png)
+
+``` nix
+{ subgraph, nodes, edges }:
+
+subgraph {
+  src = ./.;
+  edges = with edges; [ ];
+  flowscript = with nodes; with edges; ''
+    input => input todo_get_todo(${todo_get_todo})
+    db_path => db_path patch_sql()
+    todo_get_todo() id -> get get_sql(${sqlite_local_get})
+    synch(${todo_patch_synch})
+    get_sql() response -> todo synch() todo -> old merge(${todo_patch_json})
+    todo_get_todo() raw_todo -> raw_todo synch() raw_todo -> new merge()
+    get_sql() id -> id synch() id -> id patch_sql(${sqlite_local_patch})
+    merge() todo -> msg patch_sql()
+    patch_sql() response -> playload build_resp(${todo_build_response})
+    get_sql() error -> error synch() error -> error build_resp()
+    todo_get_todo() req_id -> id todo_add_req_id(${todo_add_req_id})
+    build_resp() response -> response todo_add_req_id() response => response
+   '';
+}
+```
+
+[source patch implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/patch/default.nix)
 
 ## Extension
 
