@@ -164,7 +164,7 @@ subgraph {
    '';
 }
 ```
-[source get implemenation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/get/default.nix)
+[source for the get implemenation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/get/default.nix)
 
 An request will follow the following path :
 * get into the `subgraph` by the virtual port `request`
@@ -203,7 +203,7 @@ subgraph {
 }
 ```
 
-[source post implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/post/default.nix)
+[source for the post implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/post/default.nix)
 
 
 A request will go through :
@@ -241,7 +241,7 @@ subgraph {
    '';
 }
 ```
-[source delete implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/delete/default.nix),
+[source for the delete implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/delete/default.nix),
 
 This `subgraph` is easier than the two before, so it is mainly self-explaining!
 
@@ -297,7 +297,7 @@ subgraph {
 }
 ```
 
-[source patch implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/patch/default.nix)
+[source for the patch implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/patch/default.nix)
 
 ## Extension
 
@@ -310,3 +310,5 @@ Further reading in depth topics are:
 * [The Hydra Manual](http://nixos.org/hydra/manual/)
 * [The Nixops Manual](http://nixos.org/nixops/manual/)
 * [The Cap'n Proto Schema Language](https://capnproto.org/language.html)
+
+## Summary
