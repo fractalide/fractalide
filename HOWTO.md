@@ -6,12 +6,12 @@ People interesting in programming Fractalide applications.
 
 ## Purpose
 
-To provide a step-by-step indepth example on how to program Fractalide applications.
+To provide a step-by-step indepth example with links to source code on how to program Fractalide applications.
 We'll be building a simple backend for a Todo app.
 
 ## Prerequisites
 
-The reader should have read these documents in this order.
+The reader should have read these documents:
 
 1. [Nodes](./nodes/README.md)
 2. [Edges](./edges/README.md)
@@ -116,13 +116,13 @@ The request will look like `PUT http://localhost:8000/todos/1`. The content of t
 * Delete
 The request will be `DELETE http://localhost:8000/todos/1`. This will delete the todo with the `id` 1.
 
-#### The big picture
+#### The Big Picture
 
 ![the big picture](./doc/images/global_http.png)
 
 The main `agent` here is `http` and will receive from the users and dispatch them to four other `subgraphs`, one for each HTTP feature. Each `subgraph` processes the request and provide a response. Before we approach the HTTP feature `subgraphs` let's take a look at the `http agent`.
 
-##### The `HTTP agent`
+##### The HTTP Agent
 
 The implementation code can be found [here](https://github.com/fractalide/fractal_net_http/tree/master/nodes/http).
 
@@ -142,7 +142,7 @@ The `http agent` must be started with an `iMsg` of type [address](https://github
 
 ![http listen](./doc/images/connect.png)
 
-##### The `GET Subgraph`
+##### The GET Subgraph
 
 ![get](./doc/images/get.png)
 
@@ -166,21 +166,27 @@ subgraph {
 ```
 [source for the get implemenation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/get/default.nix)
 
-An request will follow the following path :
-* get into the `subgraph` by the virtual port `request`
-* Go into the first `agent` `get_id`. This `agent` have two output ports : `req_id` and `id`. The `req_id` is the id of the http request, given by the `http_agent`. The `id` is retrieved by the url (ie: http://.../todos/2 will send the number '2').
-* The `id` from the url will go in the `sql_get` `agent`, that retrieve from a database the IP corresponding to the `id`.
-* If the `id` exist, the IP is send to `build_json` that send the json of the todo.
-* If the `id` doesn't exist in the database, an IP is send on the error port.
-* The `build_request` will receive one IP in one of his two input ports (error or playload). If there is an error, it will send a 404 response, or otherwise, it will send a 200 repsonse with the json as data.
-* This new response go now in `add_req_id`, which retrieve the `req_id` from the request, and set it in the new `response`.
-* The response can go out of the `subgraph`.
+A request will follow this path :
+* Enters the `subgraph` via the virtual port `request`
+* Then enters the `agent` `get_id`. This `agent` has two output ports : `req_id` and `id`. The `req_id` is the id of the http request, given by the `http` `agent`. The `id` is `todo id` retrieved from the url (ie: given the url http://.../todos/2, the number 2 will be sent over the `id` port).
+* The url `id` enters the `sql_get` `agent`, that retrieve a `Msg` from a database corresponding to the `id`.
+* If the `id` exists, the `Msg` is send to `build_json` that sends the json of the todo.
+* If the `id` doesn't exist in the database, a `Msg` is send on the error port.
+* The `build_request` will receive one `Msg` in one of its two input ports (`error` or `playload`). If there is an error, it will send a `404` response, or otherwise, it will send a `200` repsonse with the json as data.
+* This new response now goes into the `add_req_id` `agent`, which retrieves the `req_id` from the request, and sets it in the new `response`.
+* The response now leaves the `subgraph`.
 
 Now we can connect the `http` `agent` to the `get` `subgraph`, to retrieve all the `GET` http request.
 
 ![http_get](./doc/images/http_get.png)
 
-##### The `POST subgraph`
+    http() GET[^/todos/.+$] -> request get()
+    get() response -> response http()
+
+Please understand how the code maps to the above diagram, as these particular diagrams shall not be repeated.
+
+
+##### The POST Subgraph
 
 ![post](./doc/images/post.png)
 
@@ -206,22 +212,22 @@ subgraph {
 [source for the post implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/post/default.nix)
 
 
-A request will go through :
-
-* In the `subgraph` by the virtual port `request`
-* Go in `get_todo`. This `agent` send `req_id` and the content, which is a `json todo` in a new contract `todo`.
-* The `json todo` is cloned in two `agents`
-* On go in `sql_insert`, that send out the `id` of the todo in the database. This id is send in `build_json`.
-* The `build_json` receive the database id and the todo, and merge them together in a `json` format
-* This allows to build a response, with the json as content
+A request will follow this path :
+* Enters the `subgraph` by the virtual port `request`
+* Enters the `agent``get_todo`. This `agent` sends `req_id` and the content, which is a `json todo` in a new schema `todo`.
+* The `json todo` is cloned and sent to two `agents`
+* One clone goes in `sql_insert`, that sends out the `id` of the todo in the database. This id is send in `build_json`.
+* The `build_json` receives the database id and the todo, and merges them together in `json` format.
+* This approach allows the building of a response with json as the content.
 * `add_req_id` then add the `req_id` in the reponse
-* The response is sended out
+* The response is sent out
 
 The post `subgraph` is connect to the `http` output port :
 
     http() POST[/todos/?$] -> request post()
+    post() response -> response http()
 
-##### The `DELETE subgraph`
+##### The DELETE Subgraph
 
 ![delete](./doc/images/delete.png)
 
@@ -252,9 +258,11 @@ This `subgraph` is easier than the two before, so it is mainly self-explaining!
 
 The delete `subgraph` is connect to the `http` output port :
 
-    http() DELETE[/todos/.+] -> request post()
+    http() DELETE[/todos/.+] -> request delete()
+    delete() response -> response http()
 
-##### The `PATCH subgraph`
+
+##### The PATCH Subgraph
 
 ![path](./doc/images/patch.png)
 
@@ -267,10 +275,10 @@ The "idea" of the stream is :
 * In parrallel, get the old value of the todo (look in the database)
 * Then, send the old and the new values to a "merge" `agent`, that build the result todo
 
-The problem with this simple flow is when the "old" todo doesn't exist, when the "old" todo is not in the database. In this case, the "old" edge (from `get_todo` to `merge`) and the "error" edge (from `sql_get` to `build_response`) are completly concurent. There will be a problem in the case of the "error" case. If the "todo" is not found in the database, `sql_get` will send an error. But `get_todo` will already have sended the "new" todo IP. The current http response will be correct, but at the next one, there will be 2 IPs in the `old` input port, with the first one that is wrong.
-A solution is to add a `synch` `agent`. This `agent` receive the IP "old", "new" and "error". If it receive "error", it send it to `build_respone` and discard the "old". If it receive "new", it forwards "new" and "old" to `merge`. So all IPs are well taken in account.
+The problem with this simple flow is when the "old" todo doesn't exist, when the "old" todo is not in the database. In this case, the "old" edge (from `get_todo` to `merge`) and the "error" edge (from `sql_get` to `build_response`) are completly concurent. There will be a problem in the case of the "error" case. If the "todo" is not found in the database, `sql_get` will send an error. But `get_todo` will already have sended the "new" todo `Msg`. The current http response will be correct, but at the next one, there will be 2 `Msgs` in the `old` input port, with the first one that is wrong.
+A solution is to add a `synch` `agent`. This `agent` receive the `Msg` "old", "new" and "error". If it receive "error", it send it to `build_respone` and discard the "old". If it receive "new", it forwards "new" and "old" to `merge`. So all `Msgs` are well taken in account.
 
-To simplify a little the graph, we ommit to speak about a connection : from `sql_get` to `patch_sql`. An IP is send from the former with the todo `id`, which need to be updated. But all the logic, with synch, is exactly the same. The complete figure is :
+To simplify a little the graph, we ommit to speak about a connection : from `sql_get` to `patch_sql`. An `Msg` is send from the former with the todo `id`, which need to be updated. But all the logic, with synch, is exactly the same. The complete figure is :
 
 ![patch_final](./doc/images/patch_final.png)
 
@@ -304,7 +312,7 @@ subgraph {
 Further reading in depth topics are:
 
 * [The Rust Book](https://doc.rust-lang.org/stable/book/)
-* [Flow-Based Programming Book](https://www.amazon.com/Flow-Based-Programming-2nd-Application-Development/dp/1451542321)
+* [The Flow-Based Programming Book](https://www.amazon.com/Flow-Based-Programming-2nd-Application-Development/dp/1451542321)
 * [The Nix Manual](http://nixos.org/nix/manual/)
 * [The NixOS Manual](http://nixos.org/nixos/manual/)
 * [The Hydra Manual](http://nixos.org/hydra/manual/)
