@@ -214,9 +214,9 @@ subgraph {
 
 A request will follow this path :
 * Enters the `subgraph` by the virtual port `request`
-* Enters the `agent``get_todo`. This `agent` sends `req_id` and the content, which is a `json todo` in a new schema `todo`.
-* The `json todo` is cloned and sent to two `agents`
-* One clone goes in `sql_insert`, that sends out the `id` of the todo in the database. This id is send in `build_json`.
+* Enters the `agent``get_todo`. `get_todo` sends `req_id` and the content, which is converted from `json` into a new schema [todo](https://github.com/fractalide/fractal_app_todo/blob/master/edges/todo/default.nix).
+* The `todo` schema is then cloned and sent to two `agents`.
+* One clone goes to `sql_insert`, which sends out the url `id` of the todo found in the database. This id is send in `build_json`.
 * The `build_json` receives the database id and the todo, and merges them together in `json` format.
 * This approach allows the building of a response with json as the content.
 * `add_req_id` then add the `req_id` in the reponse
