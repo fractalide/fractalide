@@ -20,31 +20,51 @@ in stdenv.mkCachedDerivation (args // {
     for i in $edges; do
       echo $i >> $out/nix-support/propagated-build-inputs
     done
-    if test $(tr ' ' '\n' < ${edgeText} | grep -c struct) != "1";
+    struct=$(grep -m 2 -c 'struct' ${edgeText} || true )
+    enum=$(grep -m 2 -c 'enum' ${edgeText} || true)
+    total=$(($struct+$enum))
+    if [ $struct -gt 1 ]
     then
       echo "***************"
       echo ""
-      echo "Schema build fail"
-      echo "Schema '${name}' may only contain one 'struct' keyword"
+      echo "    ERROR"
       echo ""
-      echo "A Cap'n Proto schema in Fractalide must only contain one 'struct' keyword."
-      echo "You'll need to correctly use the 'import' keyword to compose Cap'n Proto Schema."
+      echo "    '${name}' schema failed to build"
+      echo "    Schema '${name}' may only contain a single instance of the keywords 'struct'."
       echo ""
-      echo "Please ensure you have given your Cap'n Proto Schema Data Type a correct hierarchical name."
-      echo "Name clashes will happen down the line if you're not careful about naming your schema."
-      echo "Fixing those name clashes are painful, as it involves cleaning up other schema."
+      echo "    This is to ensure name clashes don't happen, if you have a better solution please make a patch."
       echo ""
-      echo "Say for example you create your schema in 'edges/prim/list/text/default.nix' and 'edges/prim/text/default.nix'"
-      echo "Please see the contents of 'edges/prim/list/text/default.nix' and notice the name 'PrimListText' is camel case"
-      echo "'PrimListText' maps to the directory hierarchy from the 'edges' directory."
-      echo "The same rule applies to the name 'PrimText' in the 'edges/prim/text/default.nix' file."
-      echo ""
-      echo "Please stick to this convention, this allows us to move forward without name clashes!"
+      echo "    Please ensure you have given your Cap'n Proto Schema Data Type a correct hierarchical name."
+      echo "    If the schema is in a fractal called net_http please ensure that the *entire* namespace in CamelCase is factored in."
+      echo "    e.g.: NetHttpRequestHeader or NetHttpRequestVersion is correct"
+      echo "          RequestHeader or RequestVersion is not correct"
       echo ""
       echo "***************"
       exit 1
+    elif [ $enum -gt 1 ]
+    then
+      echo "***************"
+      echo ""
+      echo "    Warning: multiple enum uses detected in schema '${name}'."
+      echo ""
+      echo "    If the 'enum' is at root level, please split out the into it's own schema. The 'enum' name should be a fully qualified name"
+      echo "    Such as 'NetHttpRequestMethod' and not 'RequestMethod'"
+      echo ""
+      echo "***************"
+    elif [ $total -gt 1 ]
+    then
+      echo "***************"
+      echo ""
+      echo "    Warning: multiple enum and struct uses detected in schema '${name}'."
+      echo ""
+      echo "    Please ensure root level 'enum' and 'struct' are split out the into it's own schema."
+      echo "    The 'enum' and 'struct' name should be a fully qualified name such as 'NetHttpRequestMethod' and not 'RequestMethod'"
+      echo ""
+      echo "***************"
+    else
+      cp ${edgeText} $out/src/edge.capnp
+      ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/edge.capnp --src-prefix $out/src/ -I "/"
     fi
-    cp ${edgeText} $out/src/edge.capnp
-    ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/edge.capnp --src-prefix $out/src/ -I "/"
+
   '';
 })
