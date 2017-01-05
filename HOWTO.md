@@ -301,6 +301,55 @@ subgraph {
 
 [source for the patch implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/patch/default.nix)
 
+#### Executing the graph
+
+`$ nix-build --argstr node workbench_test`
+`$ ./result`
+
+Now's the time to test the graph. Please follow these steps:
+
+* Open `firefox`:
+* Install and open the `resteasy` firefox plugin
+* Post : `http://localhost:8000/todos/`
+* Open `"data"`
+* Select `"custom"`
+* Keep `Mime type` empty
+* Put `{ "title": "A new title" }` in the textbox.
+* Click `send`
+* Notice the `200` response.
+
+You can also fiddle with
+
+* `GET http://localhost:8000/todos/ID`
+* `DELETE http://localhost:8000/todos/ID`
+* `PUT http://localhost:8000/todos/ID`
+
+#### Install into your environement via Configuration.nix
+
+Insert this into your `Configuration.nix`
+
+``` nix
+{ config, pkgs, ... }:
+
+let
+  fractalide = import /path/to/your/cloned/fractalide {};
+in
+{
+  require = fractalide.services;
+  services.workbench = {
+    enable = true;
+    bindAddress = "127.0.0.1";
+    port = 8003;
+  };
+...
+}
+
+```
+
+## Tokio-*
+
+We're waiting patiently for the much anticipated https://github.com/tokio-rs/ code to land. That's when we'll get services talking to other services and http clients via tokio.
+
 ## Extension
 
 Further reading in depth topics are:
