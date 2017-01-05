@@ -5,11 +5,10 @@ let
 in
 subgraph {
   src = ./.;
-  edges = with edges; [ fs_path net_protocol_domain_port net_url prim_text ];
   flowscript = with nodes; with edges; ''
-  '${fs_path}:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
-  '${net_protocol_domain_port}:(domainPort="localhost:8083")' -> domain_port www()
-  '${net_url}:(url="/docs")' -> url www()
-  '${prim_text}:(text="[*] serving: localhost:8083/docs/manual.html")' -> input disp(${io_print})
+    '${fs_path}:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
+    '${net_protocol_domain_port}:(domainPort="localhost:8083")' -> domain_port www()
+    '${net_url}:(url="/docs")' -> url www()
+    '${prim_text}:(text="[*] serving: localhost:8083/docs/manual.html")' -> input disp(${io_print})
   '';
 }

@@ -2,7 +2,6 @@
 
 subgraph {
  src = ./.;
- edges = with edges; [ ];
  flowscript = with nodes; with edges; ''
  inc1(${bench_inc_1000})
  inc1() output -> input inc2(${bench_inc_1000})

@@ -53,7 +53,6 @@ The `Subgraph` `default.nix` requires you make decisions about two types of depe
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     nand(${maths_boolean_nand})
     '${prim_bool}:(boolean=true)' -> a nand()
@@ -92,7 +91,6 @@ Everything between the opening `''` and closing `''` is `flowscript`, i.e:
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
                        <---- here
   '';
@@ -107,7 +105,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     agent_name(${name_of_agent})
   '';
@@ -121,7 +118,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     agent_name(${name_of_agent}) // <──┐
     agent_name()                 // <──┴─ same instance
@@ -136,7 +132,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     agent1(${name_of_agent1}) output_port -> input_port agent2(${name_of_agent2})
   '';
@@ -150,7 +145,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ prim_bool ];
   flowscript = with nodes; with edges; ''
     '${prim_bool}:(boolean=true)' -> a agent(${name_of_agent})
   '';
@@ -164,7 +158,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ js_create ];
   flowscript = with edges; with nodes; ''
     td(${ui_js_nodes.flex})
     '${js_create}:(type="div", style=[(key="display", val="flex"), (key="flex-direction", val="column")])~create' -> input td()
@@ -180,7 +173,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     subgraph_input => input agent(${name_of_agent})
   '';
@@ -194,7 +186,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     agent(${name_of_agent}) output => subgraph_output
   '';
@@ -208,7 +199,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     subgraph(${name_of_subgraph})
   '';
@@ -222,7 +212,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     subgraph(${name_of_subgraph})
     agent(${name_of_agent})
@@ -238,7 +227,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     db_path => input clone(${msg_clone})
     clone() clone[0] => db_path0
@@ -258,7 +246,6 @@ Note the `clone[1]`, this is an `array output port` and in this particular `Subg
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     add0 => add[0] adder(${path_to_adder})
     add1 => add[1] adder()
@@ -277,7 +264,6 @@ subgraph {
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     input => input clone(${msg_clone})
     clone() clone[0] -> a nand(${maths_boolean_nand})
@@ -301,7 +287,6 @@ The above implements the `not` boolean logic operation.
 
 subgraph {
   src = ./.;
-  edges = with edges; [ prim_bool ];
   flowscript = with nodes; with edges; ''
     '${prim_bool}:(boolean=true)' -> a nand(${maths_boolean_nand})
     '${prim_bool}:(boolean=true)' -> b nand()
@@ -320,7 +305,6 @@ Notice we're using the `not` node implemented earlier. One can build hierarchies
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     listen => listen http(${net_http_nodes.http})
     db_path => input clone(${msg_clone})
