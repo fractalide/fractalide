@@ -4,6 +4,20 @@
 
 People interesting in programming Fractalide applications.
 
+### What's new from different perspectives
+
+#### Nix Programmers
+
+Fractalide inserts _*safe reusable black-box*_ functions into `nix` derivations and provides a way to compose these functions.
+
+#### Rust Programmers
+
+Fractalide brings _*reproducible reusable black-box*_ functions, and a means to program system configuration.
+
+#### Flow-based Programmers
+
+Fractalide brings _*safe reproducible*_ classical Flow-based programming components to the table, and a means to program system configuration.
+
 ## Purpose
 
 To provide a step-by-step indepth example with links to source code on how to program Fractalide applications.
@@ -345,6 +359,7 @@ in
 }
 
 ```
+`$ sudo nixos-rebuild switch -I fractalide=/path/to/your/cloned/fractalide`
 
 ## Tokio-*
 

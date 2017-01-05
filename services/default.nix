@@ -1,4 +1,4 @@
-{fractals}:
+{ fractals }:
 [
   fractals.workbench.service
   fractals.app_todo_model.service
