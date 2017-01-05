@@ -151,7 +151,6 @@ The `http agent` must be started with an `iMsg` of type [address](https://github
 
 subgraph {
   src = ./.;
-  edges = with edges; [];
   flowscript = with nodes; with edges; ''
     db_path => db_path get_sql()
     input => input id(${todo_get_id}) id -> get get_sql(${sqlite_local_get})
@@ -195,7 +194,6 @@ Please understand how the code maps to the above diagram, as these particular di
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     db_path => db_path insert_todo()
     input => input todo_get_todo(${todo_get_todo}) todo -> input cl_todo(${msg_clone})
@@ -236,7 +234,6 @@ The post `subgraph` is connect to the `http` output port :
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     input => input id(${todo_get_id})
     db_path => db_path delete_sql()
@@ -287,7 +284,6 @@ To simplify a little the graph, we ommit to speak about a connection : from `sql
 
 subgraph {
   src = ./.;
-  edges = with edges; [ ];
   flowscript = with nodes; with edges; ''
     input => input todo_get_todo(${todo_get_todo})
     db_path => db_path patch_sql()
