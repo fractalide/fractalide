@@ -41,24 +41,7 @@ $ nix-build --argstr node bench_load
 /nix/store/ij8jri0z1k5n447f9s0x5yfx5p9iqnnf-bench_load
 
 $ sudo nice -n -20 perf stat -r 10 -d ./result
-
- Performance counter stats for './result' (10 runs):
-
-       5397.977660      task-clock (msec)         #    1.465 CPUs utilized            ( +-  0.63% )
-           204,241      context-switches          #    0.038 M/sec                    ( +-  0.73% )
-             3,400      cpu-migrations            #    0.630 K/sec                    ( +- 22.68% )
-            41,365      page-faults               #    0.008 M/sec                    ( +-  0.04% )
-    15,024,216,407      cycles                    #    2.783 GHz                      ( +-  0.82% )  (50.25%)
-   <not supported>      stalled-cycles-frontend  
-   <not supported>      stalled-cycles-backend   
-    15,651,196,604      instructions              #    1.04  insns per cycle          ( +-  0.15% )  (62.85%)
-     2,555,892,181      branches                  #  473.491 M/sec                    ( +-  0.09% )  (74.17%)
-        11,337,183      branch-misses             #    0.44% of all branches          ( +-  0.55% )  (74.11%)
-     5,914,501,986      L1-dcache-loads           # 1095.688 M/sec                    ( +-  0.37% )  (62.87%)
-       145,243,685      L1-dcache-load-misses     #    2.46% of all L1-dcache hits    ( +-  1.22% )  (30.43%)
-        38,047,116      LLC-loads                 #    7.048 M/sec                    ( +-  0.74% )  (26.35%)
-         2,309,527      LLC-load-misses           #    6.07% of all LL-cache hits     ( +-  1.71% )  (37.76%)
-
+...
        3.684139058 seconds time elapsed                                          ( +-  0.56% )
 ```
 
@@ -207,17 +190,6 @@ $ sudo nice -n -20 perf stat -r 10 -d ./result
 (see results above)
 ```
 
-For the sake of consistency, let's increment `2` instead of `1` in `nodes/bench/inc`, and recompile:
-
-```
-$ time nix-build --argstr node bench
-/nix/store/cqzgazshva4j1rz9fqxjqak513ijggvm-bench
-
-real    0m7.103s
-user    0m0.300s
-sys     0m0.046s
-```
-
 The system will only lazily compile code that has changed. If you change a low level Cap'n Proto schema everything that depends on that called schema will be recompiled automatically.
 
 ### Documentation
@@ -225,10 +197,11 @@ The system will only lazily compile code that has changed. If you change a low l
 * [Edges](./edges/README.md)
 * [Services](./services/README.md)
 * [Fractals](./fractals/README.md)
+* [HOWTO](./HOWTO.md)
 * [RustFBP](https://docs.rs/rustfbp)
 
 ### Contributing to Fractalide
-* The contributors are listed in [AUTHORS](./AUTHORS) (add yourself).
+* Contributors are listed in [AUTHORS](./AUTHORS). Copyright is distributed far and wide throughout the community to prevent corporate takeovers and lockins.
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
 * Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
 
