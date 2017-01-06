@@ -8,15 +8,15 @@ People interesting in programming Fractalide applications.
 
 #### Nix Programmers
 
-Fractalide inserts _*safe reusable black-box*_ functions into `nix` derivations and provides a way to compose these functions.
+Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
 
 #### Rust Programmers
 
-Fractalide brings _*reproducible reusable black-box*_ functions, and a means to program system configuration.
+Fractalide brings _*reproducible reusable black-box*_ dataflow functions, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/events/lisa2002/tech/full_papers/traugott/traugott.pdf) [pdf].
 
 #### Flow-based Programmers
 
-Fractalide brings _*safe reproducible*_ classical Flow-based programming components to the table, and a means to program system configuration.
+Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/events/lisa2002/tech/full_papers/traugott/traugott.pdf) [pdf].
 
 ## Purpose
 
