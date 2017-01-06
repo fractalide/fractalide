@@ -4,13 +4,14 @@
 
 ### What?
 
-`Services` are reusable and consist of components, subnets and contracts. They may be connected to other `services` on the same system or on remote machines in a high performance cluster quite easily.
+`Services` are reusable and consist of `agents`, `subgraphs` and `edges`. They may be connected to other `services` on the same system or on remote machines in a high performance cluster quite easily.
 
 ### Why?
 
 `Services` allow programmers to collaborate and distill common configurable patterns that solve general problems.
-Essentially a `service` in this context is no different from a top level subnet, albeit the interface has been `nix`'ified. The `nix` interface is required because this is where `nixos` takes over and declaratively sets up dependencies such as database
-and other services that might need to be run for the subnet to operate properly. This layer of software has been well tested by the `nix` community and ties in with every other service created by the `nixos` community.
+Essentially a `service` in this context is no different from a top level `subgraph`, albeit the interface has been `nix`'ified. The `nix` interface is required because this is where `nixos` takes over and declaratively handles conguent configuration management. It does things like sets up dependencies such as database and other services that might need to be run for the `subgraph` to operate properly. This layer of software has been well tested by the `nix` community and ties in with every other service created by the `nixos` community.
+
+This abstraction allows you to pull in legacy services, plug a Cap'n Proto functionality and start talking to Fractalide services.
 
 ### Who?
 
@@ -84,4 +85,10 @@ services.workbench = {
 
 * At this point, you may either choose to build `nixops` infrastructure scripts and deploy or simply run `$ nixos-rebuild {test, boot , switch}` to set up the services on your own system.
 * Do help out building generic services for programmers to speed up their work!
-* You're done.
+
+Now that you've had a basic introduction to the `Services` collection, you might want to head on over to
+
+1. [Nodes](../nodes/README.md)
+2. [Edges](../edges/README.md)
+3. [Fractals](../fractals/README.md)
+4. [HOWTO](../HOWTO.md)

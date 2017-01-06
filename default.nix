@@ -130,7 +130,7 @@ buffet = {
 fvm = import ./support/fvm { inherit buffet; };
 in
 {
-  inherit buffet nodes edges support;
+  inherit buffet nodes edges support services;
   result = if node == null
   then fvm
   else pkgs.writeTextFile {

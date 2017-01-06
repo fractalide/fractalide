@@ -4,6 +4,20 @@
 
 People interesting in programming Fractalide applications.
 
+### What's new from different perspectives
+
+#### Nix Programmers
+
+Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
+
+#### Rust Programmers
+
+Fractalide brings _*reproducible reusable black-box*_ dataflow functions, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+
+#### Flow-based Programmers
+
+Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+
 ## Purpose
 
 To provide a step-by-step indepth example with links to source code on how to program Fractalide applications.
@@ -98,47 +112,45 @@ The name `node` refers to the top level `graph` to be executed by the `fvm`. `ni
 
 #### A Todo backend
 
-We will design an http server, that will host `todo` element. It will provide the following HTTP features : GET, POST, PATCH/PUT, DELETE. The different `todos` themselves will be saved in a `sqlite` database. The client will use `json` to deal with the `todos`.
+We will design an http server backend that'll host a set of `todos`. It will provide the following HTTP features : GET, POST, PATCH/PUT, DELETE. The actual `todos` will be saved in a `sqlite` database. The client will use `json` to communicate with the server.
 
 A `todo` had the following fields :
-* id : a unique integer id, that is used to retrieve, delete and patch the todos.
-* title : a string that represents the goal of the todo, the text to display.
-* completed : a boolean to remember if the todo has been completed.
-* order : a positive integer used to display the todos in a certain order.
+* `id` : a unique integer id, that is used to retrieve, delete and patch the todos.
+* `title` : a string, that represents the goal of the todo and will be displayed.
+* `completed` : a boolean, to remember if the todo has been completed or not.
+* `order` : a positive integer, used to display the todos in a certain order.
 
-The http server responds to these requests :
+The http server responds to these requests:
 * GET
-The request will look like `GET http://localhost:8000/todos/1`. With the http method "GET", and a numeric ID given, the server will respond the corresponding todo in the database, otherwise it will respond a 404 page.
+The request looks like `GET http://localhost:8000/todos/1`. The server, after it receives a "GET" request along with a numeric id, will respond with the corresponding todo in the database, otherwise it will return a 404.
 * POST
-The request will look like `POST http://localhost:8000/todos`. The content of the request must be a `json` that correspond to a "todo". The `id` field is ignored. ex : `{ "title": "Create a todo http server", "order": 1 }`
+The request looks like `POST http://localhost:8000/todos`. The content of the request must be `json` that correspond to a `todo`. The `id` field is ignored. e.g. : `{ "title": "Create a todo http server", "order": 1 }`
 * PATCH or PUT
-The request will look like `PUT http://localhost:8000/todos/1`. The content of the request is the fields to update. ex : `{ "completed": true }`
+The request looks like `PUT http://localhost:8000/todos/1`. The content of the request is the fields to update. ex : `{ "completed": true }`
 * Delete
-The request will be `DELETE http://localhost:8000/todos/1`. This will delete the todo with the `id` 1.
+The request looks like `DELETE http://localhost:8000/todos/1`. This will delete the todo with the `id` 1.
 
 #### The Big Picture
 
 ![the big picture](./doc/images/global_http.png)
 
-The main `agent` here is `http` and will receive from the users and dispatch them to four other `subgraphs`, one for each HTTP feature. Each `subgraph` processes the request and provide a response. Before we approach the HTTP feature `subgraphs` let's take a look at the `http agent`.
+The centre of gravity revolves around the `http` `agent`. It receives requests from users and dispatches them to four other `subgraphs`, one `subgraph` for each HTTP feature. Each `subgraph` processes the request and provide a response. Before we approach the HTTP feature `subgraphs` let's take a look at the `http` `agent`.
 
 ##### The HTTP Agent
 
 The implementation code can be found [here](https://github.com/fractalide/fractal_net_http/tree/master/nodes/http).
 
-The `http agent` is a tiny http server. It receives http requests, asks for responses, then replies to the user.
-
 ![The `http agent`](./doc/images/request_response.png)
 
-The `http agent` has one [array output port](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/lib.rs#L57-L65) for each [HTTP method](https://docs.rs/tiny_http/0.5.5/tiny_http/enum.Method.html), and the `selection`/`elements` of each array output port is actually an insanely fast [rust regex](https://doc.rust-lang.org/regex/regex/index.html).
+The `http agent` has one [array output port](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/lib.rs#L57-L65) for each [HTTP method](https://docs.rs/tiny_http/0.5.5/tiny_http/enum.Method.html), and the `elements` of each array output ports is actually a fast [rust regex](https://doc.rust-lang.org/regex/regex/index.html).
 
 For example, `http() GET[^/news/?$]` will match the request with method GET and url `http://.../news` or `http://../news/`.
 
-On the output port, it send an `Msg` with the schema [request](https://github.com/fractalide/fractal_net_http/blob/master/edges/request/default.nix). For here, we will just use the fields `id`, `url`, `content`. The `id` is the unique id for the request. It must be provided in the response corresponding to this request. The `url` is the url given by the user. The `content` is the content of the request, the data given by the user.
+A `Msg` is sent on the output port of `http` with the schema [net_http_request](https://github.com/fractalide/fractal_net_http/blob/master/edges/net/http/request/default.nix). We will just use the fields `id`, `url`, `content`. The `id` is the unique id for the request. It must be provided in the response corresponding to this request. The `url` is the url given by the user. The `content` is the content of the request, or the data given by the user.
 
-The `http agent` wants a `Msg` with the schema [response](https://github.com/fractalide/fractal_net_http/blob/master/edges/response/default.nix). A `response` has an `id`, which correspond to the `request id`. It also has a `status_code`, which is the response code of the request. By default, it's 200 (OK). The `content` is the data that are send back to the user.
+The `http` `agent` expects a `Msg` with the schema [net_http_response](https://github.com/fractalide/fractal_net_http/blob/master/edges/net/http/response/default.nix). A `response` has an `id`, which corresponds to the `request id`. It also has a `status_code`, which is the response code of the request. By default, it's 200 (OK). The `content` is the data that is sent back to the user.
 
-The `http agent` must be started with an `iMsg` of type [address](https://github.com/fractalide/fractal_net_http/blob/master/edges/address/default.nix). It specifies on which address and port the server listens:
+The `http` `agent` must be started with an `iMsg` of type [net_http_address](https://github.com/fractalide/fractal_net_http/blob/master/edges/net/http/address/default.nix). It specifies the address and port on which the server listens:
 
 ![http listen](./doc/images/connect.png)
 
@@ -165,13 +177,13 @@ subgraph {
 ```
 [source for the get implemenation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/get/default.nix)
 
-A request will follow this path :
+A request follows this path:
 * Enters the `subgraph` via the virtual port `request`
 * Then enters the `agent` `get_id`. This `agent` has two output ports : `req_id` and `id`. The `req_id` is the id of the http request, given by the `http` `agent`. The `id` is `todo id` retrieved from the url (ie: given the url http://.../todos/2, the number 2 will be sent over the `id` port).
 * The url `id` enters the `sql_get` `agent`, that retrieve a `Msg` from a database corresponding to the `id`.
-* If the `id` exists, the `Msg` is send to `build_json` that sends the json of the todo.
+* If the `id` exists, a `Msg` is send to `build_json` that contains the json of the todo.
 * If the `id` doesn't exist in the database, a `Msg` is send on the error port.
-* The `build_request` will receive one `Msg` in one of its two input ports (`error` or `playload`). If there is an error, it will send a `404` response, or otherwise, it will send a `200` repsonse with the json as data.
+* The `build_request` will receive `Msg` on one of its two input ports (`error` or `playload`). If there is an error, it will send a `404` response, or otherwise, it will send a `200` repsonse with the json as data.
 * This new response now goes into the `add_req_id` `agent`, which retrieves the `req_id` from the request, and sets it in the new `response`.
 * The response now leaves the `subgraph`.
 
@@ -212,7 +224,7 @@ subgraph {
 
 A request will follow this path :
 * Enters the `subgraph` by the virtual port `request`
-* Enters the `agent``get_todo`. `get_todo` sends `req_id` and the content, which is converted from `json` into a new schema [todo](https://github.com/fractalide/fractal_app_todo/blob/master/edges/todo/default.nix).
+* Enters the `agent``get_todo`. `get_todo` sends `req_id` and the content, which is converted from `json` into a new schema [app_todo](https://github.com/fractalide/fractal_app_todo/blob/master/edges/app/todo/default.nix).
 * The `todo` schema is then cloned and sent to two `agents`.
 * One clone goes to `sql_insert`, which sends out the url `id` of the todo found in the database. This id is send in `build_json`.
 * The `build_json` receives the database id and the todo, and merges them together in `json` format.
@@ -220,7 +232,7 @@ A request will follow this path :
 * `add_req_id` then add the `req_id` in the reponse
 * The response is sent out
 
-The post `subgraph` is connect to the `http` output port :
+The post `subgraph` is then connected to the `http` output port :
 
     http() POST[/todos/?$] -> request post()
     post() response -> response http()
@@ -246,11 +258,11 @@ subgraph {
 ```
 [source for the delete implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/delete/default.nix),
 
-This `subgraph` is easier than the two before, so it is mainly self-explaining!
+This `subgraph` is easier than the two before, hence nearly self-explainatory.
 
-* The `req_id` and the `id` are get in `get_id`.
-* The `id` is send to `sql_delete`, which give back the id to `build_response`.
-* `build_response` simply fill the http response with the id
+* The `req_id` and the `id` are obtained in `get_id`.
+* The `id` is send to `sql_delete`, which returns the `id` to `build_response`.
+* `build_response` simply fill the http response with the `id`
 * `add_req_id` add the http `id`
 
 The delete `subgraph` is connect to the `http` output port :
@@ -267,15 +279,15 @@ The patch `subgraph` is a little more complicated, because of the `synch` `agent
 
 ![patch_without_sync](./doc/images/patch_without_sync.png)
 
-The "idea" of the stream is :
+The idea of the stream is this:
 * Get the new "todos" values in the request
-* In parrallel, get the old value of the todo (look in the database)
-* Then, send the old and the new values to a "merge" `agent`, that build the result todo
+* In parallel, retrieve the old value of the todo from the database.
+* Then, send the old and the new values to a `merge` `agent`, which builds the resulting `todo`
 
-The problem with this simple flow is when the "old" todo doesn't exist, when the "old" todo is not in the database. In this case, the "old" edge (from `get_todo` to `merge`) and the "error" edge (from `sql_get` to `build_response`) are completly concurent. There will be a problem in the case of the "error" case. If the "todo" is not found in the database, `sql_get` will send an error. But `get_todo` will already have sended the "new" todo `Msg`. The current http response will be correct, but at the next one, there will be 2 `Msgs` in the `old` input port, with the first one that is wrong.
-A solution is to add a `synch` `agent`. This `agent` receive the `Msg` "old", "new" and "error". If it receive "error", it send it to `build_respone` and discard the "old". If it receive "new", it forwards "new" and "old" to `merge`. So all `Msgs` are well taken in account.
+Now this graph has a problem; if there the todo is new then an old todo cannot be found in the database. In this case, the `new` edge between `get_todo` and `merge` and the `error` edge between `sql_get` and `build_respone` are completely concurrent, thus an issue will arise if a `Msg` is sent over the `error` edge when `sql_get` cannot find a `todo` in the database. At the same time `get_todo` will have recognized that it's a new `todo` and will have sent a `Msg` over the `new` edge. This will insert 2 `Msgs` into the `old` input port, where the first `Msg` is incorrect.
+A solution is to add a `synch` `agent` which has outgoing edges `old`/`new` and `error`. If an error is received, it's immediately communicated to `build_respone` and discards the `old/new` `Msg`. If it receives a `new` `Msg`, it forwards the `new` and `old` `Msgs` to `merge`. This ensures all `Msgs` are well taken care of.
 
-To simplify a little the graph, we ommit to speak about a connection : from `sql_get` to `patch_sql`. An `Msg` is send from the former with the todo `id`, which need to be updated. But all the logic, with synch, is exactly the same. The complete figure is :
+To simplify the graph a little, we've not mentioned the edge from `synch` to `patch_sql`. A `Msg` is send from the former with the todo `id`, whichs need to be updated. But all the logic, with synch, is exactly the same. The complete figure is:
 
 ![patch_final](./doc/images/patch_final.png)
 
@@ -302,6 +314,56 @@ subgraph {
 ```
 
 [source for the patch implementation](https://github.com/fractalide/fractal_app_todo/blob/master/nodes/todo/patch/default.nix)
+
+#### Executing the graph
+
+`$ nix-build --argstr node workbench_test`
+`$ ./result`
+
+Now's the time to test the graph. Please follow these steps:
+
+* Open `firefox`:
+* Install and open the `resteasy` firefox plugin
+* Post : `http://localhost:8000/todos/`
+* Open `"data"`
+* Select `"custom"`
+* Keep `Mime type` empty
+* Put `{ "title": "A new title" }` in the textbox.
+* Click `send`
+* Notice the `200` response.
+
+You can also fiddle with
+
+* `GET http://localhost:8000/todos/ID`
+* `DELETE http://localhost:8000/todos/ID`
+* `PUT http://localhost:8000/todos/ID`
+
+#### Install into your environement via Configuration.nix
+
+Insert this into your `Configuration.nix`
+
+``` nix
+{ config, pkgs, ... }:
+
+let
+  fractalide = import /path/to/your/cloned/fractalide {};
+in
+{
+  require = fractalide.services;
+  services.workbench = {
+    enable = true;
+    bindAddress = "127.0.0.1";
+    port = 8003;
+  };
+...
+}
+
+```
+`$ sudo nixos-rebuild switch -I fractalide=/path/to/your/cloned/fractalide`
+
+## Tokio-*
+
+We're waiting patiently for the much anticipated https://github.com/tokio-rs/ code to land. That's when we'll get services talking to other services and http clients via tokio.
 
 ## Extension
 
