@@ -127,3 +127,10 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 * `$ cd /dev/fractals/fractal_workbench`
 * `$ nix-build`
 * `$ ./result`
+
+Now that you've had a basic introduction to the `Fractals` collection, you might want to head on over to
+
+1. [Nodes](../nodes/README.md)
+2. [Edges](../edges/README.md)
+3. [Services](../services/README.md)
+4. [HOWTO](../HOWTO.md)

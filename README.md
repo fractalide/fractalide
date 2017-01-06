@@ -136,9 +136,9 @@ This just gives you a *feel* for the system:
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
-- [ ] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
-- [ ] Deployable example of a simple microservices setup.
-- [ ] Documentation.
+- [x] [Service composition](https://github.com/fractalide/fractal_workbench/blob/master/service.nix).
+- [x] Deployable example of a simple microservices setup.
+- [x] Documentation.
 - [x] Remove cargo.
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.

@@ -67,7 +67,6 @@ subgraph {
 * The `{ subgraph, nodes, edges }:` lambda passes in three arguments, the `subgraph` builder, `edges` which consists of every `Edge` or `Edge Namespace`, and the `nodes` argument which consists of every `Node` and `Node Namespace` in the system.
 * The `subgraph` building function accepts these arguments:
   * The `src` attribute is used to derive a `Subgraph` name based on location in the directory hierarchy.
-  * The `edges` attribute works out the transitive dependencies of each `exposed edge` or `imsg` (initial message).
   * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
 * `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
 * This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
@@ -139,7 +138,9 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png)
 
-#### Creating an [Exposed Edge](../edges/README.md)
+If the connection between `output_port` and `input_port` have the same `schema`, then the connection is upgraded to a new name called an `edge`.
+
+#### Creating an [imsg or an exposed edge](../edges/README.md)
 ``` nix
 { subgraph, nodes, edges }:
 
@@ -152,7 +153,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png)
 
-#### More complex Exposed Edge
+#### More complex iMsg or Exposed Edge
 ``` nix
 { subgraph, edges, nodes }:
 
@@ -238,7 +239,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
 
-Note the `clone[1]`, this is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
+Note `clone[1]` is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
 
 #### Input array port:
 ``` nix
@@ -256,7 +257,7 @@ subgraph {
 ```
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
 
-`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two fixed simple input ports then be constrained when you need to add three numbers together.
+`Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the implemented `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two fixed simple input ports then be constrained when you need to add a third number.
 
 #### Hierarchical naming:
 ``` nix
@@ -277,7 +278,7 @@ The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Frac
 
 Explanation of the `Subgraph`:
 
-This `Subgraph` takes an input of `Hidden Edge` type [prim_bool](../edges/maths/boolean/default.nix) over the `input` port. A `Message` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `prim_bool` data type, which is then sent over the `Subgraph` output port `output`.
+This `Subgraph` takes an input of a `Hidden Edge` type [prim_bool](../edges/maths/boolean/default.nix) over the `input` port. A `Msg` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `prim_bool` data type, which is then sent over the `Subgraph` output port `output`.
 
 The above implements the `not` boolean logic operation.
 
@@ -324,8 +325,8 @@ subgraph {
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png)
 
 Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `Nodes`. As is the case with the `net_http_nodes.http` node.
-When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix.
-Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149)!
+When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix to indicate a namespace.
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149)! You can read more about this in the [HOWTO](../HOWTO.md)
 
 ## Agents
 
@@ -337,7 +338,10 @@ Executable `Subgraphs` are defined as a network of `Agents`, which exchange type
 
 Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read [more](http://erlang.org/pipermail/erlang-questions/2011-May/058768.html) about the problem.
 
-Once you have the above, you have truly reusable functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
+Nix gives us the content addressable store which allows for `reproducibility`, and these `agents` give us `reusablility`. The combination is particularly potent form of programming.
+
+Once you have the above, you have truly reusable and reproducible functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
+
 ```
 * Open source collaboration
 * Open peer review of nodes
@@ -595,3 +599,10 @@ agent! {
 The `accumulator` gives the `subgraph` developer a way to start counting at a certain number. This port isn't used so often.
 ##### `run`:
 This function does the actual processing and is the only mandatory expression of this macro.
+
+Now that you've had a basic introduction to the `Nodes` collection, you might want to head on over to
+
+1. [Edges](../edges/README.md)
+2. [Fractals](../fractals/README.md)
+3. [Services](../services/README.md)
+4. [HOWTO](../HOWTO.md)
