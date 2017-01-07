@@ -32,60 +32,24 @@ Though all is not well! We were forced to partially compromise the zero-cost abs
 
 Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising as a large majority of the top downloaded crates are buildable.
 
-## Quick feel of the system
+## What's new from different perspectives
 
-#### A = (Graph setup + tear down):
+### Nix Programmers
 
-```
-$ nix-build --argstr node bench_load
-/nix/store/ij8jri0z1k5n447f9s0x5yfx5p9iqnnf-bench_load
+Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
 
-$ sudo nice -n -20 perf stat -r 10 -d ./result
-...
-       3.684139058 seconds time elapsed                                          ( +-  0.56% )
-```
+### Rust Programmers
 
-#### B = (Graph setup + tear down + message pass + increment):
+Fractalide brings _*reproducible reusable black-box*_ dataflow functions, a means to compose them and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
 
-```
+### Flow-based Programmers
 
-$ nix-build --argstr node bench
-/nix/store/mfl206ccv86wvyi2ra5296l8n1bks24x-bench
+Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
 
-$ sudo nice -n -20 perf stat -r 10 -d ./result
+## Dependencies
+Fractalide depends on [NixOS](https://nixos.org/nixos), though if you're not using services you can run Fractalide `subgraphs` on the [Nix](https://nixos.org/nix) package manager, your package manager (pacman, apt-get, brew etc) most likely has `nix` already. There is a very simple reason for this, and it might be a show stopper for many, but the fact of the matter is we want to tap into a declarative [conguent system configuration management](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/), we want our entire system and programming model *not* to fight this but to align with it. Not using a conguent configuration management model is the Rust equivalent of saying you prefer using the `unsafe` keyword everywhere, indeed you'd see no need in using Rust at all and just use C++.
 
- Performance counter stats for './result' (10 runs):
-
-       6638.755996      task-clock (msec)         #    1.443 CPUs utilized            ( +-  0.57% )
-           268,864      context-switches          #    0.040 M/sec                    ( +-  0.47% )
-             3,047      cpu-migrations            #    0.459 K/sec                    ( +- 10.08% )
-            82,417      page-faults               #    0.012 M/sec                    ( +-  0.03% )
-    18,012,749,608      cycles                    #    2.713 GHz                      ( +-  0.66% )  (50.10%)
-   <not supported>      stalled-cycles-frontend  
-   <not supported>      stalled-cycles-backend   
-    18,396,303,772      instructions              #    1.02  insns per cycle          ( +-  0.10% )  (62.48%)
-     3,008,536,908      branches                  #  453.178 M/sec                    ( +-  0.06% )  (73.97%)
-        13,396,472      branch-misses             #    0.45% of all branches          ( +-  1.01% )  (74.08%)
-     6,955,828,023      L1-dcache-loads           # 1047.761 M/sec                    ( +-  0.50% )  (63.04%)
-       184,998,022      L1-dcache-load-misses     #    2.66% of all L1-dcache hits    ( +-  0.81% )  (29.73%)
-        49,018,759      LLC-loads                 #    7.384 M/sec                    ( +-  0.99% )  (26.13%)
-         3,032,354      LLC-load-misses           #    6.19% of all LL-cache hits     ( +-  1.56% )  (37.74%)
-
-       4.601455409 seconds time elapsed                                          ( +-  0.66% )
-
-
-```
-#### (Message Passing + Increment) = B - A:
-
-```
->>> 4.601455409 - 3.684139058
-0.9173163509999998
-```
-
-This just gives you a *feel* for the system:
-* `3.7 secs` to setup `10,000` [rust agents](./nodes/bench/inc/lib.rs) + teardown `10,000` agents.
-* `4.6 sces` to setup `10,000` agents + message pass `10,000` times + increment `10,000` times + teardown `10,000` `agents`.
-* `0.9 sec` to message pass `10,000` times + increment `10,000` times.
+A congruent model reduces cost of ownership and increases reliability of the system.
 
 ## Problem 1
 * Language level modules become tightly coupled with the rest of the code.
@@ -147,10 +111,8 @@ This just gives you a *feel* for the system:
 - [ ] 1.0 Stabilization version.
 
 ### Quick start
-Fractalide is meant to be run on [NixOS](http://nixos.org/nixos), though if you're not going to be doing any service configuration management then many of the `subgraphs` will execute on the [nix](http://nixos.org/nix) package manage which should be on your linux distro's package manager:
-For the most efficient way forward, ensure you're using [NixOS](http://nixos.org), The Purely Functional Linux Distribution.
 
-So from a fresh install of NixOS (using the `nixos-unstable` channel) we'll build the `fractalide virtual machine (fvm)` and execute the humble NAND logic gate on it.
+From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build the `fractalide virtual machine (fvm)` and execute the humble NAND logic gate on it.
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
@@ -164,33 +126,6 @@ sys     0m0.079s
 $ ./result
 boolean : false
 ```
-
-Let's benchmark the setup, teardown, message passes and increments of `10,000` messages between `10,000` agents, note the `fvm` is now already built, so it won't be built again unless you make a change to it.
-
-```
-$ time nix-build --argstr node bench
-/nix/store/r4gb7k9hsv2iblzh1pj21wbg6mc21xab-bench
-
-real    0m7.437s
-user    0m0.301s
-sys     0m0.048s
-$ sudo nice -n -20 perf stat -r 10 -d ./result
-(see results above)
-```
-Now let's benchmark just the setup and teardown, note the `nodes/bench/inc` `agent` is previously built and tucked away in it's own `nix derivation`.
-
-```
-$ time nix-build --argstr node bench_load
-/nix/store/w1yln248p0788byxvhpmdw2y4cz44gvv-bench_load
-
-real    0m2.259s
-user    0m0.304s
-sys     0m0.038s
-$ sudo nice -n -20 perf stat -r 10 -d ./result
-(see results above)
-```
-
-The system will only lazily compile code that has changed. If you change a low level Cap'n Proto schema everything that depends on that called schema will be recompiled automatically.
 
 ### Documentation
 * [Nodes](./nodes/README.md)
