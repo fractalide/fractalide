@@ -4,20 +4,6 @@
 
 People interesting in programming Fractalide applications.
 
-### What's new from different perspectives
-
-#### Nix Programmers
-
-Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
-
-#### Rust Programmers
-
-Fractalide brings _*reproducible reusable black-box*_ dataflow functions, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
-
-#### Flow-based Programmers
-
-Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
-
 ## Purpose
 
 To provide a step-by-step indepth example with links to source code on how to program Fractalide applications.
@@ -109,6 +95,62 @@ $ man nix-build
 ```
 
 The name `node` refers to the top level `graph` to be executed by the `fvm`. `nix` compiles each of the `agents` and inserts their paths into `subgraphs`. The `fvm` knows how how to recursively load the entire hierarchy of `subgraphs` which contain fully qualified paths to their composed `agents`.
+
+#### Quick feel of the system
+
+##### A = (Graph setup + tear down):
+
+```
+$ nix-build --argstr node bench_load
+/nix/store/ij8jri0z1k5n447f9s0x5yfx5p9iqnnf-bench_load
+
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+...
+       3.684139058 seconds time elapsed                                          ( +-  0.56% )
+```
+
+##### B = (Graph setup + tear down + message pass + increment):
+
+```
+
+$ nix-build --argstr node bench
+/nix/store/mfl206ccv86wvyi2ra5296l8n1bks24x-bench
+
+$ sudo nice -n -20 perf stat -r 10 -d ./result
+
+ Performance counter stats for './result' (10 runs):
+
+       6638.755996      task-clock (msec)         #    1.443 CPUs utilized            ( +-  0.57% )
+           268,864      context-switches          #    0.040 M/sec                    ( +-  0.47% )
+             3,047      cpu-migrations            #    0.459 K/sec                    ( +- 10.08% )
+            82,417      page-faults               #    0.012 M/sec                    ( +-  0.03% )
+    18,012,749,608      cycles                    #    2.713 GHz                      ( +-  0.66% )  (50.10%)
+   <not supported>      stalled-cycles-frontend
+   <not supported>      stalled-cycles-backend
+    18,396,303,772      instructions              #    1.02  insns per cycle          ( +-  0.10% )  (62.48%)
+     3,008,536,908      branches                  #  453.178 M/sec                    ( +-  0.06% )  (73.97%)
+        13,396,472      branch-misses             #    0.45% of all branches          ( +-  1.01% )  (74.08%)
+     6,955,828,023      L1-dcache-loads           # 1047.761 M/sec                    ( +-  0.50% )  (63.04%)
+       184,998,022      L1-dcache-load-misses     #    2.66% of all L1-dcache hits    ( +-  0.81% )  (29.73%)
+        49,018,759      LLC-loads                 #    7.384 M/sec                    ( +-  0.99% )  (26.13%)
+         3,032,354      LLC-load-misses           #    6.19% of all LL-cache hits     ( +-  1.56% )  (37.74%)
+
+       4.601455409 seconds time elapsed                                          ( +-  0.66% )
+
+
+```
+##### (Message Passing + Increment) = B - A:
+
+```
+>>> 4.601455409 - 3.684139058
+0.9173163509999998
+```
+
+This just gives you a *feel* for the system:
+* `3.7 secs` to setup `10,000` [rust agents](./nodes/bench/inc/lib.rs) + teardown `10,000` agents.
+* `4.6 sces` to setup `10,000` agents + message pass `10,000` times + increment `10,000` times + teardown `10,000` `agents`.
+* `0.9 sec` to message pass `10,000` times + increment `10,000` times.
+
 
 #### A Todo backend
 
