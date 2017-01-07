@@ -13,7 +13,7 @@
 
 let
   compName = if name == null then genName src else name;
-in stdenv.mkCachedDerivation (args // rec {
+in stdenv.mkDerivation (args // rec {
   name = compName;
   buildInputs = osdeps;
   cratesDeps = crates-support.cratesDeps crates crates;
@@ -35,7 +35,7 @@ in stdenv.mkCachedDerivation (args // rec {
     ${ if type == "agent" then ''
       touch edge_capnp.rs
       for i in $propagated1; do
-      cat $i >> edge_capnp.rs
+        cat $i >> edge_capnp.rs
       done
       ${rustNightly}/bin/rustc lib.rs \
       --crate-type dylib \
@@ -49,7 +49,7 @@ in stdenv.mkCachedDerivation (args // rec {
     else if type == "executable" then ''
       touch src/edge_capnp.rs
       for i in $propagated1; do
-      cat $i >> src/edge_capnp.rs
+        cat $i >> src/edge_capnp.rs
       done
       ${rustNightly}/bin/rustc src/main.rs \
       --crate-type bin \

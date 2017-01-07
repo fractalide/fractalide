@@ -9,7 +9,7 @@ edgeText = writeTextFile {
   executable = false;
 };
 
-in stdenv.mkCachedDerivation (args // {
+in stdenv.mkDerivation (args // {
   name = name;
   unpackPhase = "true";
   propagatedBuildInputs = edges;
