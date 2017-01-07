@@ -127,7 +127,7 @@ The `edge` building function accepts these arguments:
 
 edge {
   src = ./.;
-  edge = with edges; [ command ];
+  edges = with edges; [ command ];
   schema = with edges; ''
     @0xf61e7fcd2b18d862;
     using Command = import "${command}/src/edge.capnp";
@@ -157,7 +157,7 @@ Hence, this is example shouldn't be used:
 
 edge {
   src = ./.;
-  edge = with edges; [ command ];
+  edges = with edges; [ command ];
   schema = with edges; ''
     @0xf61e7fcd2b18d862;
     struct Person {
@@ -202,7 +202,7 @@ Fractalide resolves transitive dependencies for you but you have to use this met
 
 edge {
   src = ./.;
-  edge = with edges; [ command ];
+  edges = with edges; [ command ];
   schema = with edges; ''
     @0xf61e7fcd2b18d862;
     using CommandInstanceName = import "${command}/src/edge.capnp";
@@ -213,7 +213,7 @@ edge {
 }
 ```
 
-You must pull explicitly mention the `edge` you want to import via the `  edge = with edges; [ command ];`
+You must pull explicitly mention the `edge` you want to import via the `  edges = with edges; [ command ];`
 Then you must `import` it via this mechanism: `using CommandInstanceName = import "${command}/src/edge.capnp";`
 and lastly use it `... commands @0 :List(CommandInstanceName.Command); ...`
 
@@ -222,16 +222,16 @@ Out of curiosity what does the output of the above `list_command` `contract` fun
 ```
 $ cat /nix/store/3s25icpbf1chayvrxwbyxr9qckn7x669-list_command/src/edge.capnp
 @0xf61e7fcd2b18d862;
-using Command = import "/nix/store/bgh37035cbr49r7mracmdwwjx9sbf4nr-command/src/edge.capnp";
+using CommandInstanceName = import "/nix/store/bgh37035cbr49r7mracmdwwjx9sbf4nr-command/src/edge.capnp";
 
 struct ListCommand {
-    commands @0 :List(Command.Command);
+    commands @0 :List(CommandInstanceName.Command);
 }
 ```
 
 The generated Rust code consists of the `list_command`, `command` and `tuple` contract concatenated together.
 
-Now that you've had a basic introduction to the `Services` collection, you might want to head on over to
+Now that you've had a basic introduction to the `Edges` collection, you might want to head on over to
 
 1. [Nodes](../nodes/README.md)
 2. [Services](../services/README.md)
