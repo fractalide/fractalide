@@ -54,7 +54,7 @@ The symptoms of divergence include unpredictable host behavior, unscheduled down
 
 "The baseline description in a converging infrastructure is characteristically an incomplete description of machine state. You can quickly detect convergence in a shop by asking how many files are currently under management control. If an approximate answer is readily available and is on the order of a few hundred files or less, then the shop is likely converging legacy machines on a file-by-file basis.
 
-A convergence tool is an excellent means of bringing some semblance of order to a chaotic infrastructure. Convergent tools typically work by sampling a small subset of the disk - via a checksum of one or more files, for example - and taking some action in response to what they find. The samples and actions are often defined in a declarative or descriptive language that is optimized for this use. This emulates and preempts the firefighting behavior of a reactive human systems administrator - "see a problem, fix it."" Automating this process provides great economies of scale and speed over doing the same thing manually.
+A convergence tool is an excellent means of bringing some semblance of order to a chaotic infrastructure. Convergent tools typically work by sampling a small subset of the disk - via a checksum of one or more files, for example - and taking some action in response to what they find. The samples and actions are often defined in a declarative or descriptive language that is optimized for this use. This emulates and preempts the firefighting behavior of a reactive human systems administrator - "see a problem, fix it." Automating this process provides great economies of scale and speed over doing the same thing manually.
 
 Because convergence typically includes an intentional process of managing a specific subset of files, there will always be unmanaged files on each host. Whether current differences between unmanaged files will have an impact on future changes is undecidable, because at any point in time we do not know the entire set of future changes, or what files they will depend on.
 
@@ -75,21 +75,31 @@ Symptoms of a congruent infrastructure include rapid, predictable, "fire-and-for
 Fractalide does not violate the congruent model of Nix, and it's why NixOS is a dependency. Appreciation for safety has extended beyond the (Rust) application boundary into infrastructure as a whole.
 
 ## Problem 1 (Justify Rust)
-A language needed to be chosen to implement Fractalide. Now as Fractalide is primarily a Flow-based programming environment it would be beneficial to choose a language that at least gets concurrency right.
+* A language needed to be chosen to implement Fractalide. Now as Fractalide is primarily a Flow-based programming environment, it would be beneficial to choose a language that at least gets concurrency right.
 
 ## Solution
 Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existance, no harm to anyone.
 
-## Problem 2 (Justify Flow-based Programming)
-* Language level modules become tightly coupled with the rest of the code.
+## Problem 2 (Justify Flow-based Programming + Nix)
+* Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
 
 ## Solution
-* Fractalide comes with its own actor oriented, message passing, declarative dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
-* Flowscript enforces well-factored, independent `agents` within a single process that have strict boundaries and standardized API.
-* This standardized API is key to `agent` composition and is achieved via a coordination layer called a `subgraph`, which describes how `agents` are connected and compose together. A `subgraph`, from an interface perspective, is indistinguishable from a Rust `agent`, this, neatly, allows for layers of abstraction which fall away at runtime.
-* These `agents` are black boxes which are only dependent on data and not any other `agent`.
-* Fractalide [agents](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
-* Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many any Remote Method Invocation here.
+A neat outcome we never anticipated when combining FBP and Nix. This is the peanut butter and jam combination. It requires a bit of explaining, so hang tight.
+
+### Reproducibility
+Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, it's known as a `derivation` and if you're trying to create a reproducible system this is the correct resolution. Too big and you're copying around large container sized images that occupy gigabytes of space, too small and you run into problems of git not being able to scale to support hundreds of binaries that build an operating system.
+
+Nix also keeps track of all the dependent derivations, build steps and other attributes of the derivation to be built. Using this method it's quite possible to have a number of python interpreters living side-by-side without conflicting. One can merely by name pull python 2.7 into an environment, and in another environment pull in python 3.
+
+Indeed the sheer power of these simple `derivations` is what allows the Nix community to compose an entire operating system, NixOS. This is what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
+
+### Reusability
+Flow-based programming in our books has delivered on it's promise. Components are reusable, they are clean and composable. It's a very nice way to program computers. Though, we found, the larger the network of components grow the more overhead required to build, manage versioning, package, connect, test and distribute all these moving pieces. This really doesn't play to FBP's advantage, indeed we'll go as far as to say it's the primary reason FBP hasn't become mainstream. The negatives outweigh the positives. Still there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
+
+### Reproducibility + Reusability
+Quite by chance, when nix is assigned the resposibility of declaratively building fbp components, a magic thing happens. All that overhead of having to build, manage and package gets manually done once by the component author, and completely disappears for everyone else! We're left with a neat reusable and reproducible fbp components, which can be called into scope by name and name alone! This to us is quite nice.
+
+Indeed, it's possible to call an extremely complex hierarchy of potentially 1000 nodes, where each node might have different crates.io dependencies and nix will ensure the entire hierarchy is correctly built and made available.
 
 ## Problem 3 (Justify Capnproto)
 * It's easy to disrespect API contracts in many microservices setups.
