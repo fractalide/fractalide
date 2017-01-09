@@ -7,7 +7,11 @@
 
 ## Welcome
 
+## What is this?
+
 **Fractalide provides a Flow-based programming language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
+
+Fractalide is essentially [Apache-NiFi](https://en.wikipedia.org/wiki/Apache_NiFi) (developed by the NSA) but stripped of all Java and GUI bloat. Entire enterprise organizations such as Hortonworks are building layers of bloat around Apache-Nifi. We occupy a different end of the spectrum where text editors are preferred over IDEs, where CPU cycles are treasured, where a single command sets up a potentially deep hierarchy of nodes and all dependencies have been resolved for you in a hermetically sealed build environment. So if you share our end of the spectrum and need to do stream processing, then please consider using Fractalide.
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
@@ -37,7 +41,7 @@ Fractalide brings _*reproducible reusable black-box*_ dataflow functions, a mean
 
 Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
 
-## Problem 0 (Justify NixOS)
+## Problem 0
 * The vast majority of system configuration management solutions use either the divergent or convergent model.
 
 We're going to quote Steve Traugott's excellent work vebatim.
@@ -74,13 +78,13 @@ Symptoms of a congruent infrastructure include rapid, predictable, "fire-and-for
 
 Fractalide does not violate the congruent model of Nix, and it's why NixOS is a dependency. Appreciation for safety has extended beyond the (Rust) application boundary into infrastructure as a whole.
 
-## Problem 1 (Justify Rust)
+## Problem 1
 * A language needed to be chosen to implement Fractalide. Now as Fractalide is primarily a Flow-based programming environment, it would be beneficial to choose a language that at least gets concurrency right.
 
 ## Solution
 Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existance, no harm to anyone.
 
-## Problem 2 (Justify Flow-based Programming + Nix)
+## Problem 2
 * Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
 
 ## Solution
@@ -99,16 +103,13 @@ Flow-based programming in our books has delivered on it's promise. Components ar
 ### Reproducibility + Reusability
 Quite by chance, when nix is assigned the resposibility of declaratively building fbp components, a magic thing happens. All that overhead of having to build, manage and package gets manually done once by the component author, and completely disappears for everyone else! We're left with a neat reusable and reproducible fbp components, which can be called into scope by name and name alone! This to us is quite nice.
 
-Indeed, it's possible to call an extremely complex hierarchy of potentially 1000 nodes, where each node might have different crates.io dependencies and nix will ensure the entire hierarchy is correctly built and made available.
+Indeed, it's possible to call an extremely complex community developed hierarchy of potentially 1000 nodes, where each node might have different crates.io dependencies and nix will ensure the entire hierarchy is correctly built and made available.
 
-## Problem 3 (Justify Capnproto)
+## Problem 3
 * It's easy to disrespect API contracts in many microservices setups.
 
 ## Solution
-* The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto schema which conveniently hands structured data to you.
-* Each `Edge` in a Fractalide `Subgraph`/`Graph` of `Nodes` is actually a Cap'n Proto schema.
-* Say a Fractalide upstream `Node` `U` might use `Edge` `X` to send data to downstream `Node` `D`, each `Node` will reference exactly the same `Edge` `X` by name alone, hence guaranteeing the two `agents` use the same schema. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same `Edge`. Say you change `Edge` `X`'s schema, `nix` will lazily recompile `Node` `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to `Edges` will cause dependent `Nodes` to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
-* Fractalide `agents` communicate using `Cap'n Proto`schema , which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto schema can be extended without breaking `agents` with a different versions. That would be a problem if we weren't in complete control of versioning in a distributed system.
+We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes the error must be caught at compile time. Cap'n Proto fits these requirements perfectly. We've made it such that you cannot connect `agent` ports together unless they use the same Cap'n Proto schema. This is a nice safety property.
 
 ### Steps towards stable release.
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
