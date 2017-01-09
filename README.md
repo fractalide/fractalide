@@ -31,15 +31,27 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 
 ### Nix Programmers
 
-Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
+Fractalide brings _*safe, fast, reusable, black-box*_ dataflow functions and a means to compose them.
+
+*Tagline: "Nixpkgs is not enough! Have nixfuncs!"*
 
 ### Rust Programmers
 
-Fractalide brings _*reproducible reusable black-box*_ dataflow functions, a means to compose them and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+Fractalide brings _*reproducible, reusable, black-box*_ dataflow functions, a means to compose them and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
+
+*Tagline: Safety extended beyond the application boundary into infrastructure.*
 
 ### Flow-based Programmers
 
-Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
+
+*Tagline: Reproducible components!*
+
+### Programmers
+
+Fractalide brings _*safe, fast, reusable, reproducible, black-box*_ dataflow functions, a means to compose them and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
+
+*Tagline: Here, have a beer!*
 
 ## Problem 0
 * The vast majority of system configuration management solutions use either the divergent or convergent model.
@@ -88,25 +100,23 @@ Rust was a perfect fit. The concept of ownership is critical in Flow-based Progr
 * Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
 
 ## Solution
-A neat outcome we never anticipated when combining FBP and Nix. This is the peanut butter and jam combination. It requires a bit of explaining, so hang tight.
+An unanticipated outcome occurred when combining FBP and Nix. It's become our peanut butter and jam combination, so to say, but requires a bit of explaining, so hang tight.
 
 ### Reproducibility
-Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, it's known as a `derivation` and if you're trying to create a reproducible system this is the correct resolution. Too big and you're copying around large container sized images that occupy gigabytes of space, too small and you run into problems of git not being able to scale to support hundreds of binaries that build an operating system.
+Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, it's known as a `derivation` and if you're trying to create reproducible systems this is the correct resolution. Too big and you're copying around large container sized images that occupy gigabytes of space, too small and you run into problems of git not being able to scale to support thousands of binaries that build an operating system. Therefore Nix subsumes Docker.
 
-Nix also keeps track of all the dependent derivations, build steps and other attributes of the derivation to be built. Using this method it's quite possible to have a number of python interpreters living side-by-side without conflicting. One can merely by name pull python 2.7 into an environment, and in another environment pull in python 3.
-
-Indeed the sheer power of these simple `derivations` is what allows the Nix community to compose an entire operating system, NixOS. This is what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
+Indeed it's these simple `derivations` that allow python 2.7 and 3.0 to exist side-by-side without conflicts. It's what allows the Nix community to compose an entire operating system, NixOS. These `derivations` are what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
 
 ### Reusability
-Flow-based programming in our books has delivered on it's promise. Components are reusable, they are clean and composable. It's a very nice way to program computers. Though, we found, the larger the network of components grow the more overhead required to build, manage versioning, package, connect, test and distribute all these moving pieces. This really doesn't play to FBP's advantage, indeed we'll go as far as to say it's the primary reason FBP hasn't become mainstream. The negatives outweigh the positives. Still there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
+Flow-based programming in our books has delivered on it's promise. Components are reusable, they are clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
 
 ### Reproducibility + Reusability
-Quite by chance, when nix is assigned the resposibility of declaratively building fbp components, a magic thing happens. All that overhead of having to build, manage and package gets manually done once by the component author, and completely disappears for everyone else! We're left with a neat reusable and reproducible fbp components, which can be called into scope by name and name alone! This to us is quite nice.
+Quite by chance, when nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has is typing the `node`'s name.
 
-Indeed, it's possible to call an extremely complex community developed hierarchy of potentially 1000 nodes, where each node might have different crates.io dependencies and nix will ensure the entire hierarchy is correctly built and made available.
+Now just to be absolutely clear of the implications; it's possible to call an extremely complex community developed hierarchy of potentially 1000+ nodes, where each node might have different http://crates.io dependencies, they might have OS level dependencies such as `openssl` etc and nix will ensure the entire hierarchy is correctly built and made available. All this is done by just typing the `node` name and issuing a build command.
 
 ## Problem 3
-* It's easy to disrespect API contracts in many microservices setups.
+* It's easy to disrespect API contracts in a distributed services setup.
 
 ## Solution
 We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes the error must be caught at compile time. Cap'n Proto fits these requirements perfectly. We've made it such that you cannot connect `agent` ports together unless they use the same Cap'n Proto schema. This is a nice safety property.
@@ -154,6 +164,7 @@ boolean : false
 * Contributors are listed in [AUTHORS](./AUTHORS). Copyright is distributed far and wide throughout the community to prevent corporate takeovers and lockins.
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
 * Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
+* We don't do feature requests, if you can't create the feature yourself then you need to put money on the table and the job will be handed to a community member. This prevents burn out.
 
 ### Consulting and Support
 Name | Info | Language
