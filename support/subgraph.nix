@@ -7,7 +7,7 @@
     text = flowscript;
     executable = false;
   };
-  in stdenv.mkCachedDerivation  (args // {
+  in stdenv.mkDerivation  (args // {
     name = subgraph-name;
     unpackPhase = "true";
     installPhase = ''
