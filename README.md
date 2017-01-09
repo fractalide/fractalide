@@ -2,17 +2,22 @@
 # Fractalide
  _**Simple Rust Microservices**_
 
+ _**a.k.a the dataflow shiv**_
+
  [![LICENSE](https://img.shields.io/badge/license-MPLv2-blue.svg)](LICENSE)
  [![Join the chat at https://gitter.im/fractalide](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Welcome
 
+## What is this?
+
 **Fractalide provides a Flow-based programming language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
 
-The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
+Fractalide is essentially the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat. Entire enterprise organizations such as Hortonworks are building services around Apache-NiFi.
 
-Rich Hickey almost exactly describes how Fractalide works [here](https://www.youtube.com/watch?v=ROor6_NGIWU).
-Once you've absorbed what he has to say, it'll be much easier to approach this material.
+We occupy a different end of the spectrum where text editors are preferred over IDEs, where CPU cycles are treasured, where a single command sets up a potentially deep hierarchy of nodes and all dependencies have been resolved for you in a hermetically sealed build environment. So if you share our end of the spectrum and need to do dataflow processing on streams, then please consider using Fractalide.
+
+The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
 ## Features
 Fractalide stands on the shoulders of giants by combining the strengths of each language into one programming model.
@@ -26,77 +31,112 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 |+  |Cap'n Proto|     |                      |         |          |✔                      |          |
 |=  |Fractalide Model |✔   |✔                |✔       |✔         |✔                       |✔        |✔
 
-The most unique and interesting combination is that of the `Reproducible` and `Reusable` features. Reusable dataflow functions, compiled to shared objects occupy nix derivations, it's these derivations that make true reproducibility possible. This is no small feat!
-
-Though all is not well! We were forced to partially compromise the zero-cost abstractions feature during graph load time as an implemention of a Flow-based runtime costs, but the gains of an inherently concurrent system with dataflow `agents` that are entirely reusable make it worth it. We feel entitled to check off zero-cost abstractions because `agents` may take advantage of zero-cost libraries available on crates.io, but `agents` must be run by the fractalide runtime.
-
-Lastly, we've also chosen to eschew `cargo` in favour of `nixcrates` which gives us a hermetically sealed build environment. We need help getting 1:1 compatibility with `cargo` but the early stages look very promising as a large majority of the top downloaded crates are buildable.
-
 ## What's new from different perspectives
 
 ### Nix Programmers
 
-Fractalide brings _*safe fast reusable black-box*_ dataflow functions and a means to compose them.
+Fractalide brings _*safe, fast, reusable, black-box*_ dataflow functions and a means to compose them.
+
+*Tagline: "Nixpkgs is not enough! Here have 'Nixfuncs' too."*
 
 ### Rust Programmers
 
-Fractalide brings _*reproducible reusable black-box*_ dataflow functions, a means to compose them and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+Fractalide brings _*reproducible, reusable, black-box*_ dataflow functions, a means to compose them and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
+
+*Tagline: Safety extended beyond the application boundary into infrastructure.*
 
 ### Flow-based Programmers
 
-Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a system configuration management using the [congruent model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+Fractalide brings _*safe fast reproducible*_ classical Flow-based programming components, and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
 
-## Dependencies
-Fractalide depends on [NixOS](https://nixos.org/nixos), though if you're not using services you can run Fractalide `subgraphs` on the [Nix](https://nixos.org/nix) package manager, your package manager (pacman, apt-get, brew etc) most likely has `nix` already. There is a very simple reason for this, and it might be a show stopper for many, but the fact of the matter is we want our entire system and programming model to align with a declarative [conguent system configuration management model](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/).
+*Tagline: Reproducible components!*
 
-Not using a conguent configuration management model is the Rust equivalent of saying you prefer using the `unsafe` keyword everywhere, indeed you'd see no need in using Rust's safety features at all. The analogy can be extended as far as not using a well implemented [linker](https://en.wikipedia.org/wiki/Linker_(computing)) when building an executable (yes you'd need to manually clear those object files after every compilation). Except in this case the built artefact is not an executable but the complete system (maybe 100s of machines), and you're either 1) using the divergent model, issued commands such as `pacman -Syu openssl` by hand, or worse installing tarballs manually or 2) using a convergent system such as Ansible, Chef, Puppet, homebrew Bash scripts etc and typed out `pacman -Syu openssl` in their scripts.
+### Programmers
 
-A congruent model reduces cost of ownership and increases reliability of the system.
+Fractalide brings _*safe, fast, reusable, reproducible, black-box*_ dataflow functions, a means to compose them and a [congruent](https://www.usenix.org/legacy/event/lisa02/tech/full_papers/traugott/traugott_html/) model of configuration management.
+
+*Tagline: Here, have a beer!*
+
+## Problem 0
+* The vast majority of system configuration management solutions use either the divergent or convergent model.
+
+We're going to quote Steve Traugott's excellent work vebatim.
+
+### Divergent
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/divergent.png)
+
+"One quick way to tell if a shop is divergent is to ask how changes are made on production hosts, how those same changes are incorporated into the baseline build for new or replacement hosts, and how they are made on hosts that were down at the time the change was first deployed. If you get different answers, then the shop is likely divergent.
+
+The symptoms of divergence include unpredictable host behavior, unscheduled downtime, unexpected package and patch installation failure, unclosed security vulnerabilities, significant time spent "firefighting", and high troubleshooting and maintenance costs." - Steve Traugott
+
+### Convergent
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/convergent.png)
+
+"The baseline description in a converging infrastructure is characteristically an incomplete description of machine state. You can quickly detect convergence in a shop by asking how many files are currently under management control. If an approximate answer is readily available and is on the order of a few hundred files or less, then the shop is likely converging legacy machines on a file-by-file basis.
+
+A convergence tool is an excellent means of bringing some semblance of order to a chaotic infrastructure. Convergent tools typically work by sampling a small subset of the disk - via a checksum of one or more files, for example - and taking some action in response to what they find. The samples and actions are often defined in a declarative or descriptive language that is optimized for this use. This emulates and preempts the firefighting behavior of a reactive human systems administrator - "see a problem, fix it." Automating this process provides great economies of scale and speed over doing the same thing manually.
+
+Because convergence typically includes an intentional process of managing a specific subset of files, there will always be unmanaged files on each host. Whether current differences between unmanaged files will have an impact on future changes is undecidable, because at any point in time we do not know the entire set of future changes, or what files they will depend on.
+
+It appears that a central problem with convergent administration of an initially divergent infrastructure is that there is no documentation or knowledge as to when convergence is complete. One must treat the whole infrastructure as if the convergence is incomplete, whether it is or not. So without more information, an attempt to converge formerly divergent hosts to an ideal configuration is a never-ending process. By contrast, an infrastructure based upon first loading a known baseline configuration on all hosts, and limited to purely orthogonal and non-interacting sets of changes, implements congruence. Unfortunately, this is not the way most shops use convergent tools..." - Steve Traugott
+
+## Solution
+### Congruent
+![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/congruent.png)
+
+"By definition, divergence from baseline disk state in a congruent environment is symptomatic of a failure of code, administrative procedures, or security. In any of these three cases, we may not be able to assume that we know exactly which disk content was damaged. It is usually safe to handle all three cases as a security breach: correct the root cause, then rebuild.
+
+You can detect congruence in a shop by asking how the oldest, most complex machine in the infrastructure would be rebuilt if destroyed. If years of sysadmin work can be replayed in an hour, unattended, without resorting to backups, and only user data need be restored from tape, then host management is likely congruent.
+
+Rebuilds in a congruent infrastructure are completely unattended and generally faster than in any other; anywhere from ten minutes for a simple workstation to two hours for a node in a complex high-availability server cluster (most of that two hours is spent in blocking sleeps while meeting barrier conditions with other nodes).
+
+Symptoms of a congruent infrastructure include rapid, predictable, "fire-and-forget" deployments and changes. Disaster recovery and production sites can be easily maintained or rebuilt on demand in a bit-for-bit identical state. Changes are not tested for the first time in production, and there are no unforeseen differences between hosts. Unscheduled production downtime is reduced to that caused by hardware and application problems; firefighting activities drop considerably. Old and new hosts are equally predictable and maintainable, and there are fewer host classes to maintain. There are no ad-hoc or manual changes. We have found that congruence makes cost of ownership much lower, and reliability much higher, than any other method." - Steve Traugott
+
+Fractalide does not violate the congruent model of Nix, and it's why NixOS is a dependency. Appreciation for safety has extended beyond the application boundary into infrastructure as a whole.
 
 ## Problem 1
-* Language level modules become tightly coupled with the rest of the code.
+* A language needed to be chosen to implement Fractalide. Now as Fractalide is primarily a Flow-based programming environment, it would be beneficial to choose a language that at least gets concurrency right.
 
 ## Solution
-* Fractalide comes with its own actor oriented, message passing, declarative dataflow programming language called Flowscript (Flow-based programming (FBP) to be specific). Flowscript makes the concept of data flowing through a system into be a first class citizen, thus, easily manipulated by the programmer/designer.
-* Flowscript enforces well-factored, independent `agents` within a single process that have strict boundaries and standardized API.
-* This standardized API is key to `agent` composition and is achieved via a coordination layer called a `subgraph`, which describes how `agents` are connected and compose together. A `subgraph`, from an interface perspective, is indistinguishable from a Rust `agent`, this, neatly, allows for layers of abstraction which fall away at runtime.
-* These `agents` are black boxes which are only dependent on data and not any other `agent`.
-* Fractalide [agents](https://crates.io/crates/rustfbp) are Rust macros that compile to a shared library with a C ABI.
-* Our choice of actors *do not have any* methods calls, but *do have* the typical functional `input-transform-output` approach which allows us to keep things simple to reason about. In other words, you're not going to find many any Remote Method Invocation here.
+Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existance, no harm to anyone.
 
 ## Problem 2
-* It's easy to disrespect API contracts in many microservices setups.
+* Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
 
 ## Solution
-* The Unix Pipe concept typically requires one to parse arbitrary `stdin`, which is troublesome, unless you're using Cap'n Proto schema which conveniently hands structured data to you.
-* Each `Edge` in a Fractalide `Subgraph`/`Graph` of `Nodes` is actually a Cap'n Proto schema.
-* Say a Fractalide upstream `Node` `U` might use `Edge` `X` to send data to downstream `Node` `D`, each `Node` will reference exactly the same `Edge` `X` by name alone, hence guaranteeing the two `agents` use the same schema. Indeed, one cannot connect the graph if `U`'s output port and `D`'s input port aren't the same `Edge`. Say you change `Edge` `X`'s schema, `nix` will lazily recompile `Node` `U` and `D` and the type checks will fail. Thus you're sure arbitrary changes to `Edges` will cause dependent `Nodes` to fail. Allowing you to have extremely high confidence that APIs are respected. This kind of behaviour isn't exhibited in other microservice deployments where components construct arbitrary JSON data structures.
-* Fractalide `agents` communicate using `Cap'n Proto`schema , which is *`a type system for distributed systems`*, and is *`infinitely faster`* than protocol buffers ([read the website](http://capnproto.org)). Even better yet, Cap'n Proto schema can be extended without breaking `agents` with a different versions. That would be a problem if we weren't in complete control of versioning in a distributed system.
+An unanticipated outcome occurred when combining FBP and Nix. It's become our peanut butter and jam combination, so to say, but requires a bit of explaining, so hang tight.
+
+### Reproducibility
+Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, and it's known as a `derivation`. If you're trying to create reproducible systems this is the correct resolution. Too big and you're copying around large container sized images with multiple versions occupying gigabytes of space, too small and you run into problems of git not being able to scale to support thousands of binaries that build an operating system. Therefore Nix subsumes Docker.
+
+Indeed it's these simple `derivations` that allow python 2.7 and 3.0 to exist side-by-side without conflicts. It's what allows the Nix community to compose an entire operating system, NixOS. These `derivations` are what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
+
+### Reusability
+Flow-based programming in our books has delivered on its promise. In our system FBP components are known as a `nodes` and they are reusable, clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
+
+### Reproducibility + Reusability
+When nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has, is typing the `node`'s name. We've gone further and distilled the overhead to a few lines, no more intimidating than a typical config file such as `Cargo.toml`:
+
+``` nix
+{ agent, edges, crates, pkgs }:
+
+agent {
+  src = ./.;
+  edges = with edges; [ prim_text fs_path ];
+  crates = with crates; [ rustfbp capnp rusqlite ];
+  osdeps = with pkgs; [ sqlite pkgconfig ];
+}
+```
+
+Now just to be absolutely clear of the implications; it's possible to call an extremely complex community developed hierarchy of potentially 1000+ nodes, where each node might have different http://crates.io dependencies, they might have OS level dependencies such as `openssl` etc and nix will ensure the entire hierarchy is correctly built and made available. All this is done by just typing the `node` name and issuing a build command.
+
+It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It contains the DNA to build a massive sprawling community of open source programmers, this and the C4, that is. It's our hope anyway!
 
 ## Problem 3
-* Knowing what versions and dependencies is a nightmare in many microservice setups. Especially when rolling back.
+* It's easy to disrespect API contracts in a distributed services setup.
 
 ## Solution
-* [Nix](http://nixos.org/nix) is a declarative lazy language and will make the system reflect your system description exactly.
-* [Nixops](http://nixos.org/nixops) provides the means to do code delivery, whilst ensuring the entire cluster is at the expected version.
-* Due to `nix`'s declarative behaviour, each service is intelligent enough to automatically setup its own dependencies such as a silo'ed data persistence store. They may also draw from the wealth of [crates.io](https://crates.io), allowing for non-trivial `agents` to be built easily.
-* You might want to start learning `nix` with these fun [quizzes](https://nixcloud.io/tour/?id=1).
-
-## Problem 4
-* Updating a single or multiple service/s in an entire cluster of nodes can be hard in many microservices setups.
-
-## Solution
-* `nixops` will only stop, update and start a service if there has been a change to it, otherwise the service will continue working as per normal.
-
-## Problem 5
-* Security and business interests rarely align these days.
-
-## Solution
-##### Security
-* Fractalide's `agents` are very strict about accepting data. Strongly inspired by the [langsec work](http://langsec.org) of Meredith Patterson, Len Sassaman and Dan Kaminsky. Fractalide makes use of the [Nom](https://github.com/Geal/nom) parser combinator, implemented by Geoffroy Couprie, to parse Flowscript. Components cannot connect together unless they use the same [Cap'n Proto](https://capnproto.org/) schema, which is implemented by David Renshaw, and the brain child of Kenton Varda. Of course, [Rust](https://www.rust-lang.org/), a high level systems language helps us prevent an entire class of buffer overflow exploits, without sacrificing speed for safety.
-
-##### Business
-* Flowscript allows for a separation of business logic and `agent` implementation logic. Thus programmers can easily own areas of code, or practise ["Sovereign Software Development"](https://top.fse.guru/the-civilized-alternative-to-agile-tribalism-4c60d01428c0), and given the [fast moving nature](https://medium.com/@bryanedds/living-in-the-age-of-software-fuckery-8859f81ca877) of business, a programmer can reuse `agents` and quickly manipulate data flowing through the system, or ideally, train the suits to manipulate the business logic themselves. Fractalide attempts to hand tools and techniques to the programmer to survive in such an environment.
+We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes, the error must be caught at compile time. Cap'n Proto schema fits these requirements, and fits them *perfectly* when nix builds the `nodes` calling the Cap'n Proto schema. Because, if a schema changes, nix will register the change and will rebuild everything (`nodes` and `subgraphs`) that depends on that schema, thus catching the error. We've also made it such, during graph load time `agents` cannot connect their ports unless they use the same Cap'n Proto schema. This is a very nice safety property.
 
 ### Steps towards stable release.
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
@@ -112,7 +152,7 @@ A congruent model reduces cost of ownership and increases reliability of the sys
 - [X] Upgrade `nom` parser combinator to 2.0.
 - [ ] 1.0 Stabilization version.
 
-### Quick start
+### The mandatory Hello-like World example.
 
 From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build the `fractalide virtual machine (fvm)` and execute the humble NAND logic gate on it.
 ```
@@ -141,6 +181,7 @@ boolean : false
 * Contributors are listed in [AUTHORS](./AUTHORS). Copyright is distributed far and wide throughout the community to prevent corporate takeovers and lockins.
 * Fractalide uses the [C4.2 (Collective Code Construction Contract)](CONTRIBUTING.md) process for contributions. Please read this if you are unfamiliar with it.
 * Fractalide grows by the slow and careful accretion of simple, minimal solutions to real problems faced by many people.
+* We don't do feature requests. If you can't create the feature yourself then you need to put money on the table and the job will be handed to a trustworthy community contributor. This prevents burn out. Though bugfixes will be quickly seen to!
 
 ### Consulting and Support
 Name | Info | Language
