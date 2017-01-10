@@ -1,8 +1,6 @@
 ![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/fractalide.png)
 # Fractalide
- _**Simple Rust Microservices**_
-
- _**a.k.a the dataflow shiv**_
+ _**Reusable Reproducible Rust Microservices**_
 
  [![LICENSE](https://img.shields.io/badge/license-MPLv2-blue.svg)](LICENSE)
  [![Join the chat at https://gitter.im/fractalide](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -11,11 +9,11 @@
 
 ## What is this?
 
-**Fractalide provides a Flow-based programming language, a build system and an approach to distribution, with the aim of making efficient microservices simple to reason about.**
+Fractalide is a free and open source service programming platform using dataflow graphs. Graph nodes represent computations, while graph edges represent typed data communicated between them. This flexible architecture can be applied to many different computation problems, initially the focus will be Microservices to be expanded out into the Internet of Things.
 
-Fractalide is essentially the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat. Entire enterprise organizations such as Hortonworks are building services around Apache-NiFi.
+Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat.
 
-We occupy a different end of the spectrum where text editors are preferred over IDEs, where CPU cycles are treasured, where a single command sets up a potentially deep hierarchy of nodes and all dependencies have been resolved for you in a hermetically sealed build environment. So if you share our end of the spectrum and need to do dataflow processing on streams, then please consider using Fractalide.
+Truly reusable and reproducible nodes is what differentiates Fractalide from the others.
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
