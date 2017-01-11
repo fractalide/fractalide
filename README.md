@@ -11,9 +11,9 @@
 
 Fractalide is a free and open source service programming platform using dataflow graphs. Graph nodes represent computations, while graph edges represent typed data communicated between them. This flexible architecture can be applied to many different computation problems, initially the focus will be Microservices to be expanded out into the Internet of Things.
 
-Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat.
+Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat. Fractalide faces big corporate players like [Ab Initio](http://abinitio.com/), a company that charges a lot of money for dataflow solutions.
 
-Truly reusable and reproducible nodes is what differentiates Fractalide from the others.
+Truly reusable and reproducible efficient nodes is what differentiates Fractalide from the others. It's this feature that allows open communities to mix and match nodes quickly and easily.
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
