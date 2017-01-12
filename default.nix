@@ -1,11 +1,7 @@
-{ debug ? "--release"
-, node ? null
+{ node ? null
 , local-rustfbp ? "false"
-, cache ? null
-, test ? null
 , ...} @argsInput:
 let
-#get the old pkgs if given from an parameter, else import it
 pkgs = import <nixpkgs> {};
 lib = pkgs.lib;
 nix-crates-index = pkgs.fetchFromGitHub {
