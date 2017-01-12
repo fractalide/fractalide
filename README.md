@@ -147,8 +147,8 @@ We wanted to ensure there was no ambiguity about the shape of the data a node re
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.
 - [x] Reduce heap allocations.
-- [X] Upgrade `nom` parser combinator to 2.0.
-- [ ] 1.0 Stabilization version.
+- [x] Upgrade `nom` parser combinator to 2.0.
+- [x] 1.0 Stabilization version.
 
 ### The mandatory Hello-like World example.
 
