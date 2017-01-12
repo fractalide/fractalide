@@ -11,9 +11,9 @@
 
 Fractalide is a free and open source service programming platform using dataflow graphs. Graph nodes represent computations, while graph edges represent typed data communicated between them. This flexible architecture can be applied to many different computation problems, initially the focus will be Microservices to be expanded out into the Internet of Things.
 
-Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat.
+Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat. Fractalide faces big corporate players like [Ab Initio](http://abinitio.com/), a company that charges a lot of money for dataflow solutions.
 
-Truly reusable and reproducible nodes is what differentiates Fractalide from the others.
+Truly reusable and reproducible efficient nodes is what differentiates Fractalide from the others. It's this feature that allows open communities to mix and match nodes quickly and easily.
 
 The canonical source of this project is hosted on [GitLab](https://gitlab.com/fractalide/fractalide), and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
@@ -56,6 +56,38 @@ Fractalide brings _*safe, fast, reusable, reproducible, black-box*_ dataflow fun
 *Tagline: Here, have a beer!*
 
 ## Problem 0
+* Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
+
+## Solution
+An unanticipated outcome occurred when combining FBP and Nix. It's become our peanut butter and jam combination, so to say, but requires a bit of explaining, so hang tight.
+
+### Reproducibility
+Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, and it's known as a `derivation`. If you're trying to create reproducible systems this is the correct resolution. Too big and you're copying around large container sized images with multiple versions occupying gigabytes of space, too small and you run into problems of git not being able to scale to support thousands of binaries that build an operating system. Therefore Nix subsumes Docker.
+
+Indeed it's these simple `derivations` that allow python 2.7 and 3.0 to exist side-by-side without conflicts. It's what allows the Nix community to compose an entire operating system, NixOS. These `derivations` are what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
+
+### Reusability
+Flow-based programming in our books has delivered on its promise. In our system FBP components are known as a `nodes` and they are reusable, clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
+
+### Reproducibility + Reusability
+When nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has, is typing the `node`'s name. We've gone further and distilled the overhead to a few lines, no more intimidating than a typical config file such as `Cargo.toml`:
+
+``` nix
+{ agent, edges, crates, pkgs }:
+
+agent {
+  src = ./.;
+  edges = with edges; [ prim_text fs_path ];
+  crates = with crates; [ rustfbp capnp rusqlite ];
+  osdeps = with pkgs; [ sqlite pkgconfig ];
+}
+```
+
+Now just to be absolutely clear of the implications; it's possible to call an extremely complex community developed hierarchy of potentially 1000+ nodes, where each node might have different http://crates.io dependencies, they might have OS level dependencies such as `openssl` etc and nix will ensure the entire hierarchy is correctly built and made available. All this is done by just typing the `node` name and issuing a build command.
+
+It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It contains the DNA to build a massive sprawling community of open source programmers, this and the C4, that is. It's our hope anyway!
+
+## Problem 1
 * The vast majority of system configuration management solutions use either the divergent or convergent model.
 
 We're going to quote Steve Traugott's excellent work vebatim.
@@ -92,43 +124,11 @@ Symptoms of a congruent infrastructure include rapid, predictable, "fire-and-for
 
 Fractalide does not violate the congruent model of Nix, and it's why NixOS is a dependency. Appreciation for safety has extended beyond the application boundary into infrastructure as a whole.
 
-## Problem 1
+## Problem 2
 * A language needed to be chosen to implement Fractalide. Now as Fractalide is primarily a Flow-based programming environment, it would be beneficial to choose a language that at least gets concurrency right.
 
 ## Solution
 Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existance, no harm to anyone.
-
-## Problem 2
-* Language level modules become tightly coupled with the rest of the code, moving around these modules also poses a problem.
-
-## Solution
-An unanticipated outcome occurred when combining FBP and Nix. It's become our peanut butter and jam combination, so to say, but requires a bit of explaining, so hang tight.
-
-### Reproducibility
-Nix is a content addressable store, so is git, so is docker, except that docker's SHA resolution is at container level and git's SHA resolution is at changeset level. Nix on the other hand has a SHA resolution at package level, and it's known as a `derivation`. If you're trying to create reproducible systems this is the correct resolution. Too big and you're copying around large container sized images with multiple versions occupying gigabytes of space, too small and you run into problems of git not being able to scale to support thousands of binaries that build an operating system. Therefore Nix subsumes Docker.
-
-Indeed it's these simple `derivations` that allow python 2.7 and 3.0 to exist side-by-side without conflicts. It's what allows the Nix community to compose an entire operating system, NixOS. These `derivations` are what makes NixOS a congruent configuration management system, and congruent systems are reproducible systems. They have to be.
-
-### Reusability
-Flow-based programming in our books has delivered on its promise. In our system FBP components are known as a `nodes` and they are reusable, clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
-
-### Reproducibility + Reusability
-When nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has, is typing the `node`'s name. We've gone further and distilled the overhead to a few lines, no more intimidating than a typical config file such as `Cargo.toml`:
-
-``` nix
-{ agent, edges, crates, pkgs }:
-
-agent {
-  src = ./.;
-  edges = with edges; [ prim_text fs_path ];
-  crates = with crates; [ rustfbp capnp rusqlite ];
-  osdeps = with pkgs; [ sqlite pkgconfig ];
-}
-```
-
-Now just to be absolutely clear of the implications; it's possible to call an extremely complex community developed hierarchy of potentially 1000+ nodes, where each node might have different http://crates.io dependencies, they might have OS level dependencies such as `openssl` etc and nix will ensure the entire hierarchy is correctly built and made available. All this is done by just typing the `node` name and issuing a build command.
-
-It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It contains the DNA to build a massive sprawling community of open source programmers, this and the C4, that is. It's our hope anyway!
 
 ## Problem 3
 * It's easy to disrespect API contracts in a distributed services setup.
@@ -136,7 +136,7 @@ It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It 
 ## Solution
 We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes, the error must be caught at compile time. Cap'n Proto schema fits these requirements, and fits them *perfectly* when nix builds the `nodes` calling the Cap'n Proto schema. Because, if a schema changes, nix will register the change and will rebuild everything (`nodes` and `subgraphs`) that depends on that schema, thus catching the error. We've also made it such, during graph load time `agents` cannot connect their ports unless they use the same Cap'n Proto schema. This is a very nice safety property.
 
-### Steps towards stable release.
+### Steps towards BETA release.
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
@@ -147,8 +147,14 @@ We wanted to ensure there was no ambiguity about the shape of the data a node re
 - [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
 - [x] Cap'n Proto schema composition.
 - [x] Reduce heap allocations.
-- [X] Upgrade `nom` parser combinator to 2.0.
-- [ ] 1.0 Stabilization version.
+- [x] Upgrade `nom` parser combinator to 2.0.
+- [x] 1.0 Beta version.
+
+### Steps towards STABLE release.
+- [ ] tokio-rs integration
+- [ ] nixpkgs lands support for [this](https://github.com/systemd/systemd/blob/master/NEWS#L53) feature in systemd 232
+- [ ] [nixcrates](https://github.com/fractalide/nixcrates) needs some more work to whittle down crates that don't build
+- [ ] stable release
 
 ### The mandatory Hello-like World example.
 
