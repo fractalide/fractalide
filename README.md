@@ -136,7 +136,7 @@ It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It 
 ## Solution
 We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes, the error must be caught at compile time. Cap'n Proto schema fits these requirements, and fits them *perfectly* when nix builds the `nodes` calling the Cap'n Proto schema. Because, if a schema changes, nix will register the change and will rebuild everything (`nodes` and `subgraphs`) that depends on that schema, thus catching the error. We've also made it such, during graph load time `agents` cannot connect their ports unless they use the same Cap'n Proto schema. This is a very nice safety property.
 
-### Steps towards stable release.
+### Steps towards BETA release.
 - [x] [Flowscript](https://en.wikipedia.org/wiki/Flow-based_programming) - a declarative dataflow language a little more suited to distributed computing.
 - [x] [Fractals](fractals/README.md) - allowing you to create your own repositories outside the canonical Fractalide repository.
 - [x] [HTTP support](https://github.com/fractalide/fractal_net_http).
@@ -148,7 +148,13 @@ We wanted to ensure there was no ambiguity about the shape of the data a node re
 - [x] Cap'n Proto schema composition.
 - [x] Reduce heap allocations.
 - [x] Upgrade `nom` parser combinator to 2.0.
-- [x] 1.0 Stabilization version.
+- [x] 1.0 Beta version.
+
+### Steps towards STABLE release.
+- [ ] tokio-rs integration
+- [ ] nixpkgs lands support for [this](https://github.com/systemd/systemd/blob/master/NEWS#L53) feature in systemd 232
+- [ ] [nixcrates](https://github.com/fractalide/nixcrates) needs some more work to whittle down crates that don't build
+- [ ] stable release
 
 ### The mandatory Hello-like World example.
 
