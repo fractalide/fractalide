@@ -11,8 +11,8 @@ lib = pkgs.lib;
 nix-crates-index = pkgs.fetchFromGitHub {
   owner = "fractalide";
   repo = "nix-crates-index";
-  rev = "3e3833886aeeb4c1e67a42f812519a053156513f";
-  sha256 = "0xq970m1lwl7drsx8f5dq55kgfds35ms2k4imadcyqi858bnwjw2";
+  rev = "e7f75876c0f3fc855c821d82bcb97ebae7d0e783";
+  sha256 = "0s4zhzn45n6r2w7id1z55vqdgqj1jlcf6sxlk1z2wcbap8c01gvl";
 };
 origCrates = pkgs.recurseIntoAttrs (pkgs.callPackage nix-crates-index { });
 crates = if local-rustfbp == "true" then origCrates // { rustfbp = support.rustfbp;} else origCrates;
