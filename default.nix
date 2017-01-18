@@ -1,6 +1,6 @@
 { node ? null
 , local-rustfbp ? "false"
-, ...} @argsInput:
+, debug ? "--release", test ? null, ...} @argsInput:
 let
 pkgs = import <nixpkgs> {};
 lib = pkgs.lib;
