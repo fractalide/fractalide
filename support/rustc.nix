@@ -75,8 +75,7 @@ in stdenv.mkDerivation (args // rec {
 
   checkPhase = if test == null then "echo skipping tests in debug mode"
   else args.checkPhase or ''
-  echo "Running cargo test"
-  cargo test
+  echo "not implemented testing yet"
   '';
 
   doCheck = args.doCheck or true;
