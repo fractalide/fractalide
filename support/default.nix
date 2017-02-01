@@ -16,7 +16,7 @@ crates-support = rec {
 };
 rustNightly = pkgs.rustNightlyBin.rustc;
 genName = callPackage ./genName.nix {};
-rustc = callPackage ./rustc.nix {inherit debug test crates-support rustNightly genName; };
+rustc = callPackage ./rustc.nix {inherit debug test crates-support capnpc-rust rustNightly genName; };
 crate = rustc { type = "crate"; };
 executable = rustc { type = "executable"; };
 capnpc-rust = callPackage ./capnpc-rust.nix { inherit executable crates; };

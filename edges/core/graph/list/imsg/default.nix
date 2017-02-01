@@ -6,10 +6,9 @@ edge {
   schema = with edges; ''
     @0xb3261aab60f342e2;
 
-    using CoreGraphImsg = import "${core_graph_imsg}/src/edge.capnp";
 
     struct CoreGraphListImsg {
-      list @0 : List(CoreGraphImsg.CoreGraphImsg);
+      list @0 : List(CoreGraphImsg);
     }
   '';
 }

@@ -1,5 +1,6 @@
 {lib, stdenv, git, rustNightly
   , genName, crates-support
+  , capnproto, capnpc-rust
   , debug, test}:
 
 { type ? ""}:
@@ -24,52 +25,62 @@ in stdenv.mkDerivation (args // rec {
     echo "****** building: ${compName} "
     echo "*********************************************************************"
     ${crates-support.symlinkCalc (crates-support.cratesDeps [] crates)}
-    propagated=""
-    for i in $edges; do
-      findInputs $i propagated propagated-build-inputs
-    done
-    propagated1=""
-    for i in $propagated; do
-      propagated1="$propagated1 $i/src/edge_capnp.rs"
-    done
-    ${ if type == "agent" then ''
-      touch edge_capnp.rs
-      for i in $propagated1; do
-        cat $i >> edge_capnp.rs
+    touch edge.capnp edge_capnp.rs
+    ${ if edges != [] then ''
+      propagated=""
+      for i in $edges; do
+        findInputs $i propagated propagated-build-inputs
       done
-      ${rustNightly}/bin/rustc lib.rs \
-      --crate-type dylib \
-      -O \
-      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
-      --emit=dep-info,link \
-      --crate-name agent \
-      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
-      -o libagent.so
-    ''
-    else if type == "executable" then ''
-      touch src/edge_capnp.rs
-      for i in $propagated1; do
-        cat $i >> src/edge_capnp.rs
+      propagated1=""
+      for i in $propagated; do
+        propagated1="$propagated1 $i/src/edge.capnp"
       done
-      ${rustNightly}/bin/rustc src/main.rs \
-      --crate-type bin \
-      -O \
-      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
-      --emit=dep-info,link \
-      --crate-name ${crates-support.normalizeName compName} \
-      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
-      -o ${compName}
-    ''
-    else if type == "crate" then ''
-      ${rustNightly}/bin/rustc src/lib.rs \
-      --crate-type lib \
-      -O \
-      --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
-      --emit=dep-info,link \
-      --crate-name ${crates-support.normalizeName compName} \
-      -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
-      -o lib${compName}.rlib
+      for i in $propagated1; do
+        cat $i >> edge_dirty.capnp
+      done
+      if [ -f edge_dirty.capnp ]; then
+        awk '/@0x/&&c++>0 {next} 1' edge_dirty.capnp > edge.capnp
+        ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust edge.capnp -I "/"
+      fi
     '' else ""
+    }
+    ${
+      if type == "executable" then ''
+        cp edge_capnp.rs src
+        ${rustNightly}/bin/rustc src/main.rs \
+        --crate-type bin \
+        -O \
+        --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
+        --emit=dep-info,link \
+        --crate-name ${crates-support.normalizeName compName} \
+        -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+        -o ${compName}
+      ''
+      else ''
+      ${if type == "agent" then ''
+        ${rustNightly}/bin/rustc lib.rs \
+        --crate-type dylib \
+        -O \
+        --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
+        --emit=dep-info,link \
+        --crate-name agent \
+        -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+        -o libagent.so
+      ''
+      else if type == "crate" then
+      ''
+        cp edge_capnp.rs src
+        ${rustNightly}/bin/rustc src/lib.rs \
+        --crate-type lib \
+        -O \
+        --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
+        --emit=dep-info,link \
+        --crate-name ${crates-support.normalizeName compName} \
+        -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
+        -o lib${compName}.rlib
+        ''
+      else ""}
+    ''
   }
   '';
 
@@ -79,7 +90,6 @@ in stdenv.mkDerivation (args // rec {
   '';
 
   doCheck = args.doCheck or true;
-
   #Don't forget to runHook, else the incremental builds wont work
   installPhase = (args.installPhase or ''
     runHook preInstall

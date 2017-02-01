@@ -2,7 +2,7 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ ];
   schema = with edges; ''
     @0xeaa980bee40312b8;
 

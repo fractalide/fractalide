@@ -63,7 +63,6 @@ in stdenv.mkDerivation (args // {
       echo "***************"
     else
       cp ${edgeText} $out/src/edge.capnp
-      ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/edge.capnp --src-prefix $out/src/ -I "/"
     fi
 
   '';
