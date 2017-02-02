@@ -70,7 +70,11 @@ in stdenv.mkDerivation (args // rec {
 
   installPhase = (args.installPhase or ''
     mkdir -p $schema
-    ln -s ${unifiedSchema}/edge.capnp $schema/edge.capnp
+    if [ ! -f ${unifiedSchema}/edge.capnp ]; then
+      touch $schema/edge.capnp
+    else
+      ln -s ${unifiedSchema}/edge.capnp $schema/edge.capnp
+    fi
     ${
       if type == "executable" then ''
       mkdir -p $out/bin
