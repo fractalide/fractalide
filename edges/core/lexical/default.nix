@@ -4,8 +4,6 @@ edge {
   src = ./.;
   edges =  with edges; [ prim_text prim_void ];
   schema = with edges; ''
-    @0x9c951b3548fca4c2;
-
     struct CoreLexical {
       union {
         start @0 :Text;

@@ -1,4 +1,4 @@
-{ stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
+{ stdenv, writeTextFile, capnproto, genName }:
 { src, schema, edges ? [], ... } @ args:
 
 let

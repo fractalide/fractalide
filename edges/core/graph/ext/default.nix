@@ -4,8 +4,6 @@ edge {
   src = ./.;
   edges =  with edges; [ ];
   schema = with edges; ''
-    @0x81458f10b34067d8;
-
     struct CoreGraphExt {
            name @0 :Text;
            comp @1 :Text;

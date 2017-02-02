@@ -16,7 +16,8 @@ crates-support = rec {
 };
 rustNightly = pkgs.rustNightlyBin.rustc;
 genName = callPackage ./genName.nix {};
-rustc = callPackage ./rustc.nix {inherit debug test crates-support capnpc-rust rustNightly genName; };
+unifySchema = callPackage ./unifySchema.nix { inherit capnpc-rust; };
+rustc = callPackage ./rustc.nix {inherit debug test crates-support unifySchema rustNightly genName; };
 crate = rustc { type = "crate"; };
 executable = rustc { type = "executable"; };
 capnpc-rust = callPackage ./capnpc-rust.nix { inherit executable crates; };
@@ -25,6 +26,6 @@ in
 rec {
   inherit executable crates-support capnpc-rust rustfbp;
   agent = rustc { type = "agent"; };
-  edge = callPackage ./edge.nix { inherit capnpc-rust genName; };
+  edge = callPackage ./edge.nix { inherit genName; };
   subgraph = callPackage ./subgraph.nix { inherit genName; };
 }

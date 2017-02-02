@@ -1,6 +1,6 @@
 {lib, stdenv, git, rustNightly
   , genName, crates-support
-  , capnproto, capnpc-rust
+  , unifySchema
   , debug, test}:
 
 { type ? ""}:
@@ -14,39 +14,25 @@
 
 let
   compName = if name == null then genName src else name;
+  unifiedSchema = unifySchema {
+    name = compName;
+    edges = edges;
+    target = "rs";
+  };
 in stdenv.mkDerivation (args // rec {
   name = compName;
   buildInputs = osdeps;
   cratesDeps = crates-support.cratesDeps crates crates;
-  #Don't forget to runHook, else the incremental builds wont work
-  configurePhase = (args.configurePhase or "runHook preConfigure");
+  phases = [ "unpackPhase" "configurePhase" "buildPhase" "installPhase" ];
+  outputs = ["out" "schema" ];
   buildPhase = args.buildPhase or ''
     echo "*********************************************************************"
     echo "****** building: ${compName} "
     echo "*********************************************************************"
     ${crates-support.symlinkCalc (crates-support.cratesDeps [] crates)}
-    touch edge.capnp edge_capnp.rs
-    ${ if edges != [] then ''
-      propagated=""
-      for i in $edges; do
-        findInputs $i propagated propagated-build-inputs
-      done
-      propagated1=""
-      for i in $propagated; do
-        propagated1="$propagated1 $i/src/edge.capnp"
-      done
-      for i in $propagated1; do
-        cat $i >> edge_dirty.capnp
-      done
-      if [ -f edge_dirty.capnp ]; then
-        awk '/@0x/&&c++>0 {next} 1' edge_dirty.capnp > edge.capnp
-        ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust edge.capnp -I "/"
-      fi
-    '' else ""
-    }
     ${
       if type == "executable" then ''
-        cp edge_capnp.rs src
+        ln -s ${unifiedSchema}/edge_capnp.rs src/edge_capnp.rs
         ${rustNightly}/bin/rustc src/main.rs \
         --crate-type bin \
         -O \
@@ -56,8 +42,8 @@ in stdenv.mkDerivation (args // rec {
         -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
         -o ${compName}
       ''
-      else ''
-      ${if type == "agent" then ''
+      else if type == "agent" then ''
+        ln -s ${unifiedSchema}/edge_capnp.rs edge_capnp.rs
         ${rustNightly}/bin/rustc lib.rs \
         --crate-type dylib \
         -O \
@@ -67,9 +53,8 @@ in stdenv.mkDerivation (args // rec {
         -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
         -o libagent.so
       ''
-      else if type == "crate" then
-      ''
-        cp edge_capnp.rs src
+      else if type == "crate" then ''
+        ln -s ${unifiedSchema}/edge_capnp.rs src/edge_capnp.rs
         ${rustNightly}/bin/rustc src/lib.rs \
         --crate-type lib \
         -O \
@@ -78,29 +63,22 @@ in stdenv.mkDerivation (args // rec {
         --crate-name ${crates-support.normalizeName compName} \
         -L dependency=nixcrates ${crates-support.depsStringCalc crates} \
         -o lib${compName}.rlib
-        ''
-      else ""}
-    ''
-  }
+      ''
+      else ""
+    }
   '';
 
-  checkPhase = if test == null then "echo skipping tests in debug mode"
-  else args.checkPhase or ''
-  echo "not implemented testing yet"
-  '';
-
-  doCheck = args.doCheck or true;
-  #Don't forget to runHook, else the incremental builds wont work
   installPhase = (args.installPhase or ''
-    runHook preInstall
+    mkdir -p $schema
+    ln -s ${unifiedSchema}/edge.capnp $schema/edge.capnp
     ${
-      if type == "agent" then ''
+      if type == "executable" then ''
+      mkdir -p $out/bin
+      cp ${compName} $out/bin
+      ''
+      else if type == "agent" then ''
         mkdir -p $out/lib
         cp libagent.so $out/lib
-      ''
-      else if type == "executable" then ''
-        mkdir -p $out/bin
-        cp ${compName} $out/bin
       ''
       else if type == "crate" then ''
         mkdir -p $out

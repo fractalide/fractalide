@@ -9,8 +9,6 @@ edge {
         core_graph_list_node
       ];
   schema = with edges; ''
-    @0x819d7d5061be5d17;
-
     struct CoreGraph {
       path @0 :Text;
       nodes @1 :CoreGraphListNode;

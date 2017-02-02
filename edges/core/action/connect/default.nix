@@ -4,8 +4,6 @@ edge {
   src = ./.;
   edges =  with edges; [ ];
   schema = with edges; ''
-    @0x8067311a5b6027d2;
-
     struct CoreActionConnect {
            oName @0 :Text;
            oPort @1 :Text;

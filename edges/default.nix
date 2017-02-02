@@ -1,12 +1,12 @@
 { buffet }:
 let
   callPackage = buffet.pkgs.lib.callPackageWith ( buffet.support // buffet );
-in
 # insert in alphabetical order in relevant section to reduce conflicts
+in
 # Schemas will undergo stability changes depending on any node (node-x) in any fractal becoming stable.
 # It is the responsibility of that node-x's author to discuss with the author of the schema in question
 # to stabilize the schema.
-rec {
+{
   # raw
   prim_list_text = callPackage ./prim/list/text {};
   kv_key_t_val_t = callPackage ./kv/key/t/val/t {};
