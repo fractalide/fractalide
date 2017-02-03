@@ -8,7 +8,6 @@ in stdenv.mkDerivation (args // rec {
   name = schemaName;
   phases = [ "buildPhase" "installPhase" ];
   buildPhase = ''
-    touch edge_capnp.rs
     ${ if edges != [] then ''
       propagated=""
       for i in $edges; do
@@ -24,9 +23,16 @@ in stdenv.mkDerivation (args // rec {
       if [ -f edge.capnp ]; then
         # must refactor the below line, it introduces non-determinism; why doesn't md5sum work!?
         echo -e "$(${capnproto}/bin/capnpc -i);\n\n$(cat edge.capnp)" > edge.capnp
-        ${ if target == "rs" then ''
-          ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust edge.capnp -I "/"
-        '' else ""
+        ${
+          if target == "capnp" then ''
+          ''
+          else if target == "rs" then ''
+            ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust edge.capnp -I "/"
+          ''
+          else ''
+            echo "Unknown capnproto compiler plugin called."
+            exit 1
+          ''
         }
       fi
     '' else ""
@@ -35,10 +41,20 @@ in stdenv.mkDerivation (args // rec {
 
   installPhase = ''
     mkdir -p $out
-    cp edge_capnp.rs $out/edge_capnp.rs
-    if [ -f edge.capnp ]; then
-      cp edge.capnp $out/edge.capnp
-    fi
+    ${
+      if target == "capnp" then ''
+        cp edge.capnp $out/edge.capnp
+      ''
+      else if target == "rs" then ''
+        if [ -f edge_capnp.rs ]; then
+          cp edge.capnp $out/edge.capnp
+          cp edge_capnp.rs $out/edge_capnp.rs
+        else
+          touch $out/edge_capnp.rs
+        fi
+      ''
+      else ""
+    }
   '';
 
 })

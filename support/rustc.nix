@@ -24,7 +24,6 @@ in stdenv.mkDerivation (args // rec {
   buildInputs = osdeps;
   cratesDeps = crates-support.cratesDeps crates crates;
   phases = [ "unpackPhase" "configurePhase" "buildPhase" "installPhase" ];
-  outputs = ["out" "schema" ];
   buildPhase = args.buildPhase or ''
     echo "*********************************************************************"
     echo "****** building: ${compName} "
@@ -69,11 +68,11 @@ in stdenv.mkDerivation (args // rec {
   '';
 
   installPhase = (args.installPhase or ''
-    mkdir -p $schema
+    mkdir -p $out
     if [ ! -f ${unifiedSchema}/edge.capnp ]; then
-      touch $schema/edge.capnp
+      touch $out/edge.capnp
     else
-      ln -s ${unifiedSchema}/edge.capnp $schema/edge.capnp
+      ln -s ${unifiedSchema}/edge.capnp $out/edge.capnp
     fi
     ${
       if type == "executable" then ''
