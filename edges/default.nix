@@ -46,7 +46,7 @@ in
   core_graph_node = callPackage ./core/graph/node {};
   core_lexical = callPackage ./core/lexical {};
   core_semantic_error = callPackage ./core/semantic/error {};
-  prim_bool = callPackage ./prim/bool {};
+  PrimBool = callPackage ./prim/bool {};
   prim_i8 = callPackage ./prim/i8 {};
   prim_i16 = callPackage ./prim/i16 {};
   prim_i32 = callPackage ./prim/i32 {};

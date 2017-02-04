@@ -10,17 +10,23 @@ nix-crates-index = pkgs.fetchFromGitHub {
   rev = "e7f75876c0f3fc855c821d82bcb97ebae7d0e783";
   sha256 = "0s4zhzn45n6r2w7id1z55vqdgqj1jlcf6sxlk1z2wcbap8c01gvl";
 };
-origCrates = pkgs.recurseIntoAttrs (pkgs.callPackage nix-crates-index { });
+callPackage = pkgs.lib.callPackageWith (pkgs);
+origCrates = pkgs.recurseIntoAttrs (callPackage nix-crates-index { });
 crates = if local-rustfbp == "true" then origCrates // { rustfbp = support.rustfbp;} else origCrates;
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
 support = import ./support { inherit pkgs debug test nodes edges crates; };
 fractals = import ./fractals { inherit buffet; };
-nodes = import ./nodes { inherit buffet; };
+imsgs = callPackage ./support/imsg.nix {
+  unifySchema = support.unifySchema ;
+  capnpc-rust = support.capnpc-rust;
+};
+nodes = import ./nodes { inherit buffet imsgs; };
 edges = import ./edges { inherit buffet; };
 services = import ./services { inherit fractals; };
 buffet = {
   support = support;
   edges = edges;
+  imsgs = imsgs;
   nodes = nodes;
   services = services;
   fractals = fractals;

@@ -1,10 +1,12 @@
-{ subgraph, nodes, edges }:
+{ subgraph, imsgs, nodes, edges }:
 
-subgraph {
+subgraph rec {
  src = ./.;
- edges = with edges; [ prim_bool ];
- flowscript = with nodes; with edges; ''
-  '${prim_bool}:(bool=true)' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
-  '${prim_bool}:(bool=true)' -> b nand()
+ imsg = imsgs {
+   edges = with edges; [ PrimBool ];
+ };
+ flowscript = with nodes; ''
+  '${imsg "PrimBool"}:(bool=true)' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
+  '${imsg "PrimBool"}:(bool=true)' -> b nand()
  '';
 }
