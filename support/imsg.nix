@@ -14,6 +14,5 @@ let
       ln -s ${unifiedSchema}/edge.capnp $out/edge.capnp
     '';
   });
-  imsg = cn: lib.concatStringsSep ":" [ unifiedImsgs cn ];
 in
   "${unifiedImsgs}"

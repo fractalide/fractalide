@@ -20,7 +20,7 @@ imsgs = callPackage ./support/imsg.nix {
   unifySchema = support.unifySchema ;
   capnpc-rust = support.capnpc-rust;
 };
-nodes = import ./nodes { inherit buffet imsgs; };
+nodes = import ./nodes { inherit buffet; };
 edges = import ./edges { inherit buffet; };
 services = import ./services { inherit fractals; };
 buffet = {

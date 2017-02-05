@@ -24,7 +24,7 @@ capnpc-rust = callPackage ./capnpc-rust.nix { inherit executable crates; };
 rustfbp = callPackage ./rustfbp.nix { inherit crate crates; };
 in
 rec {
-  inherit executable crates-support capnpc-rust rustfbp;
+  inherit executable crates-support capnpc-rust rustfbp unifySchema;
   agent = rustc { type = "agent"; };
   edge = callPackage ./edge.nix { inherit genName; };
   subgraph = callPackage ./subgraph.nix { inherit genName; };
