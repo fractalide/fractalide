@@ -55,7 +55,6 @@ self = rec {
 
   core_capnp_encode = callPackage ./core/capnp/encode {};
   core_find_node = callPackage ./core/find/node {};
-  core_find_edge = callPackage ./core/find/edge {};
   core_errors = callPackage ./core/errors {};
   core_parser_graph_check = callPackage ./core/parser/graph/check {};
   core_parser_graph_print = callPackage ./core/parser/graph/print {};

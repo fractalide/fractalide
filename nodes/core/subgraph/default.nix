@@ -19,9 +19,6 @@ subgraph {
 
    // Send to sched
    vm() output -> graph sched(${core_scheduler})
-   sched() ask_path -> input core_find_edge(${core_find_edge})
-   core_find_edge() output -> edge_path sched()
-
    vm() ask_path -> input core_find_node(${core_find_node})
    core_find_node() output -> new_path vm()
 

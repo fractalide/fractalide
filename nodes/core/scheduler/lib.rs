@@ -39,11 +39,9 @@ impl Portal {
 agent! {
     input(action: core_action,
            graph: core_graph,
-           edge_path: fs_path_option,
            imsg: any),
     output(error: error,
             ask_graph: core_graph,
-            ask_path: fs_path,
             imsg_path: fs_path,
             imsg_edge: prim_text,
             imsg_input: prim_text),
@@ -195,37 +193,16 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
 
         let (edge, input, option_action) = split_input(input)?;
 
-        // Get the real path
-        let mut new_out = Msg::new();
-        {
-            let mut cont = new_out.build_schema::<fs_path::Builder>();
-            cont.set_path(&edge);
-        }
-        agent.output.ask_path.send(new_out)?;
-
-        let mut edge_path_msg = agent.input.edge_path.recv()?;
-        let edge_path: fs_path_option::Reader = edge_path_msg.read_schema()?;
-
-        let c_path: String = match edge_path.which()? {
-            fs_path_option::Path(p) => { p?.into() },
-            fs_path_option::None(p) => { "".to_string() }
+        let mut edge_list = edge.split('.');
+        let base_schema_path = match edge_list.next(){
+            Some(p) => {p.into()},
+            None => {"".to_string()}
         };
-
-        let c_path = format!("{}/src/edge.capnp", c_path);
-
-        let mut edge_list: Vec<&str>;
-        if edge.contains('-') {
-            edge_list = edge.split('-').collect();
-        } else {
-            edge_list = Vec::new();
-            edge_list.push(edge.as_str());
-        }
-        let c_name = match edge_list.last() {
+        let schema_path = format!("{}/edge.capnp", base_schema_path);
+        let class_name = match edge_list.next() {
             Some(c) => { c },
             None => {"failed_to_find_edge"},
         };
-
-        let edge_camel_case = to_camel_case(&c_name);
 
         let sender = if imsg.get_selection()? == "" {
             agent.portal.sched.get_sender(imsg.get_comp()?, imsg.get_port()?)?
@@ -236,14 +213,14 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
         let mut new_out = Msg::new();
         {
             let mut path = new_out.build_schema::<fs_path::Builder>();
-            path.set_path(&c_path);
+            path.set_path(&schema_path);
         }
         agent.output.imsg_path.send(new_out)?;
 
         let mut new_out = Msg::new();
         {
             let mut path = new_out.build_schema::<prim_text::Builder>();
-            path.set_text(&edge_camel_case);
+            path.set_text(&class_name);
         }
         agent.output.imsg_edge.send(new_out)?;
 
@@ -268,22 +245,6 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
     agent.portal.subnet.insert(name.into(), subnet);
 
     Ok(())
-}
-
-fn to_camel_case(s: &str) -> String {
-    let mut result = "".to_string();
-    for word in s.split("_") {
-        result = format!("{}{}", result, capitalize_first_letter(word));
-    }
-    result
-}
-
-fn capitalize_first_letter(s : &str) -> String {
-    use std::ascii::*;
-    let mut result_chars : Vec<char> = Vec::new();
-    for c in s.chars() { result_chars.push(c) }
-    result_chars[0] = (result_chars[0] as u8).to_ascii_uppercase() as char;
-    return result_chars.into_iter().collect();
 }
 
 fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
