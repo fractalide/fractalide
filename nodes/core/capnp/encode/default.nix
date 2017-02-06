@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ prim_text fs_path ];
+  edges = with edges; [ PrimText FsPath ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
   configurePhase = with pkgs; ''

@@ -3,12 +3,12 @@
 edge {
   src = ./.;
   edges =  with edges; [
-      prim_text
-      prim_void
-      core_action_add
-      core_action_connect
-      core_action_connect_sender
-      core_action_send
+      PrimText
+      PrimVoid
+      CoreActionAdd
+      CoreActionConnect
+      CoreActionConnectSender
+      CoreActionSend
     ];
   schema = with edges; ''
     struct CoreAction {

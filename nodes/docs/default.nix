@@ -1,14 +1,17 @@
-{ subgraph, nodes, edges }:
+{ subgraph, imsgs, nodes, edges }:
 
 let
   doc = import ../../doc {};
 in
-subgraph {
+subgraph rec {
   src = ./.;
-  flowscript = with nodes; with edges; ''
-    '${fs_path}:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
-    '${net_protocol_domain_port}:(domainPort="localhost:8083")' -> domain_port www()
-    '${net_url}:(url="/docs")' -> url www()
-    '${prim_text}:(text="[*] serving: localhost:8083/docs/manual.html")' -> input disp(${io_print})
+  imsg = imsgs {
+    edges = with edges; [ FsPath NetProtocolDomainPort NetUrl PrimText];
+  };
+  flowscript = with nodes; ''
+    '${imsg}.FsPath:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
+    '${imsg}.NetProtocolDomainPort:(domainPort="localhost:8083")' -> domain_port www()
+    '${imsg}.NetUrl:(url="/docs")' -> url www()
+    '${imsg}.PrimText:(text="[*] serving: localhost:8083/docs/manual.html")' -> input disp(${io_print})
   '';
 }

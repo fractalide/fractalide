@@ -4,7 +4,7 @@ buffet.support.executable {
   name = "fvm";
   src = ./.;
   crates = with buffet.crates; [ rustfbp capnp ];
-  edges = with buffet.edges; [ fs_path core_action ];
+  edges = with buffet.edges; [ FsPath CoreAction ];
   configurePhase = with buffet.nodes; with buffet.edges; ''
     substituteInPlace src/main.rs --replace "fs_file_open.so" "${fs_file_open}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "core_parser_lexical.so" "${core_parser_lexical}/lib/libagent.so"

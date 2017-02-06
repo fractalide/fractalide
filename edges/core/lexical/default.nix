@@ -2,7 +2,7 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text prim_void ];
+  edges =  with edges; [ ];
   schema = with edges; ''
     struct CoreLexical {
       union {

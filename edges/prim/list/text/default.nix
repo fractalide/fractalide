@@ -2,7 +2,7 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ PrimText ];
   schema = with edges; ''
     struct PrimListText {
             list @0 :List(PrimText);

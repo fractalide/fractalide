@@ -3,10 +3,10 @@
 edge {
   src = ./.;
   edges =  with edges; [
-        core_graph_list_edge
-        core_graph_list_ext
-        core_graph_list_imsg
-        core_graph_list_node
+        CoreGraphListEdge
+        CoreGraphListExt
+        CoreGraphListImsg
+        CoreGraphListNode
       ];
   schema = with edges; ''
     struct CoreGraph {

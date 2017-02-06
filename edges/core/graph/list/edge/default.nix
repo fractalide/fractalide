@@ -2,7 +2,7 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ core_graph_edge ];
+  edges =  with edges; [ CoreGraphEdge ];
   schema = with edges; ''
     struct CoreGraphListEdge {
       list @0 : List(CoreGraphEdge);

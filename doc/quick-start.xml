@@ -76,9 +76,8 @@ in
 # insert in alphabetical order to reduce conflicts
 rec {
   ...
-  prim_text = callPackage ./generic/text {};
-  prim_bool = callPackage ./maths/boolean {};
-  maths_number = callPackage ./maths/number {};
+  PrimText = callPackage ./generic/text {};
+  PrimBool = callPackage ./maths/boolean {};
   ...
 }
   </screen>

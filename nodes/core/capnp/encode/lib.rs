@@ -26,8 +26,6 @@ agent! {
         let input = input.get_text()?;
 
         let mut child = Command::new("capnp_path" )
-            .arg("-I")
-            .arg("/")
             .arg("encode")
             .arg(path)
             .arg(f_edge)

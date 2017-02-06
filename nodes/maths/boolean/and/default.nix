@@ -2,7 +2,7 @@
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; ''
   a => a nand(${maths_boolean_nand}) output -> input not(${maths_boolean_not}) output => output
   b => b nand()
   '';

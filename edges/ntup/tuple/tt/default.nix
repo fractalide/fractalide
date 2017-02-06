@@ -2,7 +2,7 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ PrimText ];
   schema = with edges; ''
     struct NtupTupleTt {
       first @0 : PrimText;

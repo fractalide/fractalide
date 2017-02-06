@@ -4,7 +4,7 @@ edge {
   src = ./.;
   edges =  with edges; [];
   schema = with edges; ''
-    struct Url {
+    struct NetUrl {
            url @0 :Text;
     }
   '';

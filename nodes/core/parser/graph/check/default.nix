@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ core_graph core_semantic_error ];
+  edges = with edges; [ CoreGraph CoreSemanticError ];
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }
