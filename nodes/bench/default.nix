@@ -1,12 +1,14 @@
-{ subgraph, imsgs, nodes, edges }:
-
-subgraph rec {
+{ subgraph, imsg, nodes, edges }:
+let
+  PrimU64 = imsg {
+    class = edges.PrimU64;
+    text = "(u64=0)";
+  };
+in
+subgraph {
  src = ./.;
- imsg = imsgs {
-   edges = with edges; [ PrimU64 ];
- };
  flowscript = with nodes; with edges; ''
- '${imsg}.PrimU64:(u64=0)' ->  input inc1(${bench_inc_1000})
+ '${PrimU64}' ->  input inc1(${bench_inc_1000})
  inc1() output -> input inc2(${bench_inc_1000})
  inc2() output -> input inc3(${bench_inc_1000})
  inc3() output -> input inc4(${bench_inc_1000})

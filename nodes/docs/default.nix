@@ -1,17 +1,30 @@
-{ subgraph, imsgs, nodes, edges }:
+{ subgraph, imsg, nodes, edges }:
 
 let
   doc = import ../../doc {};
+  FsPath = imsg {
+    class = edges.FsPath;
+    text = ''(path="${doc}/share/doc/fractalide/")'';
+  };
+  NetProtocolDomainPort = imsg {
+    class = edges.NetProtocolDomainPort;
+    text = ''(domainPort="localhost:8083")'';
+  };
+  NetUrl = imsg {
+    class = edges.NetUrl;
+    text = ''(url="/docs")'';
+  };
+  PrimText = imsg {
+    class = edges.PrimText;
+    text = ''(text="[*] serving: localhost:8083/docs/manual.html")'';
+  };
 in
 subgraph rec {
   src = ./.;
-  imsg = imsgs {
-    edges = with edges; [ FsPath NetProtocolDomainPort NetUrl PrimText];
-  };
   flowscript = with nodes; ''
-    '${imsg}.FsPath:(path="${doc}/share/doc/fractalide/")' -> www_dir www(${web_server})
-    '${imsg}.NetProtocolDomainPort:(domainPort="localhost:8083")' -> domain_port www()
-    '${imsg}.NetUrl:(url="/docs")' -> url www()
-    '${imsg}.PrimText:(text="[*] serving: localhost:8083/docs/manual.html")' -> input disp(${io_print})
+    '${FsPath}' -> www_dir www(${web_server})
+    '${NetProtocolDomainPort}' -> domain_port www()
+    '${NetUrl}' -> url www()
+    '${PrimText}' -> input disp(${io_print})
   '';
 }

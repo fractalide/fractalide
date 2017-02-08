@@ -1,7 +1,7 @@
-{ subgraph, imsgs, nodes, edges }:
+{ subgraph, imsg, nodes, edges }:
 
 let
-  True = imsgs {
+  PrimBool = imsg {
     class = edges.PrimBool;
     text = "(bool=true)";
     option = "create";
@@ -10,7 +10,7 @@ in
 subgraph {
  src = ./.;
  flowscript = with nodes; ''
-  '${True}' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
-  '${True}' -> b nand()
+  '${PrimBool}' -> a nand(${maths_boolean_nand}) output -> input io_print(${maths_boolean_print})
+  '${PrimBool}' -> b nand()
  '';
 }

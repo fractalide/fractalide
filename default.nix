@@ -16,7 +16,7 @@ crates = if local-rustfbp == "true" then origCrates // { rustfbp = support.rustf
 runThisNode = (builtins.head (lib.attrVals [node] nodes));
 support = import ./support { inherit pkgs debug test nodes edges crates; };
 fractals = import ./fractals { inherit buffet; };
-imsgs = callPackage ./support/imsg.nix {
+imsg = callPackage ./support/imsg.nix {
   unifySchema = support.unifySchema ;
   capnpc-rust = support.capnpc-rust;
 };
@@ -26,7 +26,7 @@ services = import ./services { inherit fractals; };
 buffet = {
   support = support;
   edges = edges;
-  imsgs = imsgs;
+  imsg = imsg;
   nodes = nodes;
   services = services;
   fractals = fractals;
