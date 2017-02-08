@@ -44,6 +44,7 @@ self = rec {
   test_nand = callPackage ./test/nand {};
   test_edges = callPackage ./test/edges {};
   ui_js_nodes = buffet.fractals.ui_js.nodes;
+  app_growtest = buffet.fractals.ui_js.nodes.app_growtest;
   web_server = callPackage ./web/server {};
   workbench = buffet.fractals.workbench.nodes.workbench;
   workbench_test = buffet.fractals.workbench.nodes.test;
