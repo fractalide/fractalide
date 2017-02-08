@@ -1,18 +1,23 @@
-{ lib, stdenv, capnproto, capnpc-rust, unifySchema }:
-{ edges ? [] } @ args:
+{ lib, stdenv, writeTextFile, capnproto, capnpc-rust, unifySchema }:
+{ class ? null, text ? "", option ? "" } @ args:
 let
   unifiedSchema = unifySchema {
-    name = "composed-schema";
-    edges = edges;
+    name = class.name + "_transitives";
+    edges = class;
     target = "capnp";
   };
-  unifiedImsgs = stdenv.mkDerivation (args // rec {
-    name = "composed-imsgs";
+  imsg-txt = writeTextFile {
+    name = class.name + "_message";
+    text = text;
+    executable = false;
+  };
+  imsg = stdenv.mkDerivation {
+    name = class.name + "_imsg";
     phases = [ "installPhase" ];
     installPhase = ''
-      mkdir -p $out
-      ln -s ${unifiedSchema}/edge.capnp $out/edge.capnp
+    mkdir -p $out
+    ${capnproto}/bin/capnp encode ${unifiedSchema}/edge.capnp ${class.name} < ${imsg-txt} > $out/imsg.bin
     '';
-  });
+  };
 in
-  "${unifiedImsgs}"
+  "${imsg}/imsg.bin${if option == "" then "" else "~${option}"}"

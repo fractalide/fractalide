@@ -54,7 +54,6 @@ self = rec {
   # -   there will be change in these nodes
   # -   few people are using these nodes so expect breakage
 
-  core_capnp_encode = callPackage ./core/capnp/encode {};
   core_find_node = callPackage ./core/find/node {};
   core_errors = callPackage ./core/errors {};
   core_parser_graph_check = callPackage ./core/parser/graph/check {};

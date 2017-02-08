@@ -33,7 +33,6 @@ fn run(path_fbp: &str) {
     sched.add_node("graph_print", "core_parser_graph_print.so").expect("cannot add node");
     sched.add_node("graph_check", "core_parser_graph_check.so").expect("cannot add node");
     sched.add_node("sched", "core_scheduler.so").expect("cannot add node");
-    sched.add_node("imsg", "core_capnp_encode.so").expect("cannot add node");
     sched.add_node("core_find_node", "core_find_node.so").expect("cannot add node");
 
     // open(fs_file_open) output -> input lex(core_parser_lexical)
@@ -70,16 +69,7 @@ fn run(path_fbp: &str) {
     sched.connect("vm", "ask_path", "core_find_node", "input").expect("cannot connect");
     sched.connect("core_find_node", "output", "vm", "new_path").expect("cannot connect");
 
-    // IMsg part
-    // sched() imsg_path -> path imsg()
-    // sched() imsg_edge -> edge imsg()
-    // sched() imsg_input -> input imsg()
-    // imsg() output -> imsg sched()
     // imsg() ask_graph -> input vm()
-    sched.connect("sched", "imsg_path", "imsg", "path").expect("cannot connect");
-    sched.connect("sched", "imsg_edge", "imsg", "edge").expect("cannot connect");
-    sched.connect("sched", "imsg_input", "imsg", "input").expect("cannot connect");
-    sched.connect("imsg", "output", "sched", "imsg").expect("cannot connect");
     sched.connect("sched", "ask_graph", "vm", "input").expect("cannot connect ask_graph");
 
     let add = sched.get_sender("sched", "action").expect("action of sched not found");

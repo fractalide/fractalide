@@ -3,7 +3,7 @@
 { name, edges ? [], target } @ args:
 
 let
-  schemaName = name + "-schema";
+  schemaName = name;
 in stdenv.mkDerivation (args // rec {
   name = schemaName;
   phases = [ "buildPhase" "installPhase" ];

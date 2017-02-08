@@ -14,7 +14,6 @@ buffet.support.executable {
     substituteInPlace src/main.rs --replace "core_parser_graph_print.so" "${core_parser_graph_print}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "core_parser_graph_check.so" "${core_parser_graph_check}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "core_scheduler.so" "${core_scheduler}/lib/libagent.so"
-    substituteInPlace src/main.rs --replace "core_capnp_encode.so" "${core_capnp_encode}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "halter.so" "${halter}/lib/libagent.so"
     substituteInPlace src/main.rs --replace "core_find_node.so" "${core_find_node}/lib/libagent.so"
   '';

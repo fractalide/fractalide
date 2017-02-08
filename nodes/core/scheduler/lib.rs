@@ -3,6 +3,7 @@ extern crate rustfbp;
 use rustfbp::scheduler::{Scheduler};
 use std::mem;
 use std::str;
+use std::fs::File;
 
 extern crate capnp;
 
@@ -38,13 +39,9 @@ impl Portal {
 
 agent! {
     input(action: core_action,
-           graph: core_graph,
-           imsg: any),
+           graph: core_graph),
     output(error: error,
-            ask_graph: core_graph,
-            imsg_path: fs_path,
-            imsg_edge: prim_text,
-            imsg_input: prim_text),
+            ask_graph: core_graph),
     outarr(outputs: any),
     portal(Portal => Portal::new()),
     fn run(&mut self) -> Result<Signal> {
@@ -191,18 +188,7 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
         let port = imsg.get_port()?;
         let input = imsg.get_imsg()?;
 
-        let (edge, input, option_action) = split_input(input)?;
-
-        let mut edge_list = edge.split('.');
-        let base_schema_path = match edge_list.next(){
-            Some(p) => {p.into()},
-            None => {"".to_string()}
-        };
-        let schema_path = format!("{}/edge.capnp", base_schema_path);
-        let class_name = match edge_list.next() {
-            Some(c) => { c },
-            None => {"failed_to_find_edge"},
-        };
+        let (imsg_bin, option_action) = split_input(input)?;
 
         let sender = if imsg.get_selection()? == "" {
             agent.portal.sched.get_sender(imsg.get_comp()?, imsg.get_port()?)?
@@ -210,30 +196,15 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
             agent.portal.sched.get_array_sender(imsg.get_comp()?, imsg.get_port()?, imsg.get_selection()?)?
         };
 
-        let mut new_out = Msg::new();
-        {
-            let mut path = new_out.build_schema::<fs_path::Builder>();
-            path.set_path(&schema_path);
-        }
-        agent.output.imsg_path.send(new_out)?;
+        let mut f = File::open(imsg_bin)?;
+        let mut buffer = Vec::new();
+        f.read_to_end(&mut buffer)?;
 
         let mut new_out = Msg::new();
-        {
-            let mut path = new_out.build_schema::<prim_text::Builder>();
-            path.set_text(&class_name);
-        }
-        agent.output.imsg_edge.send(new_out)?;
+        new_out.vec = buffer;
 
-        let mut new_out = Msg::new();
-        {
-            let mut path = new_out.build_schema::<prim_text::Builder>();
-            path.set_text(&input);
-        }
-        agent.output.imsg_input.send(new_out)?;
-
-        let mut imsg = agent.input.imsg.recv()?;
-        option_action.map(|action| { imsg.action = action; });
-        sender.send(imsg)?;
+        option_action.map(|action| { new_out.action = action; });
+        sender.send(new_out)?;
     }
 
     // Start all agents without input port
@@ -247,17 +218,14 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str) -> Result<()> {
     Ok(())
 }
 
-fn split_input(s: &str) -> Result<(String, String, Option<String>)> {
-    let pos = s.find(":").ok_or(result::Error::Misc("bad definition of imsg".into()))?;
-    let (a, b) = s.split_at(pos);
-    let (_, b) = b.split_at(1);
-    let pos2 = b.find("~");
+fn split_input(s: &str) -> Result<(String, Option<String>)> {
+    let pos2 = s.find("~");
     if let Some(pos) = pos2 {
-        let (b, c) = b.split_at(pos);
-        let (_, c) = c.split_at(1);
-        return Ok((a.into(), b.into(), Some(c.into())));
+        let (a, b) = s.split_at(pos);
+        let (_, b) = b.split_at(1);
+        return Ok((a.into(), Some(b.into())));
     };
-    Ok((a.into(), b.into(), None))
+    Ok((s.into(), None))
 }
 
 fn connect_ports(sched: &mut Scheduler, o_name: &str, o_port: &str, o_selection: &str,
