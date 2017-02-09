@@ -24,12 +24,6 @@ subgraph {
 
    sched() ask_graph -> input vm()
 
-   // IIP
-   sched() iip_path -> path iip(${core_capnp_encode})
-   sched() iip_edge -> edge iip()
-   sched() iip_input -> input iip()
-   iip() output -> iip sched()
-
    sched() outputs[test] -> input cl(${fs_file_open})
 
    action => action sched()

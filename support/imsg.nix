@@ -2,12 +2,12 @@
 { class ? null, text ? "", option ? "" } @ args:
 let
   unifiedSchema = unifySchema {
-    name = class.name + "_transitives";
+    name = class.name + "_trans";
     edges = class;
     target = "capnp";
   };
   imsg-txt = writeTextFile {
-    name = class.name + "_message";
+    name = class.name + "_text";
     text = text;
     executable = false;
   };

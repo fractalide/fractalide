@@ -26,7 +26,7 @@ in
   FsFileError = callPackage ./fs/file/error {};
   NetHttpEdges = buffet.fractals.net_http.edges;
   NetNdnEdges = buffet.fractals.net_ndn.edges;
-  NetProtocolDomainPort = callPackage ./net/protocol_domain_port {};
+  NetProtocolDomainPort = callPackage ./net/protocol/domain/port {};
   NetUrl = callPackage ./net/url {};
 
   # draft
