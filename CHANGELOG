@@ -1,3 +1,11 @@
+09th Feb 2017
+- Final version of contract composition
+- schema now named in CapitalCamelCase to align with Capnproto's code style
+- FBP scheduler not dependent on Capnp Tool at runtime.
+- nixcrates now supported, removing the need to rely on cargo
+and no need for incremental compilation.
+- space made for multiple FBP implementations, not only Rust.
+
 20th Nov 2016
 - contract composition - allowing for complex data structures
 
