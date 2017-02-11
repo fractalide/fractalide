@@ -1,4 +1,4 @@
-{ lib, stdenv, writeTextFile, capnproto, capnpc-rust, unifySchema }:
+{ lib, stdenv, writeTextFile, capnproto, unifySchema }:
 { class ? null, text ? "", option ? "" } @ args:
 let
   unifiedSchema = unifySchema {

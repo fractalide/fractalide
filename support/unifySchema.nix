@@ -1,11 +1,9 @@
-{lib, stdenv, capnproto, capnpc-rust}:
+{ stdenv, capnproto, capnpcPlugins}:
 
 { name, edges ? [], target } @ args:
 
-let
-  schemaName = name;
-in stdenv.mkDerivation (args // rec {
-  name = schemaName;
+stdenv.mkDerivation (args // rec {
+  inherit name;
   phases = [ "buildPhase" "installPhase" ];
   buildPhase = ''
     ${ if edges != [] then ''
@@ -27,7 +25,7 @@ in stdenv.mkDerivation (args // rec {
           if target == "capnp" then ''
           ''
           else if target == "rs" then ''
-            ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust edge.capnp -I "/"
+            ${capnproto}/bin/capnp compile -o${capnpcPlugins.rs}/bin/capnpc-rust edge.capnp -I "/"
           ''
           else ''
             echo "Unknown capnproto compiler plugin called."
