@@ -12,7 +12,7 @@
 { name ? null
   , src ? null
   , osdeps ? []
-  , crates ? []
+  , mods ? []
   , edges ? []
   , ... } @ args:
 
@@ -26,13 +26,13 @@ let
 in stdenv.mkDerivation (args // rec {
   name = compName;
   buildInputs = osdeps;
-  cratesDeps = cratesSupport.cratesDeps crates crates;
+  cratesDeps = cratesSupport.cratesDeps mods mods;
   phases = [ "unpackPhase" "configurePhase" "buildPhase" "installPhase" ];
   buildPhase = args.buildPhase or ''
     echo "*********************************************************************"
     echo "****** building ${type}: ${compName} "
     echo "*********************************************************************"
-    ${cratesSupport.symlinkCalc (cratesSupport.cratesDeps [] crates)}
+    ${cratesSupport.symlinkCalc (cratesSupport.cratesDeps [] mods)}
     ${
       if type == "fvm" then ''
         ln -s ${unifiedSchema}/edge_capnp.rs edge_capnp.rs
@@ -42,11 +42,10 @@ in stdenv.mkDerivation (args // rec {
         --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
         --emit=dep-info,link \
         --crate-name ${cratesSupport.normalizeName compName} \
-        -L dependency=nixcrates ${cratesSupport.depsStringCalc crates} \
+        -L dependency=nixcrates ${cratesSupport.depsStringCalc mods} \
         -o fvm
       ''
       else if type == "executable" then ''
-      ls -la
         ln -s ${unifiedSchema}/edge_capnp.rs src/edge_capnp.rs
         ${rustNightly}/bin/rustc src/main.rs \
         --crate-type bin \
@@ -54,7 +53,7 @@ in stdenv.mkDerivation (args // rec {
         --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
         --emit=dep-info,link \
         --crate-name ${cratesSupport.normalizeName compName} \
-        -L dependency=nixcrates ${cratesSupport.depsStringCalc crates} \
+        -L dependency=nixcrates ${cratesSupport.depsStringCalc mods} \
         -o ${compName}
       ''
       else if type == "agent" then ''
@@ -65,7 +64,7 @@ in stdenv.mkDerivation (args // rec {
         --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
         --emit=dep-info,link \
         --crate-name agent \
-        -L dependency=nixcrates ${cratesSupport.depsStringCalc crates} \
+        -L dependency=nixcrates ${cratesSupport.depsStringCalc mods} \
         -o libagent.so
       ''
       else if type == "crate" then ''
@@ -76,7 +75,7 @@ in stdenv.mkDerivation (args // rec {
         --cap-lints "allow" -A dead_code -A unused_imports -A warnings \
         --emit=dep-info,link \
         --crate-name ${cratesSupport.normalizeName compName} \
-        -L dependency=nixcrates ${cratesSupport.depsStringCalc crates} \
+        -L dependency=nixcrates ${cratesSupport.depsStringCalc mods} \
         -o lib${compName}.rlib
       ''
       else ""

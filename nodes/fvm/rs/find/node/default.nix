@@ -3,6 +3,6 @@
 rs.agent {
   src = ./.;
   edges = with edges; [ FsPath FsPathOption ];
-  crates = with mods.crates; [ rustfbp capnp ];
+  mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [ nix ];
 }

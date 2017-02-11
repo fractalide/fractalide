@@ -1,8 +1,8 @@
-{ agent, edges, crates, pkgs }:
+{ agent, edges, mods, pkgs }:
 
 agent {
   src = ./.;
   edges = with edges; [ PrimU64 ];
-  crates = with crates; [ rustfbp capnp ];
+  mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }

@@ -2,6 +2,6 @@
 
 crate {
   name = "rustfbp";
-  crates = with crates; [ capnp libloading threadpool ];
+  mods = with crates; [ capnp libloading threadpool ];
   src = ./.;
 }

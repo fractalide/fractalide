@@ -3,7 +3,7 @@
 buffet.support.rs.fvm {
   name = "fvm";
   src = ./.;
-  crates = with buffet.mods.crates; [ rustfbp capnp ];
+  mods = with buffet.mods.rs; [ rustfbp capnp ];
   edges = with buffet.edges; [ FsPath CoreAction ];
   configurePhase = with buffet.nodes; ''
     substituteInPlace main.rs --replace "fs_file_open.so" "${rs.fs_file_open}/lib/libagent.so"
