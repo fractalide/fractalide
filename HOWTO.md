@@ -25,6 +25,7 @@ The reader should have read these documents:
 #### Virtualbox guest installation
 
 * Complete the [Installing Virtualbox Guest](http://nixos.org/nixos/manual/index.html#sec-instaling-virtualbox-guest) section of the NixOS Manual.
+* Ensure you're using the nix `unstable` channel.
 
 #### Building the `Fractalide Virtual Machine (FVM)``
 
