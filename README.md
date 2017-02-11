@@ -9,7 +9,7 @@
 
 ## What is this?
 
-Fractalide is a free and open source service programming platform using dataflow graphs. Graph nodes represent computations, while graph edges represent typed data communicated between them. This flexible architecture can be applied to many different computation problems, initially the focus will be Microservices to be expanded out into the Internet of Things.
+Fractalide is a free and open source service programming platform using dataflow graphs. Graph nodes represent computations, while graph edges represent typed data (may also describe tensors) communicated between them. This flexible architecture can be applied to many different computation problems, initially the focus will be Microservices to be expanded out into the Internet of Things.
 
 Fractalide is in the same vein as the [NSA's Niagrafiles](https://en.wikipedia.org/wiki/Apache_NiFi) (now known as [Apache-NiFi](https://nifi.apache.org/)) or [Google's TensorFlow](https://en.wikipedia.org/wiki/TensorFlow) but stripped of all Java, Python and GUI bloat. Fractalide faces big corporate players like [Ab Initio](http://abinitio.com/), a company that charges a lot of money for dataflow solutions.
 
@@ -77,7 +77,7 @@ When nix is assigned the responsibility of declaratively building fbp `nodes`, a
 
 agent {
   src = ./.;
-  edges = with edges; [ prim_text fs_path ];
+  edges = with edges; [ PrimText FsPath ];
   crates = with crates; [ rustfbp capnp rusqlite ];
   osdeps = with pkgs; [ sqlite pkgconfig ];
 }
@@ -162,13 +162,8 @@ From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build t
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ time nix-build --argstr node test_nand
+$ nix-build --argstr rs test_nand
 ...
-/nix/store/zld4d7zc80wh38qhn00jqgc6lybd2cdi-test_nand
-
-real    2m40.590s
-user    0m0.338s
-sys     0m0.079s
 $ ./result
 boolean : false
 ```

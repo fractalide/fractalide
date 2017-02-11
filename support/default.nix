@@ -1,30 +1,14 @@
-{ pkgs
-  , lib ? pkgs.lib
-  , debug
-  , test
-  , crates
-  , edges
-  , nodes}:
+{ buffet }:
 let
-callPackage = pkgs.lib.callPackageWith (pkgs);
-crates-support = rec {
-  crates = crates;
-  normalizeName = builtins.replaceStrings [ "-"] ["_"];
-  depsStringCalc = pkgs.lib.fold ( dep: str: "${str} --extern ${normalizeName dep.name}=${dep}/lib${normalizeName dep.name}.rlib") "";
-  cratesDeps = pkgs.lib.fold ( recursiveDeps : newCratesDeps: newCratesDeps ++ recursiveDeps.cratesDeps  );
-  symlinkCalc = pkgs.lib.fold ( dep: str: "${str} ln -fs ${dep}/lib${normalizeName dep.name}.rlib nixcrates/ \n") "mkdir nixcrates\n ";
-};
-rustNightly = pkgs.rustNightlyBin.rustc;
-genName = callPackage ./genName.nix {};
-rustc = callPackage ./rustc.nix {inherit debug test crates-support rustNightly genName; };
-crate = rustc { type = "crate"; };
-executable = rustc { type = "executable"; };
-capnpc-rust = callPackage ./capnpc-rust.nix { inherit executable crates; };
-rustfbp = callPackage ./rustfbp.nix { inherit crate crates; };
-in
-rec {
-  inherit executable crates-support capnpc-rust rustfbp;
-  agent = rustc { type = "agent"; };
-  edge = callPackage ./edge.nix { inherit capnpc-rust genName; };
+  callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs );
+  capnpcPlugins = callPackage ./capnpcPlugins { inherit buffet; };
+  unifySchema = callPackage ./unifySchema.nix { inherit capnpcPlugins; };
+  genName = callPackage ./genName.nix {};
   subgraph = callPackage ./subgraph.nix { inherit genName; };
+  edge = callPackage ./edge.nix { inherit genName; };
+  imsg = callPackage ./imsg.nix { inherit unifySchema; };
+  rs = callPackage ./rs { inherit genName unifySchema buffet; };
+in
+{
+  inherit subgraph edge imsg rs;
 }

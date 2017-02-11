@@ -2,10 +2,8 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ ];
   schema = with edges; ''
-    @0xaf73df75f011fbb3;
-
     struct FsFileDesc {
         union {
           start @0 :Text;

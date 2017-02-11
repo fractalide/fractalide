@@ -2,15 +2,11 @@
 
 edge {
   src = ./.;
-  edges =  with edges; [ prim_text ];
+  edges =  with edges; [ PrimText ];
   schema = with edges; ''
-    @0xfd5b681b05086f3b;
-
-    using PrimText = import "${prim_text}/src/edge.capnp";
-
     struct KvKeyTValT {
-        key @0 :PrimText.PrimText;
-        val @1 :PrimText.PrimText;
+        key @0 :PrimText;
+        val @1 :PrimText;
     }
   '';
 }

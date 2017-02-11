@@ -1,5 +1,5 @@
 { stdenv, genName, writeTextFile}:
-{ src, flowscript, name ? null, ... } @ args:
+{ src, flowscript, edges ? [],  name ? null, ... } @ args:
   let
   subgraph-name = if name == null then genName src else name;
   subgraph-txt = writeTextFile {
@@ -9,10 +9,8 @@
   };
   in stdenv.mkDerivation  (args // {
     name = subgraph-name;
-    unpackPhase = "true";
     installPhase = ''
-      runHook preInstall
       mkdir -p $out/lib
-      cp  ${subgraph-txt} $out/lib/lib.subgraph
+      cp ${subgraph-txt} $out/lib/lib.subgraph
     '';
   })

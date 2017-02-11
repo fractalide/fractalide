@@ -1,6 +1,7 @@
-{ fractals }:
+{ buffet }:
+with buffet.fractals;
 [
-  fractals.workbench.service
-  fractals.app_todo_model.service
-  fractals.app_todo_controller.service
+  workbench.service
+  app_todo_model.service
+  app_todo_controller.service
 ]

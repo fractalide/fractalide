@@ -1,4 +1,4 @@
-{ stdenv, writeTextFile, capnproto, capnpc-rust, genName }:
+{ stdenv, writeTextFile, capnproto, genName }:
 { src, schema, edges ? [], ... } @ args:
 
 let
@@ -63,7 +63,6 @@ in stdenv.mkDerivation (args // {
       echo "***************"
     else
       cp ${edgeText} $out/src/edge.capnp
-      ${capnproto}/bin/capnp compile -o${capnpc-rust}/bin/capnpc-rust:$out/src/  $out/src/edge.capnp --src-prefix $out/src/ -I "/"
     fi
 
   '';
