@@ -162,13 +162,8 @@ From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build t
 ```
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ time nix-build --argstr node test_nand
+$ nix-build --argstr rs test_nand
 ...
-/nix/store/zld4d7zc80wh38qhn00jqgc6lybd2cdi-test_nand
-
-real    2m40.590s
-user    0m0.338s
-sys     0m0.079s
 $ ./result
 boolean : false
 ```
