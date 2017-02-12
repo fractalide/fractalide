@@ -152,7 +152,7 @@ We wanted to ensure there was no ambiguity about the shape of the data a node re
 
 ### Steps towards STABLE release.
 - [ ] tokio-rs integration
-- [ ] nixpkgs lands support for [this](https://github.com/systemd/systemd/blob/master/NEWS#L53) feature in systemd 232
+- [ ] nixpkgs lands support for [this](https://github.com/systemd/systemd/blob/master/NEWS#L58) feature in systemd 232
 - [ ] [nixcrates](https://github.com/fractalide/nixcrates) needs some more work to whittle down crates that don't build
 - [ ] stable release
 

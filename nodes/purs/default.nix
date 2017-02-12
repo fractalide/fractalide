@@ -1,6 +1,7 @@
 { buffet }:
 let
-callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet );
+
+callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support.purs // buffet.support // buffet);
 # Insert in alphabetical order in relevant section to reduce conflicts
 # This system grows by the slow accretion of nodes.
 # Once a node is declared stable, it is _/forbidden/_ to:
@@ -18,23 +19,13 @@ self = rec {
   # -   are incomplete and immature, they may wink into and out of existance
   # -   use at own risk, anything in this section can change at any time.
 
-  rs = import ./rs { inherit buffet; };
-  purs = import ./purs { inherit buffet; };
+  test = callPackage ./test {};
 
   # DRAFT NODES
   # -   draft nodes change a lot in tandom with other nodes in their subgraph
   # -   there will be change in these nodes
   # -   few people are using these nodes so expect breakage
 
-  fvm_rs_find_node = callPackage ./fvm/rs/find/node {};
-  fvm_rs_errors = callPackage ./fvm/rs/errors {};
-  fvm_rs_parser_graph_check = callPackage ./fvm/rs/parser/graph/check {};
-  fvm_rs_parser_graph_print = callPackage ./fvm/rs/parser/graph/print {};
-  fvm_rs_parser_lexical = callPackage ./fvm/rs/parser/lexical {};
-  fvm_rs_parser_semantic = callPackage ./fvm/rs/parser/semantic {};
-  fvm_rs_scheduler = callPackage ./fvm/rs/scheduler {};
-  fvm_rs_subgraph = callPackage ./fvm/rs/subgraph {};
-  fvm_rs_vm = callPackage ./fvm/rs/vm {};
 
   # STABLE NODES
   # -   do not change names of ports, agents nor subgraphs,

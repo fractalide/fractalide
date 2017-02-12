@@ -25,7 +25,7 @@ stdenv.mkDerivation (args // rec {
           if target == "capnp" then ''
           ''
           else if target == "rs" then ''
-            ${capnproto}/bin/capnp compile -o${capnpcPlugins.rs}/bin/capnpc-rust edge.capnp -I "/"
+            ${capnproto}/bin/capnp compile -o${capnpcPlugins.rs}/bin/capnpc-rust edge.capnp
           ''
           else ''
             echo "Unknown capnproto compiler plugin called."
