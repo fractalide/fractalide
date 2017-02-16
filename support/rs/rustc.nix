@@ -29,9 +29,9 @@ in stdenv.mkDerivation (args // rec {
   cratesDeps = cratesSupport.cratesDeps mods mods;
   phases = [ "unpackPhase" "configurePhase" "buildPhase" "installPhase" ];
   buildPhase = args.buildPhase or ''
-    echo "*********************************************************************"
-    echo "****** building rust ${type}: ${compName} "
-    echo "*********************************************************************"
+    echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+    echo "----> building rust ${type}: ${compName} "
+    echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
     ${cratesSupport.symlinkCalc (cratesSupport.cratesDeps [] mods)}
     ${
       if type == "fvm" then ''

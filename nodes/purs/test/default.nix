@@ -1,4 +1,4 @@
-{ agent, edges, mods, pkgs }:
+{ agent, edges, mods }:
 
 agent {
   src = ./.;
