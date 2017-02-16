@@ -1,9 +1,11 @@
 { stdenv, capnproto, capnpcPlugins}:
 
 { name, edges ? [], target } @ args:
-
+let
+  compName = name + "_" + target;
+in
 stdenv.mkDerivation (args // rec {
-  inherit name;
+  name = compName;
   phases = [ "buildPhase" "installPhase" ];
   buildPhase = ''
     ${ if edges != [] then ''
@@ -26,6 +28,9 @@ stdenv.mkDerivation (args // rec {
           ''
           else if target == "rs" then ''
             ${capnproto}/bin/capnp compile -o${capnpcPlugins.rs}/bin/capnpc-rust edge.capnp
+          ''
+          else if target == "purs" then ''
+            ${capnproto}/bin/capnp compile -o${capnpcPlugins.purs}/bin/capnpc-purescript edge.capnp
           ''
           else ''
             echo "Unknown capnproto compiler plugin called."
