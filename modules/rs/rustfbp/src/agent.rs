@@ -66,7 +66,7 @@ macro_rules! agent {
         $( inarr($( $input_a_name:ident: $input_a_contract:ident ),*), )*
         $( output($( $output_name:ident: $output_contract:ident ),*), )*
         $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
-        $( portal( $portal_type:ty => $portal_value:expr ), )*
+        $( state( $state_type:ty => $state_value:expr ), )*
         $( option($option:ident), )*
         $( accumulator($accumulator:ident ), )*
         fn run(&mut $arg:ident) -> Result<Signal> $fun:block
@@ -228,7 +228,7 @@ macro_rules! agent {
             pub option_msg: Option<Msg>,
             sched: Sender<CompMsg>,
             $(
-            pub portal: $portal_type ,
+            pub state: $state_type ,
             )*
         }
 
@@ -280,7 +280,7 @@ macro_rules! agent {
                 option_msg: None,
                 sched: sched,
                 $(
-                    portal: $portal_value,
+                    state: $state_value,
                 )*
             };
 

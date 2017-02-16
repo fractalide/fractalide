@@ -198,7 +198,7 @@ agent! {
 ```
 The `outarr` port is an `output array port`. It contains elements which may be expanded at `subgraph development time`.
 
-##### `portal`:
+##### `state`:
 ``` rust
 #[macro_use]
 extern crate rustfbp;
@@ -206,13 +206,13 @@ extern crate capnp;
 extern crate nanomsg;
 
 use nanomsg::{Socket, Protocol};
-pub struct Portal {
+pub struct State {
     socket: Option<Socket>,
 }
 
-impl Portal {
-    fn new() -> Portal {
-        Portal {
+impl State {
+    fn new() -> State {
+        State {
             socket: None,
         }
     }
@@ -220,7 +220,7 @@ impl Portal {
 
 agent! {
   input(connect: prim_text, ip: any),
-  portal(Portal => Portal::new()),
+  state(State => State::new()),
   fn run(&mut self) -> Result<Signal> {
     if let Ok(mut ip) = self.inputs.connect.try_recv() {
         let reader: prim_text::Reader = ip.read_schema()?;
@@ -228,11 +228,11 @@ agent! {
             .or(Err(result::Error::Misc("Cannot create socket".into())))?;
         socket.bind(reader.get_text()?)
             .or(Err(result::Error::Misc("Cannot connect socket".into())))?;
-        self.portal.socket = Some(socket);
+        self.state.socket = Some(socket);
     }
 
     if let Ok(ip) = self.inputs.ip.try_recv() {
-        if let Some(ref mut socket) = self.portal.socket {
+        if let Some(ref mut socket) = self.state.socket {
             socket.write(&ip.vec[..]);
         }
     }
@@ -240,9 +240,8 @@ agent! {
   }
 }
 ```
-![Image Alt](https://lh5.ggpht.com/owLgzEVCKQ4n2fWCMbQtzp0ScBdC0G6vQgFZAiTDfaJPVp7qTi1V3vuago1nWAuAdw=w300)
 
-This feature is named after Valve's `portal` game. A `Portal` allows us to keep complex state hanging around if needed. Basically, you shoot a couple of portals and throw your state through one portal, catching it as it falls out the other portal on the next function run.
+It is basically the state of the agent. A `State` allows us to keep complex state hanging around if needed. It can be any Rust type. The `state` is persistant for all the executions, so each time you are in the function `run()`, you can access and modify it. 
 
 ##### `option`:
 ``` rust
