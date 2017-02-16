@@ -8,7 +8,8 @@ let
   edge = callPackage ./edge.nix { inherit genName; };
   imsg = callPackage ./imsg.nix { inherit unifySchema; };
   rs = callPackage ./rs { inherit genName unifySchema buffet; };
+  purs = callPackage ./purs { inherit genName unifySchema buffet; };
 in
 {
-  inherit subgraph edge imsg rs;
+  inherit subgraph edge imsg rs purs;
 }

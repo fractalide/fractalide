@@ -1,7 +1,11 @@
-{ rs ? null }:
+{ rs ? null
+  , purs ? null
+}:
 let
   pkgs = import <nixpkgs> {};
-  target = { name = "rs"; nodes = nodes.rs; node = rs;};
+  target = if rs != null then  { name = "rs"; nodes = nodes.rs; node = rs;}
+  else if purs != null then { name = "purs"; nodes = nodes.purs; node = purs;}
+  else { name = "rs"; nodes = nodes.rs; node = rs;};
   targetNode = (builtins.head (pkgs.lib.attrVals [target.node] target.nodes));
   nodes = import ./nodes { inherit buffet; };
   edges = import ./edges { inherit buffet; };
