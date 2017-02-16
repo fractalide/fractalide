@@ -73,12 +73,12 @@ Flow-based programming in our books has delivered on its promise. In our system 
 When nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has, is typing the `node`'s name. We've gone further and distilled the overhead to a few lines, no more intimidating than a typical config file such as `Cargo.toml`:
 
 ``` nix
-{ agent, edges, crates, pkgs }:
+{ agent, edges, mods, pkgs }:
 
 agent {
   src = ./.;
   edges = with edges; [ PrimText FsPath ];
-  crates = with crates; [ rustfbp capnp rusqlite ];
+  mods = with mods.rs; [ rustfbp capnp rusqlite ];
   osdeps = with pkgs; [ sqlite pkgconfig ];
 }
 ```
