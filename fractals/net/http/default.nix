@@ -4,8 +4,8 @@ let
   fractal = buffet.pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "fractal_net_http";
-    rev = "0319c4230347387415f482b17659eec057057c51";
-    sha256 = "0gyv4w4g589fwaz4nhiy94jj2f2v7b5kb5s2gvkzn7ihd9dwl6h4";
+    rev = "9aed257cb2cc81b58a84ce3ffcf2d23b3c41e15e";
+    sha256 = "0c1rw6z4ahla5nwy29ddiqsmhyrnzga7v965j8zy5v13gmb1yhh3";
   };
   /*fractal = ../../../../fractals/fractal_net_http;*/
 in
