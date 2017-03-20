@@ -1,4 +1,6 @@
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/fractalide.png)
+<div align="center">
+  <img src="https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/fractalide_logo-stacked_blackonclear_352.png"><br><br>
+</div>
 # Fractalide
  _**Reusable Reproducible Rust Microservices**_
 
