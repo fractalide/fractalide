@@ -1,6 +1,7 @@
 { buffet }:
 let
   callPackage = buffet.pkgs.lib.callPackageWith (buffet.pkgs);
+  /*nix-crates-index = ../../../nixcrates/nix-crates-index;*/
   nix-crates-index = buffet.pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "nix-crates-index";

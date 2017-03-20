@@ -31,21 +31,41 @@ in stdenv.mkDerivation (args // rec {
   pureDeps = lib.unique nearPureDeps ;
   phases = [ "unpackPhase" "configurePhase" "buildPhase" "installPhase" ];
   buildPhase = args.buildPhase or ''
-    echo "*********************************************************************"
-    echo "****** building purescript ${type}: ${compName} "
-    echo "*********************************************************************"
+    echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+    echo "=====> building purescript ${type}: ${compName} "
+    echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
     ${purspkgsSupport.symlinkCalc (purspkgsSupport.pureDeps mods mods)}
     ${
       if type == "agent" then ''
         ln -s ${unifiedSchema}/edge_capnp.rs edge_capnp.rs
         mkdir ./output
-        psc *.purs 'purelibs/*/src/**/*.purs' -o ./output
-        #psc-bundle -o ./output output/**/src/*.js --module Main --main Main
+        psc lib.purs 'purelibs/*/src/**/*.purs' -o ./output
+        psc-bundle output/**/{index,foreign}.js --module Main --main Main --output output.js
       '' else ""}
   '';
 
   installPhase = ''
     mkdir -p $out
-    cp -R ./output $out
+    cp output.js $out/libagent.js
+
+    cat > $out/index.html <<EOF
+    <!doctype html>
+    <html>
+      <body>
+      <h1>check console</h1>
+        <script>
+    EOF
+
+    cat $out/libagent.js >>$out/index.html
+
+    cat >> $out/index.html <<EOF
+        </script>
+      </body>
+    </html>
+    EOF
+    echo paste the below in your browser
+    echo $out/index.html
+
+
   '';
 })
