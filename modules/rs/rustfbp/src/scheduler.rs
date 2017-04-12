@@ -119,7 +119,7 @@ impl Scheduler {
         let mut sched_s = SchedState::new(s.clone());
         let th = thread::spawn(move || {
             loop {
-                let msg = r.recv().unwrap();
+                let msg = r.recv().expect("no message received");
                 let res: Result<()> = match msg {
                     CompMsg::NewAgent(id, name, comp) => { sched_s.new_agent(id, name, comp) },
                     CompMsg::Start(name) => { sched_s.start(name) },
