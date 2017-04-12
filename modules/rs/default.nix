@@ -5,8 +5,8 @@ let
   nix-crates-index = buffet.pkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "nix-crates-index";
-    rev = "e7f75876c0f3fc855c821d82bcb97ebae7d0e783";
-    sha256 = "0s4zhzn45n6r2w7id1z55vqdgqj1jlcf6sxlk1z2wcbap8c01gvl";
+    rev = "960231687094f70263c46212d5b506ff48fb0658";
+    sha256 = "08h14y6w2ab9ygla42593i2dzxp81dnkfq5qm74gmp7cfl049hgg";
   };
   origCrates = buffet.pkgs.recurseIntoAttrs (callPackage nix-crates-index {});
   rustfbp = import ./rustfbp { inherit crates; crate = buffet.support.rs.crate; };
