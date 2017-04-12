@@ -12,7 +12,7 @@ let
     cratesDeps = pkgs.lib.fold ( recursiveDeps : newCratesDeps: newCratesDeps ++ recursiveDeps.cratesDeps  );
     symlinkCalc = pkgs.lib.fold ( dep: str: "${str} ln -fs ${dep}/lib${normalizeName dep.name}.rlib nixcrates/ \n") "mkdir nixcrates\n ";
   };
-  rustNightly = pkgs.rustNightlyBin.rustc;
+  rustNightly = pkgs.rust.rustc;
   rustc = callPackage ./rustc.nix {inherit cratesSupport unifySchema rustNightly genName; };
 in
 {

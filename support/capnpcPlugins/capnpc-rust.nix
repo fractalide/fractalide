@@ -6,7 +6,7 @@ buffet.support.rs.executable {
   src = buffet.pkgs.fetchFromGitHub {
     owner = "dwrensha";
     repo = "capnpc-rust";
-    rev = "e662a3cf50eecebeadfd1f0c4755cf779840b93b";
-    sha256 = "03khbs6cg38z41i53v3l9h45sr6nvvki7q7v04h1lmc0l3yhgc5w";
+    rev = "421674174c599cc4a7d246006678468586d12f37";
+    sha256 = "0q8dcjy74gblha2wy1hvzb9398gn3qb8kfxqdck6sav6f71rlb13";
   };
 }

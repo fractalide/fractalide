@@ -1,8 +1,33 @@
 { rs ? null
   , purs ? null
+  , pkgs ? (
+  let
+    pkgs = import <nixpkgs>;
+    pkgs_ = (pkgs {});
+    rustOverlay = (pkgs_.fetchFromGitHub {
+      owner = "mozilla";
+      repo = "nixpkgs-mozilla";
+      rev = "4779fb7776c3d38d78b5ebcee62165e6d1350f74";
+      sha256 = "04q6pwlz82qsm81pp7kk7i6ngrslq193v5wchdsrdifbn8cdqgbs";
+    });
+  in (pkgs {
+    overlays = [
+      (import (builtins.toPath "${rustOverlay}/rust-overlay.nix"))
+      (self: super: {
+        rust = {
+          rustc = super.rustChannels.nightly.rust;
+          cargo = super.rustChannels.nightly.cargo;
+        };
+        rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform {
+          rustc = super.rustChannels.nightly.rust;
+          cargo = super.rustChannels.nightly.cargo;
+        });
+      })
+    ];
+  }))
 }:
+with pkgs;
 let
-  pkgs = import <nixpkgs> {};
   target = if rs != null then  { name = "rs"; nodes = nodes.rs; node = rs;}
   else if purs != null then { name = "purs"; nodes = nodes.purs; node = purs;}
   else { name = "rs"; nodes = nodes.rs; node = rs;};
