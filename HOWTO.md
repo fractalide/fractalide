@@ -58,6 +58,7 @@ You shouldn't need to care too much about this during your everyday programming,
 
 Let's build a `subgraph` that runs a contrived `maths_boolean_nand` `agent`.
 
+* `$ nix-build --argstr rs test_nand`
 
 This replaces the `result` symlink with a new symlink pointing to a generated file.
 ```
@@ -82,6 +83,7 @@ $ file /nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand/lib/lib.subgraph
 /nix/store/jk5ibldrvi6cai5aj1j00p8rgi3zw4l7-test_nand/lib/lib.subgraph: ASCII text
 ```
 
+The `--argstr rs xxx` are arguments passed into the `nix-build` executable. Specifically
 
 ```
 $ man nix-build
@@ -100,6 +102,7 @@ The name `node` refers to the top level `graph` to be executed by the `fvm`. `ni
 ##### A = (Graph setup + tear down):
 
 ```
+$ nix-build --argstr rs bench_load
 /nix/store/ij8jri0z1k5n447f9s0x5yfx5p9iqnnf-bench_load
 
 $ sudo nice -n -20 perf stat -r 10 -d ./result
@@ -111,6 +114,7 @@ $ sudo nice -n -20 perf stat -r 10 -d ./result
 
 ```
 
+$ nix-build --argstr rs bench
 /nix/store/mfl206ccv86wvyi2ra5296l8n1bks24x-bench
 
 $ sudo nice -n -20 perf stat -r 10 -d ./result
@@ -356,6 +360,7 @@ subgraph {
 
 #### Executing the graph
 
+`$ nix-build --argstr rs workbench_test`
 `$ ./result`
 
 Now's the time to test the graph. Please follow these steps:
