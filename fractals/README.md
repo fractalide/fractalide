@@ -120,7 +120,7 @@ If you're using NixOS, please ensure you have not set `nix.useSandbox = true;`, 
 #### Executing from within Fractalide
 
 * `$ cd dev/fractalide`
-* `$ nix-build  --argstr debug true --argstr cache $(./support/buildCache.sh)  --argstr node workbench`
+* `$ nix-build --argstr rs workbench`
 * `$ ./result`
 
 #### Executing from with the Fractal
