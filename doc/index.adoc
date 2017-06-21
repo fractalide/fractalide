@@ -1,0 +1,43 @@
+= Fractalide documentation
+:description: Fractalide documentation
+:icons: font
+:sectnums:
+:toc: left
+:toclevels: 2
+:sectanchors:
+:nofooter:
+:experimental:
+:source-highlighter: highlightjs
+:highlightjsdir: highlight
+
+
+[preface]
+== Introduction
+
+This manual tells you how to write subnets, components and contracts for the Fractalide component / contract
+collection.
+
+:leveloffset: +1
+
+include::../README.adoc[tags=doc]
+
+include::quick-start.adoc[]
+
+include::../nodes/README.adoc[]
+
+include::../edges/README.adoc[]
+
+include::../services/README.adoc[]
+
+include::../fractals/README.adoc[]
+
+:leveloffset: -1
+
+[[howto]]
+== HOWTO
+
+:leveloffset: +1
+
+include::../HOWTO.adoc[tags=doc]
+
+:leveloffset: -1

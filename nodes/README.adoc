@@ -1,30 +1,32 @@
-# Nodes collection
+[[nodes]]
+= Nodes collection
 
 The `Nodes` collection consists of `Subgraphs` and `Agents`. A `Subgraph` or an `Agent` may be referred to as a `Node`.
 
-## Subgraphs
+== Subgraphs
 
-### What?
+=== What?
 
 A `Subgraph` consists of an implementation and an interface. The interface is implemented using a simple `interface description language` called `Flowscript` which describes how data flows through `Agents` and other `Subgraphs`. The result is an interface that consists of a minimal set of well named `ports`, thus hiding complexity.
 
 A simple analogy would be this gentleman's pocket watch.
 
-![Image Alt](http://www.kirkwood.edu/pdf/uploaded/835/watchcalls_35.gif)
+image::http://www.kirkwood.edu/pdf/uploaded/835/watchcalls_35.gif[]
 
-### Why?
+=== Why?
 
 Composition is an important part of programming, allowing one to hide implementation detail.
 
-### Who?
+=== Who?
 
 People who want to focus on the Science tend to work at these higher abstractions, they'd prefer not getting caught up in the details of programming low level nodes and hand specifications to programmers who'll make efficient, reusable and safe `Agents`. Though programmers will find `Subgraphs` indispensable as they allow for powerful abstractions.
 
-### Where?
+=== Where?
 
 The `Nodes` directory is where all `Agents` and `Subgraphs` go. Typically one might structure a hierarchy like such:
 
-```
+[source, sh]
+----
 ── wrangle
    ├── default.nix <------
    ├── aggregate
@@ -38,17 +40,20 @@ The `Nodes` directory is where all `Agents` and `Subgraphs` go. Typically one mi
    │   ├── file_open
    │   └── iterate_paths
    └── stats
-```
+----
 
 See the above `default.nix` files? Those are `Subgraphs` and they hide the entire directory level they reside in from higher levels in the hierarchy. Thus `processchunk` (a `Subgraph`) looks like yet another `Node` to `wrangle` (another `Subgraph`). Indeed `wrangle` is completely unable to distinguish between an `Agent` and a `Subgraph`.
 
-### How?
+=== How?
 
 The `Subgraph` `default.nix` requires you make decisions about two types of dependencies.
+
 * What `Nodes` are needed?
 * What `Edges` are needed?
 
-``` nix
+[source, nix]
+.default.nix
+----
 { subgraph, imsg, nodes, edges }:
 let
   imsgTrue = imsg {
@@ -65,32 +70,36 @@ subgraph {
     nand() output -> input io_print(${maths_boolean_print})
   '';
 }
-```
+----
 
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png)
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex10.png[]
 
 * The `{ subgraph, nodes, edges }:` lambda passes in three arguments, the `subgraph` builder, `edges` which consists of every `Edge` or `Edge Namespace`, and the `nodes` argument which consists of every `Node` and `Node Namespace` in the system.
 * The `subgraph` building function accepts these arguments:
-  * The `src` attribute is used to derive a `Subgraph` name based on location in the directory hierarchy.
-  * The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
+** The `src` attribute is used to derive a `Subgraph` name based on location in the directory hierarchy.
+** The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening '' and closing '' double single quotes by using the `with nodes; with edges;` syntax.
 * `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
 * This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
 
-This is the output of the above `Subgraph`'s compilation:
-```
+This is the output of the above ``Subgraph``'s compilation:
+
+[source, sh]
+----
 $ cat /nix/store/1syrjhi6jvbvs5rvzcjn4z3qkabwss7m-test_sjm/lib/lib.subgraph
 nand(/nix/store/7yzx8fp81fl6ncawk2ag2nvfc5l950xb-maths_boolean_nand)
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-prim_bool:(boolean=true)' -> a nand()
 '/nix/store/fx46blm272yca7n3gdynwxgyqgw90pr5-prim_bool:(boolean=true)' -> b nand()
 nand() output -> input io_print(/nix/store/k67wiy6z4f1vnv35vdyzcqpwvp51j922-maths_boolean_print)
-```
+----
 
-Mother of the Flying Spaghetti Monster, what is that? One really doesn't need to be concerned about this target, as it's meant to be processed by the `Fractalide Virtual Machine`. It's worth noting that those hashes hint at something powerful. Projects like `docker` and `git` implement this type of content addressable store. Except `docker`'s granularity is at container level, and `git`'s granularity is at revision level. Our granularity is at package or library level. It allows for reproducible, deterministic systems, instead of copying around "zipped" archives, that quickly max out your hard drive.
+Mother of the Flying Spaghetti Monster, what is that? One really doesn't need to be concerned about this target, as it's meant to be processed by the `Fractalide Virtual Machine`. It's worth noting that those hashes hint at something powerful. Projects like `docker` and `git` implement this type of content addressable store. Except ``docker``'s granularity is at container level, and ``git``'s granularity is at revision level. Our granularity is at package or library level. It allows for reproducible, deterministic systems, instead of copying around "zipped" archives, that quickly max out your hard drive.
 
-### Flowscript syntax is easy
+=== Flowscript syntax is easy
 
 Everything between the opening `''` and closing `''` is `flowscript`, i.e:
-``` nix
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -99,12 +108,15 @@ subgraph {
                        <---- here
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex0.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex0.png[]
 
 
-#### Agent initialization:
-``` nix
+==== Agent initialization:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -113,11 +125,14 @@ subgraph {
     agent_name(${name_of_agent})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
+----
 
-#### Referencing a previously initialized agent (with a comment):
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png[]
+
+==== Referencing a previously initialized agent (with a comment):
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -127,11 +142,14 @@ subgraph {
     agent_name()                 // <──┴─ same instance
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png)
+----
 
-#### Connecting and initializing two agents:
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex1.png[]
+
+==== Connecting and initializing two agents:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -140,13 +158,16 @@ subgraph {
     agent1(${name_of_agent1}) output_port -> input_port agent2(${name_of_agent2})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex3.png[]
 
 If the connection between `output_port` and `input_port` have the same `schema`, then the connection is upgraded to a new name called an `edge`.
 
-#### Creating an [imsg or an exposed edge](../edges/README.md)
-``` nix
+==== Creating an <<edges,imsg or an exposed edge>>
+
+[source, nix]
+----
 { subgraph, imsg, nodes, edges }:
 let
   imsgTrue = imsg {
@@ -160,11 +181,14 @@ subgraph {
     '${imsgTrue}' -> a agent(${name_of_agent})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png)
+----
 
-#### More complex iMsg or Exposed Edge
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex4.png[]
+
+==== More complex iMsg or Exposed Edge
+
+[source, nix]
+----
 { subgraph, imsg, edges, nodes }:
 let
   UiJsCreate = imsg {
@@ -180,12 +204,17 @@ subgraph {
     '${UiJsCreate}' -> input td()
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png)
+----
 
-[Learn](../edges/README.md) more about `Edges`.
-#### Creating an subgraph input port
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex5.png[]
+
+<<edges,Learn>> more about `Edges`.
+
+
+==== Creating an subgraph input port
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -194,11 +223,14 @@ subgraph {
     subgraph_input => input agent(${name_of_agent})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex6.png)
+----
 
-#### Creating an subgraph output port
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex6.png[]
+
+==== Creating an subgraph output port
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -207,11 +239,14 @@ subgraph {
     agent(${name_of_agent}) output => subgraph_output
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex7.png)
+----
 
-#### Subgraph initialization:
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex7.png[]
+
+==== Subgraph initialization:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -220,11 +255,14 @@ subgraph {
     subgraph(${name_of_subgraph})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex8.png)
+----
 
-#### Initializing a subgraph and agent then connecting them:
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex8.png[]
+
+==== Initializing a subgraph and agent then connecting them:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -235,11 +273,14 @@ subgraph {
     subgraph() output -> input agent()
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex9.png)
+----
 
-#### Output array port:
-``` nix
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex9.png[]
+
+==== Output array port:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -252,13 +293,16 @@ subgraph {
     clone() clone[3] => db_path3
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png)
+----
 
-Note `clone[1]` is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex11.png[]
 
-#### Input array port:
-``` nix
+NOTE: `clone[1]` is an `array output port` and in this particular `Subgraph` `Messages` are being replicated, a copy for each port element. The content between the `[` and `]` is a string, so don't be misled by the integers. There are two types of node ports, a `simple port` (which doesn't have array elements) and an `array port` (with array elements).
+
+==== Input array port:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -270,13 +314,16 @@ subgraph {
     add3 => add[3] adder() output -> output
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex15.png[]
 
 `Array ports` are used when the number of ports are unknown at `Agent` development time, but known when the implemented `Agent` is used in a `Subgraph`. The `adder` `Agent` demonstrates this well, it has an `array input port` which allows `Subgraph` developers to choose how many integers they want to add together. It really doesn't make sense to implement an adder with two fixed simple input ports then be constrained when you need to add a third number.
 
-#### Hierarchical naming:
-``` nix
+==== Hierarchical naming:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -287,19 +334,22 @@ subgraph {
     clone() clone[1] -> b nand() output => output
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png[]
 
 The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
 
 Explanation of the `Subgraph`:
 
-This `Subgraph` takes an input of a `Hidden Edge` type [prim_bool](../edges/maths/boolean/default.nix) over the `input` port. A `Msg` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `prim_bool` data type, which is then sent over the `Subgraph` output port `output`.
+This `Subgraph` takes an input of a `Hidden Edge` type https://github.com/fractalide/fractalide/blob/master/edges/prim/bool/default.nix[prim_bool] over the `input` port. A `Msg` is cloned by the `clone` node and the result is pushed out on the `array output port` `clone` using elements `[0]` and `[1]`. The `nand()` node then performs a `NAND` boolean logic operation and outputs a `prim_bool` data type, which is then sent over the `Subgraph` output port `output`.
 
 The above implements the `not` boolean logic operation.
 
-#### Abstraction powers:
-``` nix
+==== Abstraction powers:
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 let
   imsgTrue = imsg {
@@ -316,13 +366,16 @@ subgraph {
     not() output -> input print(${maths_boolean_print})
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex14.png[]
 
 Notice we're using the `not` node implemented earlier. One can build hierarchies many layers deep without suffering a run-time performance penalty. Once the graph is loaded into memory, all `Subgraphs` fall away, like water, after an artificial gravity generator engages, leaving only `Agents` connected to `Agents`.
 
-#### Namespaces
-``` nix
+==== Namespaces
+
+[source, nix]
+----
 { subgraph, nodes, edges }:
 
 subgraph {
@@ -342,20 +395,11 @@ subgraph {
     http() PUT[/todos/.+] -> input patch() response -> response http()
   '';
 }
-```
-![Image Alt](https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png)
+----
+
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png[]
 
 Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `Nodes`. As is the case with the `net_http_nodes.http` node.
 When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix to indicate a namespace.
-Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more [advanced](https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149)! You can read more about this in the [HOWTO](../HOWTO.md)
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149[advanced] You can read more about this in the <<howto,HOWTO>>.
 
-Now that you've had a basic introduction to the `Nodes` collection, specializing in `Subgraphs`, you might want to head on over to the `Agent` docs:
-
-1. [Rust Agent](./rs/README.md)
-
-You may progress to other sections too:
-
-1. [Edges](../edges/README.md)
-2. [Fractals](../fractals/README.md)
-3. [Services](../services/README.md)
-4. [HOWTO](../HOWTO.md)
