@@ -1,0 +1,330 @@
+= Quick Start to Building an NOT logic gate
+
+To add a contract, Rust or Subnet component to Fractalide:
+
+* Checkout the Fractalide source tree:
+
+[source, sh]
+----
+$ git clone git://github.com/fractalide/fractalide.git
+$ cd fractalide</screen>
+----
+
+Insert your name and email address into `support/upkeepers.nix`:
+
+[source, nix]
+----
+{
+/* Add your name and email address here.
+   Keep the list alphabetically sorted.
+   Prefer the same attrname as your github username, please,
+   so it's easy to ping a package @maintainer.
+   */
+
+   dmichiels = "Denis Michiels &lt;dmichiels@mailoo.org>";
+   sjmackenzie = "Stewart Mackenzie &lt;setori88@gmail.com>";
+   githubname = "Your Name &lt;email@email.com>";
+}
+----
+
+* Find a good place to in the Fractalide `contracts` directory to add your contract and Nix expression. For instance a simple boolean contract might go into `contracts/maths/boolean`.
+
+The folder will have two files:
+
+
+[source, capnp]
+.contract.capnp
+----
+@0xbde554c96bf60f36;
+
+struct Boolean {
+  boolean @0 :Bool;
+}
+----
+
+[source, nix]
+.default.nix
+----
+{stdenv, contract, upkeepers, ...}:
+
+edge {
+  src = ./.;
+
+  meta = with stdenv.lib; {
+    description = "Contract: Describes a simple boolean data type";
+    homepage = https://github.com/fractalide/fractalide/tree/master/edges/prim/bool;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname ];
+  };
+}
+----
+
+Your github name inserted in `support/upkeepers.nix` is used on this line: `maintainers = with upkeepers; [ githubname ];`
+Example: https://github.com/fractalide/fractalide/tree/master/edges/prim/bool/[`edges/prim/bool/`].
+
+We need to make your new contract seen by the system! Insert your newly created contract into `edges/default.nix`.
+
+[source, nix]
+.default.nix
+----
+  { pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support);
+in
+# insert in alphabetical order to reduce conflicts
+rec {
+  ...
+  PrimText = callPackage ./generic/text {};
+  PrimBool = callPackage ./edges/prim/bool {};
+  ...
+}
+----
+
+You can do a test compilation of your component with this command:
+
+[source, sh]
+----
+$ nix-build --argstr debug true -A contracts.prim_bool
+----
+
+
+If you see something like the below, then it worked.
+
+[source, sh]
+----
+/nix/store/jy9yjnnmlpc7bzaq5ihjqwiywrx59fw4-prim_bool
+----
+
+Example: https://github.com/fractalide/fractalide/blob/master/edges/default.nix[edges/default.nix]
+
+The next step is to build our NAND gate. Find a good place to put our NAND gate such as `components/maths/boolean/<replaceable>nand</replaceable>`.
+
+[source, sh]
+----
+$ mkdir -p components/maths/boolean/
+$ cd components/maths/boolean
+$ cargo new nand</screen>
+----
+
+Edit your `components/maths/boolean/nand/Cargo.toml` to make it look like this:
+
+[source, toml]
+----
+[package]
+name = "maths_boolean_nand"
+version = "0.1.0"
+authors = ["test &lt;test@test.com>"]
+
+[lib]
+name = "maths_boolean_nand"
+crate-type = ["dylib"]
+
+[dependencies]
+capnp = "*"
+rustfbp = "*"
+----
+
+Ensure you have have `capnp = "\*" and rustfbp = "*"` in your `dependencies`
+Run `cargo generate-lockfile` in the `components/maths/boolean/nand` to generate the `Cargo.lock`, which must be committed into the repository.
+
+Insert a the below into your `components/maths/boolean/nand/src/lib.rs`:
+
+[source, rust]
+.components/maths/boolean/nand/src/lib.rs
+----
+#[macro_use]
+extern crate rustfbp;
+extern crate capnp;
+
+agent! {
+  maths_boolean_nand, edges(prim_bool)
+  inputs(a: prim_bool, b: prim_bool),
+  inputs_array(),
+  outputs(output: prim_bool),
+  outputs_array(),
+  option(),
+  acc(),
+  fn run(&amp;mut self) -> Result&lt;()> {
+    let a = {
+        let mut ip_a = try!(self.ports.recv("a"));
+        let a_reader: prim_bool::Reader = try!(ip_a.read_schema());
+        a_reader.get_boolean()
+    };
+    let b = {
+        let mut ip_b = try!(self.ports.recv("b"));
+        let b_reader: prim_bool::Reader = try!(ip_b.read_schema());
+        b_reader.get_boolean()
+    };
+
+    let mut out_ip = IP::new();
+    {
+      let mut boolean = out_ip.build_schema::&lt;prim_bool::Builder>();
+      boolean.set_boolean(if a == true &amp;&amp; b == true {false} else {true});
+    }
+    try!(self.ports.send("output", out_ip));
+    Ok(())
+  }
+}
+----
+
+Notice the `edges(prim_bool)` line:
+This is where we reference our contracts we made earlier. But we still have not tied the contract with this `NAND` implemenation. This is done in the next section.
+
+Next you will need to add a `default.nix` to your new `NAND` component.
+
+[source, sh]
+----
+$ touch components/maths/boolean/nand/default.nix
+----
+
+Then insert this into the `default.nix`
+
+[source, nix]
+----
+{ component, contracts }:
+
+agent {
+  src = ./.;
+  edges = with edges; [ prim_bool ];
+}
+----
+
+Notice `contracts = [ prim_bool ];` here is where we will compile the `capnproto` contract and copy it into the `/tmp/nix-build-prim_bool-*-drv/` directory at build time. This is how your Rust compilation will see the contract. Ensure the name exactly matches the folder hierarchy in the contracts directory!
+
+We need to make our `NAND` seen by the system by adding it to `components/default.nix`
+
+[source, nix]
+----
+{ pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support // self);
+# insert in alphabetical order to reduce conflicts
+self = rec {
+...
+  maths_boolean_nand = callPackage ./maths/boolean/nand {};
+...
+};
+in
+self
+----
+
+Let us compile the `NAND` gate:
+
+[source, sh]
+----
+$ cd path/to/fractalide
+$ nix-build --argstr debug true -A components.maths_boolean_nand
+----
+
+Congratulations, you've created your first Fractalide contract and Rust agent! Now we will move on to creating a subnet and our final step... the NOT gate!
+
+[source, sh]
+----
+mkdir -p fractalide/components/maths/boolean/not
+cd fractalide/components/maths/boolean/not
+touch default.nix
+----
+
+Then insert the below into `default.nix`:
+
+[source, nix]
+.default.nix
+----
+{ stdenv, subnet, upkeepers, msg_clone, maths_boolean_nand, ...}:
+
+subnet rec {
+  src = ./.;
+  subnet = ''
+  input => input clone(${msg_clone})
+  clone() clone[1] -> a nand(${maths_boolean_nand}) output => output
+  clone() clone[2] -> b nand()
+  '';
+
+  meta = with stdenv.lib; {
+    description = "Subnet: NOT logic gate";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/maths/boolean/not;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname ];
+  };
+}
+----
+
+Notice the `${maths_boolean_nand}` and `${msg_clone}`? Nix will replace these to a the proper path just before compile time.
+This will compile to :
+
+[source]
+----
+input => input clone(/nix/store/wb6fgpz9hk7fg1f6p9if81s1xhflhy2x-msg_clone)
+clone() clone[1] -> a nand(/nix/store/bi0jacqxz1az1bbrc8470jbl7z3cmwdn-maths_boolean_nand) output => output
+clone() clone[2] -> b nand()
+----
+
+Add your new subnet to the `components/default.nix`
+
+[source, nix]
+.components/default.nix
+----
+{ pkgs, support, ... }:
+let
+callPackage = pkgs.lib.callPackageWith (pkgs // support // self);
+# insert in alphabetical order to reduce conflicts
+self = rec {
+...
+  maths_boolean_nand = callPackage ./maths/boolean/nand {};
+  maths_boolean_not = callPackage ./maths/boolean/not {};
+...
+};
+in
+self
+----
+
+Let's compile our newly created subnet:
+
+[source, sh]
+----
+$ nix-build --argstr debug true -A components.maths_boolean_not
+/nix/store/xdp2l67gdmxi7fagxnbanavcxd93mlr0-maths_boolean_not
+----
+
+Let us actually run our new `NOT` component.
+First, edit `fractalide/components/development/test/default.nix` so that it looks like this:
+
+[source, nix]
+.fractalide/components/development/test/default.nix
+----
+{ stdenv, subnet, upkeepers
+  , maths_boolean_not
+  , maths_boolean_print
+  , ...}:
+
+subnet rec {
+  src = ./.;
+  subnet = ''
+    'prim_bool:(boolean=true)' -> input not(maths_boolean_not) output -> input disp(maths_boolean_print)
+  '';
+
+  meta = with stdenv.lib; {
+    description = "Subnet: development testing file";
+    homepage = https://github.com/fractalide/fractalide/tree/master/components/development/test;
+    license = with licenses; [ mpl20 ];
+    maintainers = with upkeepers; [ githubname ];
+  };
+}
+----
+
+Next, you'll need to compile the `development_test`:
+
+[source, sh]
+----
+$ nix-build  --argstr subnet development_test --argstr debug true
+...
+/nix/store/a4lb3b9jjylvrl77kv0wb8m5v137f6j1-development_test
+----
+
+Then run it:
+
+[source, sh]
+----
+$ ./result/bin/development_test
+boolean : false
+----
