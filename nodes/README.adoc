@@ -403,3 +403,8 @@ Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../
 When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix to indicate a namespace.
 Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149[advanced] You can read more about this in the <<howto,HOWTO>>.
 
+== Agents
+
+include::rs/README.adoc[leveloffset=+2]
+
+include::purs/README.adoc[leveloffset=+2]
