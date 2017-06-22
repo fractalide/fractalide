@@ -1,37 +1,35 @@
-# Nodes collection
+= Rust
 
-The `Nodes` collection consists of `Subgraphs` and `Agents`. A `Subgraph` or an `Agent` may be referred to as a `Node`.
-
-## Agents
-
-### What?
+== What?
 
 Executable `Subgraphs` are defined as a network of `Agents`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Agents`  can be reconnected endlessly to form different executable `Subgraphs` without having to be changed internally.
 
-### Why?
+== Why?
 
-Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read [more](http://erlang.org/pipermail/erlang-questions/2011-May/058768.html) about the problem.
+Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read http://erlang.org/pipermail/erlang-questions/2011-May/058768.html[more] about the problem.
 
 Nix gives us the content addressable store which allows for `reproducibility`, and these `agents` give us `reusablility`. The combination is particularly potent form of programming.
 
 Once you have the above, you have truly reusable and reproducible functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
 
-```
+[source]
+----
 * Open source collaboration
 * Open peer review of nodes
 * Nice clean reusable nodes
 * Reproducible applications
-```
+----
 
-### Who?
+== Who?
 
 Typically programmers will develop `Agents`. They specialize in making `Agents` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the `Subgraphs`. Just as a hammer is designed to be reused, so `Subgraphs` and `Agents` should be designed for reuse.
 
-### Where?
+== Where?
 
-The `Agents` are found in this `nodes` directory, or the `nodes` directory of a [fractal](../fractals/README.md).
+The `Agents` are found in this `nodes` directory, or the `nodes` directory of a <<fractal,fractal>>.
 
-```
+[source, sh]
+----
 processchunk
 ├── default.nix
 ├── agg_chunk_triples
@@ -49,23 +47,27 @@ processchunk
 └── iterate_paths
     ├── default.nix <---
     └── lib.rs
-```
+----
+
 Typically when you see a `lib.rs` in the same directory as a `default.nix` you know it's an `Agent`.
 
-### How?
+== How?
 
 An `Agent` consists of two parts:
+
 * a `nix` `default.nix` file that sets up an environment to satisfy `rustc`.
 * a `rust` `lib.rs` file implements your `agent`.
 
-#### The `agent` Nix function.
+=== The `agent` Nix function.
 
 The `agent` function in the `default.nix` requires you make decisions about three types of dependencies.
+
 * What `edges` are needed?
-* What `crates` from [crates.io](https://crates.io) are needed?
+* What `crates` from https://crates.io[crates.io] are needed?
 * What `osdeps` or `operating system level dependencies` are needed?
 
-``` nix
+[source, nix]
+----
 { agent, edges, crates, pkgs }:
 
 agent {
@@ -74,30 +76,32 @@ agent {
   crates = with crates; [ rustfbp capnp ];
   osdeps = with pkgs; [ openssl ];
 }
-```
+----
 
-* The `{ agent, edges, crates, pkgs }:` lambda imports: The `edges` attribute which consists of every `edge` available on the system. The `crates` attribute set consists of every `crate` on https://crates.io. Lastly the `pkgs` pulls in every third party package available on NixOS, here's the whole [list](http://nixos.org/nixos/packages.html).
+* The `{ agent, edges, crates, pkgs }:` lambda imports: The `edges` attribute which consists of every `edge` available on the system. The `crates` attribute set consists of every `crate` on https://crates.io. Lastly the `pkgs` pulls in every third party package available on NixOS, here's the whole http://nixos.org/nixos/packages.html[list].
 * The `agent` function builds the rust `lib.rs` source code, and accepts these arguments:
-  * The `src` attribute is used to derive an `Agent` name based on location in the directory hierarchy.
-  * The `edges` lazily compiles schema and composite schema ensuring their availability.
-  * The `crates` specifies exactly which `crates` are needed in scope.
-  * The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl` needed in scope.
+** The `src` attribute is used to derive an `Agent` name based on location in the directory hierarchy.
+** The `edges` lazily compiles schema and composite schema ensuring their availability.
+** The `crates` specifies exactly which `crates` are needed in scope.
+** The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl` needed in scope.
 
 Only specified dependencies and their transitive dependencies will be pulled into scope once the `agent` compilation starts.
 
-This is the output of the above `agent`'s compilation:
+This is the output of the above ``agent``'s compilation:
 
-```
+[source, sh]
+----
 /nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-maths_boolean_nand
 └── lib
     └── libagent.so
-```
+----
 
-#### The `agent!` Rust macro
+=== The `agent!` Rust macro
 
 This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `${maths_boolean_nand}` `agent` seen earlier.
 
-``` rust
+[source, rust]
+----
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -126,13 +130,15 @@ agent! {
     Ok(End)
   }
 }
-```
+----
 
 An explanation of each of the items should be given.
 All expresions are optional except for the `run` function.
 
-##### `input`:
-``` rust
+==== `input`:
+
+[source, rust]
+----
 agent! {
   input(input_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
@@ -144,11 +150,14 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The `input` port, is a bounded buffer simple input channel that carries Cap'n Proto schemas as messages.
 
-##### `inarr`:
-``` rust
+==== `inarr`:
+
+[source, rust]
+----
 agent! {
   inarr(input_array_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
@@ -162,12 +171,15 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The `inarr` is an input array port, which consists of multiple elements of a port.
 They are used when the `Subgraph` developer needs multiple elements of a port, for example an `adder` has multiple input elements. This `adder` `agent` may be used in many scenarios where the amount of inputs are unknown at `agent development time`.
 
-##### `output`:
-``` rust
+==== `output`:
+
+[source, rust]
+----
 agent! {
   output(output_name: prim_bool),
   fn run(&mut self) -> Result<Signal> {
@@ -180,10 +192,14 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The humble simple output port. It doesn't have elements and is fixed at `subgraph development time`.
-##### `outarr`:
-``` rust
+
+==== `outarr`:
+
+[source, rust]
+----
 agent! {
   input(input: any),
   outarr(clone: any),
@@ -195,11 +211,14 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The `outarr` port is an `output array port`. It contains elements which may be expanded at `subgraph development time`.
 
-##### `state`:
-``` rust
+==== `state`:
+
+[source, rust]
+----
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
@@ -239,12 +258,14 @@ agent! {
     Ok(End)
   }
 }
-```
+----
 
 It is basically the state of the agent. A `State` allows us to keep complex state hanging around if needed. It can be any Rust type. The `state` is persistant for all the executions, so each time you are in the function `run()`, you can access and modify it. 
 
-##### `option`:
-``` rust
+==== `option`:
+
+[source, rust]
+----
 agent! {
   option(prim_bool),
   fn run(&mut self) -> Result<Signal> {
@@ -254,11 +275,14 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The `option` port gives the `subgraph` developer a way to send in parameters such as a connection string and the message will not be consumed and thrown away, that message may be read on every function run. Whereas other ports will consume and throw away the message.
 
-##### `accumulator`:
-``` rust
+==== `accumulator`:
+
+[source, rust]
+----
 agent! {
   accumulator(prim_bool),
   fn run(&mut self) -> Result<Signal> {
@@ -268,14 +292,10 @@ agent! {
     Ok(End)
   }
 }
-```
+----
+
 The `accumulator` gives the `subgraph` developer a way to start counting at a certain number. This port isn't used so often.
-##### `run`:
+
+==== `run`:
+
 This function does the actual processing and is the only mandatory expression of this macro.
-
-Now that you've had a basic introduction to the `Nodes` collection, you might want to head on over to
-
-1. [Edges](../../edges/README.md)
-2. [Fractals](../../fractals/README.md)
-3. [Services](../../services/README.md)
-4. [HOWTO](../../HOWTO.md)
