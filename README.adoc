@@ -204,7 +204,7 @@ From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build t
 ----
 $ git clone https://github.com/fractalide/fractalide.git
 $ cd fractalide
-$ nix-build --argstr rs test_nand
+$ nix-build --argstr node test_nand
 ...
 $ ./result
 boolean : false
