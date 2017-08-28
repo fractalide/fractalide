@@ -1,0 +1,11 @@
+language: nix
+
+matrix:
+  include:
+    - os: linux
+      script:
+        - nix-build tests
+    - os: linux
+      dist: trusty
+      script:
+        - nix-build tests
