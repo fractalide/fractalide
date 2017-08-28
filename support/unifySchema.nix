@@ -9,12 +9,13 @@ stdenv.mkDerivation (args // rec {
   phases = [ "buildPhase" "installPhase" ];
   buildPhase = ''
     ${ if edges != [] then ''
-      propagated=""
+      local propagated
       for i in $edges; do
         findInputs $i propagated propagated-build-inputs
       done
-      propagated1=""
-      for i in ''${propagated[@]}; do
+      unique_propagated=($(printf "%s\n" "''${propagated[@]}" | sort -u))
+      local propagated1
+      for i in ''${unique_propagated[@]}; do
         propagated1="$propagated1 $i/src/edge.capnp"
       done
       for i in $propagated1; do
