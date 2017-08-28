@@ -14,7 +14,7 @@ stdenv.mkDerivation (args // rec {
         findInputs $i propagated propagated-build-inputs
       done
       propagated1=""
-      for i in $propagated; do
+      for i in ''${propagated[@]}; do
         propagated1="$propagated1 $i/src/edge.capnp"
       done
       for i in $propagated1; do
