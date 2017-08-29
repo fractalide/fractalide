@@ -2,7 +2,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 
 = Fractalide
 
-**Reusable Reproducible Rust Microservices**
+**Reusable Reproducible Polyglot Services**
 
 image:https://img.shields.io/badge/license-MPLv2-blue.svg[LICENSE,link=https://github.com/fractalide/fractalide/blob/master/LICENSE] image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at \https://gitter.im/fractalide,link=https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge]
 image:https://travis-ci.org/fractalide/fractalide.svg?branch=master["Build Status", link="https://travis-ci.org/fractalide/fractalide"]
@@ -18,8 +18,6 @@ Fractalide is a free and open source service programming platform using dataflow
 Fractalide is in the same vein as the https://en.wikipedia.org/wiki/Apache_NiFi[NSA's Niagrafiles] (now known as https://nifi.apache.org/[Apache-NiFi]) or https://en.wikipedia.org/wiki/TensorFlow[Google's TensorFlow] but stripped of all Java, Python and GUI bloat. Fractalide faces big corporate players like http://abinitio.com/[Ab Initio], a company that charges a lot of money for dataflow solutions.
 
 Truly reusable and reproducible efficient nodes is what differentiates Fractalide from the others. It's this feature that allows open communities to mix and match nodes quickly and easily.
-
-The canonical source of this project is hosted on https://gitlab.com/fractalide/fractalide[GitLab], and is the preferred place for contributions, however if you do not wish to use GitLab, feel free to make issues, on the mirror. However pull requests will only be accepted on GitLab, to make it easy to maintain.
 
 == Features
 
@@ -253,4 +251,3 @@ Follow us on https://twitter.com/fractalide[twitter]
 * Peter Van Roy
 * Pieter Hintjens
 * Joachim Schiele & Paul Seitz of https://nixcloud.io[Nixcloud] who we commissioned to implement https://github.com/fractalide/nixcrates[nixcrates]
-
