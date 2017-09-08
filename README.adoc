@@ -250,4 +250,5 @@ Follow us on https://twitter.com/fractalide[twitter]
 
 * Peter Van Roy
 * Pieter Hintjens
-* Joachim Schiele & Paul Seitz of https://nixcloud.io[Nixcloud] who we commissioned to implement https://github.com/fractalide/nixcrates[nixcrates]
+* Joachim Schiele & Paul Seitz
+* P Meunier
