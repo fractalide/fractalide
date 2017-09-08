@@ -4,20 +4,21 @@
   , buffet
 }:
 let
-  callPackage = pkgs.lib.callPackageWith ( pkgs );
-  cratesSupport = rec {
-    crates = buffet.mods.rs;
-    normalizeName = builtins.replaceStrings [ "-"] ["_"];
-    depsStringCalc = pkgs.lib.fold ( dep: str: "${str} --extern ${normalizeName dep.name}=${dep}/lib${normalizeName dep.name}.rlib") "";
-    cratesDeps = pkgs.lib.fold ( recursiveDeps : newCratesDeps: newCratesDeps ++ recursiveDeps.cratesDeps  );
-    symlinkCalc = pkgs.lib.fold ( dep: str: "${str} ln -fs ${dep}/lib${normalizeName dep.name}.rlib nixcrates/ \n") "mkdir nixcrates\n ";
-  };
-  rustNightly = pkgs.rust.rustc;
-  rustc = callPackage ./rustc.nix {inherit cratesSupport unifySchema rustNightly genName; };
+  callPackage = lib.callPackageWith ( pkgs );
+  lib = pkgs.lib;
+  buildPlatform = pkgs.buildPlatform;
+  stdenv = pkgs.stdenv;
+  release = buffet.release;
+  verbose = buffet.verbose;
+  fetchzip = pkgs.fetchzip;
+  crates = buffet.mods.rs;
+  rust = pkgs.rust.rustc;
+  mkRustCrate = callPackage ./mkRustCrate.nix  { inherit rust lib buildPlatform stdenv; };
+  rustc = callPackage ./rustc.nix  { inherit rust mkRustCrate buffet crates unifySchema genName; };
 in
 {
-  executable = rustc { type = "executable"; };
-  crate = rustc { type = "crate"; };
-  fvm = rustc { type = "fvm"; };
-  agent = rustc { type = "agent"; };
+  executable = rustc { fractalType = "executable"; };
+  crate = rustc { fractalType = "crate"; };
+  fvm = rustc { fractalType = "fvm"; };
+  agent = rustc { fractalType = "agent"; };
 }

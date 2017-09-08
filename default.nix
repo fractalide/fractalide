@@ -1,6 +1,8 @@
 { backend ? "rs"
 , node    ? null
 , pkgs    ? import ./pkgs
+, release ? true
+, verbose ? false
 }:
 with pkgs.lib;
 assert elem backend ["rs" "purs"];
@@ -13,7 +15,7 @@ let
   mods     = import ./modules  { inherit buffet; };
   imsg     = support.imsg;
   buffet = {
-    inherit support edges imsg nodes services fractals mods pkgs;
+    inherit support edges imsg nodes services fractals mods pkgs release verbose;
   };
   fvm = import (./nodes/fvm + "/${backend}") { inherit buffet; };
   bin = let
@@ -31,5 +33,5 @@ let
         else bin;
 in
 {
-  inherit buffet nodes edges support services pkg;
+  inherit buffet mods nodes edges support services pkg;
 }
