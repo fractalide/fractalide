@@ -1,15 +1,14 @@
 { buffet }:
 let
-  callPackage = buffet.pkgs.lib.callPackageWith (buffet.pkgs);
-  /*nix-crates-index = ../../../nixcrates/nix-crates-index;*/
-  nix-crates-index = buffet.pkgs.fetchFromGitHub {
-    owner = "fractalide";
-    repo = "nix-crates-index";
-    rev = "960231687094f70263c46212d5b506ff48fb0658";
-    sha256 = "08h14y6w2ab9ygla42593i2dzxp81dnkfq5qm74gmp7cfl049hgg";
-  };
-  origCrates = buffet.pkgs.recurseIntoAttrs (callPackage nix-crates-index {});
-  rustfbp = import ./rustfbp { inherit crates; crate = buffet.support.rs.crate; };
-  crates = origCrates // { inherit rustfbp; };
+  lib = buffet.pkgs.lib;
+  buildPlatform = buffet.pkgs.buildPlatform;
+  stdenv = buffet.pkgs.stdenv;
+  fetchzip = buffet.pkgs.fetchzip;
+  rust = buffet.pkgs.rust.rustc;
+  release = buffet.release;
+  verbose = buffet.verbose;
+  mkRustCrate = import ../../support/rs/mkRustCrate.nix  { inherit rust lib buildPlatform stdenv; };
+  /*mkRustCrate = import ./crates/rust-utils.nix  { inherit lib buildPlatform stdenv; };*/
+  crates = import ./crates { inherit mkRustCrate fetchzip release verbose; };
 in
-  crates
+crates
