@@ -8,7 +8,6 @@ let
   release = buffet.release;
   verbose = buffet.verbose;
   mkRustCrate = import ../../support/rs/mkRustCrate.nix  { inherit rust lib buildPlatform stdenv; };
-  /*mkRustCrate = import ./crates/rust-utils.nix  { inherit lib buildPlatform stdenv; };*/
   crates = import ./crates { inherit mkRustCrate fetchzip release verbose; };
 in
 crates

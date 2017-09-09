@@ -2,7 +2,7 @@
 
 { name, edges ? [], target } @ args:
 let
-  compName = name + "_" + target;
+  compName = name + "_schema";
 in
 stdenv.mkDerivation (args // rec {
   name = compName;
