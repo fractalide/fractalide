@@ -1,5 +1,5 @@
 [package]
-name = "Cargo2Nix"
+name = "cargo2nix"
 description = "Generate Nix expressions from Cargo.lock files (in order to use Nix as a build system for crates)."
 homepage = "https://nest.pijul.com/pmeunier/nix-rust"
 repository = "https://nest.pijul.com/pmeunier/nix-rust"
