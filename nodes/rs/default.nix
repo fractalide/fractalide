@@ -34,6 +34,7 @@ in
   net_ndn = buffet.fractals.net_ndn.nodes.ndn;
   net_ndn_test = buffet.fractals.net_ndn.nodes.test;
   test_nand = callPackage ./test/nand {};
+  test_not = callPackage ./test/not {};
   test_edges = callPackage ./test/edges {};
   ui_js_nodes = buffet.fractals.ui_js.nodes.rs;
   app_growtest = buffet.fractals.ui_js.nodes.rs.app_growtest;
