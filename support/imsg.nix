@@ -12,7 +12,7 @@ let
     executable = false;
   };
   imsg = stdenv.mkDerivation {
-    name = class.name + "_imsg";
+    name = class.name + "_schema";
     phases = [ "installPhase" ];
     installPhase = ''
     mkdir -p $out
