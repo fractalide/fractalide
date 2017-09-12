@@ -33,5 +33,5 @@ let
         else bin;
 in
 {
-  inherit buffet mods nodes edges support services pkg;
+  inherit buffet nodes edges support services pkg pkgs;
 }
