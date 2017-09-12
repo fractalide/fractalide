@@ -1,13 +1,13 @@
-{ mkRustCrate, fetchzip, release, verbose }:
+{ buildRustCode, fetchzip, release, verbose }:
 let
-    all_crates_0_0_0_ = { dependencies?[], features?[] }: mkRustCrate {
+    all_crates_1_1_1_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "all_crates";
-      version = "0.0.0";
+      version = "1.1.1";
       fractalType = "crate";
       src = ./.;
       inherit dependencies features release verbose;
     };
-    byteorder_1_1_0_ = { dependencies?[], features?[] }: mkRustCrate {
+    byteorder_1_1_0_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "byteorder";
       version = "1.1.0";
       fractalType = "crate";
@@ -19,7 +19,7 @@ let
       libName = "byteorder";
       inherit dependencies features release verbose;
     };
-    capnp_0_8_11_ = { dependencies?[], features?[] }: mkRustCrate {
+    capnp_0_8_11_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "capnp";
       version = "0.8.11";
       fractalType = "crate";
@@ -32,7 +32,7 @@ let
       libName = "capnp";
       inherit dependencies features release verbose;
     };
-    capnpc_0_8_7_ = { dependencies?[], features?[] }: mkRustCrate {
+    capnpc_0_8_7_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "capnpc";
       version = "0.8.7";
       fractalType = "crate";
@@ -46,7 +46,7 @@ let
       crateBin = [ {  name = "capnpc-rust";  path = "src/main.rs"; } ];
       inherit dependencies features release verbose;
     };
-    kernel32_sys_0_2_2_ = { dependencies?[], features?[] }: mkRustCrate {
+    kernel32_sys_0_2_2_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "kernel32-sys";
       version = "0.2.2";
       fractalType = "crate";
@@ -59,7 +59,7 @@ let
       build = "build.rs";
       buildDependencies = [ winapi_build_0_1_1_ ];      inherit dependencies features release verbose;
     };
-    lazy_static_0_2_8_ = { dependencies?[], features?[] }: mkRustCrate {
+    lazy_static_0_2_8_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "lazy_static";
       version = "0.2.8";
       fractalType = "crate";
@@ -70,7 +70,7 @@ let
       };
       inherit dependencies features release verbose;
     };
-    libc_0_2_30_ = { dependencies?[], features?[] }: mkRustCrate {
+    libc_0_2_30_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "libc";
       version = "0.2.30";
       fractalType = "crate";
@@ -81,7 +81,7 @@ let
       };
       inherit dependencies features release verbose;
     };
-    libloading_0_4_1_ = { dependencies?[], features?[] }: mkRustCrate {
+    libloading_0_4_1_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "libloading";
       version = "0.4.1";
       fractalType = "crate";
@@ -93,7 +93,7 @@ let
       build = "build.rs";
       inherit dependencies features release verbose;
     };
-    memchr_1_0_1_ = { dependencies?[], features?[] }: mkRustCrate {
+    memchr_1_0_1_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "memchr";
       version = "1.0.1";
       fractalType = "crate";
@@ -105,7 +105,7 @@ let
       libName = "memchr";
       inherit dependencies features release verbose;
     };
-    nom_3_2_0_ = { dependencies?[], features?[] }: mkRustCrate {
+    nom_3_2_0_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "nom";
       version = "3.2.0";
       fractalType = "crate";
@@ -116,7 +116,7 @@ let
       };
       inherit dependencies features release verbose;
     };
-    num_cpus_1_6_2_ = { dependencies?[], features?[] }: mkRustCrate {
+    num_cpus_1_6_2_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "num_cpus";
       version = "1.6.2";
       fractalType = "crate";
@@ -127,14 +127,14 @@ let
       };
       inherit dependencies features release verbose;
     };
-    rustfbp_0_3_34_ = { dependencies?[], features?[] }: mkRustCrate {
+    rustfbp_0_3_34_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "rustfbp";
       version = "0.3.34";
       fractalType = "crate";
       src = ../rustfbp;
       inherit dependencies features release verbose;
     };
-    threadpool_1_7_0_ = { dependencies?[], features?[] }: mkRustCrate {
+    threadpool_1_7_0_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "threadpool";
       version = "1.7.0";
       fractalType = "crate";
@@ -145,7 +145,7 @@ let
       };
       inherit dependencies features release verbose;
     };
-    winapi_0_2_8_ = { dependencies?[], features?[] }: mkRustCrate {
+    winapi_0_2_8_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "winapi";
       version = "0.2.8";
       fractalType = "crate";
@@ -156,7 +156,7 @@ let
       };
       inherit dependencies features release verbose;
     };
-    winapi_build_0_1_1_ = { dependencies?[], features?[] }: mkRustCrate {
+    winapi_build_0_1_1_ = { dependencies?[], features?[] }: buildRustCode {
       crateName = "winapi-build";
       version = "0.1.1";
       fractalType = "crate";
@@ -171,7 +171,7 @@ let
 
 in
 rec {
-  all_crates_0_0_0 = all_crates_0_0_0_ {
+  all_crates_1_1_1 = all_crates_1_1_1_ {
     dependencies = [ capnp_0_8_11 capnpc_0_8_7 nom_3_2_0 rustfbp_0_3_34 ];
   };
   byteorder_1_1_0 = byteorder_1_1_0_ {
@@ -212,7 +212,7 @@ rec {
   };
   winapi_0_2_8 = winapi_0_2_8_ {};
   winapi_build_0_1_1 = winapi_build_0_1_1_ {};
-  all_crates = all_crates_0_0_0;
+  all_crates = all_crates_1_1_1;
   byteorder = byteorder_1_1_0;
   capnp = capnp_0_8_11;
   capnpc = capnpc_0_8_7;

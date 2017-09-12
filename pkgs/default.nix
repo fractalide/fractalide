@@ -3,8 +3,8 @@ let
   rustOverlay = (pkgs {}).fetchFromGitHub {
     owner  = "mozilla";
     repo   = "nixpkgs-mozilla";
-    rev    = "4779fb7776c3d38d78b5ebcee62165e6d1350f74";
-    sha256 = "04q6pwlz82qsm81pp7kk7i6ngrslq193v5wchdsrdifbn8cdqgbs";
+    rev    = "7e54fb37cd177e6d83e4e2b7d3e3b03bd6de0e0f";
+    sha256 = "1shz56l19kgk05p2xvhb7jg1whhfjix6njx1q4rvrc5p1lvyvizd";
   };
 in (pkgs {
   overlays = [

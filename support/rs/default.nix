@@ -11,14 +11,15 @@ let
   release = buffet.release;
   verbose = buffet.verbose;
   fetchzip = pkgs.fetchzip;
-  crates = buffet.mods.rs;
+  crates = buffet.mods.rs.crates;
   rust = pkgs.rust.rustc;
-  mkRustCrate = callPackage ./mkRustCrate.nix  { inherit rust lib buildPlatform stdenv; };
-  rustc = callPackage ./rustc.nix  { inherit rust mkRustCrate buffet crates unifySchema genName; };
+  buildRustCode = import ./buildRustCode.nix { inherit rust lib buildPlatform stdenv;};
+  specialize = callPackage ./specialize.nix  { inherit buildRustCode buffet crates unifySchema genName; };
 in
 {
-  executable = rustc { fractalType = "executable"; };
-  crate = rustc { fractalType = "crate"; };
-  fvm = rustc { fractalType = "fvm"; };
-  agent = rustc { fractalType = "agent"; };
+  buildRustCode = buildRustCode;
+  executable = specialize { fractalType = "executable"; };
+  crate = specialize { fractalType = "crate"; };
+  fvm = specialize { fractalType = "fvm"; };
+  agent = specialize { fractalType = "agent"; };
 }

@@ -1,7 +1,7 @@
 { buffet
   , rust
   , crates
-  , mkRustCrate
+  , buildRustCode
   , unifySchema
   , genName
 }:
@@ -23,7 +23,7 @@ let
     edges = edges;
     target = "rs";
   };
-  crate = mkRustCrate {
+  crate = buildRustCode {
     unifiedSchema = unifiedSchema;
     buildInputs = osdeps;
     crateName = compName;

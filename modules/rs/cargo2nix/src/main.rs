@@ -193,8 +193,8 @@ impl Crate {
         for _ in 0..n_indent {
             indent.push(' ');
         }
-        write!(w, "{}{}_{}_{}_{}_ = {{ dependencies?[], features?[] }}: mkRustCrate {{\n", indent, nix_name(&self.name), self.major, self.minor, self.patch)?;
-        // writeln!(w, "mkRustCrate {{")?;
+        write!(w, "{}{}_{}_{}_{}_ = {{ dependencies?[], features?[] }}: buildRustCode {{\n", indent, nix_name(&self.name), self.major, self.minor, self.patch)?;
+        // writeln!(w, "buildRustCode {{")?;
         writeln!(w, "{}  crateName = \"{}\";", indent, self.name)?;
         let version = if self.subpatch.len() > 0 {
             format!("{}.{}.{}-{}", self.major, self.minor, self.patch, self.subpatch)
@@ -546,7 +546,7 @@ fn main() {
         .arg(Arg::with_name("minimal_imports")
              .long("--minimal_imports")
              .short("-m")
-             .help("Write `{ mkRustCrate, fetchzip }:` instead of `with import <nixpkgs> {};`"))
+             .help("Write `{ buildRustCode, fetchzip, verbose, release }:` instead of `with import <nixpkgs> {};`"))
         .arg(Arg::with_name("target")
              .value_name("TARGET")
              .long("--output")
@@ -717,7 +717,7 @@ fn main() {
         Box::new(BufWriter::new(std::io::stdout()))
     };
     if minimal_imports {
-        nix_file.write_all(b"{ mkRustCrate, fetchzip, release, verbose }:
+        nix_file.write_all(b"{ buildRustCode, fetchzip, release, verbose }:
 let
 ").unwrap();
     } else {
