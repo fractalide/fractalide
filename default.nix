@@ -5,7 +5,7 @@
 , verbose ? false
 }:
 with pkgs.lib;
-assert elem backend ["rs" "purs"];
+assert elem backend ["rs" "idr"];
 let
   nodes    = import ./nodes    { inherit buffet; };
   edges    = import ./edges    { inherit buffet; };

@@ -1,8 +1,8 @@
-{ rs, edges, mods, pkgs }:
+{ support, edges, mods, pkgs }:
 
-rs.agent {
+support.rs.agent {
   src = ./.;
-  edges = with edges; [ FsPath FsPathOption ];
+  edges = with edges.capnp; [ FsPath FsPathOption ];
   mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [ nix ];
 }

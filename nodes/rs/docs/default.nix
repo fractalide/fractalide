@@ -3,19 +3,19 @@
 let
   doc = import ../../../doc {};
   FsPath = imsg {
-    class = edges.FsPath;
+    class = edges.capnp.FsPath;
     text = ''(path="${doc}/share/doc/fractalide/")'';
   };
   NetProtocolDomainPort = imsg {
-    class = edges.NetProtocolDomainPort;
+    class = edges.capnp.NetProtocolDomainPort;
     text = ''(domainPort="localhost:8083")'';
   };
   NetUrl = imsg {
-    class = edges.NetUrl;
+    class = edges.capnp.NetUrl;
     text = ''(url="/docs")'';
   };
   PrimText = imsg {
-    class = edges.PrimText;
+    class = edges.capnp.PrimText;
     text = ''(text="[*] serving: localhost:8083/docs/manual.html")'';
   };
 in

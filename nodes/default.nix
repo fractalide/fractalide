@@ -1,6 +1,6 @@
 { buffet }:
 let
-callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet.support // buffet );
+callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs // buffet );
 # Insert in alphabetical order in relevant section to reduce conflicts
 # This system grows by the slow accretion of nodes.
 # Once a node is declared stable, it is _/forbidden/_ to:
@@ -19,7 +19,7 @@ self = rec {
   # -   use at own risk, anything in this section can change at any time.
 
   rs = import ./rs { inherit buffet; };
-  purs = import ./purs { inherit buffet; };
+  idr = import ./idr { inherit buffet; };
 
   # DRAFT NODES
   # -   draft nodes change a lot in tandom with other nodes in their subgraph
@@ -35,6 +35,9 @@ self = rec {
   fvm_rs_scheduler = callPackage ./fvm/rs/scheduler {};
   fvm_rs_subgraph = callPackage ./fvm/rs/subgraph {};
   fvm_rs_vm = callPackage ./fvm/rs/vm {};
+
+  fvm_idr = callPackage ./fvm/idr {};
+  fvm_idr_scheduler = callPackage ./fvm/idr/scheduler {};
 
   # STABLE NODES
   # -   do not change names of ports, agents nor subgraphs,

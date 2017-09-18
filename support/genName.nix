@@ -1,15 +1,15 @@
 { lib }:
 location:
-  let recurse = folders:
+  let recurse = directories:
     let
-      folder = builtins.head folders;
+      directory = builtins.head directories;
       capitalize = word: (lib.toUpper (lib.substring 0 1 word) + lib.substring 1 (-1) word);
     in
-      if folder == "nodes" then
-        builtins.replaceStrings [" "] ["_"] (toString (builtins.tail folders))
-      else if folder == "edges" then
-        builtins.replaceStrings [" "] [""] (toString (map capitalize (builtins.tail folders)))
+      if builtins.elem directory [ "rs" "idr" "fvm"] then
+        builtins.replaceStrings [" "] ["_"] (toString (builtins.tail directories))
+      else if builtins.elem directory [ "rs" "idr" "capnp" ] then
+        builtins.replaceStrings [" "] [""] (toString (map capitalize (builtins.tail directories)))
       else
-        (recurse (builtins.tail folders));
+        (recurse (builtins.tail directories));
   in
     recurse (lib.splitString "/" (builtins.toString location))

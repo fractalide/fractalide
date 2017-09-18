@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = (lib.collect lib.isDerivation edges);
+  edges = (lib.collect lib.isDerivation edges.capnp);
   mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }
