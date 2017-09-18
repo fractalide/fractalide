@@ -1,7 +1,7 @@
 { subgraph, imsg, nodes, edges }:
 let
   PrimU64 = imsg {
-    class = edges.PrimU64;
+    class = edges.capnp.PrimU64;
     text = "(u64=0)";
   };
 in

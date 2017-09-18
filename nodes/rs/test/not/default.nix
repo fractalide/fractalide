@@ -2,7 +2,7 @@
 
 let
   PrimBool = imsg {
-    class = edges.PrimBool;
+    class = edges.capnp.PrimBool;
     text = "(bool=true)";
     option = "create";
   };

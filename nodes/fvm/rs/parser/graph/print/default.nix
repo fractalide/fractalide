@@ -2,6 +2,6 @@
 
 support.rs.agent {
   src = ./.;
-  edges = with edges; [ CoreGraph ];
+  edges = with edges.capnp; [ CoreGraph ];
   mods = with mods.rs; [ rustfbp capnp ];
 }

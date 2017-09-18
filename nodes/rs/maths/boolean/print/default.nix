@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ PrimBool ];
+  edges = with edges.capnp; [ PrimBool ];
   mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }
