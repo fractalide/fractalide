@@ -19,7 +19,6 @@ self = rec {
   # -   use at own risk, anything in this section can change at any time.
 
   rs = import ./rs { inherit buffet; };
-  purs = import ./purs { inherit buffet; };
   idr = import ./idr { inherit buffet; };
 
   # DRAFT NODES

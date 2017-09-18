@@ -406,5 +406,3 @@ Lastly, notice the advanced usage of `array ports` with this example: `GET[/todo
 == Agents
 
 include::rs/README.adoc[leveloffset=+2]
-
-include::purs/README.adoc[leveloffset=+2]
