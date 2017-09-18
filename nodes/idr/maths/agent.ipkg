@@ -1,0 +1,7 @@
+package nix_replace_me
+
+modules = Maths.NumOps
+        , Test.NumOps
+
+tests = Test.NumOps.testDouble
+      , Test.NumOps.testTriple

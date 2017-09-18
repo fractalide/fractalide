@@ -1,0 +1,6 @@
+package fvm
+
+modules = FVM
+
+executable = fvm
+main = FVM
