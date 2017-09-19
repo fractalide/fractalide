@@ -5,6 +5,7 @@
   , gcc
   , build-idris-package
   , genName
+  , unifyCapnpEdges
 }:
 
 { fractalType ? ""}:
@@ -12,6 +13,7 @@
 { name ? null
   , src ? null
   , mods ? []
+  , capnp_edges ? []
   , edges ? []
   , ipkg ? ""
   , ...

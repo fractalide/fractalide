@@ -1,6 +1,6 @@
 { support, edges, mods }:
 
-support.idr.agent {
+support.node.idr.agent {
   src = ./.;
   edges = with edges; [ ];
   mods = with mods.idr; [ prelude ];

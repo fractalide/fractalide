@@ -1,6 +1,6 @@
 { edge, edges }:
 
-edge {
+edge.capnp {
   src = ./.;
   edges =  with edges.capnp; [ FsPath ];
   schema = with edges.capnp; ''

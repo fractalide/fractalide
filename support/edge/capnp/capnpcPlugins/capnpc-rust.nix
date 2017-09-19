@@ -1,6 +1,6 @@
 { buffet }:
 
-buffet.support.rs.executable {
+buffet.support.node.rs.executable {
   name = "capnpc-rust";
   mods = with buffet.mods.rs; [ capnp capnpc ];
   src = buffet.pkgs.fetchFromGitHub {

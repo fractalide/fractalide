@@ -2,7 +2,7 @@
   , rust
   , crates
   , buildRustCode
-  , unifySchema
+  , unifyCapnpEdges
   , genName
 }:
 
@@ -12,19 +12,26 @@
   , src ? null
   , osdeps ? []
   , mods ? []
+  , capnp_edges ? []
   , edges ? []
   , configurePhase ? ""
   , ... } @ args:
-
 let
   compName = if name == null then genName src else name;
-  unifiedSchema = unifySchema {
+  unifyRustEdges = import ./unifyRustEdges.nix { inherit buffet; };
+  unifiedRustEdges = if edges != [] then unifyRustEdges {
     name = compName;
     edges = edges;
+  } else [];
+  unifiedCapnpEdges = unifyCapnpEdges {
+    name = compName;
+    edges = capnp_edges;
     target = "rs";
   };
-  crate = buildRustCode {
-    unifiedSchema = unifiedSchema;
+in
+  buildRustCode {
+    unifiedCapnpEdges = unifiedCapnpEdges;
+    unifiedRustEdges = unifiedRustEdges;
     buildInputs = osdeps;
     crateName = compName;
     version = "";
@@ -36,6 +43,4 @@ let
     configurePhase = configurePhase;
     release = buffet.release;
     verbose = buffet.verbose;
-  };
-in
-  crate
+  }

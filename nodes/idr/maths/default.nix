@@ -2,6 +2,6 @@
 
 agent {
   src = ./.;
-  edges = with edges; [ ];
+  edges = with edges.idr; [ ];
   mods = with mods.idr; [ prelude ];
 }

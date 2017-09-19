@@ -1,11 +1,11 @@
 { buffet }:
 
-buffet.support.rs.fvm {
+buffet.support.node.rs.fvm {
   name = "fvm";
   src = ./.;
   libPath = "main.rs";
   mods = with buffet.mods.rs; [ rustfbp capnp ];
-  edges = with buffet.edges.capnp; [ FsPath CoreAction ];
+  capnp_edges = with buffet.edges.capnp; [ FsPath CoreAction ];
   configurePhase = with buffet.nodes; ''
     substituteInPlace main.rs --replace "fs_file_open.so" "${rs.fs_file_open}/lib/libagent.so"
     substituteInPlace main.rs --replace "core_parser_lexical.so" "${fvm_rs_parser_lexical}/lib/libagent.so"

@@ -98,8 +98,12 @@ macro_rules! agent {
         mod edge_capnp {
                 include!("edge_capnp.rs");
         }
-
         use edge_capnp::*;
+
+        mod edges {
+                include!("edges.rs");
+        }
+        use edges::*;
 
         impl ThisAgent {
             $(

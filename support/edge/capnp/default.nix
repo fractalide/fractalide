@@ -1,15 +1,17 @@
-{ stdenv, writeTextFile, capnproto, genName }:
+{ buffet, genName }:
 { src, schema, edges ? [], ... } @ args:
 
 let
+pkgs = buffet.pkgs;
+inherit (pkgs) stdenv writeTextFile capnproto;
 name = genName src;
 edgeText = writeTextFile {
   name = name;
   text = schema;
   executable = false;
 };
-
-in stdenv.mkDerivation (args // {
+in
+stdenv.mkDerivation (args // {
   name = name;
   unpackPhase = "true";
   propagatedBuildInputs = edges;
