@@ -1,6 +1,6 @@
 { edge, edges }:
 
-edge {
+edge.capnp {
   src = ./.;
   edges =  with edges.capnp; [ CoreGraphExt ];
   schema = with edges.capnp; ''

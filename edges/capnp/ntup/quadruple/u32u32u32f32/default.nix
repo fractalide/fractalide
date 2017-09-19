@@ -1,6 +1,6 @@
 { edge, edges }:
 
-edge {
+edge.capnp {
   src = ./.;
   edges =  with edges.capnp; [ PrimU32 PrimF32 ];
   schema = with edges.capnp; ''

@@ -1,6 +1,6 @@
 { buffet }:
 
-buffet.support.rs.fvm {
+buffet.support.node.rs.fvm {
   name = "fvm";
   src = ./.;
   libPath = "main.rs";

@@ -8,8 +8,8 @@ edgeText = writeTextFile {
   text = schema;
   executable = false;
 };
-
-in stdenv.mkDerivation (args // {
+in
+stdenv.mkDerivation (args // {
   name = name;
   unpackPhase = "true";
   propagatedBuildInputs = edges;
