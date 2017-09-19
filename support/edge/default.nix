@@ -1,8 +1,5 @@
 { buffet, genName }:
-let
-  callPackage = buffet.pkgs.lib.callPackageWith ( buffet.pkgs );
-in
 {
-  capnp = callPackage ./capnp { inherit genName; };
-  rs = callPackage ./rs { inherit genName; };
+  capnp = import ./capnp { inherit buffet genName; };
+  rs = import ./rs { inherit buffet genName; };
 }

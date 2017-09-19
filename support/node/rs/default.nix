@@ -1,9 +1,9 @@
-{ pkgs
+{ buffet
   , genName
-  , unifySchema
-  , buffet
+  , unifyCapnpEdges
 }:
 let
+  pkgs = buffet.pkgs;
   callPackage = lib.callPackageWith ( pkgs );
   lib = pkgs.lib;
   buildPlatform = pkgs.buildPlatform;
@@ -14,7 +14,7 @@ let
   crates = buffet.mods.rs.crates;
   rust = pkgs.rust.rustc;
   buildRustCode = import ./buildRustCode.nix { inherit rust lib buildPlatform stdenv;};
-  specialize = callPackage ./specialize.nix  { inherit buildRustCode buffet crates unifySchema genName; };
+  specialize = callPackage ./specialize.nix  { inherit buildRustCode buffet crates unifyCapnpEdges genName; };
 in
 {
   buildRustCode = buildRustCode;

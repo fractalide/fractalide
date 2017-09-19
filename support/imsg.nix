@@ -1,7 +1,8 @@
-{ lib, stdenv, writeTextFile, capnproto, unifySchema }:
+{ buffet, lib, stdenv, writeTextFile, capnproto }:
 { class ? null, text ? "", option ? "" } @ args:
 let
-  unifiedSchema = unifySchema {
+  unifyCapnpEdges = import ./edge/capnp/unifyCapnpEdges.nix { inherit buffet; };
+  unifiedSchema = unifyCapnpEdges {
     name = class.name + "_trans";
     edges = class;
     target = "capnp";

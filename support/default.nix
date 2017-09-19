@@ -2,13 +2,12 @@
 let
   pkgs = buffet.pkgs;
   callPackage = buffet.pkgs.lib.callPackageWith ( pkgs );
-  capnpcPlugins = callPackage ./capnpcPlugins { inherit buffet; };
-  unifySchema = callPackage ./unifySchema.nix { inherit capnpcPlugins; };
+  unifyCapnpEdges = callPackage ./edge/capnp/unifyCapnpEdges.nix { inherit buffet; };
   genName = callPackage ./genName.nix {};
   subgraph = callPackage ./subgraph.nix { inherit genName; };
-  imsg = callPackage ./imsg.nix { inherit unifySchema; };
-  node = callPackage ./node { inherit pkgs genName unifySchema buffet; };
-  edge = callPackage ./edge { inherit genName buffet; };
+  imsg = callPackage ./imsg.nix { inherit buffet; };
+  node = callPackage ./node { inherit buffet genName unifyCapnpEdges; };
+  edge = callPackage ./edge { inherit buffet genName; };
 in
 {
   inherit subgraph imsg edge node;

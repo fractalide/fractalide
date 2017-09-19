@@ -7,14 +7,13 @@ in
 # It is the responsibility of that node-x's author to discuss with the author of the schema in question to stabilize the schema.
 {
   # raw
-  test_const = callPackage ./test/const {};
-  test_enum = callPackage ./test/enum {};
-  test_linked_list = callPackage ./test/linked_list {};
-  test_nil = callPackage ./test/nil {};
-  test_pair = callPackage ./test/pair {};
-  test_person = callPackage ./test/person {};
-  test_point = callPackage ./test/point {};
-  test_rectangle = callPackage ./test/rectangle {};
+  TestConst = callPackage ./test/const {};
+  TestEnum = callPackage ./test/enum {};
+  TestNil = callPackage ./test/nil {};
+  TestPair = callPackage ./test/pair {};
+  TestPerson = callPackage ./test/person {};
+  TestPoint = callPackage ./test/point {};
+  TestRectangle = callPackage ./test/rectangle {};
 
   # draft
 

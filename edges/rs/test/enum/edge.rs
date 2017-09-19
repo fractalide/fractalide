@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+
 enum Person {
     Engineer,
     Scientist,

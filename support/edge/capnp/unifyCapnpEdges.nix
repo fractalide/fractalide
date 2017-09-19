@@ -1,8 +1,11 @@
-{ stdenv, capnproto, capnpcPlugins}:
+{ buffet }:
 
 { name, edges ? [], target } @ args:
 let
+  stdenv = buffet.pkgs.stdenv;
+  capnproto = buffet.pkgs.capnproto;
   compName = name + "_schema";
+  capnpcPlugins = import ./capnpcPlugins { inherit buffet; };
 in
 stdenv.mkDerivation (args // rec {
   name = compName;

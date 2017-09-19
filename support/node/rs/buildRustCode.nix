@@ -1,6 +1,6 @@
 { rust, lib, buildPlatform, stdenv }:
 
-let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatures, libName, build, release, libPath, crateType, metadata, crateBin, finalBins, verboseBuild, unifiedSchema ? null, fractalType }:
+let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatures, libName, build, release, libPath, crateType, metadata, crateBin, finalBins, verboseBuild, unifiedCapnpEdges ? null, unifiedRustEdges, fractalType }:
 
       let depsDir = builtins.foldl' (deps: dep: deps + " " + dep.out) "" dependencies;
           completeDepsDir = builtins.foldl' (deps: dep: deps + " " + dep.out) "" complete;
@@ -50,8 +50,13 @@ let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatur
       export PROFILE=${if release then "release" else "debug"}
       export OUT_DIR=$(pwd)/target/build/${crateName}.out
 
-      if [[ ! -z "${unifiedSchema}" ]] ; then
-        ln -s ${unifiedSchema}/edge_capnp.rs edge_capnp.rs
+      if [[ ! -z "${unifiedCapnpEdges}" ]] ; then
+        ln -s ${unifiedCapnpEdges}/edge_capnp.rs edge_capnp.rs
+      fi
+      if [[ ! -z "${unifiedRustEdges}" ]] ; then
+        ln -s ${unifiedRustEdges}/edges.rs edges.rs
+      else
+        touch edges.rs
       fi
 
       ${if fractalType == "executable" || fractalType == "crate" then ''
@@ -193,7 +198,7 @@ let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatur
       fi
     '' + finalBins;
 
-    installCrate = fractalType: unifiedSchema: ''
+    installCrate = fractalType: unifiedCapnpEdges: ''
       mkdir -p $out
       ${if fractalType == "crate" || fractalType == "executable" then ''
         if [ -e target/link.final ]; then
@@ -208,10 +213,10 @@ let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatur
           cp -P target/bin/* $out/bin # */
         fi
       '' else if fractalType == "agent" then ''
-        if [ ! -f ${unifiedSchema}/edge.capnp ]; then
+        if [ ! -f ${unifiedCapnpEdges}/edge.capnp ]; then
           touch $out/edge.capnp
         else
-          ln -s ${unifiedSchema}/edge.capnp $out/edge.capnp
+          ln -s ${unifiedCapnpEdges}/edge.capnp $out/edge.capnp
         fi
         mkdir -p $out/lib
         cp libagent.so $out/lib
@@ -241,7 +246,8 @@ crate: stdenv.mkDerivation rec {
     libName = if crate ? libName then crate.libName else crate.crateName;
     libPath = if crate ? libPath then crate.libPath else "";
 
-    unifiedSchema = if (lib.attrByPath ["unifiedSchema"] [] crate) == [] then "" else crate.unifiedSchema;
+    unifiedCapnpEdges = if (lib.attrByPath ["unifiedCapnpEdges"] [] crate) == [] then "" else crate.unifiedCapnpEdges;
+    unifiedRustEdges = if (lib.attrByPath ["unifiedRustEdges"] [] crate) == [] then "" else crate.unifiedRustEdges;
     fractalType = if (lib.attrByPath ["fractalType"] [] crate) == [] then "" else crate.fractalType;
     configurePhase = if (lib.attrByPath ["configurePhase"] [] crate) == [] then "" else crate.configurePhase;
 
@@ -279,6 +285,6 @@ crate: stdenv.mkDerivation rec {
       if lib.attrByPath ["procMacro"] false crate then "proc-macro" else
       if lib.attrByPath ["plugin"] false crate then "dylib" else "lib";
     verboseBuild = if lib.attrByPath [ "verbose" ] false crate then "true" else "false";
-    buildPhase = mkRustCrate { inherit crateName dependencies complete crateFeatures libName build release libPath crateType crateVersion metadata crateBin finalBins verboseBuild unifiedSchema fractalType; };
-    installPhase = installCrate fractalType unifiedSchema;
+    buildPhase = mkRustCrate { inherit crateName dependencies complete crateFeatures libName build release libPath crateType crateVersion metadata crateBin finalBins verboseBuild unifiedCapnpEdges unifiedRustEdges fractalType; };
+    installPhase = installCrate fractalType unifiedCapnpEdges;
 }

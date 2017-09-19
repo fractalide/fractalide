@@ -1,8 +1,9 @@
-{ pkgs
+{ buffet
   , genName
-  , buffet
+  , unifyCapnpEdges
 }:
 let
+  pkgs = buffet.pkgs;
   callPackage = lib.callPackageWith ( pkgs );
   lib = pkgs.lib;
   buildPlatform = pkgs.buildPlatform;
@@ -11,9 +12,9 @@ let
   gmp = pkgs.gmp;
   gcc = pkgs.gcc;
   build-idris-package = buffet.mods.idr.build-idris-package;
-  idr = import ./idr.nix { inherit idris build-idris-package gmp gcc lib stdenv genName;};
+  specialize = import ./specialize.nix { inherit idris build-idris-package gmp gcc lib stdenv genName unifyCapnpEdges;};
 in
 {
-  fvm = idr { fractalType = "fvm"; };
-  agent = idr { fractalType = "agent"; };
+  fvm = specialize { fractalType = "fvm"; };
+  agent = specialize { fractalType = "agent"; };
 }

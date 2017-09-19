@@ -1,6 +1,6 @@
 { buffet }:
 
-buffet.support.idr.fvm {
+buffet.support.node.idr.fvm {
   name = "fvm";
   src = ./.;
   mods = with buffet.mods.idr; [ prelude ];

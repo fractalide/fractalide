@@ -1,5 +1,5 @@
-{ pkgs, genName, unifySchema, buffet }:
+{ buffet, genName, unifyCapnpEdges }:
 {
-  idr = import ./idr { inherit buffet genName; };
-  rs = import ./rs { inherit pkgs genName unifySchema buffet; };
+  idr = import ./idr { inherit buffet genName unifyCapnpEdges; };
+  rs = import ./rs { inherit buffet genName unifyCapnpEdges; };
 }

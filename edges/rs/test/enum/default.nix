@@ -1,6 +1,6 @@
 { edge, edges }:
 
-edge {
+edge.rs {
   src = ./.;
   edges =  with edges.rs; [ ];
 }

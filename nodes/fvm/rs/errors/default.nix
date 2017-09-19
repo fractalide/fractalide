@@ -2,6 +2,6 @@
 
 support.node.rs.agent {
   src = ./.;
-  edges = with edges.capnp; [ CoreGraph CoreSemanticError FsFileError ];
+  capnp_edges = with edges.capnp; [ CoreGraph CoreSemanticError FsFileError ];
   mods = with mods.rs; [ rustfbp capnp ];
 }
