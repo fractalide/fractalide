@@ -2,6 +2,7 @@ package nix_replace_me
 
 modules = Maths.NumOps
         , Test.NumOps
+        , Edges
 
 tests = Test.NumOps.testDouble
       , Test.NumOps.testTriple

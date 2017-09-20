@@ -1,7 +1,7 @@
 { buffet
   , rust
   , crates
-  , buildRustCode
+  , build-rust-package
   , unifyCapnpEdges
   , genName
 }:
@@ -29,7 +29,7 @@ let
     target = "rs";
   };
 in
-  buildRustCode {
+  build-rust-package {
     unifiedCapnpEdges = unifiedCapnpEdges;
     unifiedRustEdges = unifiedRustEdges;
     buildInputs = osdeps;
