@@ -22,6 +22,11 @@
   '';
 
   buildPhase = ''
+    ${
+      if (stdenv.lib.attrByPath ["unifiedIdrisEdges"] [] args) != [] then
+        "ln -s ${args.unifiedIdrisEdges}/edges.idr Edges.idr"
+      else ""
+    }
     ${idris}/bin/idris --build *.ipkg
   '';
 

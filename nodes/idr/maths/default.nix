@@ -2,6 +2,6 @@
 
 agent {
   src = ./.;
-  edges = with edges.idr; [ ];
+  edges = with edges.idr; [ TestVect ];
   mods = with mods.idr; [ prelude ];
 }

@@ -1,5 +1,7 @@
 module Maths.NumOps
 
+import Edges
+
 %access export -- to make functions under test visible
 
 double : Num a => a -> a
