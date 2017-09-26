@@ -10,7 +10,7 @@
 
     installIdrisLib () {
       if [ -d $1/lib/${idris.name} ]; then
-        ln -sv $1/lib/${idris.name}/* $out/lib/${idris.name}
+        ln -svf $1/lib/${idris.name}/* $out/lib/${idris.name}
       fi
     }
 

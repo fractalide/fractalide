@@ -5,11 +5,11 @@ let
   stdenv = buffet.pkgs.stdenv;
   name = genName src;
 in
-stdenv.mkDerivation (args // {
-  name = name;
-  src = src;
-  installPhase = ''
-    mkdir -p $out
-    cp $src/edge.idr $out/edge.idr
-  '';
-})
+  stdenv.mkDerivation (args // {
+    name = name;
+    src = src;
+    installPhase = ''
+      mkdir -p $out
+      cp $src/edge.idr $out/edge.idr
+    '';
+  })

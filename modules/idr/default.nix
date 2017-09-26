@@ -1,4 +1,4 @@
-{ buffet, pkgs ? buffet.pkgs, idris ? pkgs.haskellPackages.idris, overrides ? (self: super: {}) }: let
+{ pkgs, idris ? pkgs.haskellPackages.idris, overrides ? (self: super: {}) }: let
   inherit (pkgs.lib) callPackageWith fix' extends;
 
   /* Taken from haskell-modules/default.nix, should probably abstract this away */

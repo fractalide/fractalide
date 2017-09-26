@@ -43,6 +43,7 @@
       cp fvm $out/
     else
       ${idris}/bin/idris --install *.ipkg --ibcsubdir $IBCSUBDIR
+      cp --parents -r *.idr $IBCSUBDIR/*/
     fi
   '';
 
