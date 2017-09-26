@@ -24,8 +24,8 @@ in
   FsPath = callPackage ./fs/path {};
   FsFileDesc = callPackage ./fs/file/desc {};
   FsFileError = callPackage ./fs/file/error {};
-  NetHttpEdges = buffet.fractals.net_http.edges;
-  NetNdnEdges = buffet.fractals.net_ndn.edges;
+  NetHttpEdges = buffet.fractals.net_http.edges.capnp;
+  NetNdnEdges = buffet.fractals.net_ndn.edges.capnp;
   NetProtocolDomainPort = callPackage ./net/protocol/domain/port {};
   NetUrl = callPackage ./net/url {};
 
