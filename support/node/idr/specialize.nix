@@ -9,6 +9,7 @@
 { name ? null
   , src ? null
   , mods ? []
+  , osdeps ? []
   , capnp_edges ? []
   , edges ? []
   , ipkg ? ""
@@ -30,5 +31,5 @@ in build-idris-package (args // rec {
       substituteInPlace agent.ipkg --replace nix_replace_me ${compName}
     fi
   '';
-  propagatedBuildInputs = mods;
+  propagatedBuildInputs = [mods osdeps];
 })

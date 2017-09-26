@@ -1,0 +1,6 @@
+package idrisfbp
+
+pkgs = contrib
+
+modules = Agent
+        , Scheduler

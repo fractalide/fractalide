@@ -17,7 +17,7 @@ let
   specialize = callPackage ./specialize.nix  { inherit build-rust-package buffet crates unifyCapnpEdges genName; };
 in
 {
-  build-rust-package = build-rust-package;
+  inherit build-rust-package;
   executable = specialize { fractalType = "executable"; };
   crate = specialize { fractalType = "crate"; };
   fvm = specialize { fractalType = "fvm"; };

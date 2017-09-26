@@ -1,6 +1,8 @@
 package fvm
 
-modules = FVM
-
 executable = fvm
-main = FVM
+main = Main
+
+pkgs = contrib, idrisfbp
+
+modules = Main

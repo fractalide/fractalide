@@ -21,3 +21,4 @@ core
 
 # idris
 idris-libs
+*.ibc

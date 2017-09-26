@@ -1,6 +1,6 @@
 { rust, lib, buildPlatform, stdenv }:
 
-let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatures, libName, build, release, libPath, crateType, metadata, crateBin, finalBins, verboseBuild, unifiedCapnpEdges ? null, unifiedRustEdges, fractalType }:
+let mkRustCrate = { crateName, crateVersion, dependencies, complete, crateFeatures, libName, build, release, libPath, crateType, metadata, crateBin, finalBins, verboseBuild, unifiedCapnpEdges ? null, unifiedRustEdges, fractalType, setupHook }:
 
       let depsDir = builtins.foldl' (deps: dep: deps + " " + dep.out) "" dependencies;
           completeDepsDir = builtins.foldl' (deps: dep: deps + " " + dep.out) "" complete;
@@ -250,6 +250,7 @@ crate: stdenv.mkDerivation rec {
     unifiedRustEdges = if (lib.attrByPath ["unifiedRustEdges"] [] crate) == [] then "" else crate.unifiedRustEdges;
     fractalType = if (lib.attrByPath ["fractalType"] [] crate) == [] then "" else crate.fractalType;
     configurePhase = if (lib.attrByPath ["configurePhase"] [] crate) == [] then "" else crate.configurePhase;
+    setupHook = if (lib.attrByPath ["setupHook"] [] crate) == [] then "" else crate.setupHook;
 
 
     metadata = if crateVersion == null then builtins.substring 0 10 (builtins.hashString "sha256" (crateName)) else
@@ -285,6 +286,6 @@ crate: stdenv.mkDerivation rec {
       if lib.attrByPath ["procMacro"] false crate then "proc-macro" else
       if lib.attrByPath ["plugin"] false crate then "dylib" else "lib";
     verboseBuild = if lib.attrByPath [ "verbose" ] false crate then "true" else "false";
-    buildPhase = mkRustCrate { inherit crateName dependencies complete crateFeatures libName build release libPath crateType crateVersion metadata crateBin finalBins verboseBuild unifiedCapnpEdges unifiedRustEdges fractalType; };
+    buildPhase = mkRustCrate { inherit crateName dependencies complete crateFeatures libName build release libPath crateType crateVersion metadata crateBin finalBins verboseBuild unifiedCapnpEdges unifiedRustEdges fractalType setupHook; };
     installPhase = installCrate fractalType unifiedCapnpEdges;
 }
