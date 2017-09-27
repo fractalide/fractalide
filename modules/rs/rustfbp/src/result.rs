@@ -150,3 +150,9 @@ impl From<mpsc::SendError<Msg>> for Error {
         Error::MpscSend
     }
 }
+
+impl<T> From<mpsc::SendError<(Option<String>, T)>> for Error {
+    fn from(_: mpsc::SendError<(Option<String>, T)>) -> Error {
+        Error::MpscSend
+    }
+}

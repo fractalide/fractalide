@@ -3,26 +3,19 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  input(a: prim_bool, b: prim_bool),
-  output(output: prim_bool),
+  rsinput(a: bool, b: bool),
+  rsinarr(test: i32),
+  rsoutput(output: bool),
+  rsoutarr(boum: bool),
   fn run(&mut self) -> Result<Signal> {
-    let a = {
-        let mut msg_a = try!(self.input.a.recv());
-        let boolean: prim_bool::Reader = msg_a.read_schema()?;
-        boolean.get_bool()
-    };
-    let b = {
-        let mut msg_b = try!(self.input.b.recv());
-        let boolean: prim_bool::Reader = msg_b.read_schema()?;
-        boolean.get_bool()
-    };
-
-    let mut out_msg = Msg::new();
-    {
-      let mut boolean = out_msg.build_schema::<prim_bool::Builder>();
-      boolean.set_bool(if a == true && b == true {false} else {true});
+    let mut sum = 0;
+    for (_id, elem) in &self.rsinarr.test {
+      sum += elem.recv()?;   
     }
-    try!(self.output.output.send(out_msg));
+    let a = self.rsinput.a.recv()?;
+    let b = self.rsinput.b.recv()?;
+    let res = ! (a && b);
+    self.rsoutput.output.send(res)?;
     Ok(End)
   }
 }

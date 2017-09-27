@@ -66,6 +66,12 @@ macro_rules! agent {
         $( inarr($( $input_a_name:ident: $input_a_contract:ident ),*), )*
         $( output($( $output_name:ident: $output_contract:ident ),*), )*
         $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
+        // RsPort Start
+        $( rsinput($( $rs_input_name:ident: $rs_input_contract:ident ),*), )*
+        $( rsinarr($( $rs_input_a_name:ident: $rs_input_a_contract:ident ),*), )*
+        $( rsoutput($( $rs_output_name:ident: $rs_output_contract:ident ),*), )*
+        $( rsoutarr($( $rs_output_a_name:ident: $rs_output_a_contract:ident ),*), )*
+        // RsPort End
         $( state( $state_type:ty => $state_value:expr ), )*
         $( option($option:ident), )*
         $( accumulator($accumulator:ident ), )*
@@ -84,6 +90,8 @@ macro_rules! agent {
         use std::sync::mpsc::channel;
 
         use rustfbp::ports::{Msg, MsgSender, MsgReceiver, OutputSend};
+        use rustfbp::rsports;
+        use rustfbp::rsports::RsOutputSend;
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -192,6 +200,32 @@ macro_rules! agent {
 
         }
 
+        // RsPort Start
+        pub struct RsInput {
+            $($(
+                $rs_input_name: rsports::MsgReceiver<$rs_input_contract>,
+            )*)*
+        }
+
+        pub struct RsInarr {
+            $($(
+                $rs_input_a_name: HashMap<String, rsports::MsgReceiver<$rs_input_a_contract>>,
+            )*)*
+        }
+
+        pub struct RsOutarr {
+            $($(
+                $rs_output_a_name: HashMap<String, rsports::MsgSender<$rs_output_a_contract>>,
+            )*)*
+        }
+
+        pub struct RsOutput {
+            $($(
+                $rs_output_name: Option<rsports::MsgSender<$rs_output_contract>>,
+            )*)*
+        }
+        // RsPort End
+
         pub struct Input {
             option: MsgReceiver,
             accumulator: MsgReceiver,
@@ -229,6 +263,10 @@ macro_rules! agent {
             pub inarr: Inarr,
             pub output: Output,
             pub outarr: Outarr,
+            pub rsinput: RsInput,
+            pub rsoutput: RsOutput,
+            pub rsinarr: RsInarr,
+            pub rsoutarr: RsOutarr,
             pub option_msg: Option<Msg>,
             sched: Sender<CompMsg>,
             $(
@@ -248,6 +286,34 @@ macro_rules! agent {
                 let $input_name = MsgReceiver::new(id, sched.clone(), true);
                 senders.insert(stringify!($input_name).to_string(), $input_name.1);
             )*)*
+
+            // RsPort start
+            $($(
+                let $rs_input_name = rsports::MsgReceiver::<$rs_input_contract>::new(id, sched.clone(), true);
+            )*)*
+
+            let rsinput = RsInput {
+                $($(
+                    $rs_input_name: $rs_input_name.0,
+                )*)*
+            };
+            let rsoutput = RsOutput {
+                $($(
+                    $rs_output_name: None,
+                )*)*
+            };
+            let rsinarr = RsInarr {
+                $($(
+                    $rs_input_a_name: HashMap::new(),
+                )*)*
+            };
+            let rsoutarr = RsOutarr {
+                $($(
+                    $rs_output_a_name: HashMap::new(),
+                )*)*
+            };
+            // RsPort end
+
             let input = Input {
                 option: option.0,
                 accumulator: accumulator.0,
@@ -281,6 +347,10 @@ macro_rules! agent {
                 inarr: inarr,
                 output: output,
                 outarr: outarr,
+                rsinput: rsinput,
+                rsoutput: rsoutput,
+                rsinarr: rsinarr,
+                rsoutarr: rsoutarr,
                 option_msg: None,
                 sched: sched,
                 $(

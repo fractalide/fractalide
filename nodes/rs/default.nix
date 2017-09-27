@@ -28,6 +28,8 @@ in
   maths_boolean_or = callPackage ./maths/boolean/or {};
   maths_boolean_print = callPackage ./maths/boolean/print {};
   maths_boolean_xor = callPackage ./maths/boolean/xor {};
+  maths_boolean_true = callPackage ./maths/boolean/true {};
+  maths_boolean_false = callPackage ./maths/boolean/false {};
   maths_number_add = callPackage ./maths/number/add {};
   net_http_nodes = buffet.fractals.net_http.nodes.rs;
   net_http_test = buffet.fractals.net_http.nodes.test;
