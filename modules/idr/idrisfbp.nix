@@ -9,6 +9,7 @@ let
 in
 build-idris-package {
   name = "idrisfbp-${date}";
+  inherit pkgs;
 
   src = ./idrisfbp;
 

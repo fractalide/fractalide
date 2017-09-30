@@ -1,7 +1,7 @@
 # Build one of the packages that come with idris
 # name: The name of the package
 # deps: The dependencies of the package
-{ idris, build-idris-package, lib }: name: deps:
+{ pkgs, idris, build-idris-package, lib }: name: deps:
 let
   inherit (builtins.parseDrvName idris.name) version;
 in
@@ -11,13 +11,14 @@ build-idris-package {
   propagatedBuildInputs = deps;
 
   inherit (idris) src;
+  inherit pkgs;
 
   postUnpack = ''
-    sourceRoot=$sourceRoot/libs/${name}
+    ${name}
   '';
 
   postPatch = ''
-    sed -i ${name}.ipkg -e "/^opts/ s|-i \\.\\./|-i $IDRIS_LIBRARY_PATH/|g"
+    ${name}
   '';
 
   meta = idris.meta // {
