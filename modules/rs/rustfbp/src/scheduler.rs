@@ -16,7 +16,7 @@ use self::threadpool::ThreadPool;
 use result;
 use result::Result;
 
-use ports::{MsgSender, MsgReceiver, Msg};
+use ports::{MsgSender, MsgReceiver};
 use agent::Agent;
 
 use std::borrow::Cow;

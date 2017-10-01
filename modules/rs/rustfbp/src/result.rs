@@ -8,7 +8,6 @@ use std::io;
 use std::string;
 use std::sync::mpsc;
 
-use ports::Msg;
 use scheduler::CompMsg;
 
 pub type Result<T> = result::Result<T, Error>;
@@ -141,12 +140,6 @@ impl From<mpsc::TryRecvError> for Error {
 
 impl From<mpsc::SendError<CompMsg>> for Error {
     fn from(_: mpsc::SendError<CompMsg>) -> Error {
-        Error::MpscSend
-    }
-}
-
-impl From<mpsc::SendError<Msg>> for Error {
-    fn from(_: mpsc::SendError<Msg>) -> Error {
         Error::MpscSend
     }
 }

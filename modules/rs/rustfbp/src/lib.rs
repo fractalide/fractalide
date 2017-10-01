@@ -10,5 +10,4 @@ pub mod agent;
 pub mod scheduler;
 
 pub mod ports;
-pub mod rsports;
 pub mod result;

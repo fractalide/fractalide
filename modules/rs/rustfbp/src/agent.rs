@@ -67,12 +67,6 @@ macro_rules! agent {
         $( inarr($( $input_a_name:ident: $input_a_contract:ident ),*), )*
         $( output($( $output_name:ident: $output_contract:ident ),*), )*
         $( outarr($( $output_a_name:ident: $output_a_contract:ident ),*), )*
-        // RsPort Start
-        $( rsinput($( $rs_input_name:ident: $rs_input_contract:ident ),*), )*
-        $( rsinarr($( $rs_input_a_name:ident: $rs_input_a_contract:ident ),*), )*
-        $( rsoutput($( $rs_output_name:ident: $rs_output_contract:ident ),*), )*
-        $( rsoutarr($( $rs_output_a_name:ident: $rs_output_a_contract:ident ),*), )*
-        // RsPort End
         $( state( $state_type:ty => $state_value:expr ), )*
         $( option($option:ident), )*
         $( accumulator($accumulator:ident ), )*
@@ -90,9 +84,7 @@ macro_rules! agent {
         use std::sync::mpsc::{Sender};
         use std::sync::mpsc::channel;
 
-        use rustfbp::ports::{Msg, MsgSender, MsgReceiver, OutputSend};
-        use rustfbp::rsports;
-        use rustfbp::rsports::RsOutputSend;
+        use rustfbp::ports::{MsgSender, MsgReceiver, OutputSend};
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -120,6 +112,7 @@ macro_rules! agent {
             fn dummy() {
                 if stringify!($option) != "" {}
             }
+                /*
             pub fn recv_option(&mut self) -> Msg {
                 self.try_recv_option();
                 if self.option_msg.is_none() {
@@ -140,6 +133,7 @@ macro_rules! agent {
                 }
                 self.option_msg.as_ref().map(|msg|{ msg.clone() })
             }
+                */
             )*
 
         }
@@ -148,10 +142,10 @@ macro_rules! agent {
 
             fn is_input_ports(&self) -> bool {
                 $($(
-                    if true || stringify!($rs_input_name) == "" { return true; }
+                    if true || stringify!($input_name) == "" { return true; }
                 )*)*
                 $($(
-                    if true || stringify!($rs_input_a_name) == "" { return true; }
+                    if true || stringify!($input_a_name) == "" { return true; }
                 )*)*
                 false
             }
@@ -159,9 +153,9 @@ macro_rules! agent {
             fn connect(&mut self, port: &str, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($rs_output_name) => {
-                            let s = sender.downcast::<rsports::MsgSender<$rs_output_contract>>().expect("cannot downast");
-                            self.rsoutput.$rs_output_name = Some(*s);
+                        stringify!($output_name) => {
+                            let s = sender.downcast::<MsgSender<$output_contract>>().expect("cannot downast");
+                            self.output.$output_name = Some(*s);
                         }
                     )*)*
                         _ => {
@@ -174,9 +168,9 @@ macro_rules! agent {
             fn connect_array(&mut self, port: &str, element: String, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($rs_output_a_name) => {
-                            let s = sender.downcast::<rsports::MsgSender<$rs_output_a_contract>>().expect("cannot downcast");
-                            self.rsoutarr.$rs_output_a_name.insert(element, *s);
+                        stringify!($output_a_name) => {
+                            let s = sender.downcast::<MsgSender<$output_a_contract>>().expect("cannot downcast");
+                            self.outarr.$output_a_name.insert(element, *s);
                         }
                     )*)*
                         _ => {
@@ -189,9 +183,9 @@ macro_rules! agent {
             fn add_inarr_element(&mut self, port: &str, element: String, recv: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($rs_input_a_name) => {
-                            let r = recv.downcast::<rsports::MsgReceiver<$rs_input_a_contract>>().expect("cannot downcast");
-                            self.rsinarr.$rs_input_a_name.insert(element, *r);
+                        stringify!($input_a_name) => {
+                            let r = recv.downcast::<MsgReceiver<$input_a_contract>>().expect("cannot downcast");
+                            self.inarr.$input_a_name.insert(element, *r);
                             Ok(())
                         }
                     )*)*
@@ -205,58 +199,30 @@ macro_rules! agent {
 
         }
 
-        // RsPort Start
-        pub struct RsInput {
-            $($(
-                $rs_input_name: rsports::MsgReceiver<$rs_input_contract>,
-            )*)*
-        }
-
-        pub struct RsInarr {
-            $($(
-                $rs_input_a_name: HashMap<String, rsports::MsgReceiver<$rs_input_a_contract>>,
-            )*)*
-        }
-
-        pub struct RsOutarr {
-            $($(
-                $rs_output_a_name: HashMap<String, rsports::MsgSender<$rs_output_a_contract>>,
-            )*)*
-        }
-
-        pub struct RsOutput {
-            $($(
-                $rs_output_name: Option<rsports::MsgSender<$rs_output_contract>>,
-            )*)*
-        }
-        // RsPort End
-
         pub struct Input {
-            option: MsgReceiver,
-            accumulator: MsgReceiver,
             $($(
-                $input_name: MsgReceiver,
+                $input_name: MsgReceiver<$input_contract>,
             )*)*
         }
 
         pub struct Inarr {
             $($(
-                $input_a_name: HashMap<String, MsgReceiver>,
-            )*)*
-        }
-
-        pub struct Output {
-            accumulator: Option<MsgSender>,
-            $($(
-                $output_name: Option<MsgSender>,
+                $input_a_name: HashMap<String, MsgReceiver<$input_a_contract>>,
             )*)*
         }
 
         pub struct Outarr {
             $($(
-                $output_a_name: HashMap<String, MsgSender>,
+                $output_a_name: HashMap<String, MsgSender<$output_a_contract>>,
             )*)*
         }
+
+        pub struct Output {
+            $($(
+                $output_name: Option<MsgSender<$output_contract>>,
+            )*)*
+        }
+
 
         /* Global agent */
 
@@ -265,14 +231,10 @@ macro_rules! agent {
         pub struct ThisAgent {
             id: usize,
             pub input: Input,
-            pub inarr: Inarr,
             pub output: Output,
+            pub inarr: Inarr,
             pub outarr: Outarr,
-            pub rsinput: RsInput,
-            pub rsoutput: RsOutput,
-            pub rsinarr: RsInarr,
-            pub rsoutarr: RsOutarr,
-            pub option_msg: Option<Msg>,
+            //pub option_msg: Option<Msg>,
             sched: Sender<CompMsg>,
             $(
             pub state: $state_type ,
@@ -283,64 +245,35 @@ macro_rules! agent {
         pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
 
             let mut senders: HashMap<String, Box<Any + Send>> = HashMap::new();
-            let option = MsgReceiver::new(id, sched.clone(), false);
+            // let option = MsgReceiver::new(id, sched.clone(), false);
             // senders.insert("option".to_string(), option.1);
-            let accumulator = MsgReceiver::new(id, sched.clone(), false);
+            // let accumulator = MsgReceiver::new(id, sched.clone(), false);
             // senders.insert("accumulator".to_string(), accumulator.1.clone());
-            $($(
-                let $input_name = MsgReceiver::new(id, sched.clone(), true);
-                // senders.insert(stringify!($input_name).to_string(), $input_name.1);
-            )*)*
+            // $($(
+            //     let $input_name = MsgReceiver::new(id, sched.clone(), true);
+            //     // senders.insert(stringify!($input_name).to_string(), $input_name.1);
+            // )*)*
 
-            // RsPort start
             $($(
-                let $rs_input_name = rsports::MsgReceiver::<$rs_input_contract>::new(id, sched.clone(), true);
-                senders.insert(stringify!($rs_input_name).to_string(), Box::new($rs_input_name.1));
+                let $input_name = MsgReceiver::<$input_contract>::new(id, sched.clone(), true);
+                senders.insert(stringify!($input_name).to_string(), Box::new($input_name.1));
             )*)*
-
-            let rsinput = RsInput {
-                $($(
-                    $rs_input_name: $rs_input_name.0,
-                )*)*
-            };
-            let rsoutput = RsOutput {
-                $($(
-                    $rs_output_name: None,
-                )*)*
-            };
-            let rsinarr = RsInarr {
-                $($(
-                    $rs_input_a_name: HashMap::new(),
-                )*)*
-            };
-            let rsoutarr = RsOutarr {
-                $($(
-                    $rs_output_a_name: HashMap::new(),
-                )*)*
-            };
-            // RsPort end
 
             let input = Input {
-                option: option.0,
-                accumulator: accumulator.0,
                 $($(
                     $input_name: $input_name.0,
                 )*)*
             };
-
+            let output = Output {
+                $($(
+                    $output_name: None,
+                )*)*
+            };
             let inarr = Inarr {
                 $($(
                     $input_a_name: HashMap::new(),
                 )*)*
             };
-
-            let output = Output {
-                accumulator: Some(accumulator.1),
-                $($(
-                    $output_name: None,
-                )*)*
-            };
-
             let outarr = Outarr {
                 $($(
                     $output_a_name: HashMap::new(),
@@ -350,14 +283,10 @@ macro_rules! agent {
             let agent= ThisAgent {
                 id: id,
                 input: input,
-                inarr: inarr,
                 output: output,
+                inarr: inarr,
                 outarr: outarr,
-                rsinput: rsinput,
-                rsoutput: rsoutput,
-                rsinarr: rsinarr,
-                rsoutarr: rsoutarr,
-                option_msg: None,
+                //option_msg: None,
                 sched: sched,
                 $(
                     state: $state_value,
@@ -376,8 +305,8 @@ macro_rules! agent {
         pub extern fn clone_input(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
             match port {
                 $($(
-                    stringify!($rs_input_name) => {
-                        let s = sender.downcast_ref::<rsports::MsgSender<$rs_input_contract>>().unwrap();
+                    stringify!($input_name) => {
+                        let s = sender.downcast_ref::<MsgSender<$input_contract>>().unwrap();
                         Ok(Box::new(s.clone()))
                     },
                 )*)*
@@ -389,8 +318,8 @@ macro_rules! agent {
         pub extern fn clone_input_array(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
             match port {
                 $($(
-                    stringify!($rs_input_a_name) => {
-                        let s = sender.downcast_ref::<rsports::MsgSender<$rs_input_a_contract>>().unwrap();
+                    stringify!($input_a_name) => {
+                        let s = sender.downcast_ref::<MsgSender<$input_a_contract>>().unwrap();
                         Ok(Box::new(s.clone()))
                     },
                 )*)*
@@ -402,8 +331,8 @@ macro_rules! agent {
         pub extern fn create_input_array(port: &str, id: usize, sched: Sender<CompMsg>, must_sched: bool ) -> Result<(Box<Any + Send>, Box<Any + Send>)> {
             match port {
                 $($(
-                    stringify!($rs_input_a_name) => {
-                        let (r, s): (rsports::MsgReceiver::<$rs_input_a_contract>, rsports::MsgSender::<$rs_input_a_contract>) = rsports::MsgReceiver::new(id, sched, must_sched);
+                    stringify!($input_a_name) => {
+                        let (r, s): (MsgReceiver::<$input_a_contract>, MsgSender::<$input_a_contract>) = MsgReceiver::new(id, sched, must_sched);
                         Ok((Box::new(r), Box::new(s)))
                     },
                 )*)*
@@ -415,7 +344,7 @@ macro_rules! agent {
         pub extern fn get_schema_input(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($rs_input_name)=> Ok(stringify!($rs_input_contract).into()),
+                    stringify!($input_name)=> Ok(stringify!($input_contract).into()),
                 )*)*
                 /*
                 $(
@@ -433,7 +362,7 @@ macro_rules! agent {
         pub extern fn get_schema_input_array(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($rs_input_a_name) => Ok(stringify!($rs_input_a_contract).into()),
+                    stringify!($input_a_name) => Ok(stringify!($input_a_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
@@ -443,7 +372,7 @@ macro_rules! agent {
         pub extern fn get_schema_output(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($rs_output_name)=> Ok(stringify!($rs_output_contract).into()),
+                    stringify!($output_name)=> Ok(stringify!($output_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
@@ -453,7 +382,7 @@ macro_rules! agent {
         pub extern fn get_schema_output_array(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($rs_output_a_name) => Ok(stringify!($rs_output_a_contract).into()),
+                    stringify!($output_a_name) => Ok(stringify!($output_a_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
