@@ -109,11 +109,8 @@ macro_rules! agent {
 
         impl ThisAgent {
             $(
-            fn dummy() {
-                if stringify!($option) != "" {}
-            }
-                /*
-            pub fn recv_option(&mut self) -> Msg {
+
+            pub fn recv_option(&mut self) -> $option {
                 self.try_recv_option();
                 if self.option_msg.is_none() {
                     self.option_msg = self.input.option.recv().ok();
@@ -124,7 +121,7 @@ macro_rules! agent {
                 }
             }
 
-            pub fn try_recv_option(&mut self) -> Option<Msg> {
+            pub fn try_recv_option(&mut self) -> Option<$option> {
                 loop {
                     match self.input.option.try_recv() {
                         Err(_) => { break; },
@@ -133,7 +130,6 @@ macro_rules! agent {
                 }
                 self.option_msg.as_ref().map(|msg|{ msg.clone() })
             }
-                */
             )*
 
         }
@@ -203,6 +199,12 @@ macro_rules! agent {
             $($(
                 $input_name: MsgReceiver<$input_contract>,
             )*)*
+            $(
+                option: MsgReceiver<$option>,
+            )*
+            $(
+                accumulator: MsgReceiver<$accumulator>,
+            )*
         }
 
         pub struct Inarr {
@@ -221,6 +223,9 @@ macro_rules! agent {
             $($(
                 $output_name: Option<MsgSender<$output_contract>>,
             )*)*
+            $(
+                accumulator: Option<MsgSender<$accumulator>>,
+            )*
         }
 
 
@@ -234,7 +239,9 @@ macro_rules! agent {
             pub output: Output,
             pub inarr: Inarr,
             pub outarr: Outarr,
-            //pub option_msg: Option<Msg>,
+            $(
+                pub option_msg: Option<$option>,
+            )*
             sched: Sender<CompMsg>,
             $(
             pub state: $state_type ,
@@ -245,14 +252,15 @@ macro_rules! agent {
         pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
 
             let mut senders: HashMap<String, Box<Any + Send>> = HashMap::new();
-            // let option = MsgReceiver::new(id, sched.clone(), false);
-            // senders.insert("option".to_string(), option.1);
-            // let accumulator = MsgReceiver::new(id, sched.clone(), false);
-            // senders.insert("accumulator".to_string(), accumulator.1.clone());
-            // $($(
-            //     let $input_name = MsgReceiver::new(id, sched.clone(), true);
-            //     // senders.insert(stringify!($input_name).to_string(), $input_name.1);
-            // )*)*
+            $(
+                let option = MsgReceiver::<$option>::new(id, sched.clone(), false);
+                senders.insert("option".to_string(), Box::new(option.1));
+            )*
+
+            $(
+                let accumulator = MsgReceiver::<$accumulator>::new(id, sched.clone(), false);
+                senders.insert("accumulator".to_string(), Box::new(accumulator.1.clone()));
+            )*
 
             $($(
                 let $input_name = MsgReceiver::<$input_contract>::new(id, sched.clone(), true);
@@ -263,11 +271,20 @@ macro_rules! agent {
                 $($(
                     $input_name: $input_name.0,
                 )*)*
+                $(
+                    option: option.0 as MsgReceiver::<$option>,
+                )*
+                $(
+                    accumulator: accumulator.0 as MsgReceiver::<$accumulator>,
+                )*
             };
             let output = Output {
                 $($(
                     $output_name: None,
                 )*)*
+                $(
+                    accumulator: Some(accumulator.1) as Option<MsgSender::<$accumulator>>,
+                )*
             };
             let inarr = Inarr {
                 $($(
@@ -286,7 +303,9 @@ macro_rules! agent {
                 output: output,
                 inarr: inarr,
                 outarr: outarr,
-                //option_msg: None,
+                $(
+                    option_msg: None as Option<$option>,
+                )*
                 sched: sched,
                 $(
                     state: $state_value,
@@ -310,6 +329,18 @@ macro_rules! agent {
                         Ok(Box::new(s.clone()))
                     },
                 )*)*
+                    $(
+                        "option" => {
+                            let s = sender.downcast_ref::<MsgSender<$option>>().unwrap();
+                            Ok(Box::new(s.clone()))
+                        }
+                    )*
+                    $(
+                        "accumulator" => {
+                            let s = sender.downcast_ref::<MsgSender<$accumulator>>().unwrap();
+                            Ok(Box::new(s.clone()))
+                        }
+                    )*
                     _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
@@ -346,14 +377,12 @@ macro_rules! agent {
                 $($(
                     stringify!($input_name)=> Ok(stringify!($input_contract).into()),
                 )*)*
-                /*
                 $(
                     "option" => Ok(stringify!($option).into()),
                 )*
                 $(
                     "accumulator" => Ok(stringify!($accumulator).into()),
                 )*
-                */
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
