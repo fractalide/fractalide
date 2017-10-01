@@ -11,6 +11,7 @@ extern crate capnp;
 use ports::{MsgSender, MsgReceiver};
 use scheduler::Signal;
 use result::Result;
+use std::any::Any;
 
 /// Provide the generic functions of agents
 ///
@@ -19,11 +20,11 @@ pub trait Agent {
     /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
     /// Connect output port
-    fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()>;
+    fn connect(&mut self, port: &str, sender: Box<Any + Send>) -> Result<()>;
     /// Connect array output port
-    fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()>;
+    fn connect_array(&mut self, port: &str, element: String, sender: Box<Any + Send>) -> Result<()>;
     /// Add input element
-    fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()>;
+    fn add_inarr_element(&mut self, port: &str, element: String, recv: Box<Any + Send>) -> Result<()>;
     /// Run the method of the agent, his personal logic
     fn run(&mut self) -> Result<Signal>;
 }
@@ -100,6 +101,7 @@ macro_rules! agent {
         use capnp::message;
 
         use std::io::{Read, Write};
+        use std::any::Any;
 
         use rustfbp::scheduler::Signal::*;
 
@@ -146,19 +148,20 @@ macro_rules! agent {
 
             fn is_input_ports(&self) -> bool {
                 $($(
-                    if true || stringify!($input_name) == "" { return true; }
+                    if true || stringify!($rs_input_name) == "" { return true; }
                 )*)*
                 $($(
-                    if true || stringify!($input_a_name) == "" { return true; }
+                    if true || stringify!($rs_input_a_name) == "" { return true; }
                 )*)*
                 false
             }
 
-            fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()> {
+            fn connect(&mut self, port: &str, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($output_name) => {
-                            self.output.$output_name = Some(sender);
+                        stringify!($rs_output_name) => {
+                            let s = sender.downcast::<rsports::MsgSender<$rs_output_contract>>().expect("cannot downast");
+                            self.rsoutput.$rs_output_name = Some(*s);
                         }
                     )*)*
                         _ => {
@@ -168,11 +171,12 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()> {
+            fn connect_array(&mut self, port: &str, element: String, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($output_a_name) => {
-                            self.outarr.$output_a_name.insert(element, sender);
+                        stringify!($rs_output_a_name) => {
+                            let s = sender.downcast::<rsports::MsgSender<$rs_output_a_contract>>().expect("cannot downcast");
+                            self.rsoutarr.$rs_output_a_name.insert(element, *s);
                         }
                     )*)*
                         _ => {
@@ -182,11 +186,12 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()> {
+            fn add_inarr_element(&mut self, port: &str, element: String, recv: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
-                        stringify!($input_a_name) => {
-                            self.inarr.$input_a_name.insert(element, recv);
+                        stringify!($rs_input_a_name) => {
+                            let r = recv.downcast::<rsports::MsgReceiver<$rs_input_a_contract>>().expect("cannot downcast");
+                            self.rsinarr.$rs_input_a_name.insert(element, *r);
                             Ok(())
                         }
                     )*)*
@@ -275,21 +280,22 @@ macro_rules! agent {
         }
 
         #[allow(dead_code)]
-        pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+        pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
 
-            let mut senders: HashMap<String, MsgSender> = HashMap::new();
+            let mut senders: HashMap<String, Box<Any + Send>> = HashMap::new();
             let option = MsgReceiver::new(id, sched.clone(), false);
-            senders.insert("option".to_string(), option.1);
+            // senders.insert("option".to_string(), option.1);
             let accumulator = MsgReceiver::new(id, sched.clone(), false);
-            senders.insert("accumulator".to_string(), accumulator.1.clone());
+            // senders.insert("accumulator".to_string(), accumulator.1.clone());
             $($(
                 let $input_name = MsgReceiver::new(id, sched.clone(), true);
-                senders.insert(stringify!($input_name).to_string(), $input_name.1);
+                // senders.insert(stringify!($input_name).to_string(), $input_name.1);
             )*)*
 
             // RsPort start
             $($(
                 let $rs_input_name = rsports::MsgReceiver::<$rs_input_contract>::new(id, sched.clone(), true);
+                senders.insert(stringify!($rs_input_name).to_string(), Box::new($rs_input_name.1));
             )*)*
 
             let rsinput = RsInput {
@@ -362,22 +368,63 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn create_agent(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+        pub extern fn create_agent(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
             new(id, sched)
+        }
+
+        #[no_mangle]
+        pub extern fn clone_input(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+            match port {
+                $($(
+                    stringify!($rs_input_name) => {
+                        let s = sender.downcast_ref::<rsports::MsgSender<$rs_input_contract>>().unwrap();
+                        Ok(Box::new(s.clone()))
+                    },
+                )*)*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn clone_input_array(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+            match port {
+                $($(
+                    stringify!($rs_input_a_name) => {
+                        let s = sender.downcast_ref::<rsports::MsgSender<$rs_input_a_contract>>().unwrap();
+                        Ok(Box::new(s.clone()))
+                    },
+                )*)*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn create_input_array(port: &str, id: usize, sched: Sender<CompMsg>, must_sched: bool ) -> Result<(Box<Any + Send>, Box<Any + Send>)> {
+            match port {
+                $($(
+                    stringify!($rs_input_a_name) => {
+                        let (r, s): (rsports::MsgReceiver::<$rs_input_a_contract>, rsports::MsgSender::<$rs_input_a_contract>) = rsports::MsgReceiver::new(id, sched, must_sched);
+                        Ok((Box::new(r), Box::new(s)))
+                    },
+                )*)*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
         }
 
         #[no_mangle]
         pub extern fn get_schema_input(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($input_name)=> Ok(stringify!($input_contract).into()),
+                    stringify!($rs_input_name)=> Ok(stringify!($rs_input_contract).into()),
                 )*)*
+                /*
                 $(
                     "option" => Ok(stringify!($option).into()),
                 )*
                 $(
                     "accumulator" => Ok(stringify!($accumulator).into()),
                 )*
+                */
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
         }
@@ -386,7 +433,7 @@ macro_rules! agent {
         pub extern fn get_schema_input_array(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($input_a_name) => Ok(stringify!($input_a_contract).into()),
+                    stringify!($rs_input_a_name) => Ok(stringify!($rs_input_a_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
@@ -396,7 +443,7 @@ macro_rules! agent {
         pub extern fn get_schema_output(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($output_name)=> Ok(stringify!($output_contract).into()),
+                    stringify!($rs_output_name)=> Ok(stringify!($rs_output_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
@@ -406,7 +453,7 @@ macro_rules! agent {
         pub extern fn get_schema_output_array(port: &str) -> Result<String> {
             match port {
                 $($(
-                    stringify!($output_a_name) => Ok(stringify!($output_a_contract).into()),
+                    stringify!($rs_output_a_name) => Ok(stringify!($rs_output_a_contract).into()),
                 )*)*
                 _ => { Err(result::Error::PortDontExist(port.into())) }
             }
