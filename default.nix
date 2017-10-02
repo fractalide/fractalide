@@ -1,7 +1,7 @@
 { backend ? "rs"
 , node    ? null
 , pkgs    ? import ./pkgs
-, release ? true
+, release ? false
 , verbose ? false
 }:
 with pkgs.lib;

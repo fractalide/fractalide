@@ -4,12 +4,12 @@ extern crate capnp;
 extern crate rustfbp;
 
 agent! {
-    rsinput(input: bool),
-    rsoutput(output: bool),
+    input(input: bool),
+    output(output: bool),
     fn run(&mut self) -> Result<Signal> {
-        let a = self.rsinput.input.recv()?;
+        let a = self.input.input.recv()?;
         println!("boolean : {}", a);
-        self.rsoutput.output.send(a)?;
+        self.output.output.send(a)?;
         Ok(End)
     }
 }

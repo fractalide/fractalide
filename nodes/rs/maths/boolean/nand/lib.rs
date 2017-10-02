@@ -3,19 +3,19 @@ extern crate rustfbp;
 extern crate capnp;
 
 agent! {
-  rsinput(a: bool, b: bool),
-  rsinarr(test: i32),
-  rsoutput(output: bool),
-  rsoutarr(boum: bool),
+  input(a: bool, b: bool),
+  inarr(test: i32),
+  output(output: bool),
+  outarr(boum: usize),
   fn run(&mut self) -> Result<Signal> {
     let mut sum = 0;
-    for (_id, elem) in &self.rsinarr.test {
+    for (_id, elem) in &self.inarr.test {
       sum += elem.recv()?;   
     }
-    let a = self.rsinput.a.recv()?;
-    let b = self.rsinput.b.recv()?;
+    let a = self.input.a.recv()?;
+    let b = self.input.b.recv()?;
     let res = ! (a && b);
-    self.rsoutput.output.send(res)?;
+    self.output.output.send(res)?;
     Ok(End)
   }
 }
