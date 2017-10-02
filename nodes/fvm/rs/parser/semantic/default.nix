@@ -2,6 +2,6 @@
 
 support.node.rs.agent {
   src = ./.;
-  capnp_edges = with edges.capnp; [ CoreSemanticError CoreGraph CoreLexical ];
+  edges = with edges.rs; [ CoreGraph CoreLexical CoreSemanticError ];
   mods = with mods.rs; [ rustfbp capnp ];
 }

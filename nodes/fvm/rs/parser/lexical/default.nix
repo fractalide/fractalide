@@ -2,6 +2,6 @@
 
 support.node.rs.agent {
   src = ./.;
-  capnp_edges = with edges.capnp; [ FsFileDesc CoreLexical ];
+  edges = with edges.rs; [ FsFileDesc CoreLexical ];
   mods = with mods.rs; [ rustfbp capnp nom ];
 }

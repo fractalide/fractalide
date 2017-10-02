@@ -7,6 +7,10 @@ in
 # It is the responsibility of that node-x's author to discuss with the author of the schema in question to stabilize the schema.
 {
   # raw
+  CoreLexical = callPackage ./core/lexical {};
+  CoreGraph = callPackage ./core/graph {};
+  CoreSemanticError = callPackage ./core/semantic/error {};
+  FsFileDesc = callPackage ./fs/file/desc {};
   TestConst = callPackage ./test/const {};
   TestEnum = callPackage ./test/enum {};
   TestNil = callPackage ./test/nil {};
