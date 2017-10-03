@@ -5,8 +5,7 @@ let
     builder = "${bash}/bin/bash";
     args = [ ./builder.sh ];
     setup = ./setup.sh;
-    baseInputs = [ gnutar gzip gnumake gcc binutils coreutils gawk gnused gnugrep patchelf findutils haskellPackages.idris ];
-    buildInputs = [ gmp ];
+    baseInputs = [ gnutar gzip gnumake gcc binutils coreutils gawk gnused gnugrep patchelf findutils haskellPackages.idris pkgconfig gmp ];
     system = builtins.currentSystem;
   };
 in

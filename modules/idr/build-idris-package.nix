@@ -10,4 +10,4 @@ in mkDerivation {
   src = args.src;
   propagatedBuildInputs = args.propagatedBuildInputs;
   inherit postUnpack postPatch;
-} // unifiedIdrisEdges
+} // unifiedIdrisEdges // args

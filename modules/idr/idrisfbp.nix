@@ -1,6 +1,8 @@
 { pkgs
 , build-idris-package
 , contrib
+, prelude
+, base
 , idris
 }:
 
@@ -13,7 +15,7 @@ build-idris-package {
 
   src = ./idrisfbp;
 
-  propagatedBuildInputs = [ contrib ];
+  propagatedBuildInputs = [ contrib base prelude ];
 
   meta = {
     description = "Flow-based programming libraries for idris.";

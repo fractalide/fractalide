@@ -25,6 +25,7 @@ let
 in build-idris-package {
   pkgs = buffet.pkgs;
   name = compName;
+  buildInputs = [ osdeps ];
   inherit src unifiedIdrisEdges;
-  propagatedBuildInputs = [mods osdeps];
+  propagatedBuildInputs = [ mods ];
 }

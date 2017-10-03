@@ -1,5 +1,5 @@
 unset PATH
-for p in $baseInputs $buildInputs; do
+for p in $baseInputs; do
   export PATH=$p/bin${PATH:+:}$PATH
 done
 
@@ -7,25 +7,49 @@ function preHook() {
   export IDRIS_LIBRARY_PATH=$PWD/libs
   mkdir -p $IDRIS_LIBRARY_PATH
 
-  # Library install path
   idris_version=$(idris --version)
   export IBCSUBDIR=$out/lib/$idris_version
   mkdir -p $IBCSUBDIR
 
-  addIdrisLibs () {
-    if [ -d $1/lib/$idris_version ]; then
-      ln -sf $1/lib/$idris_version/* $IDRIS_LIBRARY_PATH
-    fi
-  }
+  for ipkg in $propagatedBuildInputs; do
+    ln -sf $ipkg/lib/$idris_version/* $IDRIS_LIBRARY_PATH
+  done
+}
 
-  envHooks+=(addIdrisLibs)
+stripHash() {
+    local strippedName
+    # On separate line for `set -e`
+    strippedName="$(basename "$1")"
+    if echo "$strippedName" | grep -q '^[a-z0-9]\{32\}-'; then
+        echo "$strippedName" | cut -c34-
+    else
+        echo "$strippedName"
+    fi
 }
 
 function unpackPhase() {
-  # revamp to support src directories and compressed files
-  tar xzf $src
-  # mv idris*/* .
-  # cp $src/* -r .
+  local fn="$src"
+  if [ -d "$fn" ]; then
+      # We can't preserve hardlinks because they may have been
+      # introduced by store optimization, which might break things
+      # in the build.
+      cp -pr --reflink=auto "$fn"/* .
+  else
+      case "$fn" in
+          *.tar.xz | *.tar.lzma)
+              # Don't rely on tar knowing about .xz.
+              xz -d < "$fn" | tar xf -
+              ;;
+          *.tar | *.tar.* | *.tgz | *.tbz2)
+              # GNU tar can automatically select the decompression method
+              # (info "(tar) gzip").
+              tar xf "$fn"
+              ;;
+          *)
+              return 1
+              ;;
+      esac
+  fi
 }
 
 # used in build-builtin-package, only for builtin packages otherwise it's ""
@@ -49,10 +73,6 @@ function postPatch {
 }
 
 function buildPhase() {
-  echo ------------
-  echo $IDRIS_LIBRARY_PATH
-  ls $IDRIS_LIBRARY_PATH/* #<--- fails here due to preHook not being executed.
-  echo ------------
   if [ ! -z $unifiedIdrisEdges ]; then
     "ln -s $unifiedIdrisEdges/edges.idr Edges.idr"
   fi
