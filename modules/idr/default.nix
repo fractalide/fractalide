@@ -1,7 +1,11 @@
-{ pkgs, idris ? pkgs.haskellPackages.idris, overrides ? (self: super: {}) }: let
+{ pkgs
+  , overrides ? (self: super: {})
+}:
+let
   inherit (pkgs.lib) callPackageWith fix' extends;
 
-  /* Taken from haskell-modules/default.nix, should probably abstract this away */
+  idris = import ./idris.nix { inherit pkgs; };
+
   callPackageWithScope = scope: drv: args: (callPackageWith scope drv args) // {
     overrideScope = f: callPackageWithScope (mkScope (fix' (extends f scope.__unfix__))) drv args;
   };

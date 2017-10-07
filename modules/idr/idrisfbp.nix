@@ -1,6 +1,8 @@
 { pkgs
 , build-idris-package
 , contrib
+, prelude
+, base
 , idris
 }:
 
@@ -9,10 +11,11 @@ let
 in
 build-idris-package {
   name = "idrisfbp-${date}";
+  inherit pkgs;
 
   src = ./idrisfbp;
 
-  propagatedBuildInputs = [ contrib ];
+  propagatedBuildInputs = [ contrib base prelude ];
 
   meta = {
     description = "Flow-based programming libraries for idris.";

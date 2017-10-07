@@ -3,8 +3,7 @@
   , unifyCapnpEdges
 }:
 let
-  build-idris-package = buffet.mods.idr.build-idris-package;
-  specialize = import ./specialize.nix { inherit buffet build-idris-package genName unifyCapnpEdges;};
+  specialize = import ./specialize0.nix { inherit buffet genName unifyCapnpEdges;};
 in
 {
   fvm = specialize { fractalType = "fvm"; };
