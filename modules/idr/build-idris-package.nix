@@ -1,13 +1,15 @@
-{ lib }: args:
+{ pkgs, lib }: args:
 let
-  mkDerivation = import ./build-idris-package-builder.nix args.pkgs;
+  idris = import ./idris.nix { inherit pkgs; };
+  mkDerivation = import ./build-idris-package-builder.nix args.pkgs idris;
   unifiedIdrisEdges = if (lib.attrByPath ["unifiedIdrisEdges"] [] args) == [] then {} else args.unifiedIdrisEdges;
-  postUnpack = if (lib.attrByPath ["postUnpack"] [] args) == [] then "" else args.postUnpack;
   postPatch = if (lib.attrByPath ["postPatch"] [] args) == [] then "" else args.postPatch;
+  unpackPhase = if (lib.attrByPath ["unpackPhase"] [] args) == [] then "" else args.unpackPhase;
+  buildPhase = if (lib.attrByPath ["buildPhase"] [] args) == [] then "" else args.buildPhase;
 
 in mkDerivation {
   name = args.name;
   src = args.src;
   propagatedBuildInputs = args.propagatedBuildInputs;
-  inherit postUnpack postPatch;
+  inherit postPatch unpackPhase buildPhase;
 } // unifiedIdrisEdges // args

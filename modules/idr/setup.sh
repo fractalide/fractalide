@@ -4,36 +4,31 @@ for p in $baseInputs; do
 done
 
 function preHook() {
-  export IDRIS_LIBRARY_PATH=$PWD/libs
+  idris_version=$(idris --version)
+  export IDRIS_LIBRARY_PATH=$PWD/idris_libs
   mkdir -p $IDRIS_LIBRARY_PATH
 
-  idris_version=$(idris --version)
   export IBCSUBDIR=$out/lib/$idris_version
   mkdir -p $IBCSUBDIR
 
   for ipkg in $propagatedBuildInputs; do
-    ln -sf $ipkg/lib/$idris_version/* $IDRIS_LIBRARY_PATH
+    ln -sf "$ipkg/lib/$idris_version"/* $IDRIS_LIBRARY_PATH
   done
-}
-
-stripHash() {
-    local strippedName
-    # On separate line for `set -e`
-    strippedName="$(basename "$1")"
-    if echo "$strippedName" | grep -q '^[a-z0-9]\{32\}-'; then
-        echo "$strippedName" | cut -c34-
-    else
-        echo "$strippedName"
-    fi
 }
 
 function unpackPhase() {
   local fn="$src"
+
   if [ -d "$fn" ]; then
+      ipkg_name=$(echo -e "${unpackPhase}" | tr -d '[:space:]')
       # We can't preserve hardlinks because they may have been
       # introduced by store optimization, which might break things
       # in the build.
-      cp -pr --reflink=auto "$fn"/* .
+      if [ ! -z $ipkg_name ]; then
+        cp -pr --reflink=auto "$fn/libs"/* .
+      else
+        cp -pr --reflink=auto "$fn"/* .
+      fi
   else
       case "$fn" in
           *.tar.xz | *.tar.lzma)
@@ -50,13 +45,7 @@ function unpackPhase() {
               ;;
       esac
   fi
-}
-
-# used in build-builtin-package, only for builtin packages otherwise it's ""
-function postUnpack () {
-  if [ ! -z $postUnpack ]; then
-    cd idris*/libs/$postUnpack
-  fi
+  chmod -R 754 .
 }
 
 function prePatch {
@@ -64,17 +53,21 @@ function prePatch {
     substituteInPlace agent.ipkg --replace nix_replace_me $name
   fi
 }
-# used in build-builtin-package, only for builtin packages otherwise it's ""
+
 function postPatch {
   if [ ! -z $postPatch ]; then
-    ipkg_name=$(echo -e "${postPatch}.ipkg" | tr -d '[:space:]')
-    sed -i $ipkg_name -e "/^opts/ s|-i \\.\\./|-i $IDRIS_LIBRARY_PATH/|g"
+    ipkg_path=$(echo -e "$postPatch/$postPatch.ipkg" | tr -d '[:space:]')
+    sed -i $ipkg_path -e "/^opts/ s|-i \\.\\./|-i $IDRIS_LIBRARY_PATH/|g"
   fi
 }
 
 function buildPhase() {
+  if [ ! -z $buildPhase ]; then
+    ipkg_path="$buildPhase"
+    cd $ipkg_path
+  fi
   if [ ! -z $unifiedIdrisEdges ]; then
-    "ln -s $unifiedIdrisEdges/edges.idr Edges.idr"
+    ln -s $unifiedIdrisEdges/edges.idr Edges.idr
   fi
   idris --build *.ipkg
 }
@@ -101,7 +94,6 @@ function fixupPhase() {
 function genericBuild() {
   preHook
   unpackPhase
-  postUnpack
   prePatch
   postPatch
   buildPhase

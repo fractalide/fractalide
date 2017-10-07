@@ -13,11 +13,15 @@ build-idris-package {
   inherit (idris) src;
   inherit pkgs;
 
-  postUnpack = ''
+  unpackPhase = ''
     ${name}
   '';
 
   postPatch = ''
+    ${name}
+  '';
+
+  buildPhase = ''
     ${name}
   '';
 
