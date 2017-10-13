@@ -22,12 +22,11 @@ agent! {
         match literal {
             CoreLexical::Start(path) => {
                 match handle_stream(&self)? {
-                    Ok(graph) => {
-                        println!("\ngraph : \n{:?}", graph);
+                    Ok(mut graph) => {
+                        graph.path = path;
                         self.output.output.send(graph);
                     },
                     Err(errors) => {
-                        println!("\nerrors : \n{:?}", errors);
                         let err = CoreSemanticError {
                             path: path,
                             parsing: errors,
@@ -90,7 +89,12 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<CoreGraph, Vec<
                                     let in_p_n = name;
                                     let (out_c_n, _) = if let CoreLexicalToken::Comp(n, s) = out_c { (n, s) } else { unreachable!() };
                                     let (out_p_n, out_p_s) = if let CoreLexicalToken::Port(n, s) = out_p { (n, s) } else { unreachable!() };
-                                    graph.ext_out.push((out_c_n, out_p_n, out_p_s, in_p_n));
+                                    graph.ext_out.push(CoreGraphExtOut{
+                                        port: in_p_n,
+                                        out_port: out_p_n,
+                                        out_elem: out_p_s,
+                                        out_comp: out_c_n,
+                                    });
                                 }
                                 CompPortExternalPort },
                             Break => { stack.push(CoreLexicalToken::Port(name, elem)); Port },
@@ -106,7 +110,10 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<CoreGraph, Vec<
                     CoreLexicalToken::Comp(name, sort) => {
                         if let Some(ref s) = sort {
                             if s != "" {
-                                graph.nodes.push((name.clone(), s.clone()));
+                                graph.nodes.push(CoreGraphNode {
+                                    name: name.clone(),
+                                    sort: s.clone(),
+                                });
                             }
                         }
                         state = match state {
@@ -119,7 +126,14 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<CoreGraph, Vec<
                                     let (in_p_n, in_p_s) = if let CoreLexicalToken::Port(n, s) = in_p { (n, s) } else { unreachable!() };
                                     let (out_p_n, out_p_s) = if let CoreLexicalToken::Port(n, s) = out_p { (n, s) } else { unreachable!() };
                                     let (out_c_n, _) = if let CoreLexicalToken::Comp(n, s) = out_c { (n, s) } else { unreachable!() };
-                                    graph.edges.push((out_c_n, out_p_n, out_p_s, in_p_n, in_p_s, in_c_n.clone()));
+                                    graph.edges.push(CoreGraphEdge {
+                                        out_comp: out_c_n,
+                                        out_port: out_p_n,
+                                        out_elem: out_p_s,
+                                        in_port: in_p_n,
+                                        in_elem: in_p_s,
+                                        in_comp: in_c_n,
+                                    });
                                 }
                                 stack.push(CoreLexicalToken::Comp(name, sort));
                                 Compo
@@ -131,7 +145,12 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<CoreGraph, Vec<
                                     let in_c_n = name.clone();
                                     let (in_p_n, in_p_s) = if let CoreLexicalToken::Port(n, s) = in_p { (n, s) } else { unreachable!() };
                                     let (out_p_n, out_p_s) = if let CoreLexicalToken::Port(n, s) = out_p { (n, s) } else { unreachable!() };
-                                    graph.ext_in.push((out_p_n, in_p_n, in_p_s, in_c_n.clone()));
+                                    graph.ext_in.push(CoreGraphExtIn {
+                                        port: out_p_n,
+                                        in_port: in_p_n,
+                                        in_elem: in_p_s,
+                                        in_comp: in_c_n,
+                                    });
                                 }
                                 stack.push(CoreLexicalToken::Comp(name, sort));
                                 Compo
@@ -143,7 +162,12 @@ fn handle_stream(comp: &ThisAgent) -> Result<std::result::Result<CoreGraph, Vec<
                                     let in_c_n = name.clone();
                                     let (in_p_n, in_p_s) = if let CoreLexicalToken::Port(n, s) = in_p { (n, s) } else { unreachable!() };
                                     let imsg = if let CoreLexicalToken::IMsg(imsg) = imsg { imsg } else { unreachable!() };
-                                    graph.imsgs.push((imsg, in_p_n, in_p_s, in_c_n.clone()));
+                                    graph.imsgs.push(CoreGraphIMsg {
+                                        msg: imsg,
+                                        port: in_p_n,
+                                        elem: in_p_s,
+                                        comp: in_c_n,
+                                    });
                                 }
                                 stack.push(CoreLexicalToken::Comp(name, sort));
                                 Compo

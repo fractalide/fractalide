@@ -111,12 +111,10 @@ fn handle_stream(comp: &ThisAgent) -> Result<()> {
         // print it
         match file {
             FsFileDesc::Text(text) => {
-                println!("{}", text);
                 let mut text = text.as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
-                            println!("{:?}", lit);
                             let _ = comp.output.output.send(CoreLexical::Token(lit));
                             text = rest;
                         },

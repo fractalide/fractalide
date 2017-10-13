@@ -2,6 +2,6 @@
 
 support.node.rs.agent {
   src = ./.;
-  edges = with edges.rs; [ CoreGraph FsPath FsPathOption ];
+  edges = with edges.rs; [ CoreAction ];
   mods = with mods.rs; [ rustfbp capnp ];
 }

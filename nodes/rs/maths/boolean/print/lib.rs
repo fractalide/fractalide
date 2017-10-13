@@ -9,7 +9,7 @@ agent! {
     fn run(&mut self) -> Result<Signal> {
         let a = self.input.input.recv()?;
         println!("boolean : {}", a);
-        self.output.output.send(a)?;
+        let _ = self.output.output.send(a);
         Ok(End)
     }
 }

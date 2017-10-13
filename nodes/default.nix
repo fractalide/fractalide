@@ -33,6 +33,7 @@ self = rec {
   fvm_rs_parser_lexical = callPackage ./fvm/rs/parser/lexical {};
   fvm_rs_parser_semantic = callPackage ./fvm/rs/parser/semantic {};
   fvm_rs_scheduler = callPackage ./fvm/rs/scheduler {};
+  fvm_rs_start = callPackage ./fvm/rs/start {};
   fvm_rs_subgraph = callPackage ./fvm/rs/subgraph {};
   fvm_rs_vm = callPackage ./fvm/rs/vm {};
 

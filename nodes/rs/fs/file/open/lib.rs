@@ -7,16 +7,16 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    input(input: String),
-    output(output: FsFileDesc, error: String),
+    input(input: FsPath),
+    output(output: FsFileDesc, error: FsFileError),
     fn run(&mut self) -> Result<Signal> {
         // Get the path
-        let mut path = self.input.input.recv()?;
+        let mut path = self.input.input.recv()?.0;
 
         let file = match File::open(&path) {
             Ok(file) => { file },
             Err(_) => {
-                let _ = self.output.error.send(path);
+                let _ = self.output.error.send(FsFileError(path));
                 return Ok(End);
             }
         };
