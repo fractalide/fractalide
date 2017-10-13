@@ -15,9 +15,5 @@ target/
 **/result
 result*
 
-core
-!nodes/core/
-!edges/core/
-
 # idris
 idris-libs
