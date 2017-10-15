@@ -5,7 +5,7 @@ done
 
 function preHook() {
   idris_version=$(idris --version)
-  export IDRIS_LIBRARY_PATH=$PWD/idris_libs
+  IDRIS_LIBRARY_PATH=$PWD/idris_libs
   mkdir -p $IDRIS_LIBRARY_PATH
 
   export IBCSUBDIR=$out/lib/$idris_version
@@ -21,9 +21,6 @@ function unpackPhase() {
 
   if [ -d "$fn" ]; then
       ipkg_name=$(echo -e "${unpackPhase}" | tr -d '[:space:]')
-      # We can't preserve hardlinks because they may have been
-      # introduced by store optimization, which might break things
-      # in the build.
       if [ ! -z $ipkg_name ]; then
         cp -pr --reflink=auto "$fn/libs"/* .
       else
@@ -32,12 +29,9 @@ function unpackPhase() {
   else
       case "$fn" in
           *.tar.xz | *.tar.lzma)
-              # Don't rely on tar knowing about .xz.
               xz -d < "$fn" | tar xf -
               ;;
           *.tar | *.tar.* | *.tgz | *.tbz2)
-              # GNU tar can automatically select the decompression method
-              # (info "(tar) gzip").
               tar xf "$fn"
               ;;
           *)
@@ -45,7 +39,6 @@ function unpackPhase() {
               ;;
       esac
   fi
-  chmod -R 754 .
 }
 
 function prePatch {
@@ -55,6 +48,9 @@ function prePatch {
 }
 
 function postPatch {
+  find . -type d -exec chmod 0755 {} \;
+  find . -type f -exec chmod 0644 {} \;
+  find . -name "*.ibc" -type f -exec chmod 0744 {} \;
   if [ ! -z $postPatch ]; then
     ipkg_path=$(echo -e "$postPatch/$postPatch.ipkg" | tr -d '[:space:]')
     sed -i $ipkg_path -e "/^opts/ s|-i \\.\\./|-i $IDRIS_LIBRARY_PATH/|g"
@@ -83,7 +79,6 @@ function installPhase {
     cp fvm $out/
   else
     idris --install *.ipkg --ibcsubdir $IBCSUBDIR
-    #cp --parents -r *.idr $IBCSUBDIR/*/
   fi
 }
 
@@ -100,4 +95,18 @@ function genericBuild() {
   checkPhase
   installPhase
   fixupPhase
+}
+
+function build() {
+  genericBuild
+  echo "^^^ You can safely ignore these errors. ^^^"
+}
+
+function setIdrisLibraryPath () {
+  export IDRIS_LIBRARY_PATH=$(pwd)/idris_libs
+}
+
+function run() {
+  setIdrisLibraryPath
+  /run/current-system/sw/bin/$1 $2
 }
