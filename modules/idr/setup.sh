@@ -3,9 +3,11 @@ for p in $baseInputs; do
   export PATH=$p/bin${PATH:+:}$PATH
 done
 
+IDRIS_I_PATHS=()
+
 function preHook() {
   idris_version=$(idris --version)
-  export IDRIS_LIBRARY_PATH=$PWD/idris_libs
+  IDRIS_LIBRARY_PATH=$PWD/idris_libs
   mkdir -p $IDRIS_LIBRARY_PATH
 
   export IBCSUBDIR=$out/lib/$idris_version
@@ -13,6 +15,8 @@ function preHook() {
 
   for ipkg in $propagatedBuildInputs; do
     ln -sf "$ipkg/lib/$idris_version"/* $IDRIS_LIBRARY_PATH
+    ipkg_name=$(cat "$ipkg/lib/$idris_version/NAME")
+    IDRIS_I_PATHS+=("$ipkg/lib/$idris_version/$ipkg_name")
   done
 }
 
@@ -21,9 +25,6 @@ function unpackPhase() {
 
   if [ -d "$fn" ]; then
       ipkg_name=$(echo -e "${unpackPhase}" | tr -d '[:space:]')
-      # We can't preserve hardlinks because they may have been
-      # introduced by store optimization, which might break things
-      # in the build.
       if [ ! -z $ipkg_name ]; then
         cp -pr --reflink=auto "$fn/libs"/* .
       else
@@ -32,12 +33,9 @@ function unpackPhase() {
   else
       case "$fn" in
           *.tar.xz | *.tar.lzma)
-              # Don't rely on tar knowing about .xz.
               xz -d < "$fn" | tar xf -
               ;;
           *.tar | *.tar.* | *.tgz | *.tbz2)
-              # GNU tar can automatically select the decompression method
-              # (info "(tar) gzip").
               tar xf "$fn"
               ;;
           *)
@@ -45,7 +43,6 @@ function unpackPhase() {
               ;;
       esac
   fi
-  chmod -R 754 .
 }
 
 function prePatch {
@@ -55,6 +52,9 @@ function prePatch {
 }
 
 function postPatch {
+  find . -type d -exec chmod 0755 {} \;
+  find . -type f -exec chmod 0644 {} \;
+  find . -name "*.ibc" -type f -exec chmod 0744 {} \;
   if [ ! -z $postPatch ]; then
     ipkg_path=$(echo -e "$postPatch/$postPatch.ipkg" | tr -d '[:space:]')
     sed -i $ipkg_path -e "/^opts/ s|-i \\.\\./|-i $IDRIS_LIBRARY_PATH/|g"
@@ -83,7 +83,8 @@ function installPhase {
     cp fvm $out/
   else
     idris --install *.ipkg --ibcsubdir $IBCSUBDIR
-    #cp --parents -r *.idr $IBCSUBDIR/*/
+    ipkg_name=($(grep -oP '^\s*package\s+([a-zA-Z][-_A-Za-z0-9]*)' $(echo *.ipkg)))
+    echo "${ipkg_name[1]}" >> $IBCSUBDIR/NAME
   fi
 }
 
@@ -100,4 +101,24 @@ function genericBuild() {
   checkPhase
   installPhase
   fixupPhase
+}
+
+function build() {
+  genericBuild
+  echo "^^^ You can safely ignore these errors. ^^^"
+}
+
+function setupIdris () {
+  unique_libs=($(printf "%s\n" "${IDRIS_I_PATHS[@]}" | sort | uniq))
+  idris_paths=()
+  for path in "${unique_libs[@]}"; do
+    idris_paths+=("-i $path")
+  done
+  idris_paths+=("-i $(pwd)/idris_libs")
+  alias idris="idris ${idris_paths[@]}"
+}
+
+function run() {
+  setupIdris
+  /run/current-system/sw/bin/$1 $2
 }
