@@ -338,7 +338,7 @@ subgraph {
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png[]
 
-The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by going to the [maths/boolean/not](./maths/boolean/not/default.nix) directory. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
+The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by opening to the `nodes/rs/maths/boolean/not/default.nix` file. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
 
 Explanation of the `Subgraph`:
 
@@ -360,8 +360,8 @@ in
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; ''
-    '${PrimBool}' -> a nand(${maths_boolean_nand})
-    '${PrimBool}' -> b nand()
+    '${imsgTrue}' -> a nand(${maths_boolean_nand})
+    '${imsgTrue}' -> b nand()
     nand() output -> input not(${maths_boolean_not})
     not() output -> input print(${maths_boolean_print})
   '';
@@ -399,10 +399,11 @@ subgraph {
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex12.png[]
 
-Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some [fractals](../fractals/README.md) deliberately export a collection of `Nodes`. As is the case with the `net_http_nodes.http` node.
+Notice the `net_http_nodes` and `app_todo_nodes` namespaces. Some <<fractals, fractals>> deliberately export a collection of `Nodes`. As is the case with the `net_http_nodes.http` node.
 When you see a `fullstop` `.`, i.e. `xxx_nodes.yyy` you immediately know this is a namespace. It's also a programming convention to use the `_nodes` suffix to indicate a namespace.
-Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more https://github.com/fractalide/fractal_net_http/blob/master/nodes/http/src/lib.rs#L149[advanced] You can read more about this in the <<howto,HOWTO>>.
+Lastly, notice the advanced usage of `array ports` with this example: `GET[/todos/.+]`, the element label is actually a `regular expression` and the implementation of that node is slightly more https://github.com/fractalide/fractal_net_http/blob/master/nodes/rs/http/lib.rs[advanced] You can read more about this in the <<howto,HOWTO>>.
 
 == Agents
 
 include::rs/README.adoc[leveloffset=+2]
+include::idr/README.adoc[leveloffset=+2]
