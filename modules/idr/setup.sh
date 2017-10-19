@@ -120,5 +120,5 @@ function setupIdris () {
 
 function run() {
   setupIdris
-  /run/current-system/sw/bin/$1 $2
+  /run/current-system/sw/bin/$1 $2 &
 }

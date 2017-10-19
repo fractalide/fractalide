@@ -1,0 +1,117 @@
+[[idris_agents]]
+= Idris
+
+== What?
+
+Executable `Subgraphs` are defined as a network of `Agents`, which exchange typed data across predefined connections by message passing, where the connections are specified externally to the processes. These `Agents`  can be reconnected endlessly to form different executable `Subgraphs` without having to be changed internally.
+
+== Why?
+
+Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read http://erlang.org/pipermail/erlang-questions/2011-May/058768.html[more] about the problem.
+
+Nix gives us the content addressable store which allows for `reproducibility`, and these `agents` give us `reusablility`. The combination is particularly potent form of programming.
+
+Once you have the above, you have truly reusable and reproducible functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
+
+[source]
+----
+* Open source collaboration
+* Open peer review of nodes
+* Nice clean reusable nodes
+* Reproducible applications
+----
+
+== Who?
+
+Typically programmers will develop `Agents`. They specialize in making `Agents` as efficient and reusable as possible, while people who focus on the Science give the requirements and use the `Subgraphs`. Just as a hammer is designed to be reused, so `Subgraphs` and `Agents` should be designed for reuse.
+
+== Where?
+
+The `Agents` are found in this `nodes` directory, or the `nodes` directory of a <<fractal,fractal>>.
+
+[source, sh]
+----
+nodes
+└── idr
+    └── file
+        └── open
+            ├── File <--- contains the `file_open` idris agent code
+            │   └── *.idr
+            ├── Tests <--- contains the `file_open` idris agent tests
+            │   └── *.idr
+            ├── default.nix <--- configures the environment to compile the agent
+            └── agent.ipkg <--- `idris` uses the deps made available by `default.nix`
+----
+
+When you see an `agent.ipkg` in the same directory as a `default.nix` you know it's an `Agent`.
+
+== How?
+
+An `Agent` consists of three parts:
+
+* a `nix` `default.nix` file that sets up an environment to satisfy the `idris` repl/compiler.
+* an `idris` `agent.ipkg` tells idris how to compile the source code in the directories.
+* the `idris` `*.idr` source code within capitalized directories.
+
+=== The `agent` Nix function.
+
+The `agent` function in the `default.nix` requires you make decisions about three types of dependencies.
+
+* What `edges` inter-agent idris types are to be pulled in?
+* What `mods` which are idris library dependencies available online.
+* What `osdeps` or `operating system level dependencies` are needed?
+
+[source, nix]
+----
+{ agent, edges, mods, pkgs }:
+
+agent {
+  src = ./.;
+  edges = with edges.idr; [ TestVect ];
+  mods = with mods.idr; [ contrib ];
+  osdeps = with pkgs; [ openssl ];
+}
+----
+
+* The `{ agent, edges, mods, pkgs }:` lambda imports: The `edges` attribute which consists of every `edge` available on the system. The `mods` attribute set consists of every `mod` in the `modules/idr` directory. Lastly the `pkgs` pulls in every third party package available on NixOS, here's the whole http://nixos.org/nixos/packages.html[list].
+* The `agent` function builds the idris `agent.ipkg` and associated source code, and accepts these arguments:
+** The `src` attribute is used to derive the source code and `Agent` name based on location in the `nodes` directory hierarchy.
+** The `edges` makes inter-agent `idris` types available just before build time.
+** The `mods` specifies exactly which `modules` are needed for the agent to build.
+** The `osdeps` specifies exactly which `pkgs`, or third party `operating system level libraries` such as `openssl` needed in scope.
+
+Only specified dependencies and their transitive dependencies will be pulled into scope once the `agent` compilation starts, or when you run a development shell.
+
+This is the output of the above ``agent``'s compilation:
+
+[source, sh]
+----
+/nix/store/dp8s7d3p80q18a3pf2b4dk0bi4f856f8-file_open
+└── lib
+    └── libagent.js
+----
+
+=== nix-shell
+
+It's convenient to use a REPL, idris-mode with your editor while developing an agent.
+
+Here are the steps to setup a development environment.
+
+In the root directory of fractalide, issue these commands:
+
+* `$ nix-shell -A mods.idr.idrisfbp` <- or whatever the attribute path of the idris agent you want
+* `$ cd modules/idr/idrisfbp` <- `cd` to your chosen agent in the `nodes` hierachy
+* `$ source $setup`
+* `$ build`
+* `$ run emacs .`
+
+For the `run` command to work you need to have installed your editor via your system level `configuration.nix` file, as it references the `/run/current-system/sw/bin/*` path.
+
+You may also start a REPL and use your integrated idris-modes in your editor. Note all the dependencies have been `alias`'ed to `idris`.
+
+```
+$ type idris
+idris is aliased to `idris -i /nix/store/0ijgdwdb9bfwwkgcxac25p2mxl161ljb-base-1.1.0/lib/1.1.0-git:PRE/base -i /nix/store/12cs9pgsdq4rhnzxjdk5hqv5rc9v60pb-prelude-1.1.0/lib/1.1.0-git:PRE/prelude -i /nix/store/506r1qqayw6j2nb4dsfvb716n9x8ndmj-contrib-1.1.0/lib/1.1.0-git:PRE/contrib -i /home/stewart/dev/fractalide/fractalide/modules/idr/idrisfbp/idris_libs'
+```
+Each `idris` command in each agent development environment will contain a different set of associated alias'ed paths.
+It might be a good idea to create a throw away agent that contains all the useful dependencies, create a development shell using that agent then navigate around the `nodes` hierarchy without closing your editer each time.
