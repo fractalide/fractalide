@@ -2,17 +2,22 @@
 extern crate rustfbp;
 extern crate capnp;
 
+use std::fs::File;
+
 agent! {
-    input(input: prim_u64),
-    output(output: prim_u64),
+    // input(input: prim_u64),
+    // output(output: prim_u64),
+    rsinput(a: bool, b: bool, input: Pair),
+    rsoutput(res: bool, output: Pair),
     fn run(&mut self) -> Result<Signal> {
-        let mut msg_input = self.input.input.recv()?;
-        {
-            let mut builder = msg_input.edit_schema::<prim_u64::Builder, prim_u64::Reader>()?;
-            let actual = builder.borrow().as_reader().get_u64();
-            builder.set_u64(actual+1);
-        }
-        let _ = self.output.output.send(msg_input);
+        println!("Ok");
+        // let (act, msg) = self.rsinput.input.recv_with_action()?;
+        let a = self.rsinput.a.recv()?;
+        let b = self.rsinput.b.recv()?;
+        let res = ! (a && b);
+        println!("{} {} -> {}", a, b, res);
+        self.rsoutput.res.send(res)?;
+        // self.rsoutput.output.send(msg)?;
         Ok(End)
     }
 }

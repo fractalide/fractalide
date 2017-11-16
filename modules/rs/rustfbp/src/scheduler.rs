@@ -16,10 +16,11 @@ use self::threadpool::ThreadPool;
 use result;
 use result::Result;
 
-use ports::{MsgSender, MsgReceiver, Msg};
+use ports::{MsgSender, MsgReceiver};
 use agent::Agent;
 
 use std::borrow::Cow;
+use std::any::Any;
 
 use std::collections::HashMap;
 use std::sync::mpsc::{Sender, Receiver};
@@ -46,15 +47,15 @@ pub enum CompMsg {
     /// Start a agent
     Start(usize),
     /// Connect the output port
-    ConnectOutputPort(usize, String, MsgSender),
+    ConnectOutputPort(usize, String, Box<Any + Send>),
     /// Connect the array output port
-    ConnectOutputArrayPort(usize, String, String, MsgSender),
+    ConnectOutputArrayPort(usize, String, String, Box<Any + Send>),
     /// Disconnect an output port
     Disconnect(usize, String),
     /// Disconnect an array output port
     DisconnectArray(usize, String, String),
     /// Add an element in an array input port
-    AddInputArrayElement(usize, String, String, MsgReceiver),
+    AddInputArrayElement(usize, String, String, Box<Any + Send>),
     /// Remove an element in an array input port
     RemoveInputArrayElement(usize, String, String),
     /// Add an element in an array output port
@@ -62,7 +63,7 @@ pub enum CompMsg {
     /// Signal the end of an execution
     RunEnd(usize, BoxedComp, Result<Signal>),
     /// Set the receiver of an input port
-    SetReceiver(usize, String, Receiver<Msg>),
+    SetReceiver(usize, String, Box<Any + Send>),
     /// The agent received an Msg
     Inc(usize),
     /// The agent read an Msg
@@ -82,9 +83,9 @@ pub enum Signal {
 pub struct Comp {
     pub id: usize,
     /// Keep the MsgSender of the input ports
-    pub inputs: HashMap<String, MsgSender>,
+    pub inputs: HashMap<String, Box<Any + Send>>,
     /// Keep the MsgSender of the array input ports
-    pub inputs_array: HashMap<String, HashMap<String, MsgSender>>,
+    pub inputs_array: HashMap<String, HashMap<String, Box<Any + Send>>>,
     /// The type of the agent
     pub sort: String,
     /// True if a agent had no input port
@@ -188,7 +189,7 @@ impl Scheduler {
         let (comp, senders) = self.cache.create_comp(&sort, self.id, self.sender.clone()).expect("cannot create comp");
         let start = !comp.is_input_ports();
         self.sender.send(CompMsg::NewAgent(self.id, name.clone(), comp)).expect("Cannot send to sched state");
-        let s_acc = try!(senders.get("accumulator").ok_or(result::Error::PortNotFound(name.clone(), "accumulator".into()))).clone();
+        //let s_acc = try!(senders.get("accumulator").ok_or(result::Error::PortNotFound(name.clone(), "accumulator".into()))).clone();
         self.agents.insert(name.clone(),
                                Comp {
                                    id: self.id,
@@ -197,7 +198,7 @@ impl Scheduler {
                                    sort: sort,
                                    start: start,
                                });
-        self.sender.send(CompMsg::ConnectOutputPort(self.id, "accumulator".into(), s_acc)).expect("Cannot send to sched state");
+        // self.sender.send(CompMsg::ConnectOutputPort(self.id, "accumulator".into(), s_acc)).expect("Cannot send to sched state");
         self.id += 1;
         Ok(())
     }
@@ -260,6 +261,7 @@ impl Scheduler {
     /// assert!(boxed_comp.is_input_ports());
     /// ```
     pub fn remove_agent<'a, A: Into<Cow<'a, str>>>(&mut self, name: A) -> Result<(BoxedComp, Comp)>{
+        /*
         let name = name.into().into_owned();
         let (s, r) = channel();
         {
@@ -275,6 +277,8 @@ impl Scheduler {
                 Err(result::Error::CannotRemove(name))
             },
         }
+         */
+        unimplemented!()
     }
 
     /// Connect a simple output port to a simple input port
@@ -456,16 +460,17 @@ impl Scheduler {
         B: Into<Cow<'a, str>>,
         C: Into<Cow<'a, str>>,
     {
+        // TODO: the cache must create the channel of the right type
         let comp_name = comp_name.into().into_owned();
         let port = port.into().into_owned();
         let element = element.into().into_owned();
 
-        let comp_id = self.agents.get(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))?.id;
-        let (r, s) = MsgReceiver::new(
-            comp_id,
-            self.sender.clone(),
-            true
-        );
+        let (r, s, comp_id) = {
+            let comp = self.agents.get(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))?;
+            let (r, s) = self.cache.create_input_array(&comp.sort, &port, comp.id, self.sender.clone(), true)?;
+            (r, s, comp.id)
+        };
+
         try!(self.agents.get_mut(&comp_name).ok_or(result::Error::AgentNotFound(comp_name.clone()))
             .and_then(|mut comp| {
                 if !comp.inputs_array.contains_key(&port) {
@@ -546,7 +551,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver<'a, A, B>(&self, comp: A, port: B, receiver: Receiver<Msg>) -> Result<()> where
+    pub fn set_receiver<'a, A, B>(&self, comp: A, port: B, receiver: Box<Any + Send>) -> Result<()> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
     {
@@ -565,7 +570,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver<'a, A, B, C>(&self, comp: A, port: B, element: C, receiver: MsgReceiver) -> Result<()> where
+    pub fn set_array_receiver<'a, A, B, C>(&self, comp: A, port: B, element: C, receiver: Box<Any + Send>) -> Result<()> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
         C: Into<Cow<'a, str>>
@@ -584,17 +589,16 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
-    pub fn get_sender<'a, A, B>(&self, comp: A, port: B) -> Result<MsgSender> where
+    pub fn get_sender<'a, A, B>(&self, comp: A, port: B) -> Result<Box<Any + Send>> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
     {
         let comp = comp.into();
         let port = port.into();
-        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
-            .and_then(|c| {
-                c.inputs.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))
-                    .map(|s| { s.clone() })
-            })
+        let c = self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))?;
+        let t = &c.sort;
+        let s = c.inputs.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))?;
+        self.cache.clone_input(t, &port, s)
     }
 
     /// Get the sender of an array input port
@@ -603,7 +607,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
-    pub fn get_array_sender<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<MsgSender> where
+    pub fn get_array_sender<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<Box<Any + Send>> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
         C: Into<Cow<'a, str>>,
@@ -611,14 +615,11 @@ impl Scheduler {
         let comp = comp.into();
         let port = port.into();
         let element = element.into();
-        self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))
-            .and_then(|c| {
-                c.inputs_array.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))
-                    .and_then(|p| {
-                        p.get(&element as &str).ok_or(result::Error::ElementNotFound(comp.to_string(), port.to_string(), element.to_string()))
-                            .map(|s| { s.clone() })
-                    })
-            })
+        let c = self.agents.get(&comp as &str).ok_or(result::Error::AgentNotFound(comp.to_string()))?;
+        let t = &c.sort;
+        let p = c.inputs_array.get(&port as &str).ok_or(result::Error::PortNotFound(comp.to_string(), port.to_string()))?;
+        let s = p.get(&element as &str).ok_or(result::Error::ElementNotFound(comp.to_string(), port.to_string(), element.to_string()))?;
+        self.cache.clone_input_array(t, &port, s)
     }
 
     /// Get the edge of an input port
@@ -707,12 +708,12 @@ impl Scheduler {
 }
 
 enum EditCmp {
-    AddInputArrayElement(String, String, MsgReceiver),
+    AddInputArrayElement(String, String, Box<Any + Send>),
     RemoveInputArrayElement(String, String),
     AddOutputArrayElement(String, String),
-    ConnectOutputPort(String, MsgSender),
-    ConnectOutputArrayPort(String, String, MsgSender),
-    SetReceiver(String, Receiver<Msg>),
+    ConnectOutputPort(String, Box<Any + Send>),
+    ConnectOutputArrayPort(String, String, Box<Any + Send>),
+    SetReceiver(String, Box<Any + Send>),
     Disconnect(String),
     DisconnectArray(String, String),
 }
@@ -917,7 +918,10 @@ impl SchedState {
 #[allow(dead_code)]
 pub struct AgentLoader {
     lib: libloading::Library,
-    create: extern "C" fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)>,
+    create: extern "C" fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)>,
+    clone_input: extern "C" fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>>,
+    clone_input_array: extern "C" fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>>,
+    create_input_array: extern "C" fn(&str, usize, Sender<CompMsg>, bool) -> Result<(Box<Any + Send>, Box<Any + Send>)>,
     get_schema_input: extern "C" fn(&str) -> Result<String>,
     get_schema_input_array: extern "C" fn(&str) -> Result<String>,
     get_schema_output: extern "C" fn(&str) -> Result<String>,
@@ -948,12 +952,24 @@ impl AgentCache {
     /// ```rust,ignore
     /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, id: usize, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+    pub fn create_comp(&mut self, path: &str, id: usize, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
 
-            let new_comp: extern fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> = unsafe {
+            let new_comp: extern fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> = unsafe {
                 *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
+            };
+
+            let clone_in: extern fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>> = unsafe {
+                *(lib_comp.get(b"clone_input\0").expect("cannot find clone_input method"))
+            };
+
+            let clone_in_a: extern fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>> = unsafe {
+                *(lib_comp.get(b"clone_input_array\0").expect("cannot find clone_input_array method"))
+            };
+
+            let create_in_a: extern fn(&str, usize, Sender<CompMsg>, bool) -> Result<(Box<Any + Send>, Box<Any + Send>)> = unsafe {
+                *(lib_comp.get(b"create_input_array\0").expect("cannot ifnd create_input_array method"))
             };
 
             let get_in : extern fn(&str) -> Result<String> = unsafe {
@@ -976,6 +992,9 @@ impl AgentCache {
                               AgentLoader {
                                   lib: lib_comp,
                                   create: new_comp,
+                                  clone_input: clone_in,
+                                  clone_input_array: clone_in_a,
+                                  create_input_array: create_in_a,
                                   get_schema_input: get_in,
                                   get_schema_input_array: get_in_a,
                                   get_schema_output: get_out,
@@ -987,6 +1006,27 @@ impl AgentCache {
         } else {
             unreachable!()
         }
+    }
+
+    pub fn clone_input(&self, comp: &str, port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+            .map(|comp| {
+                (comp.clone_input)(port, sender).expect("cannot clone input")
+            })
+    }
+
+    pub fn clone_input_array(&self, comp: &str, port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+            .map(|comp| {
+                (comp.clone_input_array)(port, sender).expect("cannot clone input")
+            })
+    }
+
+    pub fn create_input_array(&self, comp: &str, port: &str, id: usize, sched: Sender<CompMsg>, mc: bool) -> Result<(Box<Any + Send>, Box<Any + Send>)> {
+        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+            .map(|comp| {
+                (comp.create_input_array)(port, id, sched, mc).expect("cannot create input array")
+            })
     }
 
     /// Get the edge of an input port

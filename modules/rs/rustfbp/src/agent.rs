@@ -11,6 +11,7 @@ extern crate capnp;
 use ports::{MsgSender, MsgReceiver};
 use scheduler::Signal;
 use result::Result;
+use std::any::Any;
 
 /// Provide the generic functions of agents
 ///
@@ -19,11 +20,11 @@ pub trait Agent {
     /// Return true if there is at least one input port
     fn is_input_ports(&self) -> bool;
     /// Connect output port
-    fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()>;
+    fn connect(&mut self, port: &str, sender: Box<Any + Send>) -> Result<()>;
     /// Connect array output port
-    fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()>;
+    fn connect_array(&mut self, port: &str, element: String, sender: Box<Any + Send>) -> Result<()>;
     /// Add input element
-    fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()>;
+    fn add_inarr_element(&mut self, port: &str, element: String, recv: Box<Any + Send>) -> Result<()>;
     /// Run the method of the agent, his personal logic
     fn run(&mut self) -> Result<Signal>;
 }
@@ -83,7 +84,7 @@ macro_rules! agent {
         use std::sync::mpsc::{Sender};
         use std::sync::mpsc::channel;
 
-        use rustfbp::ports::{Msg, MsgSender, MsgReceiver, OutputSend};
+        use rustfbp::ports::{MsgSender, MsgReceiver, OutputSend};
 
         #[allow(unused_imports)]
         use std::collections::HashMap;
@@ -92,6 +93,7 @@ macro_rules! agent {
         use capnp::message;
 
         use std::io::{Read, Write};
+        use std::any::Any;
 
         use rustfbp::scheduler::Signal::*;
 
@@ -107,10 +109,8 @@ macro_rules! agent {
 
         impl ThisAgent {
             $(
-            fn dummy() {
-                if stringify!($option) != "" {}
-            }
-            pub fn recv_option(&mut self) -> Msg {
+
+            pub fn recv_option(&mut self) -> $option {
                 self.try_recv_option();
                 if self.option_msg.is_none() {
                     self.option_msg = self.input.option.recv().ok();
@@ -121,7 +121,7 @@ macro_rules! agent {
                 }
             }
 
-            pub fn try_recv_option(&mut self) -> Option<Msg> {
+            pub fn try_recv_option(&mut self) -> Option<$option> {
                 loop {
                     match self.input.option.try_recv() {
                         Err(_) => { break; },
@@ -146,11 +146,12 @@ macro_rules! agent {
                 false
             }
 
-            fn connect(&mut self, port: &str, sender: MsgSender) -> Result<()> {
+            fn connect(&mut self, port: &str, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
                         stringify!($output_name) => {
-                            self.output.$output_name = Some(sender);
+                            let s = sender.downcast::<MsgSender<$output_contract>>().expect("cannot downast");
+                            self.output.$output_name = Some(*s);
                         }
                     )*)*
                         _ => {
@@ -160,11 +161,12 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn connect_array(&mut self, port: &str, element: String, sender: MsgSender) -> Result<()> {
+            fn connect_array(&mut self, port: &str, element: String, sender: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
                         stringify!($output_a_name) => {
-                            self.outarr.$output_a_name.insert(element, sender);
+                            let s = sender.downcast::<MsgSender<$output_a_contract>>().expect("cannot downcast");
+                            self.outarr.$output_a_name.insert(element, *s);
                         }
                     )*)*
                         _ => {
@@ -174,11 +176,12 @@ macro_rules! agent {
                 Ok(())
             }
 
-            fn add_inarr_element(&mut self, port: &str, element: String, recv: MsgReceiver) -> Result<()> {
+            fn add_inarr_element(&mut self, port: &str, element: String, recv: Box<Any + Send>) -> Result<()> {
                 match port {
                     $($(
                         stringify!($input_a_name) => {
-                            self.inarr.$input_a_name.insert(element, recv);
+                            let r = recv.downcast::<MsgReceiver<$input_a_contract>>().expect("cannot downcast");
+                            self.inarr.$input_a_name.insert(element, *r);
                             Ok(())
                         }
                     )*)*
@@ -193,31 +196,38 @@ macro_rules! agent {
         }
 
         pub struct Input {
-            option: MsgReceiver,
-            accumulator: MsgReceiver,
             $($(
-                $input_name: MsgReceiver,
+                $input_name: MsgReceiver<$input_contract>,
             )*)*
+            $(
+                option: MsgReceiver<$option>,
+            )*
+            $(
+                accumulator: MsgReceiver<$accumulator>,
+            )*
         }
 
         pub struct Inarr {
             $($(
-                $input_a_name: HashMap<String, MsgReceiver>,
-            )*)*
-        }
-
-        pub struct Output {
-            accumulator: Option<MsgSender>,
-            $($(
-                $output_name: Option<MsgSender>,
+                $input_a_name: HashMap<String, MsgReceiver<$input_a_contract>>,
             )*)*
         }
 
         pub struct Outarr {
             $($(
-                $output_a_name: HashMap<String, MsgSender>,
+                $output_a_name: HashMap<String, MsgSender<$output_a_contract>>,
             )*)*
         }
+
+        pub struct Output {
+            $($(
+                $output_name: Option<MsgSender<$output_contract>>,
+            )*)*
+            $(
+                accumulator: Option<MsgSender<$accumulator>>,
+            )*
+        }
+
 
         /* Global agent */
 
@@ -226,10 +236,12 @@ macro_rules! agent {
         pub struct ThisAgent {
             id: usize,
             pub input: Input,
-            pub inarr: Inarr,
             pub output: Output,
+            pub inarr: Inarr,
             pub outarr: Outarr,
-            pub option_msg: Option<Msg>,
+            $(
+                pub option_msg: Option<$option>,
+            )*
             sched: Sender<CompMsg>,
             $(
             pub state: $state_type ,
@@ -237,38 +249,48 @@ macro_rules! agent {
         }
 
         #[allow(dead_code)]
-        pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+        pub fn new(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
 
-            let mut senders: HashMap<String, MsgSender> = HashMap::new();
-            let option = MsgReceiver::new(id, sched.clone(), false);
-            senders.insert("option".to_string(), option.1);
-            let accumulator = MsgReceiver::new(id, sched.clone(), false);
-            senders.insert("accumulator".to_string(), accumulator.1.clone());
+            let mut senders: HashMap<String, Box<Any + Send>> = HashMap::new();
+            $(
+                let option = MsgReceiver::<$option>::new(id, sched.clone(), false);
+                senders.insert("option".to_string(), Box::new(option.1));
+            )*
+
+            $(
+                let accumulator = MsgReceiver::<$accumulator>::new(id, sched.clone(), false);
+                senders.insert("accumulator".to_string(), Box::new(accumulator.1.clone()));
+            )*
+
             $($(
-                let $input_name = MsgReceiver::new(id, sched.clone(), true);
-                senders.insert(stringify!($input_name).to_string(), $input_name.1);
+                let $input_name = MsgReceiver::<$input_contract>::new(id, sched.clone(), true);
+                senders.insert(stringify!($input_name).to_string(), Box::new($input_name.1));
             )*)*
+
             let input = Input {
-                option: option.0,
-                accumulator: accumulator.0,
                 $($(
                     $input_name: $input_name.0,
                 )*)*
+                $(
+                    option: option.0 as MsgReceiver::<$option>,
+                )*
+                $(
+                    accumulator: accumulator.0 as MsgReceiver::<$accumulator>,
+                )*
             };
-
+            let output = Output {
+                $($(
+                    $output_name: None,
+                )*)*
+                $(
+                    accumulator: Some(accumulator.1) as Option<MsgSender::<$accumulator>>,
+                )*
+            };
             let inarr = Inarr {
                 $($(
                     $input_a_name: HashMap::new(),
                 )*)*
             };
-
-            let output = Output {
-                accumulator: Some(accumulator.1),
-                $($(
-                    $output_name: None,
-                )*)*
-            };
-
             let outarr = Outarr {
                 $($(
                     $output_a_name: HashMap::new(),
@@ -278,10 +300,12 @@ macro_rules! agent {
             let agent= ThisAgent {
                 id: id,
                 input: input,
-                inarr: inarr,
                 output: output,
+                inarr: inarr,
                 outarr: outarr,
-                option_msg: None,
+                $(
+                    option_msg: None as Option<$option>,
+                )*
                 sched: sched,
                 $(
                     state: $state_value,
@@ -292,8 +316,59 @@ macro_rules! agent {
         }
 
         #[no_mangle]
-        pub extern fn create_agent(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender>)> {
+        pub extern fn create_agent(id: usize, sched: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
             new(id, sched)
+        }
+
+        #[no_mangle]
+        pub extern fn clone_input(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+            match port {
+                $($(
+                    stringify!($input_name) => {
+                        let s = sender.downcast_ref::<MsgSender<$input_contract>>().unwrap();
+                        Ok(Box::new(s.clone()))
+                    },
+                )*)*
+                    $(
+                        "option" => {
+                            let s = sender.downcast_ref::<MsgSender<$option>>().unwrap();
+                            Ok(Box::new(s.clone()))
+                        }
+                    )*
+                    $(
+                        "accumulator" => {
+                            let s = sender.downcast_ref::<MsgSender<$accumulator>>().unwrap();
+                            Ok(Box::new(s.clone()))
+                        }
+                    )*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn clone_input_array(port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+            match port {
+                $($(
+                    stringify!($input_a_name) => {
+                        let s = sender.downcast_ref::<MsgSender<$input_a_contract>>().unwrap();
+                        Ok(Box::new(s.clone()))
+                    },
+                )*)*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
+        }
+
+        #[no_mangle]
+        pub extern fn create_input_array(port: &str, id: usize, sched: Sender<CompMsg>, must_sched: bool ) -> Result<(Box<Any + Send>, Box<Any + Send>)> {
+            match port {
+                $($(
+                    stringify!($input_a_name) => {
+                        let (r, s): (MsgReceiver::<$input_a_contract>, MsgSender::<$input_a_contract>) = MsgReceiver::new(id, sched, must_sched);
+                        Ok((Box::new(r), Box::new(s)))
+                    },
+                )*)*
+                    _ => { Err(result::Error::PortDontExist(port.into())) }
+            }
         }
 
         #[no_mangle]

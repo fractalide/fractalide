@@ -2,6 +2,6 @@
 
 support.node.rs.agent {
   src = ./.;
-  capnp_edges = with edges.capnp; [ CoreGraph FsPath PrimText CoreAction ];
+  edges = with edges.rs; [ CoreGraph FsPath CoreAction CoreScheduler ];
   mods = with mods.rs; [ rustfbp capnp ];
 }

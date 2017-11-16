@@ -2,7 +2,7 @@
 
 agent {
   src = ./.;
-  capnp_edges = with edges.capnp; [ FsFileDesc FsPath FsFileError ];
+  edges = with edges.rs; [ FsPath FsFileDesc FsFileError ];
   mods = with mods.rs; [ rustfbp capnp ];
   osdeps = with pkgs; [];
 }

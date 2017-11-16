@@ -8,7 +8,6 @@ use std::io;
 use std::string;
 use std::sync::mpsc;
 
-use ports::Msg;
 use scheduler::CompMsg;
 
 pub type Result<T> = result::Result<T, Error>;
@@ -145,8 +144,8 @@ impl From<mpsc::SendError<CompMsg>> for Error {
     }
 }
 
-impl From<mpsc::SendError<Msg>> for Error {
-    fn from(_: mpsc::SendError<Msg>) -> Error {
+impl<T> From<mpsc::SendError<(Option<String>, T)>> for Error {
+    fn from(_: mpsc::SendError<(Option<String>, T)>) -> Error {
         Error::MpscSend
     }
 }

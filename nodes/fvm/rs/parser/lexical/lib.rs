@@ -5,37 +5,29 @@ extern crate capnp;
 #[macro_use]
 extern crate nom;
 
-#[derive(Debug)]
-enum Literal<'a> {
-    Comment,
-    Bind,
-    External,
-    Comp(&'a str, &'a str),
-    Port(&'a str, Option<&'a str>),
-    IMSG(&'a str),
-}
-
 use nom::{IResult, AsBytes};
 use nom::multispace;
 
-named!(comment<&[u8], Literal>, do_parse!(
+use std::str::FromStr;
+
+named!(comment<&[u8], CoreLexicalToken>, do_parse!(
     many0!(multispace) >>
     tag!(b"//") >>
     is_not!("\n") >>
-    ( Literal::Comment )
+    ( CoreLexicalToken::Comment )
 ));
 
-named!(bind<&[u8], Literal>, do_parse!(
+named!(bind<&[u8], CoreLexicalToken>, do_parse!(
     ws!(tag!(b"->")) >>
-    ( Literal::Bind )
+    ( CoreLexicalToken::Bind )
 ));
 
-named!(external<&[u8], Literal>, do_parse!(
+named!(external<&[u8], CoreLexicalToken>, do_parse!(
     ws!(tag!(b"=>")) >>
-    ( Literal::External )
+    ( CoreLexicalToken::External )
 ));
 
-named!(imsg<&[u8], Literal>, do_parse!(
+named!(imsg<&[u8], CoreLexicalToken>, do_parse!(
     many0!(multispace) >>
     tag!(b"'") >>
     imsg: map_res!(
@@ -44,7 +36,7 @@ named!(imsg<&[u8], Literal>, do_parse!(
     ) >>
     tag!(b"'") >>
     many0!(multispace) >>
-    ( Literal::IMSG(imsg) )
+    ( CoreLexicalToken::IMsg(imsg.into()) )
 ));
 
 named!(name<&str>,
@@ -54,7 +46,7 @@ named!(name<&str>,
     )
 );
 
-named!(selection<&str>, do_parse!(
+named!(selection<String>, do_parse!(
     many0!(multispace) >>
     tag!(b"[") >>
     selection: map_res!(
@@ -63,56 +55,46 @@ named!(selection<&str>, do_parse!(
     ) >>
     tag!(b"]") >>
     many0!(multispace) >>
-    ( selection )
+    ( selection.to_string() )
 ));
 
-named!(sort<&str>, do_parse!(
-    many0!(multispace) >>
-    tag!(b"(") >>
-    sort: map_res!(
-        take_until!(")"),
-        std::str::from_utf8
-    ) >>
-    tag!(b")") >>
-    many0!(multispace) >>
-    ( sort )
-));
-
-named!(comp_or_port<&[u8], Literal>, do_parse!(
+named!(comp<CoreLexicalToken>, do_parse!(
     many0!(multispace) >>
     name: name >>
-    sort: opt!(complete!(sort)) >>
-    selection: opt!(complete!(selection)) >>
-    many0!(multispace) >>
-    (
-        if sort.is_some() {
-            Literal::Comp(name, sort.unwrap())
-        } else {
-            Literal::Port(name, selection)
-        }
-    )
+    tag!(b"(") >>
+        many0!(multispace) >>
+        sort: opt!(complete!(map_res!(
+            map_res!(
+                take_until1!(")"),
+                std::str::from_utf8
+            ),
+        std::str::FromStr::from_str
+    ))) >>
+    tag!(b")") >>
+    ( CoreLexicalToken::Comp(name.into(), sort) )
 ));
 
-named!(literal<&[u8], Literal>, alt!(comment | imsg | bind | external | comp_or_port));
+named!(port<CoreLexicalToken>, do_parse!(
+    many0!(multispace) >>
+    name: name >>
+    selection: opt!(complete!(selection)) >>
+    many0!(multispace) >>
+    ( CoreLexicalToken::Port(name.into(), selection) )
+));
+
+named!(comp_or_port<&[u8], CoreLexicalToken>, alt!(complete!(comp) | port));
+
+named!(literal<&[u8], CoreLexicalToken>, alt!(comment | imsg | bind | external | comp_or_port));
 
 agent! {
-    input(input: fs_file_desc),
-    output(output: core_lexical),
+    input(input: FsFileDesc),
+    output(output: CoreLexical),
     fn run(&mut self) -> Result<Signal>{
-        // Get one MSG
-        let mut msg = try!(self.input.input.recv());
-        let file: fs_file_desc::Reader = try!(msg.read_schema());
+        let file = self.input.input.recv()?;
 
-        // print it
-        match try!(file.which()) {
-            fs_file_desc::Start(path) => {
-                let path = path?;
-                let mut new_msg = Msg::new();
-                {
-                    let mut msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.set_start(&path);
-                }
-                let _ = self.output.output.send(new_msg);
+        match file {
+            FsFileDesc::Start(path) => {
+                let _ = self.output.output.send(CoreLexical::Start(path));
                 try!(handle_stream(&self));
             },
             _ => { return Err(result::Error::Misc("bad stream".to_string())) }
@@ -124,64 +106,25 @@ agent! {
 
 fn handle_stream(comp: &ThisAgent) -> Result<()> {
     loop {
-        // Get one Msg
-        let mut msg = try!(comp.input.input.recv());
-        let file: fs_file_desc::Reader = try!(msg.read_schema());
+        let file = comp.input.input.recv()?;
 
         // print it
-        match try!(file.which()) {
-            fs_file_desc::Text(text) => {
-                let mut text = text?.as_bytes();
+        match file {
+            FsFileDesc::Text(text) => {
+                let mut text = text.as_bytes();
                 loop {
                     match literal(text) {
                         IResult::Done(rest, lit) => {
-                            let mut send_msg = Msg::new();
-                            {
-                                let msg = send_msg.build_schema::<core_lexical::Builder>();
-                                match lit {
-                                    Literal::Bind => { msg.init_token().set_bind(()); },
-                                    Literal::External => {msg.init_token().set_external(()); },
-                                    Literal::Port(name, selection) => {
-                                        let mut port = msg.init_token().init_port();
-                                        port.borrow().set_name(&name);
-                                        if let Some(s) = selection {
-                                            port.borrow().set_selection(&s);
-                                        } else {
-                                            port.borrow().set_selection("");
-                                        }
-                                    },
-                                    Literal::Comp(name, sort) => {
-                                        let mut comp = msg.init_token().init_comp();
-                                        comp.borrow().set_name(&name);
-                                        comp.borrow().set_sort(&sort);
-                                    },
-                                    Literal::IMSG(imsg) => {
-                                        msg.init_token().set_imsg(&imsg);
-                                    }
-                                    Literal::Comment => { break; }
-                                }
-                            }
+                            let _ = comp.output.output.send(CoreLexical::Token(lit));
                             text = rest;
-                            let _ = comp.output.output.send(send_msg);
                         },
                         _ => { break;}
                     }
                 }
-                let mut new_msg = Msg::new();
-                {
-                    let msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.init_token().set_break(());
-                }
-                let _ = comp.output.output.send(new_msg);
+                let _ = comp.output.output.send(CoreLexical::Token(CoreLexicalToken::Break));
             },
-            fs_file_desc::End(path) => {
-                let path = path?;
-                let mut new_msg = Msg::new();
-                {
-                    let mut msg = new_msg.build_schema::<core_lexical::Builder>();
-                    msg.set_end(&path);
-                }
-                let _ = comp.output.output.send(new_msg);
+            FsFileDesc::End(path) => {
+                let _ = comp.output.output.send(CoreLexical::End(path));
                 break;
             },
             _ => { return Err(result::Error::Misc("Bad stream".to_string())); }

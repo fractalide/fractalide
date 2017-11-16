@@ -1,1 +1,2 @@
-struct Pair(i32, f32);
+#[derive(Debug)]
+pub struct Pair(pub i32, pub f32);

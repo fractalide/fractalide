@@ -7,59 +7,32 @@ use std::io::BufReader;
 use std::io::BufRead;
 
 agent! {
-    input(input: fs_path),
-    output(output: fs_file_desc, error: fs_file_error),
+    input(input: FsPath),
+    output(output: FsFileDesc, error: FsFileError),
     fn run(&mut self) -> Result<Signal> {
         // Get the path
-        let mut msg = try!(self.input.input.recv());
-        let path: fs_path::Reader = msg.read_schema()?;
-
-        let path = path.get_path()?;
+        let mut path = self.input.input.recv()?.0;
 
         let file = match File::open(&path) {
             Ok(file) => { file },
             Err(_) => {
-                // Prepare the output msg
-                let mut new_msg = Msg::new();
-
-                {
-                    let mut msg = new_msg.build_schema::<fs_file_error::Builder>();
-                    msg.set_not_found(&path);
-                }
-                let _ = self.output.error.send(new_msg);
+                let _ = self.output.error.send(FsFileError(path));
                 return Ok(End);
             }
         };
 
 
         // Send start
-        let mut new_msg = Msg::new();
-        {
-            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
-            msg.set_start(&path);
-        }
-        try!(self.output.output.send(new_msg));
+        self.output.output.send(FsFileDesc::Start(path.clone()))?;
 
         // Send lines
         let file = BufReader::new(&file);
         for line in file.lines() {
-            let l = try!(line);
-            let mut new_msg = Msg::new();
-            {
-                let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
-                msg.set_text(&l);
-            }
-            try!(self.output.output.send(new_msg));
+            self.output.output.send(FsFileDesc::Text(line?))?;
         }
 
         // Send stop
-        let mut new_msg = Msg::new();
-        {
-            let mut msg = new_msg.build_schema::<fs_file_desc::Builder>();
-            msg.set_end(&path);
-        }
-        try!(self.output.output.send(new_msg));
-
+        self.output.output.send(FsFileDesc::End(path))?;
         Ok(End)
 
     }

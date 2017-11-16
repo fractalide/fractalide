@@ -7,28 +7,24 @@ use std::str;
 use std::process::Command;
 
 agent! {
-    input(input: fs_path),
-    output(output: fs_path_option),
+    input(input: FsPath),
+    output(output: FsPathOption),
     fn run(&mut self) -> Result<Signal> {
-        let mut msg = self.input.input.recv()?;
-        let name: fs_path::Reader = msg.read_schema()?;
-        let is_path = name.get_path()?;
+        let is_path = self.input.input.recv()?.0;
+
         let mut stdout: String = String::new();
         let new_path = if fs::metadata(format!("{}", is_path)).is_ok() {
             Some(is_path)
         } else {
-            stdout = find_node_path(is_path);
-            Some(stdout.as_str())
+            stdout = find_node_path(&is_path);
+            Some(stdout)
         };
-        let mut new_msg = Msg::new();
-        {
-            let mut msg = new_msg.build_schema::<fs_path_option::Builder>();
-            match new_path {
-                None => { msg.set_none(()); },
-                Some(p) => { msg.set_path(p); }
-            };
-        }
-        self.output.output.send(new_msg);
+
+        let new_msg = match new_path {
+            None => FsPathOption(None),
+            Some(p) => FsPathOption(Some(p)),
+        };
+        self.output.output.send(new_msg)?;
         Ok(End)
     }
 }
