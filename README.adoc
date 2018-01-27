@@ -171,30 +171,6 @@ It's easy to disrespect API contracts in a distributed services setup.
 
 We wanted to ensure there was no ambiguity about the shape of the data a node receives. Also if the shape of data changes, the error must be caught at compile time. Cap'n Proto schema fits these requirements, and fits them *perfectly* when nix builds the `nodes` calling the Cap'n Proto schema. Because, if a schema changes, nix will register the change and will rebuild everything (`nodes` and `subgraphs`) that depends on that schema, thus catching the error. We've also made it such, during graph load time `agents` cannot connect their ports unless they use the same Cap'n Proto schema. This is a very nice safety property.
 
-== Roadmap
-
-=== Steps towards BETA release.
-
-- [x] https://en.wikipedia.org/wiki/Flow-based_programming[Flowscript] - a declarative dataflow language a little more suited to distributed computing.
-- [x] https://github.com/fractalide/fractalide/tree/master/fractals/README.adoc[Fractals] - allowing you to create your own repositories outside the canonical Fractalide repository.
-- [x] https://github.com/fractalide/fractal_net_http[HTTP support].
-- [x] https://github.com/fractalide/fractal_workbench/blob/master/service.nix[Service composition].
-- [x] Deployable example of a simple microservices setup.
-- [x] Documentation.
-- [x] Remove cargo.
-- [x] Stabilize `nodes`, `edges`, `subgraphs` and `agents` API.
-- [x] Cap'n Proto schema composition.
-- [x] Reduce heap allocations.
-- [x] Upgrade `nom` parser combinator to 2.0.
-- [x] 1.0 Beta version.
-
-=== Steps towards STABLE release.
-
-- [ ] tokio-rs integration
-- [ ] nixpkgs lands support for https://github.com/systemd/systemd/blob/master/NEWS#L58[this] feature in systemd 232
-- [ ] https://github.com/fractalide/nixcrates[nixcrates] needs some more work to whittle down crates that don't build
-- [ ] stable release
-
 == The mandatory Hello-like World example.
 
 From a fresh install of NixOS (using the `nixos-unstable` channel) we'll build the ``fractalide virtual machine (fvm)`` and execute the humble NAND logic gate on it.
@@ -226,52 +202,54 @@ boolean : false
 * Our contribution policy is the link:./CONTRIBUTING.md[C4.2 (Collective Code Construction Contract)].
 
 ### Contributing FAQ
-#### Q: I'm kind of new to Github, how do I get started?   
-0. Read the link:./CONTRIBUTING.md[C4.2 (Collective Code Construction Contract)] and the https://github.com/Blockrazor/blockrazor/blob/master/DESCRIPTIVE_C4.MD[line by line explanation] of the protocol.    
-1. Fork this github repository under your own github account.    
-2. Clone _your_ fork locally on your development machine.   
-3. Choose _one_ problem to solve. If you aren't solving a problem that's already in the issue tracker you should describe the problem there (and your idea of the solution) first to see if anyone else has something to say about it (maybe someone is already working on a solution, or maybe you're doing somthing wrong).
-
-**If the issue is in the issue tracker, you should comment on the issue to say you're working on the solution so that other people don't work on the same thing.**    
-4. Add the Fractalide repository as an upstream source and pull any changes:    
-```
-@: git remote add upstream git://github.com/fractalide/fractalide //only needs to be done once
-@: git checkout master //just to make sure you're on the correct branch
-@: git pull upstream master //this grabs any code that has changed, you want to be working on the latest 'version'
-@: git push //update your remote fork with the changes you just pulled from upstream master
-```
-5. Create a local branch on your machine `git checkout -b branch_name`(it's usually a good idea to call the branch something that describes the problem you are solving).
-6. Solve the problem in the absolute most simple and fastest possible way with the smallest number of changes humanly possible. Tell other people what you're doing by putting _very clear and descriptive comments in your code every 2-3 lines_.    
-Add your name to the AUTHORS file so that you become a part owner of Fractalide.    
-7. Commit your changes to your own fork:
-Before you commit changes, you should check if you are working on the latest version (again). Go to the github website and open _your_ fork of Fractalide, it should say _This branch is even with Fractalide:master._    
+#### Q: I'm kind of new to Github, how do I get started?
+* Read the link:./CONTRIBUTING.md[C4.2 (Collective Code Construction Contract)] and the https://github.com/Blockrazor/blockrazor/blob/master/DESCRIPTIVE_C4.MD[line by line explanation] of the protocol.
+* Fork this github repository under your own github account.
+* Clone _your_ fork locally on your development machine.
+* Choose _one_ problem to solve. If you aren't solving a problem that's already in the issue tracker you should describe the problem there (and your idea of the solution) first to see if anyone else has something to say about it (maybe someone is already working on a solution, or maybe you're doing somthing wrong). **If the issue is in the issue tracker, you should comment on the issue to say you're working on the solution so that other people don't work on the same thing.**
+* Add the Fractalide repository as an upstream source and pull any changes:
+[source, sh]
+----
+$ git remote add upstream git://github.com/fractalide/fractalide //only needs to be done once
+$ git checkout master //just to make sure you're on the correct branch
+$ git pull upstream master //this grabs any code that has changed, you want to be working on the latest 'version'
+$ git push //update your remote fork with the changes you just pulled from upstream master
+----
+* Create a local branch on your machine `git checkout -b branch_name`(it's usually a good idea to call the branch something that describes the problem you are solving).
+* Solve the problem in the absolute most simple and fastest possible way with the smallest number of changes humanly possible. Tell other people what you're doing by putting _very clear and descriptive comments in your code every 2-3 lines_.
+Add your name to the AUTHORS file so that you become a part owner of Fractalide.
+* Commit your changes to your own fork:
+Before you commit changes, you should check if you are working on the latest version (again). Go to the github website and open _your_ fork of Fractalide, it should say _This branch is even with Fractalide:master._
 If **not**, you need to pull the latest changes from the upstream Fractalide repository and replay your changes on top of the latest version:
-```
-@: git stash //save your work locally
-@: git checkout master
-@: git pull upstream master
-@: git push
-@: git checkout -b branch_name_stash
-@: git pop //_replay_ your work on the new branch which is now fully up to date with the Blockrazor repository
-```
+[source, sh]
+----
+$ git stash //save your work locally
+$ git checkout master
+$ git pull upstream master
+$ git push
+$ git checkout -b branch_name_stash
+$ git stash pop //_replay_ your work on the new branch which is now fully up to date with the Blockrazor repository
+----
 
-Now you can add and commit your changes:   
-```
-@: git add changed_file.js //repeat for each file you changed
-@: git commit -m 'problem: very short description of problem //do not close the '', press ENTER two (2) times
+Now you can add and commit your changes:
+[source, sh]
+----
+$ git add changed_file.js //repeat for each file you changed
+$ git commit -m 'problem: very short description of problem //do not close the '', press ENTER two (2) times
 >
->solution: short description of how you solved the problem.' //Now you can close the ''. Also mention the issue number if there is one (e.g. #6)    
-@: git push //this will send your changes to _your_ fork on Github
-```    
-8. Go to your fork on Github and select the branch you just worked on. Click "pull request" to send a pull request back to the Fractalide repository.
-9. Send the pull request.    
+>solution: short description of how you solved the problem.' //Now you can close the ''. Also mention the issue number if there is one (e.g. #6)
+$ git push //this will send your changes to _your_ fork on Github
+----
+* Go to your fork on Github and select the branch you just worked on. Click "pull request" to send a pull request back to the Fractalide repository.
+* Send the pull request.
 
-#### Q: What happens after I send a pull request?    
-If your pull request contains a correct patch (read the C4) a maintainer should merge it.    
-If you want to work on another problem in the meantime simply repeat the above steps starting at:    
-```
-@: git checkout master
-```
+#### Q: What happens after I send a pull request?
+If your pull request contains a correct patch (read the C4) a maintainer should merge it.
+If you want to work on another problem in the meantime simply repeat the above steps starting at:
+[source, sh]
+----
+$ git checkout master
+----
 
 #### Q: Can I be paid to contribute to Fractalide?
 Yes, this is sometimes possible. Your first step is to _very carefully read and understand everything above_, including the linked files, then start fixing problems and sending pull requests! If your code is amazing and brilliant but you don't understand the contribution process we cannot consider you for a paid position. Make sure you follow the project on Github so you get updates. Contact Fractalide's BDFL (Benevolent Dictator For Life): mailto:setori88@gmail.com[Stewart Mackenzie] if you've been contributing code to Fractalide and want to keep doing it but but you require financial assistance.
