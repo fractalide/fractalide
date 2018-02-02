@@ -228,7 +228,7 @@ $ git checkout master
 $ git pull upstream master
 $ git push
 $ git checkout -b branch_name_stash
-$ git stash pop //_replay_ your work on the new branch which is now fully up to date with the Blockrazor repository
+$ git stash pop //_replay_ your work on the new branch which is now fully up to date with the fractalide repository
 ----
 
 Now you can add and commit your changes:
