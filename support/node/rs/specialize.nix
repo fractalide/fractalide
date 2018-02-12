@@ -1,24 +1,20 @@
 { buffet
-  , rust
-  , crates
-  , build-rust-package
+  , buildRustCrate
   , unifyCapnpEdges
+  , unifyRustEdges
+  , transformNodeIntoCrate
   , genName
 }:
-
-{ fractalType ? ""}:
-
 { name ? null
   , src ? null
   , osdeps ? []
   , mods ? []
   , capnp_edges ? []
   , edges ? []
-  , configurePhase ? ""
+  , postInstall ? ""
   , ... } @ args:
 let
   compName = if name == null then genName src else name;
-  unifyRustEdges = import ./unifyRustEdges.nix { inherit buffet; };
   unifiedRustEdges = if edges != [] then unifyRustEdges {
     name = compName;
     edges = edges;
@@ -28,19 +24,21 @@ let
     edges = capnp_edges;
     target = "rs";
   };
-in
-  build-rust-package {
-    unifiedCapnpEdges = unifiedCapnpEdges;
-    unifiedRustEdges = unifiedRustEdges;
-    buildInputs = osdeps;
-    crateName = compName;
-    version = "";
-    libPath = "lib.rs";
-    dependencies = mods;
-    fractalType = fractalType;
+  crate = transformNodeIntoCrate {
+    name = compName;
     src = src;
-    features = [];
-    configurePhase = configurePhase;
+    version = "0.0.0";
+    inherit unifiedCapnpEdges unifiedRustEdges postInstall;
+  };
+  in
+  buildRustCrate {
+    crateName = crate.crateName;
+    version = crate.version;
+    src = crate.out;
     release = buffet.release;
     verbose = buffet.verbose;
+    dependencies = mods;
+    buildInputs = osdeps;
+    plugin = true;
+    libName = "agent";
   }
