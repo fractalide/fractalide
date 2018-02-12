@@ -13,10 +13,10 @@ We'll be building a simple backend for a Todo app.
 
 The reader should have read these documents:
 
-1. [Nodes](./nodes/README.md)
-2. [Edges](./edges/README.md)
-3. [Fractals](./fractals/README.md)
-4. [Services](./services/README.md)
+1. link:./nodes/README.adoc[Nodes]
+2. link:./edges/README.adoc[Edges]
+3. link:./fractals/README.adoc[Fractals]
+4. link:./services/README.adoc[Services]
 
 // tag::doc[]
 
