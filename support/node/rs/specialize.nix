@@ -40,5 +40,5 @@ let
     dependencies = mods;
     buildInputs = osdeps;
     plugin = true;
-    libName = "agent";
+    postInstall = "ln -s $out/lib/*.so $out/lib/libagent.so";
   }
