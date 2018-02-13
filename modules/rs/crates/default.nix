@@ -50,20 +50,11 @@ rec {
     crateBin = [ {  name = "capnpc-rust";  path = "src/main.rs"; } ];
     inherit dependencies buildDependencies features;
   };
-  kernel32_sys_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "kernel32-sys";
-    version = "0.2.2";
-    authors = [ "Peter Atashian <retep998@gmail.com>" ];
-    sha256 = "1lrw1hbinyvr6cp28g60z97w32w8vsk6pahk64pmrv2fmby8srfj";
-    libName = "kernel32";
-    build = "build.rs";
-    inherit dependencies buildDependencies features;
-  };
-  lazy_static_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "lazy_static";
-    version = "1.0.0";
-    authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
-    sha256 = "0wfvqyr2nvx2mbsrscg5y7gfa9skhb8p72ayanl8vl49pw24v4fh";
+  cc_1_0_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cc";
+    version = "1.0.4";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "1bhxmq231c62amw14lghz5xi2cjvm0r7kp3ajsj6zqw9843zwkfw";
     inherit dependencies buildDependencies features;
   };
   libc_0_2_36_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -73,11 +64,11 @@ rec {
     sha256 = "01633h4yfqm0s302fm0dlba469bx8y6cs4nqc8bqrmjqxfxn515l";
     inherit dependencies buildDependencies features;
   };
-  libloading_0_4_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  libloading_0_5_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "libloading";
-    version = "0.4.3";
+    version = "0.5.0";
     authors = [ "Simonas Kazlauskas <libloading@kazlauskas.me>" ];
-    sha256 = "1cgb6xbadm59gc3cq733wrzsp59914hrjam0fan5gn1z100b6319";
+    sha256 = "11vzjaka1y979aril4ggwp33p35yz2isvx9m5w88r5sdcmq6iscn";
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
@@ -116,19 +107,28 @@ rec {
     sha256 = "09g715plrn59kasvigqjrjqzcgqnaf6v6pia0xx03f18kvfmkq06";
     inherit dependencies buildDependencies features;
   };
-  winapi_0_2_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  winapi_0_3_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "winapi";
-    version = "0.2.8";
+    version = "0.3.4";
     authors = [ "Peter Atashian <retep998@gmail.com>" ];
-    sha256 = "0a45b58ywf12vb7gvj6h3j264nydynmzyqz8d8rqxsj6icqv82as";
+    sha256 = "1qbrf5dcnd8j36cawby5d9r5vx07r0l4ryf672pfncnp8895k9lx";
+    build = "build.rs";
     inherit dependencies buildDependencies features;
   };
-  winapi_build_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "winapi-build";
-    version = "0.1.1";
+  winapi_i686_pc_windows_gnu_0_4_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi-i686-pc-windows-gnu";
+    version = "0.4.0";
     authors = [ "Peter Atashian <retep998@gmail.com>" ];
-    sha256 = "1lxlpi87rkhxcwp2ykf1ldw3p108hwm24nywf3jfrvmff4rjhqga";
-    libName = "build";
+    sha256 = "05ihkij18r4gamjpxj4gra24514can762imjzlmak5wlzidplzrp";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_x86_64_pc_windows_gnu_0_4_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi-x86_64-pc-windows-gnu";
+    version = "0.4.0";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "0n1ylmlsb8yg1v583i4xy0qmqg42275flvbc51hdqjjfjcl9vlbj";
+    build = "build.rs";
     inherit dependencies buildDependencies features;
   };
   all_crates_1_1_1 = { features?(all_crates_1_1_1_features {}) }: all_crates_1_1_1_ {
@@ -170,33 +170,16 @@ rec {
     capnp_0_8_15.default = true;
     capnpc_0_8_8.default = (f.capnpc_0_8_8.default or true);
   }) [ capnp_0_8_15_features ];
-  kernel32_sys_0_2_2 = { features?(kernel32_sys_0_2_2_features {}) }: kernel32_sys_0_2_2_ {
-    dependencies = mapFeatures features ([ winapi_0_2_8 ]);
-    buildDependencies = mapFeatures features ([ winapi_build_0_1_1 ]);
-  };
-  kernel32_sys_0_2_2_features = f: updateFeatures f (rec {
-    kernel32_sys_0_2_2.default = (f.kernel32_sys_0_2_2.default or true);
-    winapi_0_2_8.default = true;
-    winapi_build_0_1_1.default = true;
-  }) [ winapi_0_2_8_features winapi_build_0_1_1_features ];
-  lazy_static_1_0_0 = { features?(lazy_static_1_0_0_features {}) }: lazy_static_1_0_0_ {
+  cc_1_0_4 = { features?(cc_1_0_4_features {}) }: cc_1_0_4_ {
     dependencies = mapFeatures features ([]);
-    features = mkFeatures (features.lazy_static_1_0_0 or {});
+    features = mkFeatures (features.cc_1_0_4 or {});
   };
-  lazy_static_1_0_0_features = f: updateFeatures f (rec {
-    lazy_static_1_0_0.compiletest_rs =
-      (f.lazy_static_1_0_0.compiletest_rs or false) ||
-      (f.lazy_static_1_0_0.compiletest or false) ||
-      (lazy_static_1_0_0.compiletest or false);
-    lazy_static_1_0_0.default = (f.lazy_static_1_0_0.default or true);
-    lazy_static_1_0_0.nightly =
-      (f.lazy_static_1_0_0.nightly or false) ||
-      (f.lazy_static_1_0_0.spin_no_std or false) ||
-      (lazy_static_1_0_0.spin_no_std or false);
-    lazy_static_1_0_0.spin =
-      (f.lazy_static_1_0_0.spin or false) ||
-      (f.lazy_static_1_0_0.spin_no_std or false) ||
-      (lazy_static_1_0_0.spin_no_std or false);
+  cc_1_0_4_features = f: updateFeatures f (rec {
+    cc_1_0_4.default = (f.cc_1_0_4.default or true);
+    cc_1_0_4.rayon =
+      (f.cc_1_0_4.rayon or false) ||
+      (f.cc_1_0_4.parallel or false) ||
+      (cc_1_0_4.parallel or false);
   }) [];
   libc_0_2_36 = { features?(libc_0_2_36_features {}) }: libc_0_2_36_ {
     features = mkFeatures (features.libc_0_2_36 or {});
@@ -208,16 +191,18 @@ rec {
       (f.libc_0_2_36.default or false) ||
       (libc_0_2_36.default or false);
   }) [];
-  libloading_0_4_3 = { features?(libloading_0_4_3_features {}) }: libloading_0_4_3_ {
-    dependencies = mapFeatures features ([ lazy_static_1_0_0 ])
-      ++ (if kernel == "windows" then mapFeatures features ([ kernel32_sys_0_2_2 winapi_0_2_8 ]) else []);
+  libloading_0_5_0 = { features?(libloading_0_5_0_features {}) }: libloading_0_5_0_ {
+    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_4 ]) else []);
+    buildDependencies = mapFeatures features ([ cc_1_0_4 ]);
   };
-  libloading_0_4_3_features = f: updateFeatures f (rec {
-    kernel32_sys_0_2_2.default = true;
-    lazy_static_1_0_0.default = true;
-    libloading_0_4_3.default = (f.libloading_0_4_3.default or true);
-    winapi_0_2_8.default = true;
-  }) [ lazy_static_1_0_0_features kernel32_sys_0_2_2_features winapi_0_2_8_features ];
+  libloading_0_5_0_features = f: updateFeatures f (rec {
+    cc_1_0_4.default = true;
+    libloading_0_5_0.default = (f.libloading_0_5_0.default or true);
+    winapi_0_3_4.default = true;
+    winapi_0_3_4.errhandlingapi = true;
+    winapi_0_3_4.libloaderapi = true;
+    winapi_0_3_4.winerror = true;
+  }) [ cc_1_0_4_features winapi_0_3_4_features ];
   memchr_1_0_2 = { features?(memchr_1_0_2_features {}) }: memchr_1_0_2_ {
     dependencies = mapFeatures features ([ ]
       ++ (if features.memchr_1_0_2.libc or false then [ libc_0_2_36 ] else []));
@@ -285,14 +270,14 @@ rec {
     num_cpus_1_8_0.default = (f.num_cpus_1_8_0.default or true);
   }) [ libc_0_2_36_features ];
   rustfbp_0_3_34 = { features?(rustfbp_0_3_34_features {}) }: rustfbp_0_3_34_ {
-    dependencies = mapFeatures features ([ capnp_0_8_15 libloading_0_4_3 threadpool_1_7_1 ]);
+    dependencies = mapFeatures features ([ capnp_0_8_15 libloading_0_5_0 threadpool_1_7_1 ]);
   };
   rustfbp_0_3_34_features = f: updateFeatures f (rec {
     capnp_0_8_15.default = true;
-    libloading_0_4_3.default = true;
+    libloading_0_5_0.default = true;
     rustfbp_0_3_34.default = (f.rustfbp_0_3_34.default or true);
     threadpool_1_7_1.default = true;
-  }) [ capnp_0_8_15_features libloading_0_4_3_features threadpool_1_7_1_features ];
+  }) [ capnp_0_8_15_features libloading_0_5_0_features threadpool_1_7_1_features ];
   threadpool_1_7_1 = { features?(threadpool_1_7_1_features {}) }: threadpool_1_7_1_ {
     dependencies = mapFeatures features ([ num_cpus_1_8_0 ]);
   };
@@ -300,12 +285,22 @@ rec {
     num_cpus_1_8_0.default = true;
     threadpool_1_7_1.default = (f.threadpool_1_7_1.default or true);
   }) [ num_cpus_1_8_0_features ];
-  winapi_0_2_8 = { features?(winapi_0_2_8_features {}) }: winapi_0_2_8_ {};
-  winapi_0_2_8_features = f: updateFeatures f (rec {
-    winapi_0_2_8.default = (f.winapi_0_2_8.default or true);
+  winapi_0_3_4 = { features?(winapi_0_3_4_features {}) }: winapi_0_3_4_ {
+    dependencies = (if kernel == "i686-pc-windows-gnu" then mapFeatures features ([ winapi_i686_pc_windows_gnu_0_4_0 ]) else [])
+      ++ (if kernel == "x86_64-pc-windows-gnu" then mapFeatures features ([ winapi_x86_64_pc_windows_gnu_0_4_0 ]) else []);
+    features = mkFeatures (features.winapi_0_3_4 or {});
+  };
+  winapi_0_3_4_features = f: updateFeatures f (rec {
+    winapi_0_3_4.default = (f.winapi_0_3_4.default or true);
+    winapi_i686_pc_windows_gnu_0_4_0.default = true;
+    winapi_x86_64_pc_windows_gnu_0_4_0.default = true;
+  }) [ winapi_i686_pc_windows_gnu_0_4_0_features winapi_x86_64_pc_windows_gnu_0_4_0_features ];
+  winapi_i686_pc_windows_gnu_0_4_0 = { features?(winapi_i686_pc_windows_gnu_0_4_0_features {}) }: winapi_i686_pc_windows_gnu_0_4_0_ {};
+  winapi_i686_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
+    winapi_i686_pc_windows_gnu_0_4_0.default = (f.winapi_i686_pc_windows_gnu_0_4_0.default or true);
   }) [];
-  winapi_build_0_1_1 = { features?(winapi_build_0_1_1_features {}) }: winapi_build_0_1_1_ {};
-  winapi_build_0_1_1_features = f: updateFeatures f (rec {
-    winapi_build_0_1_1.default = (f.winapi_build_0_1_1.default or true);
+  winapi_x86_64_pc_windows_gnu_0_4_0 = { features?(winapi_x86_64_pc_windows_gnu_0_4_0_features {}) }: winapi_x86_64_pc_windows_gnu_0_4_0_ {};
+  winapi_x86_64_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
+    winapi_x86_64_pc_windows_gnu_0_4_0.default = (f.winapi_x86_64_pc_windows_gnu_0_4_0.default or true);
   }) [];
 }
