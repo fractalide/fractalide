@@ -1,8 +1,4 @@
 #! /usr/bin/env nix-shell
-#! nix-shell deps.nix -i bash -I fractalide=/home/stewart/dev/fractalide/fractalide
-echo UPDATING DEPENDENCIES
-echo Generating lockfile
+#! nix-shell -i bash -p carnix cargo
 cargo generate-lockfile &&
-echo Running Carnix
 carnix Cargo.lock -o default.nix
-echo Done
