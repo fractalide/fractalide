@@ -2,7 +2,7 @@
 
 buffet.support.node.rs.executable {
   name = "capnpc-rust";
-  mods = with buffet.mods.rs; [ capnp capnpc ];
+  mods = with buffet.mods.rs; [ (capnp_0_8_15 {}) (capnpc_0_8_8 {}) ];
   src = buffet.pkgs.fetchFromGitHub {
     owner = "dwrensha";
     repo = "capnpc-rust";

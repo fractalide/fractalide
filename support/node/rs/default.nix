@@ -1,25 +1,23 @@
 { buffet
   , genName
   , unifyCapnpEdges
+  , unifyRustEdges
 }:
 let
   pkgs = buffet.pkgs;
   callPackage = lib.callPackageWith ( pkgs );
   lib = pkgs.lib;
-  buildPlatform = pkgs.buildPlatform;
   stdenv = pkgs.stdenv;
   release = buffet.release;
   verbose = buffet.verbose;
-  fetchzip = pkgs.fetchzip;
-  crates = buffet.mods.rs.crates;
-  rust = pkgs.rust.rustc;
-  build-rust-package = import ../../../modules/rs/build-rust-package.nix { inherit rust lib buildPlatform stdenv;};
-  specialize = callPackage ./specialize.nix  { inherit build-rust-package buffet crates unifyCapnpEdges genName; };
+  buildRustCrate = pkgs.buildRustCrate;
+  transformNodeIntoCrate = import ./transform-node-into-crate.nix { stdenv = pkgs.stdenv; };
+  specialize = callPackage ./specialize.nix  { inherit buildRustCrate unifyCapnpEdges unifyRustEdges transformNodeIntoCrate buffet genName; };
 in
 {
-  inherit build-rust-package;
-  executable = specialize { fractalType = "executable"; };
-  crate = specialize { fractalType = "crate"; };
-  fvm = specialize { fractalType = "fvm"; };
-  agent = specialize { fractalType = "agent"; };
+  inherit buildRustCrate;
+  executable = specialize;
+  crate = specialize;
+  fvm = specialize;
+  agent = specialize;
 }

@@ -18,3 +18,7 @@ result*
 # idris
 idris_libs
 *.ibc
+
+# racket
+compiled
+*.rkt~

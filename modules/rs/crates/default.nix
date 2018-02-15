@@ -1,230 +1,311 @@
-{ build-rust-package, fetchzip, release, verbose }:
-let
-    all_crates_1_1_1_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "all_crates";
-      version = "1.1.1";
-      fractalType = "crate";
-      src = ./.;
-      inherit dependencies features release verbose;
-    };
-    byteorder_1_1_0_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "byteorder";
-      version = "1.1.0";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/byteorder/1.1.0/download";
-        sha256 = "1i2n0161jm00zvzh4bncgv9zrwa6ydbxdn5j4bx0wwn7rvi9zycp";
-        name = "byteorder-1.1.0.tar.gz";
-      };
-      libName = "byteorder";
-      inherit dependencies features release verbose;
-    };
-    capnp_0_8_11_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "capnp";
-      version = "0.8.11";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/capnp/0.8.11/download";
-        sha256 = "128nyg50z1rjn7psa1vq3888q8w5xkzkgdcjlc492pjzhsr40bdj";
-        name = "capnp-0.8.11.tar.gz";
-      };
-      libPath = "src/lib.rs";
-      libName = "capnp";
-      inherit dependencies features release verbose;
-    };
-    capnpc_0_8_7_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "capnpc";
-      version = "0.8.7";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/capnpc/0.8.7/download";
-        sha256 = "0b1kzq316li86hiwx950b8ri61y3mqhfpzc2ycs984hk472f4wiy";
-        name = "capnpc-0.8.7.tar.gz";
-      };
-      libPath = "src/lib.rs";
-      libName = "capnpc";
-      crateBin = [ {  name = "capnpc-rust";  path = "src/main.rs"; } ];
-      inherit dependencies features release verbose;
-    };
-    kernel32_sys_0_2_2_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "kernel32-sys";
-      version = "0.2.2";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/kernel32-sys/0.2.2/download";
-        sha256 = "1lrw1hbinyvr6cp28g60z97w32w8vsk6pahk64pmrv2fmby8srfj";
-        name = "kernel32-sys-0.2.2.tar.gz";
-      };
-      libName = "kernel32";
-      build = "build.rs";
-      buildDependencies = [ winapi_build_0_1_1_ ];      inherit dependencies features release verbose;
-    };
-    lazy_static_0_2_8_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "lazy_static";
-      version = "0.2.8";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/lazy_static/0.2.8/download";
-        sha256 = "1xbpxx7cd5kl60g87g43q80jxyrsildhxfjc42jb1x4jncknpwbl";
-        name = "lazy_static-0.2.8.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    libc_0_2_30_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "libc";
-      version = "0.2.30";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/libc/0.2.30/download";
-        sha256 = "1c4gi6r5gbpbw3dmryc98x059awl4003cfz5kd6lqm03gp62wlkw";
-        name = "libc-0.2.30.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    libloading_0_4_1_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "libloading";
-      version = "0.4.1";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/libloading/0.4.1/download";
-        sha256 = "0q0y0vg78vm2fs0wry6dwp3ka5nvahzss0099zw5fmdjkj7yw6y9";
-        name = "libloading-0.4.1.tar.gz";
-      };
-      build = "build.rs";
-      inherit dependencies features release verbose;
-    };
-    memchr_1_0_1_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "memchr";
-      version = "1.0.1";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/memchr/1.0.1/download";
-        sha256 = "071m5y0zm9p1k7pzqm20f44ixvmycf71xsrpayqaypxrjwchnkxm";
-        name = "memchr-1.0.1.tar.gz";
-      };
-      libName = "memchr";
-      inherit dependencies features release verbose;
-    };
-    nom_3_2_0_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "nom";
-      version = "3.2.0";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/nom/3.2.0/download";
-        sha256 = "16ccwwqi09ai1yf71gpqhih915m7ixyrwbjf6lmhfdnxp0igg6sw";
-        name = "nom-3.2.0.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    num_cpus_1_6_2_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "num_cpus";
-      version = "1.6.2";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/num_cpus/1.6.2/download";
-        sha256 = "0wxfzxsk05xbkph5qcvdqyi334zn0pnpahzi7n7iagxbb68145rm";
-        name = "num_cpus-1.6.2.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    rustfbp_0_3_34_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "rustfbp";
-      version = "0.3.34";
-      fractalType = "crate";
-      src = ../rustfbp;
-      inherit dependencies features release verbose;
-    };
-    threadpool_1_7_0_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "threadpool";
-      version = "1.7.0";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/threadpool/1.7.0/download";
-        sha256 = "0pcfzhq9m1jggy7h6x7nhybyjq4xrjmbxqhaffrnc7mcm042w5h7";
-        name = "threadpool-1.7.0.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    winapi_0_2_8_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "winapi";
-      version = "0.2.8";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/winapi/0.2.8/download";
-        sha256 = "0a45b58ywf12vb7gvj6h3j264nydynmzyqz8d8rqxsj6icqv82as";
-        name = "winapi-0.2.8.tar.gz";
-      };
-      inherit dependencies features release verbose;
-    };
-    winapi_build_0_1_1_ = { dependencies?[], features?[] }: build-rust-package {
-      crateName = "winapi-build";
-      version = "0.1.1";
-      fractalType = "crate";
-      src = fetchzip {
-        url = "https://crates.io/api/v1/crates/winapi-build/0.1.1/download";
-        sha256 = "1lxlpi87rkhxcwp2ykf1ldw3p108hwm24nywf3jfrvmff4rjhqga";
-        name = "winapi-build-0.1.1.tar.gz";
-      };
-      libName = "build";
-      inherit dependencies features release verbose;
-    };
-
+# Generated by carnix 0.6.5: carnix Cargo.lock -o default.nix
+{ lib, buildPlatform, buildRustCrate, fetchgit }:
+let kernel = buildPlatform.parsed.kernel.name;
+    abi = buildPlatform.parsed.abi.name;
+    include = includedFiles: src: builtins.filterSource (path: type:
+      lib.lists.any (f:
+        let p = toString (src + ("/" + f)); in
+        (path == p) || (type == "directory" && lib.strings.hasPrefix path p)
+      ) includedFiles
+    ) src;
+    updateFeatures = f: up: functions: builtins.deepSeq f (lib.lists.foldl' (features: fun: fun features) (lib.attrsets.recursiveUpdate f up) functions);
+    mapFeatures = features: map (fun: fun { features = features; });
+    mkFeatures = feat: lib.lists.foldl (features: featureName:
+      if feat.${featureName} or false then
+        [ featureName ] ++ features
+      else
+        features
+    ) [] (builtins.attrNames feat);
 in
 rec {
-  all_crates_1_1_1 = all_crates_1_1_1_ {
-    dependencies = [ capnp_0_8_11 capnpc_0_8_7 nom_3_2_0 rustfbp_0_3_34 ];
+  all_crates = f: all_crates_1_1_1 { features = all_crates_1_1_1_features { all_crates_1_1_1 = f; }; };
+  all_crates_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "all_crates";
+    version = "1.1.1";
+    authors = [  ];
+    src = ./.;
+    inherit dependencies buildDependencies features;
   };
-  byteorder_1_1_0 = byteorder_1_1_0_ {
-    features = [ "std" ];
+  byteorder_1_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "byteorder";
+    version = "1.2.1";
+    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
+    sha256 = "1wsxnqcscg4gchdmgdbwc78lw2qx2i6bnjd564xq7h7qc4fp2157";
+    inherit dependencies buildDependencies features;
   };
-  capnp_0_8_11 = capnp_0_8_11_ {
-    dependencies = [ byteorder_1_1_0 ];
+  capnp_0_8_15_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "capnp";
+    version = "0.8.15";
+    authors = [ "David Renshaw <dwrenshaw@gmail.com>" ];
+    sha256 = "0nnmp2lq8wjh3cj5nfa8nlmz0fln2dyjsy499n55xxk3yqwim7a4";
+    libPath = "src/lib.rs";
+    inherit dependencies buildDependencies features;
   };
-  capnpc_0_8_7 = capnpc_0_8_7_ {
-    dependencies = [ capnp_0_8_11 ];
+  capnpc_0_8_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "capnpc";
+    version = "0.8.8";
+    authors = [ "David Renshaw <dwrenshaw@gmail.com>" ];
+    sha256 = "1kxfkiv34ihb6xhc27nbink2x328gfa42p0m5bkkrmrmim3mghj9";
+    libPath = "src/lib.rs";
+    crateBin = [ {  name = "capnpc-rust";  path = "src/main.rs"; } ];
+    inherit dependencies buildDependencies features;
   };
-  kernel32_sys_0_2_2 = kernel32_sys_0_2_2_ {
-    dependencies = [ winapi_0_2_8 winapi_build_0_1_1 ];
+  kernel32_sys_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "kernel32-sys";
+    version = "0.2.2";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1lrw1hbinyvr6cp28g60z97w32w8vsk6pahk64pmrv2fmby8srfj";
+    libName = "kernel32";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
   };
-  lazy_static_0_2_8 = lazy_static_0_2_8_ {};
-  libc_0_2_30 = libc_0_2_30_ {
-    features = [ "use_std" ];
+  lazy_static_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "lazy_static";
+    version = "1.0.0";
+    authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
+    sha256 = "0wfvqyr2nvx2mbsrscg5y7gfa9skhb8p72ayanl8vl49pw24v4fh";
+    inherit dependencies buildDependencies features;
   };
-  libloading_0_4_1 = libloading_0_4_1_ {
-    dependencies = [ kernel32_sys_0_2_2 lazy_static_0_2_8 winapi_0_2_8 ];
+  libc_0_2_36_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "libc";
+    version = "0.2.36";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "01633h4yfqm0s302fm0dlba469bx8y6cs4nqc8bqrmjqxfxn515l";
+    inherit dependencies buildDependencies features;
   };
-  memchr_1_0_1 = memchr_1_0_1_ {
-    dependencies = [ libc_0_2_30 ];
-    features = [ "use_std" ];
+  libloading_0_4_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "libloading";
+    version = "0.4.3";
+    authors = [ "Simonas Kazlauskas <libloading@kazlauskas.me>" ];
+    sha256 = "1cgb6xbadm59gc3cq733wrzsp59914hrjam0fan5gn1z100b6319";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
   };
-  nom_3_2_0 = nom_3_2_0_ {
-    dependencies = [ memchr_1_0_1 ];
-    features = [ "std" "stream" ];
+  memchr_1_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "memchr";
+    version = "1.0.2";
+    authors = [ "Andrew Gallant <jamslam@gmail.com>" "bluss" ];
+    sha256 = "0dfb8ifl9nrc9kzgd5z91q6qg87sh285q1ih7xgrsglmqfav9lg7";
+    inherit dependencies buildDependencies features;
   };
-  num_cpus_1_6_2 = num_cpus_1_6_2_ {
-    dependencies = [ libc_0_2_30 ];
+  nom_3_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "nom";
+    version = "3.2.1";
+    authors = [ "contact@geoffroycouprie.com" ];
+    sha256 = "1vcllxrz9hdw6j25kn020ka3psz1vkaqh1hm3yfak2240zrxgi07";
+    inherit dependencies buildDependencies features;
   };
-  rustfbp_0_3_34 = rustfbp_0_3_34_ {
-    dependencies = [ capnp_0_8_11 libloading_0_4_1 threadpool_1_7_0 ];
+  num_cpus_1_8_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "num_cpus";
+    version = "1.8.0";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "1y6qnd9r8ga6y8mvlabdrr73nc8cshjjlzbvnanzyj9b8zzkfwk2";
+    inherit dependencies buildDependencies features;
   };
-  threadpool_1_7_0 = threadpool_1_7_0_ {
-    dependencies = [ num_cpus_1_6_2 ];
+  rustfbp_0_3_34_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rustfbp";
+    version = "0.3.34";
+    authors = [ "Denis Michiels <dmichiels@gmail.com>" "Stewart Mackenzie <setori88@gmail.com>" ];
+    src = ../rustfbp;
+    inherit dependencies buildDependencies features;
   };
-  winapi_0_2_8 = winapi_0_2_8_ {};
-  winapi_build_0_1_1 = winapi_build_0_1_1_ {};
-  all_crates = all_crates_1_1_1;
-  byteorder = byteorder_1_1_0;
-  capnp = capnp_0_8_11;
-  capnpc = capnpc_0_8_7;
-  kernel32_sys = kernel32_sys_0_2_2;
-  lazy_static = lazy_static_0_2_8;
-  libc = libc_0_2_30;
-  libloading = libloading_0_4_1;
-  memchr = memchr_1_0_1;
-  nom = nom_3_2_0;
-  num_cpus = num_cpus_1_6_2;
-  rustfbp = rustfbp_0_3_34;
-  threadpool = threadpool_1_7_0;
-  winapi = winapi_0_2_8;
-  winapi_build = winapi_build_0_1_1;
+  threadpool_1_7_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "threadpool";
+    version = "1.7.1";
+    authors = [ "The Rust Project Developers" "Corey Farwell <coreyf@rwell.org>" "Stefan Schindler <dns2utf8@estada.ch>" ];
+    sha256 = "09g715plrn59kasvigqjrjqzcgqnaf6v6pia0xx03f18kvfmkq06";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_0_2_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi";
+    version = "0.2.8";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "0a45b58ywf12vb7gvj6h3j264nydynmzyqz8d8rqxsj6icqv82as";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_build_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi-build";
+    version = "0.1.1";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1lxlpi87rkhxcwp2ykf1ldw3p108hwm24nywf3jfrvmff4rjhqga";
+    libName = "build";
+    inherit dependencies buildDependencies features;
+  };
+  all_crates_1_1_1 = { features?(all_crates_1_1_1_features {}) }: all_crates_1_1_1_ {
+    dependencies = mapFeatures features ([ capnp_0_8_15 capnpc_0_8_8 nom_3_2_1 rustfbp_0_3_34 ]);
+  };
+  all_crates_1_1_1_features = f: updateFeatures f (rec {
+    all_crates_1_1_1.default = (f.all_crates_1_1_1.default or true);
+    capnp_0_8_15.default = true;
+    capnpc_0_8_8.default = true;
+    nom_3_2_1.default = true;
+    rustfbp_0_3_34.default = true;
+  }) [ capnp_0_8_15_features capnpc_0_8_8_features nom_3_2_1_features rustfbp_0_3_34_features ];
+  byteorder_1_2_1 = { features?(byteorder_1_2_1_features {}) }: byteorder_1_2_1_ {
+    features = mkFeatures (features.byteorder_1_2_1 or {});
+  };
+  byteorder_1_2_1_features = f: updateFeatures f (rec {
+    byteorder_1_2_1.default = (f.byteorder_1_2_1.default or true);
+    byteorder_1_2_1.std =
+      (f.byteorder_1_2_1.std or false) ||
+      (f.byteorder_1_2_1.default or false) ||
+      (byteorder_1_2_1.default or false);
+  }) [];
+  capnp_0_8_15 = { features?(capnp_0_8_15_features {}) }: capnp_0_8_15_ {
+    dependencies = mapFeatures features ([ byteorder_1_2_1 ]);
+    features = mkFeatures (features.capnp_0_8_15 or {});
+  };
+  capnp_0_8_15_features = f: updateFeatures f (rec {
+    byteorder_1_2_1.default = true;
+    capnp_0_8_15.default = (f.capnp_0_8_15.default or true);
+    capnp_0_8_15.futures =
+      (f.capnp_0_8_15.futures or false) ||
+      (f.capnp_0_8_15.rpc or false) ||
+      (capnp_0_8_15.rpc or false);
+  }) [ byteorder_1_2_1_features ];
+  capnpc_0_8_8 = { features?(capnpc_0_8_8_features {}) }: capnpc_0_8_8_ {
+    dependencies = mapFeatures features ([ capnp_0_8_15 ]);
+  };
+  capnpc_0_8_8_features = f: updateFeatures f (rec {
+    capnp_0_8_15.default = true;
+    capnpc_0_8_8.default = (f.capnpc_0_8_8.default or true);
+  }) [ capnp_0_8_15_features ];
+  kernel32_sys_0_2_2 = { features?(kernel32_sys_0_2_2_features {}) }: kernel32_sys_0_2_2_ {
+    dependencies = mapFeatures features ([ winapi_0_2_8 ]);
+    buildDependencies = mapFeatures features ([ winapi_build_0_1_1 ]);
+  };
+  kernel32_sys_0_2_2_features = f: updateFeatures f (rec {
+    kernel32_sys_0_2_2.default = (f.kernel32_sys_0_2_2.default or true);
+    winapi_0_2_8.default = true;
+    winapi_build_0_1_1.default = true;
+  }) [ winapi_0_2_8_features winapi_build_0_1_1_features ];
+  lazy_static_1_0_0 = { features?(lazy_static_1_0_0_features {}) }: lazy_static_1_0_0_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.lazy_static_1_0_0 or {});
+  };
+  lazy_static_1_0_0_features = f: updateFeatures f (rec {
+    lazy_static_1_0_0.compiletest_rs =
+      (f.lazy_static_1_0_0.compiletest_rs or false) ||
+      (f.lazy_static_1_0_0.compiletest or false) ||
+      (lazy_static_1_0_0.compiletest or false);
+    lazy_static_1_0_0.default = (f.lazy_static_1_0_0.default or true);
+    lazy_static_1_0_0.nightly =
+      (f.lazy_static_1_0_0.nightly or false) ||
+      (f.lazy_static_1_0_0.spin_no_std or false) ||
+      (lazy_static_1_0_0.spin_no_std or false);
+    lazy_static_1_0_0.spin =
+      (f.lazy_static_1_0_0.spin or false) ||
+      (f.lazy_static_1_0_0.spin_no_std or false) ||
+      (lazy_static_1_0_0.spin_no_std or false);
+  }) [];
+  libc_0_2_36 = { features?(libc_0_2_36_features {}) }: libc_0_2_36_ {
+    features = mkFeatures (features.libc_0_2_36 or {});
+  };
+  libc_0_2_36_features = f: updateFeatures f (rec {
+    libc_0_2_36.default = (f.libc_0_2_36.default or true);
+    libc_0_2_36.use_std =
+      (f.libc_0_2_36.use_std or false) ||
+      (f.libc_0_2_36.default or false) ||
+      (libc_0_2_36.default or false);
+  }) [];
+  libloading_0_4_3 = { features?(libloading_0_4_3_features {}) }: libloading_0_4_3_ {
+    dependencies = mapFeatures features ([ lazy_static_1_0_0 ])
+      ++ (if kernel == "windows" then mapFeatures features ([ kernel32_sys_0_2_2 winapi_0_2_8 ]) else []);
+  };
+  libloading_0_4_3_features = f: updateFeatures f (rec {
+    kernel32_sys_0_2_2.default = true;
+    lazy_static_1_0_0.default = true;
+    libloading_0_4_3.default = (f.libloading_0_4_3.default or true);
+    winapi_0_2_8.default = true;
+  }) [ lazy_static_1_0_0_features kernel32_sys_0_2_2_features winapi_0_2_8_features ];
+  memchr_1_0_2 = { features?(memchr_1_0_2_features {}) }: memchr_1_0_2_ {
+    dependencies = mapFeatures features ([ ]
+      ++ (if features.memchr_1_0_2.libc or false then [ libc_0_2_36 ] else []));
+    features = mkFeatures (features.memchr_1_0_2 or {});
+  };
+  memchr_1_0_2_features = f: updateFeatures f (rec {
+    libc_0_2_36.default = (f.libc_0_2_36.default or false);
+    libc_0_2_36.use_std =
+      (f.libc_0_2_36.use_std or false) ||
+      (memchr_1_0_2.use_std or false) ||
+      (f.memchr_1_0_2.use_std or false);
+    memchr_1_0_2.default = (f.memchr_1_0_2.default or true);
+    memchr_1_0_2.libc =
+      (f.memchr_1_0_2.libc or false) ||
+      (f.memchr_1_0_2.default or false) ||
+      (memchr_1_0_2.default or false) ||
+      (f.memchr_1_0_2.use_std or false) ||
+      (memchr_1_0_2.use_std or false);
+    memchr_1_0_2.use_std =
+      (f.memchr_1_0_2.use_std or false) ||
+      (f.memchr_1_0_2.default or false) ||
+      (memchr_1_0_2.default or false);
+  }) [ libc_0_2_36_features ];
+  nom_3_2_1 = { features?(nom_3_2_1_features {}) }: nom_3_2_1_ {
+    dependencies = mapFeatures features ([ memchr_1_0_2 ]);
+    features = mkFeatures (features.nom_3_2_1 or {});
+  };
+  nom_3_2_1_features = f: updateFeatures f (rec {
+    memchr_1_0_2.default = (f.memchr_1_0_2.default or false);
+    memchr_1_0_2.use_std =
+      (f.memchr_1_0_2.use_std or false) ||
+      (nom_3_2_1.std or false) ||
+      (f.nom_3_2_1.std or false);
+    nom_3_2_1.compiler_error =
+      (f.nom_3_2_1.compiler_error or false) ||
+      (f.nom_3_2_1.nightly or false) ||
+      (nom_3_2_1.nightly or false);
+    nom_3_2_1.default = (f.nom_3_2_1.default or true);
+    nom_3_2_1.lazy_static =
+      (f.nom_3_2_1.lazy_static or false) ||
+      (f.nom_3_2_1.regexp_macros or false) ||
+      (nom_3_2_1.regexp_macros or false);
+    nom_3_2_1.regex =
+      (f.nom_3_2_1.regex or false) ||
+      (f.nom_3_2_1.regexp or false) ||
+      (nom_3_2_1.regexp or false);
+    nom_3_2_1.regexp =
+      (f.nom_3_2_1.regexp or false) ||
+      (f.nom_3_2_1.regexp_macros or false) ||
+      (nom_3_2_1.regexp_macros or false);
+    nom_3_2_1.std =
+      (f.nom_3_2_1.std or false) ||
+      (f.nom_3_2_1.default or false) ||
+      (nom_3_2_1.default or false);
+    nom_3_2_1.stream =
+      (f.nom_3_2_1.stream or false) ||
+      (f.nom_3_2_1.default or false) ||
+      (nom_3_2_1.default or false);
+  }) [ memchr_1_0_2_features ];
+  num_cpus_1_8_0 = { features?(num_cpus_1_8_0_features {}) }: num_cpus_1_8_0_ {
+    dependencies = mapFeatures features ([ libc_0_2_36 ]);
+  };
+  num_cpus_1_8_0_features = f: updateFeatures f (rec {
+    libc_0_2_36.default = true;
+    num_cpus_1_8_0.default = (f.num_cpus_1_8_0.default or true);
+  }) [ libc_0_2_36_features ];
+  rustfbp_0_3_34 = { features?(rustfbp_0_3_34_features {}) }: rustfbp_0_3_34_ {
+    dependencies = mapFeatures features ([ capnp_0_8_15 libloading_0_4_3 threadpool_1_7_1 ]);
+  };
+  rustfbp_0_3_34_features = f: updateFeatures f (rec {
+    capnp_0_8_15.default = true;
+    libloading_0_4_3.default = true;
+    rustfbp_0_3_34.default = (f.rustfbp_0_3_34.default or true);
+    threadpool_1_7_1.default = true;
+  }) [ capnp_0_8_15_features libloading_0_4_3_features threadpool_1_7_1_features ];
+  threadpool_1_7_1 = { features?(threadpool_1_7_1_features {}) }: threadpool_1_7_1_ {
+    dependencies = mapFeatures features ([ num_cpus_1_8_0 ]);
+  };
+  threadpool_1_7_1_features = f: updateFeatures f (rec {
+    num_cpus_1_8_0.default = true;
+    threadpool_1_7_1.default = (f.threadpool_1_7_1.default or true);
+  }) [ num_cpus_1_8_0_features ];
+  winapi_0_2_8 = { features?(winapi_0_2_8_features {}) }: winapi_0_2_8_ {};
+  winapi_0_2_8_features = f: updateFeatures f (rec {
+    winapi_0_2_8.default = (f.winapi_0_2_8.default or true);
+  }) [];
+  winapi_build_0_1_1 = { features?(winapi_build_0_1_1_features {}) }: winapi_build_0_1_1_ {};
+  winapi_build_0_1_1_features = f: updateFeatures f (rec {
+    winapi_build_0_1_1.default = (f.winapi_build_0_1_1.default or true);
+  }) [];
 }

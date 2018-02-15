@@ -1,9 +1,9 @@
 { buffet }:
 let
-  fetchzip = buffet.pkgs.fetchzip;
-  release = buffet.release;
-  verbose = buffet.verbose;
-  build-rust-package = buffet.support.node.rs.build-rust-package;
-  crates = import ./crates { inherit build-rust-package fetchzip release verbose; };
+  fetchgit = buffet.pkgs.fetchgit;
+  buildRustCrate = buffet.pkgs.buildRustCrate;
+  buildPlatform = buffet.pkgs.stdenv.buildPlatform;
+  lib = buffet.pkgs.lib;
+  crates = import ./crates { inherit lib buildRustCrate fetchgit buildPlatform; };
 in
 crates
