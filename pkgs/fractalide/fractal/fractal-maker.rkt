@@ -12,7 +12,7 @@
 (: fractal-exists? (String -> Boolean))
 (define (fractal-exists? fractal)
   (directory-exists? (make-fractal-path fractal)))
-(define rust-dirs (list "edges/rs" "mods/rs" "nodes/rs"))
+(define rust-dirs (list "edges/rs" "mods/rs/crates/src" "nodes/rs"))
 (define racket-dirs (list "edges/rkt" "mods/rkt" "nodes/rkt"))
 
 (: build-paths (Path (Listof String) -> (Listof Path)))
