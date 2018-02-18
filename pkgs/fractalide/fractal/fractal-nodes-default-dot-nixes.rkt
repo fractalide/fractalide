@@ -19,7 +19,6 @@
 
 (define rs-nodes-template #<<EOM
 { buffet }:
-
 {
   rs = import ./rs { inherit buffet; };
 }
@@ -28,7 +27,6 @@ EOM
 
 (define rkt-nodes-template #<<EOM
 { buffet }:
-
 {
   rkt = import ./rkt { inherit buffet; };
 }

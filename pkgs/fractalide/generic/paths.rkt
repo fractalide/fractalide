@@ -1,7 +1,9 @@
 #lang typed/racket
 
-(provide node-name->path make-fractal-path
-         fractal-exists? make-node-path node-exists?)
+(provide make-fractal-path fractal-exists?
+         make-node-path node-exists?
+         make-edge-path edge-exists?
+         node-name->path component-list-default-nix)
 
 (define fract-env (assert (getenv "FRACTALIDE")))
 
@@ -28,3 +30,19 @@
 (define (node-exists? fractal language node-name)
   (directory-exists? (make-node-path fractal language node-name)))
 
+(: make-edge-path (String String String -> Path))
+(define (make-edge-path fractal-name language node-name)
+  (if (string=? fractal-name "fractalide")
+      (build-path fract-env "edges" language (node-name->path node-name))
+      (build-path (make-fractal-path fractal-name) "edges" language
+                  (node-name->path node-name))))
+
+(: edge-exists? (String String String -> Boolean))
+(define (edge-exists? fractal language node-name)
+  (directory-exists? (make-edge-path fractal language node-name)))
+
+(: component-list-default-nix (String String String -> Path))
+(define (component-list-default-nix fractal-name component language)
+  (if (string=? fractal-name "fractalide")
+      (build-path fract-env component language)
+      (build-path (make-fractal-path fractal-name) component language "default.nix")))
