@@ -11,8 +11,7 @@
      (write-file (build-path path "mods" "rs" "crates" "src" "lib.rs") lib-sh)
      (write-file (build-path path "mods" "rs" "crates" "Cargo.toml") cargo-toml)
      (write-file (build-path path "mods" "rs" "crates" "update.sh") update-sh)
-     (file-or-directory-permissions (build-path path "mods" "rs" "crates" "update.sh") #o755)
-     ]
+     (file-or-directory-permissions (build-path path "mods" "rs" "crates" "update.sh") #o755)]
     [(string=? language "rkt")
      (write-file (build-path path "mods" "default.nix") rkt-mods-template)
      (write-file (build-path path "mods" "rkt" "default.nix") mod-rkt-template)]))
