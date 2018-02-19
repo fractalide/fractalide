@@ -1,6 +1,14 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
+
+use rustfbp::edges::core_graph::{CoreGraph, CoreGraphNode, CoreGraphEdge, CoreGraphIMsg, CoreGraphExtIn, CoreGraphExtOut};
+use rustfbp::edges::fs_file_desc::FsFileDesc;
+use rustfbp::edges::core_lexical::{CoreLexical, CoreLexicalToken};
+use rustfbp::edges::core_semantic_error::{CoreSemanticError};
+
 
 #[derive(PartialEq, Debug)]
 enum State {
@@ -17,6 +25,7 @@ agent! {
     input(input: CoreLexical),
     output(output: CoreGraph, error: CoreSemanticError),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         let literal = self.input.input.recv()?;
 
         match literal {

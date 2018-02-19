@@ -1,9 +1,16 @@
 #[macro_use]
 extern crate rustfbp;
+#[macro_use]
+extern crate log;
 use rustfbp::scheduler::{Scheduler};
 use std::mem;
 use std::str;
 use std::fs::File;
+use rustfbp::edges::core_graph::CoreGraph;
+use rustfbp::edges::core_action::CoreAction;
+use rustfbp::edges::core_scheduler::{CoreScheduler, CoreSchedulerSubnet};
+use rustfbp::edges::core_graph::{CoreGraphNode, CoreGraphEdge, CoreGraphIMsg, CoreGraphExtIn, CoreGraphExtOut};
+
 extern crate capnp;
 
 type BAny = Box<Any + Send>;
@@ -16,6 +23,7 @@ agent! {
     outarr(outputs: BAny),
     accumulator(CoreScheduler),
     fn run(&mut self) -> Result<Signal> {
+debug!("{:?}", env!("CARGO_PKG_NAME"));
         let mut acc = if let Ok(acc) = self.input.accumulator.try_recv() {
             acc
         } else {
@@ -50,7 +58,6 @@ agent! {
 
         match reader.which()? {
             core_action::Which::Add(add) => {
-    
 
             let mut add = add?;
                 let name = add.get_name()?;
@@ -187,7 +194,7 @@ fn add_graph(mut agent: &mut ThisAgent, name: &str, acc: &mut CoreScheduler) -> 
             acc.sched.get_sender(imsg.comp, imsg.port)?
         };
 
-        let sender = sender.downcast::<MsgSender<String>>().expect("cannot downcast the sender");
+        // let sender = sender.downcast::<MsgSender<String>>().expect("cannot downcast the sender");
 
         sender.send(imsg.msg)?;
     }

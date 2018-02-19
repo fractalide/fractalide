@@ -16,6 +16,7 @@ in
   FsFileError = callPackage ./fs/file/error {};
   FsPath = callPackage ./fs/path {};
   FsPathOption = callPackage ./fs/path/option {};
+  Std = callPackage ./std {};
   TestConst = callPackage ./test/const {};
   TestEnum = callPackage ./test/enum {};
   TestNil = callPackage ./test/nil {};

@@ -31,7 +31,7 @@ let
     inherit unifiedCapnpEdges unifiedRustEdges postInstall;
   };
   in
-  buildRustCrate {
+  (buildRustCrate {
     crateName = crate.crateName;
     version = crate.version;
     src = crate.out;
@@ -40,5 +40,6 @@ let
     dependencies = mods;
     buildInputs = osdeps;
     plugin = true;
-    postInstall = "ln -s $out/lib/*.so $out/lib/libagent.so";
-  }
+    extraRustcOpts = [ "-Z external-macro-backtrace" ];
+    postInstall = "for i in $(find $out/lib -type f -name \"*.so\"); do ln -s $i $out/lib/libagent.so; done";
+  }).override { release = false; }

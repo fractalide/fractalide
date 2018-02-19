@@ -1,15 +1,21 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
 
 use std::fs;
 use std::str;
 use std::process::Command;
+use rustfbp::edges::fs_path::FsPath;
+use rustfbp::edges::fs_path_option::FsPathOption;
+use rustfbp::edges::fs_file_desc::FsFileDesc;
 
 agent! {
     input(input: FsPath),
     output(output: FsPathOption),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         let is_path = self.input.input.recv()?.0;
 
         let mut stdout: String = String::new();

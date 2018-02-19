@@ -1,11 +1,17 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
+use rustfbp::edges::core_graph::CoreGraph;
+use rustfbp::edges::core_semantic_error::CoreSemanticError;
+use rustfbp::edges::fs_file_desc::FsFileDesc;
 
 agent! {
     input(input: CoreGraph),
     output(output: CoreGraph, error: CoreSemanticError),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         let error;
         let graph = self.input.input.recv()?;
 
