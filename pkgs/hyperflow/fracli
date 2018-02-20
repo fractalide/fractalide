@@ -3,7 +3,7 @@
 #lang racket
 
 (require racket/cmdline)
-(require "fractalide.rkt")
+(require "fractal-management/default.rkt")
  
 (define fracli
   (command-line
