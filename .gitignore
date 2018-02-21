@@ -22,3 +22,4 @@ idris_libs
 # racket
 compiled
 *.rkt~
+*~
