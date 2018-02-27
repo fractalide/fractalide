@@ -7,8 +7,8 @@
 (define hyperflow%
   (class object%
     (init parent)
-    (super-new)
-    (gui parent)))
+    (gui parent)
+    (super-new)))
 
 (define frame (new frame% [label "Hyperflow"] [min-width 800] [min-height 500]))
 (define hyperflow (new hyperflow% [parent frame]))
