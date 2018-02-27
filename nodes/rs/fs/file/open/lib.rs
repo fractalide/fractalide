@@ -1,6 +1,12 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
+
+use rustfbp::edges::fs_path::FsPath;
+use rustfbp::edges::fs_file_desc::FsFileDesc;
+use rustfbp::edges::fs_file_error::FsFileError;
 
 use std::fs::File;
 use std::io::BufReader;
@@ -10,20 +16,21 @@ agent! {
     input(input: FsPath),
     output(output: FsFileDesc, error: FsFileError),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         // Get the path
-        let mut path = self.input.input.recv()?.0;
+        let mut path = self.input.input.recv()?;
 
-        let file = match File::open(&path) {
+        let file = match File::open(&path.0) {
             Ok(file) => { file },
             Err(_) => {
-                let _ = self.output.error.send(FsFileError(path));
+                let _ = self.output.error.send(FsFileError(path.0.clone()));
                 return Ok(End);
             }
         };
 
 
         // Send start
-        self.output.output.send(FsFileDesc::Start(path.clone()))?;
+        self.output.output.send(FsFileDesc::Start(path.0.clone()))?;
 
         // Send lines
         let file = BufReader::new(&file);
@@ -32,7 +39,7 @@ agent! {
         }
 
         // Send stop
-        self.output.output.send(FsFileDesc::End(path))?;
+        self.output.output.send(FsFileDesc::End(path.0))?;
         Ok(End)
 
     }

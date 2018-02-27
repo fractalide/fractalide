@@ -11,5 +11,5 @@ let
   edge = callPackage ./edge { inherit buffet genName; };
 in
 {
-  inherit subgraph imsg edge node;
+  inherit subgraph imsg edge node unifyRustEdges;
 }

@@ -138,8 +138,8 @@ impl From<mpsc::TryRecvError> for Error {
     }
 }
 
-impl From<mpsc::SendError<CompMsg>> for Error {
-    fn from(_: mpsc::SendError<CompMsg>) -> Error {
+impl<Msg> From<mpsc::SendError<CompMsg<Msg>>> for Error {
+    fn from(_: mpsc::SendError<CompMsg<Msg>>) -> Error {
         Error::MpscSend
     }
 }

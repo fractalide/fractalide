@@ -1,0 +1,7 @@
+[package]
+name = "generate-msg"
+version = "0.1.0"
+authors = ["pe@pijul.org <pe@pijul.org>"]
+
+[dependencies]
+syn = { version = "0.12", features = [ "full" ] }

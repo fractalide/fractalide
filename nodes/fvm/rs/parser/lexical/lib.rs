@@ -1,6 +1,11 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
+
+use rustfbp::edges::core_lexical::{CoreLexicalToken, CoreLexical};
+use rustfbp::edges::fs_file_desc::FsFileDesc;
 
 #[macro_use]
 extern crate nom;
@@ -90,6 +95,7 @@ agent! {
     input(input: FsFileDesc),
     output(output: CoreLexical),
     fn run(&mut self) -> Result<Signal>{
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         let file = self.input.input.recv()?;
 
         match file {

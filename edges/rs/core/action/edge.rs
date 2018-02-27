@@ -1,6 +1,7 @@
 use std::any::Any;
-use rustfbp::scheduler::{Scheduler};
+use scheduler::{Scheduler};
 use std::collections::HashMap;
+
 #[derive(Debug)]
 pub enum CoreAction {
         Add(CoreActionAdd),

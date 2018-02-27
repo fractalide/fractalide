@@ -7,6 +7,7 @@ agent! {
     output(output: any),
     outarr(output: any),
     fn run(&mut self) -> Result<Signal> {
+debug!("{:?}", env!("CARGO_PKG_NAME"));
         let msg = try!(self.input.input.recv());
         send_action!(self, output, msg)?;
         Ok(End)

@@ -1,6 +1,11 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
+use rustfbp::edges::core_graph::CoreGraph;
+use rustfbp::edges::core_semantic_error::CoreSemanticError;
+use rustfbp::edges::fs_file_error::FsFileError;
 
 use std::fs;
 
@@ -8,6 +13,7 @@ agent! {
     input(file_error: FsFileError, semantic_error: CoreSemanticError),
     output(output: CoreGraph),
     fn run(&mut self) -> Result<Signal>{
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
 
         match self.input.semantic_error.try_recv() {
             Ok(error) => {
@@ -15,7 +21,7 @@ agent! {
                 for error in error.parsing {
                     println!("  {}", error);
                 }
-                println!("");
+                print!("");
             }
             _ => {}
         };

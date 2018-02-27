@@ -6,6 +6,7 @@ agent! {
   inarr(numbers: prim_i64),
   output(output: number),
   fn run(&mut self) -> Result<Signal> {
+debug!("{:?}", env!("CARGO_PKG_NAME"));
     let mut acc = 0;
     for recv in self.inarr.numbers.values() {
         let mut msg = try!(recv.recv());

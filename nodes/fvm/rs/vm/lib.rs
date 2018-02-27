@@ -1,7 +1,12 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
-
+#[macro_use]
+extern crate log;
+use rustfbp::edges::core_action::CoreAction;
+use rustfbp::edges::core_graph::{CoreGraph, CoreGraphNode, CoreGraphEdge, CoreGraphIMsg, CoreGraphExtIn, CoreGraphExtOut};
+use rustfbp::edges::fs_path::FsPath;
+use rustfbp::edges::fs_path_option::FsPathOption;
 use std::fs;
 
 type BAny = Box<Any + Send>;
@@ -10,6 +15,7 @@ agent! {
     input(input: CoreGraph, new_path: FsPathOption, error: BAny),
     output(output: CoreGraph, ask_graph: FsPath, ask_path: FsPath),
     fn run(&mut self) -> Result<Signal>{
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         let mut errors = false;
         let mut graph = CoreGraph::new();
 
