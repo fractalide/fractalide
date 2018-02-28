@@ -4,7 +4,9 @@ extern crate alloc_system;
 
 extern crate libloading;
 extern crate capnp;
+extern crate env_logger;
 
+pub mod edges;
 pub mod agent;
 
 pub mod scheduler;

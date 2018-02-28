@@ -9,5 +9,6 @@ description = "Rustfbp provides a simple, composable, clearly defined API, with 
 
 [dependencies]
 capnp = "*"
-libloading = "0.4"
+libloading = "0.5"
 threadpool = "*"
+env_logger = "*"

@@ -1,3 +1,6 @@
+use scheduler::Scheduler;
+use std::collections::HashMap;
+
 pub struct CoreScheduler {
     pub sched: Scheduler,
     pub subnets: HashMap<String, CoreSchedulerSubnet>,

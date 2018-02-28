@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
 
 use std::fs;
 use std::io::BufReader;
@@ -10,6 +12,7 @@ agent! {
     input(input: fs_path),
     output(output: fs_list_path),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
 
         let mut msg = try!(self.input.input.recv());
         let path: fs_path::Reader = msg.read_schema()?;

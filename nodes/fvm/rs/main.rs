@@ -5,9 +5,11 @@ extern crate alloc_system;
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+extern crate env_logger;
 
 use self::rustfbp::scheduler::{Scheduler};
 use self::rustfbp::ports::{MsgSender};
+use self::rustfbp::edges::fs_path::{FsPath};
 
 use std::collections::HashMap;
 use std::env;
@@ -15,13 +17,9 @@ use std::thread;
 use std::any::Any;
 
 fn main() {
+    env_logger::init();
     run(&env::args().nth(1).unwrap());
 }
-
-mod edge {
-    include!("edges.rs");
-}
-use edge::*;
 
 #[allow(unused_must_use)]
 fn run(path_fbp: &str) {
@@ -86,12 +84,12 @@ fn run(path_fbp: &str) {
     // Manage the iip
     sched.connect("start", "output", "sched", "action").expect("cannot connect start to sched");
 
-    let add: Box<Any + Send> = sched.get_sender("start", "add").expect("action of sched not found");
-    let add = add.downcast::<MsgSender<String>>().expect("cannot downcast add");
-    add.send(path_fbp.into()).expect("cannot send start");
+    let add = sched.get_sender("start", "add").expect("action of sched not found");
+    // let add = add.downcast::<MsgSender<String>>().expect("cannot downcast add");
+    add.send::<FsPath>(FsPath(path_fbp.into())).expect("cannot send start");
 
     let halt = sched.get_sender("start", "halt").expect("actio of sched not found");
-    let halt = halt.downcast::<MsgSender<bool>>().expect("cannot downcast halt");
+    // let halt = halt.downcast::<MsgSender<bool>>().expect("cannot downcast halt");
     halt.send(true).expect("cannot send halt");
     // Wait for the end of the execution
     sched.join();

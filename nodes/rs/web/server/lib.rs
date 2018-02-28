@@ -21,6 +21,7 @@ agent! {
     option(),
     acc(),
     fn run(&mut self) -> Result<()> {
+debug!("{:?}", env!("CARGO_PKG_NAME"));
         let mut ip = try!(self.ports.recv("www_dir"));
         let www_dir: path::Reader = try!(ip.read_schema());
         let www_dir = try!(www_dir.get_path());

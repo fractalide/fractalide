@@ -12,7 +12,7 @@ extern crate libloading;
 extern crate threadpool;
 
 use self::threadpool::ThreadPool;
-
+use env_logger;
 use result;
 use result::Result;
 
@@ -30,14 +30,17 @@ use std::thread;
 use std::thread::JoinHandle;
 
 use std::mem;
-
+use std;
+use std::io::Write;
+use agent;
+use edges;
 
 /// A boxed comp is a agent that can be send between thread
 pub type BoxedComp = Box<Agent + Send>;
 // TODO : manage "can_run": allow a user to pause a agent
 
 /// All the messages that can be send between the "exterior scheduler" and the "interior scheduler".
-pub enum CompMsg {
+pub enum CompMsg<Msg> {
     /// Add a new agent. The String is the name, the BoxedComp is the agent itself
     NewAgent(usize, String, BoxedComp),
     /// Stop the scheduler
@@ -47,15 +50,15 @@ pub enum CompMsg {
     /// Start a agent
     Start(usize),
     /// Connect the output port
-    ConnectOutputPort(usize, String, Box<Any + Send>),
+    ConnectOutputPort(usize, String, MsgSender<Msg>),
     /// Connect the array output port
-    ConnectOutputArrayPort(usize, String, String, Box<Any + Send>),
+    ConnectOutputArrayPort(usize, String, String, MsgSender<Msg>),
     /// Disconnect an output port
     Disconnect(usize, String),
     /// Disconnect an array output port
     DisconnectArray(usize, String, String),
     /// Add an element in an array input port
-    AddInputArrayElement(usize, String, String, Box<Any + Send>),
+    AddInputArrayElement(usize, String, String, MsgReceiver<Msg>),
     /// Remove an element in an array input port
     RemoveInputArrayElement(usize, String, String),
     /// Add an element in an array output port
@@ -63,7 +66,7 @@ pub enum CompMsg {
     /// Signal the end of an execution
     RunEnd(usize, BoxedComp, Result<Signal>),
     /// Set the receiver of an input port
-    SetReceiver(usize, String, Box<Any + Send>),
+    SetReceiver(usize, String, MsgReceiver<Msg>),
     /// The agent received an Msg
     Inc(usize),
     /// The agent read an Msg
@@ -80,12 +83,12 @@ pub enum Signal {
 /// This structure keep all the information for the "exterior scheduler".
 ///
 /// These information must be accessible for the user of the scheduler
-pub struct Comp {
+pub struct Comp<Msg> {
     pub id: usize,
     /// Keep the MsgSender of the input ports
-    pub inputs: HashMap<String, Box<Any + Send>>,
+    pub inputs: HashMap<String, MsgSender<Msg>>,
     /// Keep the MsgSender of the array input ports
-    pub inputs_array: HashMap<String, HashMap<String, Box<Any + Send>>>,
+    pub inputs_array: HashMap<String, HashMap<String, MsgSender<Msg>>>,
     /// The type of the agent
     pub sort: String,
     /// True if a agent had no input port
@@ -95,11 +98,11 @@ pub struct Comp {
 /// the exterior scheduler. The end user use the methods of this structure.
 pub struct Scheduler {
     /// Keep the dylib of the loaded agents
-    pub cache: AgentCache,
+    pub cache: AgentCache<edges::Msg>,
     /// Keep the agent
-    pub agents: HashMap<String, Comp>,
+    pub agents: HashMap<String, Comp<edges::Msg>>,
     /// A sender to send message to the scheduler
-    pub sender: Sender<CompMsg>,
+    pub sender: Sender<CompMsg<edges::Msg>>,
     /// Received the error from the "interior scheduler"
     pub error_receiver: Receiver<result::Error>,
     id: usize,
@@ -260,7 +263,7 @@ impl Scheduler {
     /// let (boxed_comp, comp) = try!(sched.remove_agent("add"));
     /// assert!(boxed_comp.is_input_ports());
     /// ```
-    pub fn remove_agent<'a, A: Into<Cow<'a, str>>>(&mut self, name: A) -> Result<(BoxedComp, Comp)>{
+    pub fn remove_agent<'a, A: Into<Cow<'a, str>>>(&mut self, name: A) -> Result<(BoxedComp, Comp<edges::Msg>)>{
         /*
         let name = name.into().into_owned();
         let (s, r) = channel();
@@ -551,7 +554,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_receiver("add".into(), "input".into(), recv));
     /// ```
-    pub fn set_receiver<'a, A, B>(&self, comp: A, port: B, receiver: Box<Any + Send>) -> Result<()> where
+    pub fn set_receiver<'a, A, B>(&self, comp: A, port: B, receiver: MsgReceiver<edges::Msg>) -> Result<()> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
     {
@@ -570,7 +573,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// try!(sched.set_array_receiver("add".into(), "inputs".into(), "1".into(), recv));
     /// ```
-    pub fn set_array_receiver<'a, A, B, C>(&self, comp: A, port: B, element: C, receiver: Box<Any + Send>) -> Result<()> where
+    pub fn set_array_receiver<'a, A, B, C>(&self, comp: A, port: B, element: C, receiver: MsgReceiver<edges::Msg>) -> Result<()> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
         C: Into<Cow<'a, str>>
@@ -589,7 +592,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_sender("add", "input"));
     /// ```
-    pub fn get_sender<'a, A, B>(&self, comp: A, port: B) -> Result<Box<Any + Send>> where
+    pub fn get_sender<'a, A, B>(&self, comp: A, port: B) -> Result<MsgSender<edges::Msg>> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
     {
@@ -607,7 +610,7 @@ impl Scheduler {
     /// ```rust,ignore
     /// let sender = try!(sched.get_array_sender("add", "input", "1"));
     /// ```
-    pub fn get_array_sender<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<Box<Any + Send>> where
+    pub fn get_array_sender<'a, A, B, C>(&self, comp: A, port: B, element: C) -> Result<MsgSender<edges::Msg>> where
         A: Into<Cow<'a, str>>,
         B: Into<Cow<'a, str>>,
         C: Into<Cow<'a, str>>,
@@ -707,13 +710,13 @@ impl Scheduler {
     }
 }
 
-enum EditCmp {
-    AddInputArrayElement(String, String, Box<Any + Send>),
+enum EditCmp<Msg> {
+    AddInputArrayElement(String, String, MsgReceiver<Msg>),
     RemoveInputArrayElement(String, String),
     AddOutputArrayElement(String, String),
-    ConnectOutputPort(String, Box<Any + Send>),
-    ConnectOutputArrayPort(String, String, Box<Any + Send>),
-    SetReceiver(String, Box<Any + Send>),
+    ConnectOutputPort(String, MsgSender<Msg>),
+    ConnectOutputArrayPort(String, String, MsgSender<Msg>),
+    SetReceiver(String, MsgReceiver<Msg>),
     Disconnect(String),
     DisconnectArray(String, String),
 }
@@ -725,27 +728,27 @@ pub enum SyncMsg {
 }
 
 /// Internal representation of a agent
-struct CompState {
+struct CompState<Msg> {
     comp: Option<BoxedComp>,
     name: String,
     // TODO : manage can_run
     is_run: bool,
     can_run: bool,
-    edit_msgs: Vec<EditCmp>,
+    edit_msgs: Vec<EditCmp<Msg>>,
     ips: isize,
 }
 
 /// The state of the internal scheduler
-struct SchedState {
-    sched_sender: Sender<CompMsg>,
-    agents: HashMap<usize, CompState>,
+struct SchedState<Msg> {
+    sched_sender: Sender<CompMsg<Msg>>,
+    agents: HashMap<usize, CompState<Msg>>,
     running: usize,
     can_halt: bool,
     pool: ThreadPool,
 }
 
-impl SchedState {
-    fn new(s: Sender<CompMsg>) -> Self {
+impl SchedState<edges::Msg> {
+    fn new(s: Sender<CompMsg<edges::Msg>>) -> Self {
         SchedState {
             sched_sender: s,
             agents: HashMap::new(),
@@ -865,7 +868,7 @@ impl SchedState {
         };
     }
 
-    fn edit_agent(&mut self, id: usize, msg: EditCmp) -> Result<()> {
+    fn edit_agent(&mut self, id: usize, msg: EditCmp<edges::Msg>) -> Result<()> {
         let mut comp = self.agents.get_mut(&id).expect("SchedState edit_agent : agent doesn't exist");
         if let Some(ref mut c) = comp.comp {
             let mut c = c;
@@ -876,7 +879,7 @@ impl SchedState {
         Ok(())
     }
 
-    fn edit_one_comp(mut c: &mut BoxedComp, msg: EditCmp) -> Result<()> {
+    fn edit_one_comp(mut c: &mut BoxedComp, msg: EditCmp<edges::Msg>) -> Result<()> {
         // let mut c = c.get_ports();
         match msg {
             EditCmp::AddInputArrayElement(port, element, recv) => {
@@ -916,12 +919,12 @@ impl SchedState {
 
 /// Contains all the information of a dylib agents
 #[allow(dead_code)]
-pub struct AgentLoader {
+pub struct AgentLoader<Msg> {
     lib: libloading::Library,
-    create: extern "C" fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)>,
-    clone_input: extern "C" fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>>,
-    clone_input_array: extern "C" fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>>,
-    create_input_array: extern "C" fn(&str, usize, Sender<CompMsg>, bool) -> Result<(Box<Any + Send>, Box<Any + Send>)>,
+    create: extern "C" fn(usize, Sender<CompMsg<Msg>>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender<Msg>>)>,
+    clone_input: extern "C" fn(&str, &MsgSender<Msg>) -> Result<MsgSender<Msg>>,
+    clone_input_array: extern "C" fn(&str, &MsgSender<Msg>) -> Result<MsgSender<Msg>>,
+    create_input_array: extern "C" fn(&str, usize, Sender<CompMsg<Msg>>, bool) -> Result<(MsgReceiver<Msg>, MsgSender<Msg>)>,
     get_schema_input: extern "C" fn(&str) -> Result<String>,
     get_schema_input_array: extern "C" fn(&str) -> Result<String>,
     get_schema_output: extern "C" fn(&str) -> Result<String>,
@@ -929,11 +932,11 @@ pub struct AgentLoader {
 }
 
 /// Keep all the dylib agents and load them
-pub struct AgentCache {
-    cache: HashMap<String, AgentLoader>,
+pub struct AgentCache<Msg> {
+    cache: HashMap<String, AgentLoader<Msg>>,
 }
 
-impl AgentCache {
+impl<Msg> AgentCache<Msg> {
     ///  create a new AgentCache
     ///
     /// # Example
@@ -952,23 +955,22 @@ impl AgentCache {
     /// ```rust,ignore
     /// try!(cc.create_comp("/home/xxx/agents/add.so", "add", sched_sender));
     /// ```
-    pub fn create_comp(&mut self, path: &str, id: usize, sender: Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> {
+    pub fn create_comp(&mut self, path: &str, id: usize, sender: Sender<CompMsg<Msg>>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender<Msg>>)> {
         if !self.cache.contains_key(path) {
             let lib_comp = libloading::Library::new(path).expect("cannot load");
-
-            let new_comp: extern fn(usize, Sender<CompMsg>) -> Result<(Box<Agent + Send>, HashMap<String, Box<Any + Send>>)> = unsafe {
+            let new_comp: extern fn(usize, Sender<CompMsg<Msg>>) -> Result<(Box<Agent + Send>, HashMap<String, MsgSender<Msg>>)> = unsafe {
                 *(lib_comp.get(b"create_agent\0").expect("cannot find create method"))
             };
 
-            let clone_in: extern fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>> = unsafe {
+            let clone_in: extern fn(&str, &MsgSender<Msg>) -> Result<MsgSender<Msg>> = unsafe {
                 *(lib_comp.get(b"clone_input\0").expect("cannot find clone_input method"))
             };
 
-            let clone_in_a: extern fn(&str, &Box<Any + Send>) -> Result<Box<Any + Send>> = unsafe {
+            let clone_in_a: extern fn(&str, &MsgSender<Msg>) -> Result<MsgSender<Msg>> = unsafe {
                 *(lib_comp.get(b"clone_input_array\0").expect("cannot find clone_input_array method"))
             };
 
-            let create_in_a: extern fn(&str, usize, Sender<CompMsg>, bool) -> Result<(Box<Any + Send>, Box<Any + Send>)> = unsafe {
+            let create_in_a: extern fn(&str, usize, Sender<CompMsg<Msg>>, bool) -> Result<(MsgReceiver<Msg>, MsgSender<Msg>)> = unsafe {
                 *(lib_comp.get(b"create_input_array\0").expect("cannot ifnd create_input_array method"))
             };
 
@@ -1008,21 +1010,21 @@ impl AgentCache {
         }
     }
 
-    pub fn clone_input(&self, comp: &str, port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
-        self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
+    pub fn clone_input(&self, comp_str: &str, port: &str, sender: &MsgSender<Msg>) -> Result<MsgSender<Msg>> {
+        self.cache.get(comp_str).ok_or(result::Error::AgentNotFound(comp_str.into()))
             .map(|comp| {
                 (comp.clone_input)(port, sender).expect("cannot clone input")
             })
     }
 
-    pub fn clone_input_array(&self, comp: &str, port: &str, sender: &Box<Any + Send>) -> Result<Box<Any + Send>> {
+    pub fn clone_input_array(&self, comp: &str, port: &str, sender: &MsgSender<Msg>) -> Result<MsgSender<Msg>> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
                 (comp.clone_input_array)(port, sender).expect("cannot clone input")
             })
     }
 
-    pub fn create_input_array(&self, comp: &str, port: &str, id: usize, sched: Sender<CompMsg>, mc: bool) -> Result<(Box<Any + Send>, Box<Any + Send>)> {
+    pub fn create_input_array(&self, comp: &str, port: &str, id: usize, sched: Sender<CompMsg<Msg>>, mc: bool) -> Result<(MsgReceiver<Msg>, MsgSender<Msg>)> {
         self.cache.get(comp).ok_or(result::Error::AgentNotFound(comp.into()))
             .map(|comp| {
                 (comp.create_input_array)(port, id, sched, mc).expect("cannot create input array")
@@ -1082,4 +1084,4 @@ impl AgentCache {
     }
 }
 
-unsafe impl Send for AgentCache {}
+unsafe impl<Msg> Send for AgentCache<Msg> {}

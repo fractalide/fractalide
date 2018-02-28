@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate rustfbp;
 extern crate capnp;
+#[macro_use]
+extern crate log;
 
 use std::fs::File;
 
@@ -10,6 +12,7 @@ agent! {
     rsinput(a: bool, b: bool, input: Pair),
     rsoutput(res: bool, output: Pair),
     fn run(&mut self) -> Result<Signal> {
+        debug!("{:?}", env!("CARGO_PKG_NAME"));
         println!("Ok");
         // let (act, msg) = self.rsinput.input.recv_with_action()?;
         let a = self.rsinput.a.recv()?;
