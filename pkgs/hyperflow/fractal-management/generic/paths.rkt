@@ -5,7 +5,8 @@
          make-edge-path edge-exists?
          node-name->path component-list-default-nix)
 
-(define fract-env (assert (getenv "FRACTALIDE")))
+;(define fract-env (assert (getenv "FRACTALIDE")))
+(define fract-env "../../../../")
 
 (: node-name->path (String -> Path))
 (define (node-name->path node-name)

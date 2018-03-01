@@ -2,6 +2,8 @@
 
 (require racket/gui)
 
+(provide run)
+
 (require "gui/default.rkt")
 
 (define hyperflow%
@@ -10,6 +12,7 @@
     (gui parent)
     (super-new)))
 
-(define frame (new frame% [label "Hyperflow"] [min-width 800] [min-height 500]))
-(define hyperflow (new hyperflow% [parent frame]))
-(send frame show #t)
+(define (run)
+  (define main (new frame% [label "Hyperflow"] [min-width 800] [min-height 500]))
+  (define hyperflow (new hyperflow% [parent main]))
+  (send main show #t))
