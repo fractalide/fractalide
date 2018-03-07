@@ -1,11 +1,11 @@
-#lang typed/racket
+#lang racket
 
 (provide build-node)
 
 (require "../generic/paths.rkt")
 (require "../generic/file-handling.rkt")
 
-(: build-node (String String String -> Void))
+;(: build-node (String String String -> Void))
 (define (build-node fractal-name language node-name)
   (define node-path (make-node-path fractal-name language node-name))
   (define default-nix (component-list-default-nix fractal-name "nodes" language))
@@ -13,12 +13,12 @@
   (write-node-files node-path)
   (insert-raw-into-default default-nix "RAW NODES" node-name "nodes"))
 
-(: write-node-files (Path -> Void))
+;(: write-node-files (Path -> Void))
 (define (write-node-files path)
   (write-file (build-path path "lib.rs") lib-rs)
   (write-file (build-path path "default.nix") default-nix))
 
-(: write-file (Path String -> Void))
+;(: write-file (Path String -> Void))
 (define (write-file path template)
   (with-output-to-file path #:exists 'replace 
     (λ () (display template))))
