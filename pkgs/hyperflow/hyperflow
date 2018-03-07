@@ -1,11 +1,13 @@
-#lang racket
+#! /usr/bin/env racket
+
+#lang racket/base
 
 (require framework/splash
          racket/lazy-require)
 
 (set-splash-progress-bar?! #t)
 (start-splash "../../doc/images/fractalide.png" " " 0)
-(lazy-require ("default.rkt" (run)))
-(run)
+(lazy-require ("main.rkt" (main)))
+(main)
 (shutdown-splash)
 (close-splash)
