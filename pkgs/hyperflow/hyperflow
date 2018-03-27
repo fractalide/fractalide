@@ -1,13 +1,8 @@
-#! /usr/bin/env racket
+#! /usr/bin/env bash
 
-#lang racket/base
+set -e
 
-(require framework/splash
-         racket/lazy-require)
+SCRIPT_NAME=${BASH_SOURCE[0]##*/}
+SCRIPT_DIR=$(cd "${BASH_SOURCE[0]%${SCRIPT_NAME}}" && pwd)
 
-(set-splash-progress-bar?! #t)
-(start-splash "../../doc/images/fractalide.png" " " 0)
-(lazy-require ("main.rkt" (main)))
-(main)
-(shutdown-splash)
-(close-splash)
+exec racket -N "$SCRIPT_NAME" -- "$SCRIPT_DIR/main.rkt" "$@"
