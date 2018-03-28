@@ -109,5 +109,7 @@
         (on-toplevel-close #t)))
     
     (define/public (run)
+      (put-pref 'hyperflow:fractal-path
+                (path->string (build-path (get-pref-dir) "Hyperflow" "fractal")))
       (send tl-frame show #t))))
 
