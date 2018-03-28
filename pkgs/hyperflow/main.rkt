@@ -13,7 +13,7 @@
   (require framework/splash)
 
   (set-splash-progress-bar?! #t)
-  (start-splash "../../doc/images/fractalide.png" " " 0)
+  (start-splash "imgs/fractalide.png" " " 0)
   (main)
   (shutdown-splash)
   (close-splash))
