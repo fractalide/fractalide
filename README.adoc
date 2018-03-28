@@ -1,4 +1,4 @@
-image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/fractalide.png[Fractalide,align="center"]
+image::https://raw.githubusercontent.com/fractalide/fractalide/master/pkgs/hyperflow/imgs/fractalide.png[Fractalide,align="center"]
 
 **Reusable Reproducible Composable Software**
 

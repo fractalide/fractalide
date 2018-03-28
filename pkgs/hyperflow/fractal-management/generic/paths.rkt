@@ -7,9 +7,13 @@
          make-edge-path edge-exists?
          node-name->path component-list-default-nix)
 
-(define fract-env
+(define fractalide-path
   (get-pref 'hyperflow:fractalide-path
             (λ () (simplify-path "../../../../"))))
+
+(define fractal-path
+  (get-pref 'hyperflow:fractal-path
+            (λ () (build-path (get-pref-dir) "Hyperflow" "fractal"))))
 
 ;(: node-name->path (String -> Path))
 (define (node-name->path node-name)
@@ -17,7 +21,7 @@
 
 ;(: make-fractal-path (String -> Path))
 (define (make-fractal-path fractal-name)
-  (simplify-path (build-path fract-env 'up "fractal" fractal-name)))
+  (simplify-path (build-path fractal-path fractal-name)))
 
 ;(: fractal-exists? (String -> Boolean))
 (define (fractal-exists? fractal-name)
@@ -26,7 +30,7 @@
 ;(: make-node-path (String String String -> Path))
 (define (make-node-path fractal-name language node-name)
   (if (string=? fractal-name "fractalide")
-      (build-path fract-env "nodes" language (node-name->path node-name))
+      (build-path fractalide-path "nodes" language (node-name->path node-name))
       (build-path (make-fractal-path fractal-name) "nodes" language
                   (node-name->path node-name))))
 
@@ -37,7 +41,7 @@
 ;(: make-edge-path (String String String -> Path))
 (define (make-edge-path fractal-name language node-name)
   (if (string=? fractal-name "fractalide")
-      (build-path fract-env "edges" language (node-name->path node-name))
+      (build-path fractalide-path "edges" language (node-name->path node-name))
       (build-path (make-fractal-path fractal-name) "edges" language
                   (node-name->path node-name))))
 
@@ -48,5 +52,5 @@
 ;(: component-list-default-nix (String String String -> Path))
 (define (component-list-default-nix fractal-name component language)
   (if (string=? fractal-name "fractalide")
-      (build-path fract-env component language)
+      (build-path fractalide-path component language)
       (build-path (make-fractal-path fractal-name) component language "default.nix")))

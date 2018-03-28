@@ -5,6 +5,7 @@
 (provide/contract
  (data-directory (-> path-string?))
  (preferences-file (-> path-string?))
+ (get-pref-dir (-> path-string?))
  (put-pref (-> symbol? any/c any/c))
  (get-pref (-> symbol? any/c any/c)))
 
