@@ -7,6 +7,8 @@
 (define version "0.0")
 (define pkg-authors '("setori88@gmail.com"))
 (define racket-launcher-names '("hyperflow"
-                                "fracli"))
+                                "fracli"
+                                "flonly"))
 (define racket-launcher-libraries '("pkgs/hyperflow/hyperflow.rkt"
-                                    "pkgs/hyperflow/fracli.rkt"))
+                                    "pkgs/hyperflow/fracli.rkt"
+                                    "pkgs/hyperflow/flonly.rkt"))

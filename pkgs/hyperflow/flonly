@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+set -e
+
+SCRIPT_NAME=${BASH_SOURCE[0]##*/}
+SCRIPT_DIR=$(cd "${BASH_SOURCE[0]%${SCRIPT_NAME}}" && pwd)
+
+exec racket -N "$SCRIPT_NAME" -- "$SCRIPT_DIR/flonly.rkt" "$@"
