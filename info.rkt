@@ -7,4 +7,4 @@
 (define version "0.0")
 (define pkg-authors '("setori88@gmail.com"))
 (define racket-launcher-names '("hyperflow"))
-(define racket-launcher-libraries '("main.rkt"))
+(define racket-launcher-libraries '("pkgs/hyperflow/main.rkt"))
