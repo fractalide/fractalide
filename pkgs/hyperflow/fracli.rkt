@@ -1,16 +1,9 @@
-#! /usr/bin/env racket
-
 #lang racket/base
 
 (require racket/cmdline
          "fractal-management/default.rkt")
 
-(provide main)
-
-(define (main)
-  (fracli))
-
-(define fracli
+(module+ main
   (command-line
    #:program "fracli"
    #:multi
