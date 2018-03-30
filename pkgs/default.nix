@@ -15,6 +15,7 @@ in (pkgs {
         inherit (nightly) cargo;
       };
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
+      fractalide = super.callPackage ./fractalide.nix {};
     })
   ];
 })
