@@ -21,12 +21,6 @@ pkgs {
         rustc = nightly.rust;
         inherit (nightly) cargo;
       };
-      racket = if super.stdenv.isDarwin then super.racket.overrideDerivation (drv: {
-        buildInputs = drv.buildInputs ++ [ super.libiconv ];
-        meta = drv.meta.overrideAttrs (attrs: {
-          platforms = attrs.platforms ++ [ "x86_64-darwin" ];
-        });
-      }) else super.racket;
       inherit racket2nix;
       inherit (racket2nix) buildRacket;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
