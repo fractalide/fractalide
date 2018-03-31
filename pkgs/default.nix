@@ -14,8 +14,11 @@ in (pkgs {
         rustc = nightly.rust;
         inherit (nightly) cargo;
       };
+      racket = if super.stdenv.isDarwin then super.racket.overrideDerivation (drv: {
+        buildInputs = drv.buildInputs ++ [ super.libiconv ];
+      }) else super.racket;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = super.callPackage ./fractalide.nix {};
+      fractalide = self.callPackage ./fractalide.nix {};
     })
   ];
 })
