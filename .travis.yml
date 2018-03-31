@@ -11,6 +11,3 @@ matrix:
       script:
         - nix-build tests
         - nix-build -A pkgs.fractalide
-    - os: osx
-      script:
-        - nix-build -A pkgs.fractalide
