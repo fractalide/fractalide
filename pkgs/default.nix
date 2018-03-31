@@ -11,7 +11,7 @@
     repo   = "racket2nix";
     rev    = "20354a92230bf5c9aeb53aa5e6d9720dbd8380e5";
     sha256 = "1z2ni1b3zh8hx8wnzdipyi7ys06zwm4kqzql6d0555dy3y18g70m";
-  }) { }
+  }) { racket = (pkgs {}).racket-minimal; }
 }:
 pkgs {
   overlays = [
