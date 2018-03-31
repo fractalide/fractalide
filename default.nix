@@ -1,6 +1,6 @@
 { backend ? "rs"
 , node    ? null
-, pkgs    ? import ./pkgs
+, pkgs    ? import ./pkgs {}
 , release ? false
 , verbose ? false
 }:

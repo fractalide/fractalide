@@ -1,12 +1,19 @@
-let
-  pkgs = import <nixpkgs>;
-  rustOverlay = (pkgs {}).fetchFromGitHub {
+{ pkgs ? import <nixpkgs>
+, fetchFromGitHub ? (pkgs {}).fetchFromGitHub
+, rustOverlay ? fetchFromGitHub {
     owner  = "mozilla";
     repo   = "nixpkgs-mozilla";
     rev    = "7e54fb37cd177e6d83e4e2b7d3e3b03bd6de0e0f";
     sha256 = "1shz56l19kgk05p2xvhb7jg1whhfjix6njx1q4rvrc5p1lvyvizd";
-  };
-in (pkgs {
+  }
+, racket2nix ? import (fetchFromGitHub {
+    owner  = "fractalide";
+    repo   = "racket2nix";
+    rev    = "20354a92230bf5c9aeb53aa5e6d9720dbd8380e5";
+    sha256 = "1z2ni1b3zh8hx8wnzdipyi7ys06zwm4kqzql6d0555dy3y18g70m";
+  }) { }
+}:
+pkgs {
   overlays = [
     (import (builtins.toPath "${rustOverlay}/rust-overlay.nix"))
     (self: super: rec {
@@ -20,8 +27,10 @@ in (pkgs {
           platforms = attrs.platforms ++ [ "x86_64-darwin" ];
         });
       }) else super.racket;
+      inherit racket2nix;
+      inherit (racket2nix) buildRacket;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = self.callPackage ./fractalide.nix {};
+      fractalide = self.buildRacket { package = ./..; };
     })
   ];
-})
+}
