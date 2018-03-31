@@ -5,10 +5,12 @@ matrix:
     - os: linux
       script:
         - nix-build tests
+        - nix-build -A pkgs.fractalide
     - os: linux
       dist: trusty
       script:
         - nix-build tests
+        - nix-build -A pkgs.fractalide
     - os: osx
       script:
-        - nix-build tests
+        - nix-build -A pkgs.fractalide
