@@ -9,3 +9,6 @@ matrix:
       dist: trusty
       script:
         - nix-build tests
+    - os: osx
+      script:
+        - nix-build tests
