@@ -17,7 +17,7 @@ in (pkgs {
       racket = if super.stdenv.isDarwin then super.racket.overrideDerivation (drv: {
         buildInputs = drv.buildInputs ++ [ super.libiconv ];
         meta = drv.meta.overrideAttrs (attrs: {
-          platforms = attrs.platforms ++ [ "x86_64-darwin" ];
+          platforms = attrs.platforms ++ [ "x86_64-darwin" "x86_64-apple-darwin" ];
         });
       }) else super.racket;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
