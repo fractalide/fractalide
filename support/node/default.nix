@@ -1,5 +1,5 @@
-{ buffet, genName, unifyCapnpEdges, unifyRustEdges }:
+{ buffet, genName, unifyRustEdges }:
 {
-  idr = import ./idr { inherit buffet genName unifyCapnpEdges; };
-  rs = import ./rs { inherit buffet genName unifyCapnpEdges unifyRustEdges; };
+  idr = import ./idr { inherit buffet genName; };
+  rs = import ./rs { inherit buffet genName unifyRustEdges; };
 }

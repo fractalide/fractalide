@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate rustfbp;
-extern crate capnp;
+
 #[macro_use]
 extern crate log;
 use rustfbp::edges::core_action::{CoreAction, CoreActionAdd};

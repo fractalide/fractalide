@@ -3,7 +3,7 @@ extern crate rustfbp;
 extern crate iron;
 extern crate mount;
 extern crate staticfile;
-extern crate capnp;
+
 
 use iron::status;
 use iron::Iron;

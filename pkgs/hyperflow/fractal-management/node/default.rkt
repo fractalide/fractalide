@@ -26,7 +26,7 @@
 (define lib-rs #<<EOM
 #[macro_use]
 extern crate rustfbp;
-extern crate capnp;
+
 
 agent! {
   input(a: bool, b: bool),
@@ -54,7 +54,7 @@ EOM
 agent {
   src = ./.;
   edges = with edges.rs; [];
-  mods = with mods.rs; [ (rustfbp_0_3_34 {}) (capnp_0_8_15 {}) ];
+  mods = with mods.rs; [ (rustfbp_0_3_34 {})  ];
   osdeps = with pkgs; [];
 }
 EOM

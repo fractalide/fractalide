@@ -1,6 +1,5 @@
 { buffet
   , buildRustCrate
-  , unifyCapnpEdges
   , unifyRustEdges
   , transformNodeIntoCrate
   , genName
@@ -9,7 +8,6 @@
   , src ? null
   , osdeps ? []
   , mods ? []
-  , capnp_edges ? []
   , edges ? []
   , postInstall ? ""
   , ... } @ args:
@@ -19,16 +17,11 @@ let
     name = compName;
     edges = edges;
   } else [];
-  unifiedCapnpEdges = unifyCapnpEdges {
-    name = compName;
-    edges = capnp_edges;
-    target = "rs";
-  };
   crate = transformNodeIntoCrate {
     name = compName;
     src = src;
     version = "0.0.0";
-    inherit unifiedCapnpEdges unifiedRustEdges postInstall;
+    inherit unifiedRustEdges postInstall;
   };
   in
   (buildRustCrate {

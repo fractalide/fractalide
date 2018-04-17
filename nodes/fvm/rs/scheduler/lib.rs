@@ -11,7 +11,7 @@ use rustfbp::edges::core_action::CoreAction;
 use rustfbp::edges::core_scheduler::{CoreScheduler, CoreSchedulerSubnet};
 use rustfbp::edges::core_graph::{CoreGraphNode, CoreGraphEdge, CoreGraphIMsg, CoreGraphExtIn, CoreGraphExtOut};
 
-extern crate capnp;
+
 
 type BAny = Box<Any + Send>;
 

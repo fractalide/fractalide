@@ -2,7 +2,6 @@
 
 agent {
   src = ./.;
-  capnp_edges = with edges.capnp; [ prim_i64 ];
-  mods = with mods.rs; [ rustfbp capnp ];
+  mods = with mods.rs; [ rustfbp ];
   osdeps = with pkgs; [];
 }

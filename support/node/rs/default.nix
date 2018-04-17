@@ -1,6 +1,5 @@
 { buffet
   , genName
-  , unifyCapnpEdges
   , unifyRustEdges
 }:
 let
@@ -12,7 +11,7 @@ let
   verbose = buffet.verbose;
   buildRustCrate = pkgs.buildRustCrate;
   transformNodeIntoCrate = import ./transform-node-into-crate.nix { stdenv = pkgs.stdenv; };
-  specialize = callPackage ./specialize.nix  { inherit buildRustCrate unifyCapnpEdges unifyRustEdges transformNodeIntoCrate buffet genName; };
+  specialize = callPackage ./specialize.nix  { inherit buildRustCrate unifyRustEdges transformNodeIntoCrate buffet genName; };
 in
 {
   inherit buildRustCrate;

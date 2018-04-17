@@ -4,7 +4,7 @@ extern crate alloc_system;
 
 #[macro_use]
 extern crate rustfbp;
-extern crate capnp;
+
 extern crate env_logger;
 
 use self::rustfbp::scheduler::{Scheduler};

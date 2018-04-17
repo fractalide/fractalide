@@ -137,7 +137,7 @@ The contents of the `lib.rs` should be this:
 ----
 #[macro_use]
 extern crate rustfbp;
-extern crate capnp;
+
 
 agent! {
   input(a: prim_bool, b: prim_bool),
@@ -170,7 +170,7 @@ Notice the `prim_bool` code, these are referencing the `prim/bool/default.nix` `
 Notice the lines below:
 ```
 extern crate rustfbp;
-extern crate capnp;
+
 ```
 This code includes our `rustfbp` and `capnp` crates into the Rust `agent` code.
 

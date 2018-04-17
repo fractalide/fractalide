@@ -1,4 +1,4 @@
-extern crate capnp;
+
 #[macro_use]
 extern crate log;
 

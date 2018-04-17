@@ -7,7 +7,7 @@ location:
     in
       if builtins.elem directory [ "rs" "idr" "fvm"] then
         builtins.replaceStrings [" "] ["_"] (toString (builtins.tail directories))
-      else if builtins.elem directory [ "rs" "idr" "capnp" ] then
+      else if builtins.elem directory [ "rs" "idr" ] then
         builtins.replaceStrings [" "] [""] (toString (map capitalize (builtins.tail directories)))
       else
         (recurse (builtins.tail directories));
