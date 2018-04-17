@@ -1,7 +1,7 @@
 #lang typed/racket
 
-(require rkt-fbp/scheduler)
-(require rkt-fbp/msg)
+(require fractalide/modules/rkt/rkt-fbp/scheduler)
+(require fractalide/modules/rkt/rkt-fbp/msg)
 
 (define sched (make-scheduler #f))
 (sched (msg-add-agent "adder" "add"))
