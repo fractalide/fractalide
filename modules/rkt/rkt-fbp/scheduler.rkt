@@ -11,7 +11,6 @@
   [load-agent (-> String opt-agent)])
 
 ; TODO : make sender that cannot read the channel
-; TODO : remove thd in struct scheduler
 
 (struct agent-state([state : agent]
                     [number-ips : Integer] ; Check for Integer -> Natural
@@ -19,19 +18,16 @@
 
 (struct scheduler([agents : (Immutable-HashTable String agent-state)]
                   [number-running : Integer]
-                  [will-stop : Boolean]
-                  [thd : Thread]) #:transparent)
+                  [will-stop : Boolean]) #:transparent)
 
 (: scheduler-loop (-> scheduler Void))
 (define (scheduler-loop self)
   (let ([msg (thread-receive)])
     (match msg
-      [(msg-set-scheduler-thread t)
-       (scheduler-loop (struct-copy scheduler self [thd t]))]
       [(msg-add-agent type name)
        (let* ([path (string-append "./agents/" type ".rkt")]
               [agt (load-agent path)]
-              [agt (make-agent agt name (scheduler-thd self))]
+              [agt (make-agent agt name (current-thread))]
               [old-agent (scheduler-agents self)]
               [agt-state (agent-state agt 0 #f)]
               [new-agents (hash-set old-agent name agt-state)])
@@ -101,7 +97,7 @@
 (define (exec-agent state agt-name)
   ; Look if the agent have to run (not running yet and at least one IP)
   (let* ([agents (scheduler-agents state)]
-         [sched (scheduler-thd state)]
+         [sched (current-thread)]
          [agt-state (hash-ref agents agt-name)]
          [is-running (agent-state-is-running agt-state)]
          [agt (agent-state-state agt-state)]
@@ -125,9 +121,8 @@
 
 (: make-scheduler (-> False (-> Msg Void)))
 (define (make-scheduler opt)
-  (let* ([state (scheduler #hash() 0 #f (thread (lambda() (void))))]
+  (let* ([state (scheduler #hash() 0 #f)]
          [t (thread (lambda() (scheduler-loop state)))])
-    (thread-send t (msg-set-scheduler-thread t))
     (lambda (msg)
       (thread-send t msg)
       (match msg
