@@ -39,11 +39,48 @@
               [port (hash-ref (agent-inport in-agt) port-in)]
               [out-agt-state (hash-ref agents out)]
               [out-agt (agent-state-state out-agt-state)]
-              [old-outport (agent-outport out-agt)]
-              [new-outport (hash-set old-outport port-out port)]
-              [new-out-agt (struct-copy agent out-agt [outport new-outport])]
+              [new-out-agt (agent-connect out-agt port-out port)]
               [new-agent-state (struct-copy agent-state out-agt-state [state new-out-agt])]
               [new-agents (hash-set agents out new-agent-state)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-connect-array-to out port-out selection in port-in)
+       (let* ([agents (scheduler-agents self)]
+              [in-sched-agt (hash-ref agents in)]
+              [in-agt (agent-state-state in-sched-agt)]
+              [sender (hash-ref (agent-inport in-agt) port-in)]
+              [out-sched-agt (hash-ref agents out)]
+              [out-agt (agent-state-state out-sched-agt)]
+              [new-out-agt (agent-connect-array-to out-agt port-out selection sender)]
+              [new-out-sched-agt (struct-copy agent-state out-sched-agt [state new-out-agt])]
+              [new-agents (hash-set agents out new-out-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-connect-to-array out port-out in port-in selection)
+       (let*-values
+           ([(agents) (scheduler-agents self)]
+            [(in-sched-agt) (hash-ref agents in)]
+            [(in-agt) (agent-state-state in-sched-agt)]
+            [(sender new-in-agt) (agent-connect-to-array in-agt port-in selection in (current-thread))]
+            [(new-in-sched-agt) (struct-copy agent-state in-sched-agt [state new-in-agt])]
+            [(out-sched-agt) (hash-ref agents out)]
+            [(out-agt) (agent-state-state out-sched-agt)]
+            [(new-out-agt) (agent-connect out-agt port-out sender)]
+            [(new-out-sched-agt) (struct-copy agent-state out-sched-agt [state new-out-agt])]
+            [(new-agents) (hash-set agents in new-in-sched-agt)]
+            [(new-agents) (hash-set new-agents out new-out-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-connect-array-to-array out port-out selection-out in port-in selection-in)
+       (let*-values
+           ([(agents) (scheduler-agents self)]
+            [(in-sched-agt) (hash-ref agents in)]
+            [(in-agt) (agent-state-state in-sched-agt)]
+            [(sender new-in-agt) (agent-connect-to-array in-agt port-in selection-in in (current-thread))]
+            [(new-in-sched-agt) (struct-copy agent-state in-sched-agt [state new-in-agt])]
+            [(out-sched-agt) (hash-ref agents out)]
+            [(out-agt) (agent-state-state out-sched-agt)]
+            [(new-out-agt) (agent-connect-array-to out-agt port-out selection-out sender)]
+            [(new-out-sched-agt) (struct-copy agent-state out-sched-agt [state new-out-agt])]
+            [(new-agents) (hash-set agents in new-in-sched-agt)]
+            [(new-agents) (hash-set new-agents out new-out-sched-agt)])
          (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
       [(msg-iip agt port iip)
        (let* ([agents (scheduler-agents self)]
