@@ -12,3 +12,4 @@
 (sched (msg-iip "add" "in" 3))
 
 (sleep 0.5)
+(sched (msg-stop))

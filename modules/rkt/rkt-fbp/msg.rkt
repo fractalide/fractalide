@@ -11,6 +11,7 @@
 (struct msg-run-end ([agt : String]))
 (struct msg-display ())
 (struct msg-quit ())
+(struct msg-stop ())
 (struct msg-run ([agt : String]))
 (define-type Msg (U msg-set-scheduler-thread
                     msg-add-agent
@@ -21,4 +22,5 @@
                     msg-run-end
                     msg-display
                     msg-quit
+                    msg-stop
                     msg-run))
