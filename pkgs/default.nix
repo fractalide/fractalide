@@ -17,9 +17,9 @@ pkgs {
   overlays = [
     (import (builtins.toPath "${rustOverlay}/rust-overlay.nix"))
     (self: super: rec {
-      rust = with super.rustChannels; {
-        rustc = nightly.rust;
-        inherit (nightly) cargo;
+      rust = let channel = self.rustChannelOf { date = "2018-04-01"; channel = "nightly"; }; in {
+        rustc = channel.rust;
+        inherit (channel) cargo;
       };
       inherit racket2nix;
       inherit (racket2nix) buildRacket;
