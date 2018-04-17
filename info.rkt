@@ -8,7 +8,9 @@
 (define pkg-authors '("setori88@gmail.com"))
 (define racket-launcher-names '("hyperflow"
                                 "fracli"
-                                "flonly"))
+                                "flonly"
+                                "rkt-fbp"))
 (define racket-launcher-libraries '("pkgs/hyperflow/hyperflow.rkt"
                                     "pkgs/hyperflow/fracli.rkt"
-                                    "pkgs/hyperflow/flonly.rkt"))
+                                    "pkgs/hyperflow/flonly.rkt"
+                                    "modules/rkt/rkt-fbp/main.rkt"))
