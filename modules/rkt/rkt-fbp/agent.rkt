@@ -4,7 +4,7 @@
 
 (provide (struct-out agent) (struct-out opt-agent) make-agent recv send)
 
-(require rkt-fbp/port)
+(require fractalide/modules/rkt/rkt-fbp/port)
 
 (struct agent([inport : (Immutable-HashTable String port)]
               [outport : (Immutable-HashTable String (U False port))]

@@ -3,11 +3,11 @@
 ; (provide make-scheduler (struct-out scheduler))
 (provide make-scheduler (struct-out scheduler))
 
-(require rkt-fbp/agent)
-(require rkt-fbp/port)
-(require rkt-fbp/msg)
+(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/port)
+(require fractalide/modules/rkt/rkt-fbp/msg)
 
-(require/typed rkt-fbp/loader
+(require/typed fractalide/modules/rkt/rkt-fbp/loader
   [load-agent (-> String opt-agent)])
 
 ; TODO : make sender that cannot read the channel

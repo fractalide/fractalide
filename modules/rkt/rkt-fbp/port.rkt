@@ -3,7 +3,7 @@
 (provide port make-port port-send port-recv port-try-recv)
 
 (require typed/racket/async-channel)
-(require rkt-fbp/msg)
+(require fractalide/modules/rkt/rkt-fbp/msg)
 
 (struct port([channel : (Async-Channelof Any)]
              [name : String ]
