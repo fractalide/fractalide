@@ -47,11 +47,8 @@
               [new-outport (hash-set old-outport port-out port)]
               [new-out-agt (struct-copy agent out-agt [outport new-outport])]
               [new-agent-state (struct-copy agent-state out-agt-state [state new-out-agt])]
-              [new-agents (hash-set agents out new-agent-state)]
-              )
-         (scheduler-loop (struct-copy scheduler self [agents new-agents]))
-         )
-       ]
+              [new-agents (hash-set agents out new-agent-state)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
       [(msg-iip agt port iip)
        (let* ([agents (scheduler-agents self)]
               [in-agt-state (hash-ref agents agt)]
@@ -68,8 +65,7 @@
               [new-agents (hash-set agents agt new-agt-state)]
               [new-self (struct-copy scheduler self [agents new-agents])])
          ; Increase number of saved IP
-         (scheduler-loop (exec-agent new-self agt))
-       )]
+         (scheduler-loop (exec-agent new-self agt)))]
       [(msg-dec-ip agt)
        (let* ([agents (scheduler-agents self)]
               [agt-state (hash-ref agents agt)]
@@ -77,8 +73,7 @@
               [new-agt-state (struct-copy agent-state agt-state [number-ips (- nbr 1)])]
               [new-agents (hash-set agents agt new-agt-state)]
               [new-self (struct-copy scheduler self [agents new-agents])])
-         (scheduler-loop new-self)
-         )]
+         (scheduler-loop new-self))]
       [(msg-run-end agt-name)
        (let* ([agents (scheduler-agents self)]
               [nbr-running (scheduler-number-running self)]
@@ -92,22 +87,15 @@
               [stop? (scheduler-will-stop new-state)])
          (if (and stop? (= nbr-running 0))
              (void)
-             (scheduler-loop new-state)
-             )
-         )
-       ]
+             (scheduler-loop new-state)))]
       [(msg-stop)
        (if (= (scheduler-number-running self) 0)
            (void)
-           (scheduler-loop (struct-copy scheduler self [will-stop #t]))
-           )]
+           (scheduler-loop (struct-copy scheduler self [will-stop #t])))]
       [(msg-display) (displayln self) (scheduler-loop self)]
       [(msg-quit) (displayln "Scheduler shut down")]
       [else (display "unknown msg : ") (displayln msg)
-            (scheduler-loop self)]
-      )
-    )
-  )
+            (scheduler-loop self)])))
 
 (: exec-agent (-> scheduler String scheduler))
 (define (exec-agent state agt-name)
@@ -138,15 +126,10 @@
 (: make-scheduler (-> False (-> Msg Void)))
 (define (make-scheduler opt)
   (let* ([state (scheduler #hash() 0 #f (thread (lambda() (void))))]
-         [t (thread (lambda() (scheduler-loop state)))]
-         )
+         [t (thread (lambda() (scheduler-loop state)))])
     (thread-send t (msg-set-scheduler-thread t))
     (lambda (msg)
       (thread-send t msg)
       (match msg
         [(msg-stop) (thread-wait t)]
-        [else (void)])
-      )
-    )
-  )
-
+        [else (void)]))))
