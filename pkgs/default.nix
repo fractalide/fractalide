@@ -24,7 +24,11 @@ pkgs {
       inherit racket2nix;
       inherit (racket2nix) buildRacket;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = self.buildRacket { package = ./..; };
+      fractalide = self.buildRacket {
+        package = builtins.filterSource
+          (path: type: type != "symlink" || null == builtins.match "result.*" (baseNameOf path))
+          ./..;
+      };
     })
   ];
 }
