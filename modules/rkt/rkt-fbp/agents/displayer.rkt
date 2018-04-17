@@ -8,8 +8,10 @@
 (define agt (opt-agent
              '("in") ; in port
              '() ; in array port
-             '() ; out port
+             '("out") ; out port
              '() ; out array port
              (lambda (self)
+               (define msg (recv self "in"))
                (display "msg received: ")
-               (displayln (recv self "in")))))
+               (displayln msg)
+               (send self "out" msg))))
