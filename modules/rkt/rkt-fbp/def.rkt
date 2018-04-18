@@ -18,7 +18,6 @@
                           (-> String out-array-port)
                           Any ; the option
                           Void)]
-              [sched : Thread]
               [option : Any]) #:transparent)
 
 (struct opt-agent([inport : (Listof String)]

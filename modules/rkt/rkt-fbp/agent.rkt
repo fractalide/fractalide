@@ -1,7 +1,6 @@
 #lang typed/racket
 
 ; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
-; TODO : (try-recv) method
 
 (provide (struct-out agent)
          (struct-out opt-agent)
@@ -200,7 +199,7 @@
    (build-outport (cons "acc" (opt-agent-outport opt)))
    (build-out-array-port (opt-agent-out-array opt))
    (opt-agent-proc opt)
-   sched #f)) ;TODO check if useful
+   #f))
   (let* ([input (agent-inport agt)]
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
