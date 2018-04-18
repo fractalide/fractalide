@@ -1,4 +1,10 @@
-{ pkgs ? import <nixpkgs>
+{ bootPkgs ? import <nixpkgs> {}
+, pkgs ? import (bootPkgs.fetchFromGitHub {
+    owner  = "NixOS";
+    repo   = "nixpkgs";
+    rev    = "d91caac6c3e58b8a5f4721c0a6cc8f0dc3b93fd3";
+    sha256 = "1x19607ypfcdz0i5aims4cbi2ca7dm0d8jyar46knv0nqx8kly0s";
+  })
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
 , rustOverlay ? fetchFromGitHub {
     owner  = "mozilla";
