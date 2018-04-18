@@ -6,6 +6,7 @@
 (require fractalide/modules/rkt/rkt-fbp/agent)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/msg)
+(require fractalide/modules/rkt/rkt-fbp/def)
 
 (require/typed fractalide/modules/rkt/rkt-fbp/loader
   [load-agent (-> String opt-agent)])
@@ -177,6 +178,14 @@
        (scheduler-loop new-self)]
       [(msg-start-agent agt)
          (scheduler-loop (exec-agent self agt #t))]
+      [(msg-update-agent agt proc)
+       (let* ([agents (scheduler-agents self)]
+              [sched-agt (hash-ref agents agt)]
+              [state (agent-state-state sched-agt)]
+              [new-state (proc state)]
+              [new-sched-agt (struct-copy agent-state sched-agt [state new-state])]
+              [new-agents (hash-set agents agt new-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
       [(msg-stop)
        (if (= (scheduler-number-running self) 0)
            (void)

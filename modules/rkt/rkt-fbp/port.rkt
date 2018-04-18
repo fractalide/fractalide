@@ -4,11 +4,7 @@
 
 (require typed/racket/async-channel)
 (require fractalide/modules/rkt/rkt-fbp/msg)
-
-(struct port([channel : (Async-Channelof Any)]
-             [name : String]
-             [thd : Thread]
-             [sync? : Boolean]))
+(require fractalide/modules/rkt/rkt-fbp/def)
 
 (: make-port (-> Exact-Positive-Integer String Thread Boolean port))
 (define (make-port size name thd sync?)

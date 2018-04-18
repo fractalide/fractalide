@@ -2,6 +2,8 @@
 
 (provide (all-defined-out))
 
+(require fractalide/modules/rkt/rkt-fbp/def)
+
 (struct msg-set-scheduler-thread ([t : Thread]))
 (struct msg-add-agent ([type : String] [name : String]))
 (struct msg-remove-agent ([name : String]))
@@ -25,6 +27,7 @@
 (struct msg-display ())
 (struct msg-start ())
 (struct msg-start-agent ([agt : String]))
+(struct msg-update-agent([agt : String][proc : (-> agent agent)]))
 (struct msg-quit ())
 (struct msg-stop ())
 (struct msg-run ([agt : String]))
@@ -41,6 +44,7 @@
                     msg-run-end
                     msg-display
                     msg-start msg-start-agent
+                    msg-update-agent
                     msg-quit
                     msg-stop
                     msg-run))

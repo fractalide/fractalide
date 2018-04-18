@@ -2,6 +2,8 @@
 
 (require fractalide/modules/rkt/rkt-fbp/scheduler)
 (require fractalide/modules/rkt/rkt-fbp/msg)
+(require fractalide/modules/rkt/rkt-fbp/def)
+(require fractalide/modules/rkt/rkt-fbp/agent)
 
 (define sched (make-scheduler #f))
 (sched (msg-add-agent "adder" "add"))
@@ -55,6 +57,27 @@
 ; No more disp1 msg
 (sched (msg-disconnect-array-to "clone" "out" "2"))
 (sched (msg-iip "clone" "in" 5))
+
+(sleep 1)
+(displayln "-- disp1 before change")
+(sleep 1)
+(sched (msg-iip "disp1" "in" "a beautiful msg"))
+(sleep 1)
+(sched (msg-update-agent "disp1"
+                         (lambda (agt)
+                           (struct-copy agent agt [proc
+                                                   (lambda ([i : (-> String port)]
+                                                            [o : (-> String (U False port))]
+                                                            [ia : (-> String in-array-port)]
+                                                            [io : (-> String out-array-port)]
+                                                            [opt : Any])
+                                                     (recv (i "in"))
+                                                     (displayln "After change!"))]))))
+(sleep 1)
+(displayln "-- disp1 after change")
+(sleep 1)
+(sched (msg-iip "disp1" "in" "a beautiful msg"))
+
 
 (sleep 0.5)
 (sched (msg-stop))
