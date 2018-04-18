@@ -1,5 +1,5 @@
 [package]
-name = "generate-msg"
+name = "generate_msg"
 version = "0.1.0"
 authors = ["pe@pijul.org <pe@pijul.org>"]
 

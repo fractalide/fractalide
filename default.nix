@@ -22,7 +22,7 @@ let
       buildPhase =
         (lists.foldl' (str: name:
           str + " ${name} ${edges.rs.${name}.out}/edge.rs"
-        ) "${generateMsg.out}/bin/generate-msg" (attrsets.attrNames edges.rs)) + " > edges.rs";
+        ) "${generateMsg.out}/bin/generate_msg" (attrsets.attrNames edges.rs)) + " > edges.rs";
       installPhase = ''
         mkdir -p $out
         cp edges.rs $out

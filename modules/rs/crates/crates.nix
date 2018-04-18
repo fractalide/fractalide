@@ -56,15 +56,15 @@ rec {
     sha256 = "0x06hvrrqy96m97593823vvxcgvjaxckghwyy2jcyc8qc7c6cyhi";
     inherit dependencies buildDependencies features;
   };
-  env_logger_0_5_7_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  env_logger_0_5_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "env_logger";
-    version = "0.5.7";
+    version = "0.5.8";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "0wgd9fashmwbx5ssrxx69naam6hlb5c7qmh1nln645q4gms35i2l";
+    sha256 = "086vakwbm975sk6sxiwapsv9rp0bxp34pvh7mwvv0pkpigmsbjgr";
     inherit dependencies buildDependencies features;
   };
   generate_msg_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "generate-msg";
+    crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
     src = ../generate-msg;
@@ -302,16 +302,16 @@ rec {
     memchr_2_0_1.default = true;
   }) [ memchr_2_0_1_features ];
   all_crates_1_1_1 = { features?(all_crates_1_1_1_features {}) }: all_crates_1_1_1_ {
-    dependencies = mapFeatures features ([ env_logger_0_5_7 generate_msg_0_1_0 log_0_4_1 nom_3_2_1 rustfbp_0_3_34 ]);
+    dependencies = mapFeatures features ([ env_logger_0_5_8 generate_msg_0_1_0 log_0_4_1 nom_3_2_1 rustfbp_0_3_34 ]);
   };
   all_crates_1_1_1_features = f: updateFeatures f (rec {
     all_crates_1_1_1.default = (f.all_crates_1_1_1.default or true);
-    env_logger_0_5_7.default = true;
+    env_logger_0_5_8.default = true;
     generate_msg_0_1_0.default = true;
     log_0_4_1.default = true;
     nom_3_2_1.default = true;
     rustfbp_0_3_34.default = true;
-  }) [ env_logger_0_5_7_features generate_msg_0_1_0_features log_0_4_1_features nom_3_2_1_features rustfbp_0_3_34_features ];
+  }) [ env_logger_0_5_8_features generate_msg_0_1_0_features log_0_4_1_features nom_3_2_1_features rustfbp_0_3_34_features ];
   atty_0_2_8 = { features?(atty_0_2_8_features {}) }: atty_0_2_8_ {
     dependencies = (if kernel == "redox" then mapFeatures features ([ termion_1_5_1 ]) else [])
       ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_40 ]) else [])
@@ -343,18 +343,18 @@ rec {
   cfg_if_0_1_2_features = f: updateFeatures f (rec {
     cfg_if_0_1_2.default = (f.cfg_if_0_1_2.default or true);
   }) [];
-  env_logger_0_5_7 = { features?(env_logger_0_5_7_features {}) }: env_logger_0_5_7_ {
+  env_logger_0_5_8 = { features?(env_logger_0_5_8_features {}) }: env_logger_0_5_8_ {
     dependencies = mapFeatures features ([ atty_0_2_8 humantime_1_1_1 log_0_4_1 termcolor_0_3_6 ]
-      ++ (if features.env_logger_0_5_7.regex or false then [ regex_0_2_10 ] else []));
-    features = mkFeatures (features.env_logger_0_5_7 or {});
+      ++ (if features.env_logger_0_5_8.regex or false then [ regex_0_2_10 ] else []));
+    features = mkFeatures (features.env_logger_0_5_8 or {});
   };
-  env_logger_0_5_7_features = f: updateFeatures f (rec {
+  env_logger_0_5_8_features = f: updateFeatures f (rec {
     atty_0_2_8.default = true;
-    env_logger_0_5_7.default = (f.env_logger_0_5_7.default or true);
-    env_logger_0_5_7.regex =
-      (f.env_logger_0_5_7.regex or false) ||
-      (f.env_logger_0_5_7.default or false) ||
-      (env_logger_0_5_7.default or false);
+    env_logger_0_5_8.default = (f.env_logger_0_5_8.default or true);
+    env_logger_0_5_8.regex =
+      (f.env_logger_0_5_8.regex or false) ||
+      (f.env_logger_0_5_8.default or false) ||
+      (env_logger_0_5_8.default or false);
     humantime_1_1_1.default = true;
     log_0_4_1.default = true;
     log_0_4_1.std = true;
@@ -574,14 +574,14 @@ rec {
     ucd_util_0_1_1.default = true;
   }) [ ucd_util_0_1_1_features ];
   rustfbp_0_3_34 = { features?(rustfbp_0_3_34_features {}) }: rustfbp_0_3_34_ {
-    dependencies = mapFeatures features ([ env_logger_0_5_7 libloading_0_5_0 threadpool_1_7_1 ]);
+    dependencies = mapFeatures features ([ env_logger_0_5_8 libloading_0_5_0 threadpool_1_7_1 ]);
   };
   rustfbp_0_3_34_features = f: updateFeatures f (rec {
-    env_logger_0_5_7.default = true;
+    env_logger_0_5_8.default = true;
     libloading_0_5_0.default = true;
     rustfbp_0_3_34.default = (f.rustfbp_0_3_34.default or true);
     threadpool_1_7_1.default = true;
-  }) [ env_logger_0_5_7_features libloading_0_5_0_features threadpool_1_7_1_features ];
+  }) [ env_logger_0_5_8_features libloading_0_5_0_features threadpool_1_7_1_features ];
   syn_0_12_15 = { features?(syn_0_12_15_features {}) }: syn_0_12_15_ {
     dependencies = mapFeatures features ([ proc_macro2_0_2_3 unicode_xid_0_1_0 ]
       ++ (if features.syn_0_12_15.quote or false then [ quote_0_4_2 ] else []));

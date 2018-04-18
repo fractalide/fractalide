@@ -2,6 +2,6 @@
 
 agent {
   src = ./.;
-  mods = with mods.rs; [ (rustfbp_0_3_34 {}) (log_0_4_1 {}) (env_logger_0_5_7 {}) ];
+  mods = with mods.rs; [ (rustfbp_0_3_34 {}) (log_0_4_1 {}) (env_logger_0_5_8 {}) ];
   osdeps = with pkgs; [];
 }
