@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (require fractalide/modules/rkt/rkt-fbp/scheduler)
 (require fractalide/modules/rkt/rkt-fbp/msg)

@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
 
@@ -13,6 +13,7 @@
          agent-no-input?
          make-agent)
 
+(require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
 

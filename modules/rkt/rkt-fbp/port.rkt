@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (provide port make-port port-send port-recv port-try-recv)
 

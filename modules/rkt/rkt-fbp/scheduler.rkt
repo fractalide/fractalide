@@ -1,8 +1,10 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ; (provide make-scheduler (struct-out scheduler))
 (provide make-scheduler (struct-out scheduler))
 
+(require racket/match)
+(require racket/function)
 (require fractalide/modules/rkt/rkt-fbp/agent)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/msg)
