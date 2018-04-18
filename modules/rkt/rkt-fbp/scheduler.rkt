@@ -33,6 +33,9 @@
               [agt-state (agent-state agt 0 #f)]
               [new-agents (hash-set old-agent name agt-state)])
          (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-remove-agent name)
+       (let ([new-agents (hash-remove (scheduler-agents self) name)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
       [(msg-connect out port-out in port-in)
        (let* ([agents (scheduler-agents self)]
               [in-agt-state (hash-ref agents in)]

@@ -4,6 +4,7 @@
 
 (struct msg-set-scheduler-thread ([t : Thread]))
 (struct msg-add-agent ([type : String] [name : String]))
+(struct msg-remove-agent ([name : String]))
 (struct msg-connect ([out : String][port-out : String][in : String][port-in : String]))
 (struct msg-connect-array-to ([out : String][port-out : String][selection : String]
                                             [in : String][port-in : String]))
@@ -27,6 +28,7 @@
 (struct msg-run ([agt : String]))
 (define-type Msg (U msg-set-scheduler-thread
                     msg-add-agent
+                    msg-remove-agent
                     msg-connect
                     msg-connect-array-to msg-connect-to-array msg-connect-array-to-array
                     msg-disconnect
