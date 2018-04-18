@@ -1,11 +1,13 @@
 #lang typed/racket
 
-; TODO : what to do with unconnected output port?
+; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
+; TODO : (try-recv) method
 
 (provide (struct-out agent)
          (struct-out opt-agent)
          recv
          send
+         get-in get-out get-in-array get-out-array
          agent-connect
          agent-connect-to-array
          agent-connect-array-to
@@ -23,29 +25,55 @@
               [in-array-port : (Immutable-HashTable String in-array-port)]
               [outport : (Immutable-HashTable String (U False port))]
               [out-array-port : (Immutable-HashTable String out-array-port)]
-              [proc : (-> agent Void)]
+              [proc : (-> (-> String port)
+                          (-> String (U False port))
+                          (-> String in-array-port)
+                          (-> String out-array-port)
+                          Void)]
               [sched : Thread]) #:transparent)
 
 (struct opt-agent([inport : (Listof String)]
                   [in-array : (Listof String)]
                   [outport : (Listof String)]
                   [out-array : (Listof String)]
-                  [proc : (-> agent Void)]) #:transparent)
+                  [proc : (-> (-> String port)
+                              (-> String (U False port))
+                              (-> String in-array-port)
+                              (-> String out-array-port)
+                              Void)]) #:transparent)
 
 ;;
 ;; Methods for using the agent
 ;;
 
-(: recv (-> agent String Any))
-(define (recv agent port)
-  (port-recv (hash-ref (agent-inport agent) port)))
+(: recv (-> (U (cons Integer port) port) Any))
+(define (recv port)
+  (if (cons? port)
+    (port-recv (cdr port))
+    (port-recv port)))
 
-(: send (-> agent String Any Void))
-(define (send agent port msg)
-  (let ([out-port (hash-ref (agent-outport agent) port)])
-    (if out-port
-        (port-send out-port msg)
-        (void))))
+(: send (-> (U False port) Any Void))
+(define (send port msg)
+  (if port
+      (port-send port msg)
+      (void)))
+
+(: get-in (-> agent String port))
+(define (get-in agent port)
+  (hash-ref (agent-inport agent) port))
+
+(: get-out (-> agent String (U False port)))
+(define (get-out agent port)
+  (hash-ref (agent-outport agent) port))
+
+(: get-in-array (-> agent String in-array-port))
+(define (get-in-array agent port)
+  (hash-ref (agent-in-array-port agent) port))
+
+(: get-out-array (-> agent String out-array-port))
+(define (get-out-array agent port)
+  (hash-ref (agent-out-array-port agent) port))
+
 
 
 ;;

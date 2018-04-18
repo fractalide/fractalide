@@ -146,7 +146,11 @@
         ; change is-running to true and exec
         (begin
           (thread (lambda ()
-                    (proc agt)
+                    (proc
+                     ((curry get-in) agt)
+                     ((curry get-out) agt)
+                     ((curry get-in-array) agt)
+                     ((curry get-out-array) agt))
                     (thread-send sched (msg-run-end agt-name))))
           (let* ([new-agt-state (struct-copy agent-state agt-state [is-running #t])]
                [new-agents (hash-set agents agt-name new-agt-state)]
