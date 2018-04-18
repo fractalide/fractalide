@@ -9,7 +9,7 @@
              '() ; in array port
              '("out") ; out port
              '() ; out array port
-             (lambda (input output input-array output-array)
+             (lambda (input output input-array output-array option)
                (let* ([msg (recv (input "in"))]
                       [acc (recv (input "acc"))]
                       [sum (+ msg acc)])

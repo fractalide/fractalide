@@ -9,8 +9,10 @@
              '() ; in array port
              '("out") ; out port
              '() ; out array port
-             (lambda (input output input-array output-array)
+             (lambda (input output input-array output-array option)
                (define msg (recv (input "in")))
-               (display "msg received: ")
+               (if option
+                   (display option)
+                   (void))
                (displayln msg)
                (send (output "out") msg))))

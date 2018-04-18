@@ -13,8 +13,6 @@
 (sched (msg-connect-array-to "clone" "out" "2" "disp1" "in"))
 (sched (msg-connect-to-array "disp1" "out" "add" "in" "2"))
 
-(sched (msg-iip "clone" "in" 5))
-
 (sched (msg-add-agent "accumulator" "acc"))
 (sched (msg-iip "acc" "acc" 0))
 (sched (msg-iip "acc" "in" 2))
@@ -22,6 +20,14 @@
 (sched (msg-iip "acc" "in" 2))
 (sched (msg-iip "acc" "in" 2))
 (sched (msg-iip "acc" "in" 2))
+
+(sched (msg-iip "disp1" "option" "never"))
+(sched (msg-iip "disp1" "option" "see"))
+(sched (msg-iip "disp1" "option" "this"))
+(sleep 0.5)
+(sched (msg-iip "disp1" "option" "disp1 : "))
+(sched (msg-iip "disp" "option" "Disp received a msg : "))
+(sched (msg-iip "clone" "in" 5))
 
 (sleep 0.5)
 (sched (msg-stop))

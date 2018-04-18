@@ -9,7 +9,7 @@
              '("in") ; in array port
              '("out") ; out port
              '() ; out array port
-             (lambda (input output input-array output-array)
+             (lambda (input output input-array output-array option)
                  (define sum (for/fold ([sum 0])
                                        ([(k v) (input-array "in")])
                                (+ sum (recv v))))

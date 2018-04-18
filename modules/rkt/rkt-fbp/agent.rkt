@@ -7,6 +7,7 @@
          (struct-out opt-agent)
          recv
          send
+         recv-option
          get-in get-out get-in-array get-out-array
          agent-connect
          agent-connect-to-array
@@ -29,8 +30,10 @@
                           (-> String (U False port))
                           (-> String in-array-port)
                           (-> String out-array-port)
+                          Any ; the option
                           Void)]
-              [sched : Thread]) #:transparent)
+              [sched : Thread]
+              [option : Any]) #:transparent)
 
 (struct opt-agent([inport : (Listof String)]
                   [in-array : (Listof String)]
@@ -40,6 +43,7 @@
                               (-> String (U False port))
                               (-> String in-array-port)
                               (-> String out-array-port)
+                              Any ; the option
                               Void)]) #:transparent)
 
 ;;
@@ -57,6 +61,14 @@
   (if port
       (port-send port msg)
       (void)))
+
+(: recv-option (-> agent agent))
+(define (recv-option agt)
+  (let* ([opt (hash-ref (agent-inport agt) "option")]
+         [msg (port-try-recv opt)])
+    (if msg
+        (recv-option (struct-copy agent agt [option msg]))
+        agt)))
 
 (: get-in (-> agent String port))
 (define (get-in agent port)
@@ -134,7 +146,7 @@
 (: build-inport (-> (Listof String) String Thread (Immutable-HashTable String port)))
 (define (build-inport inputs name sched)
   (for/hash: : (Immutable-HashTable String port) ([input inputs])
-    (if (or (string=? input "acc"))
+    (if (or (string=? input "acc") (string=? input "option"))
         ; It's an acc or option port
         (values input (make-port 30 name sched #f))
         ; It's a normal port
@@ -164,12 +176,12 @@
 (: make-agent (-> opt-agent String Thread agent))
 (define (make-agent opt name sched)
   (define agt (agent
-   (build-inport (cons "acc" (opt-agent-inport opt)) name sched)
+   (build-inport (cons "acc" (cons "option" (opt-agent-inport opt))) name sched)
    (build-in-array-port (opt-agent-in-array opt))
    (build-outport (cons "acc" (opt-agent-outport opt)))
    (build-out-array-port (opt-agent-out-array opt))
    (opt-agent-proc opt)
-   sched)) ;TODO check if useful
+   sched #f)) ;TODO check if useful
   (let* ([input (agent-inport agt)]
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
