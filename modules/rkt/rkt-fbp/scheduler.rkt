@@ -11,6 +11,7 @@
   [load-agent (-> String opt-agent)])
 
 ; TODO : make sender that cannot read the channel
+; TODO : make an helper function to change a agent-state, will be more clear
 
 (struct agent-state([state : agent]
                     [number-ips : Integer] ; Check for Integer -> Natural
@@ -81,6 +82,48 @@
             [(new-out-sched-agt) (struct-copy agent-state out-sched-agt [state new-out-agt])]
             [(new-agents) (hash-set agents in new-in-sched-agt)]
             [(new-agents) (hash-set new-agents out new-out-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-disconnect out port-out)
+       (let* ([agents (scheduler-agents self)]
+              [out-agt-state (hash-ref agents out)]
+              [out-agt (agent-state-state out-agt-state)]
+              [new-out-agt (agent-disconnect out-agt port-out)]
+              [new-agent-state (struct-copy agent-state out-agt-state [state new-out-agt])]
+              [new-agents (hash-set agents out new-agent-state)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-disconnect-array-to out port-out selection)
+       (let* ([agents (scheduler-agents self)]
+              [out-sched-agt (hash-ref agents out)]
+              [out-agt (agent-state-state out-sched-agt)]
+              [new-out-agt (agent-disconnect-array-to out-agt port-out selection)]
+              [new-out-sched-agt (struct-copy agent-state out-sched-agt [state new-out-agt])]
+              [new-agents (hash-set agents out new-out-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-disconnect-to-array out port-out in port-in selection)
+       (let* ([agents (scheduler-agents self)]
+              [in-sched-agt (hash-ref agents in)]
+              [in-agt (agent-state-state in-sched-agt)]
+              [new-in-agt (agent-disconnect-to-array in-agt port-in selection)]
+              [new-in-sched-agt (struct-copy agent-state in-sched-agt [state new-in-agt])]
+              [out-sched-agt (hash-ref agents out)]
+              [out-agt (agent-state-state out-sched-agt)]
+              [new-out-agt (agent-disconnect out-agt port-out)]
+              [new-out-sched-agt (struct-copy agent-state out-sched-agt [state new-out-agt])]
+              [new-agents (hash-set agents in new-in-sched-agt)]
+              [new-agents (hash-set new-agents out new-out-sched-agt)])
+         (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
+      [(msg-disconnect-array-to-array out port-out selection-out in port-in selection-in)
+       (let* ([agents (scheduler-agents self)]
+              [in-sched-agt (hash-ref agents in)]
+              [in-agt (agent-state-state in-sched-agt)]
+              [new-in-agt (agent-disconnect-to-array in-agt port-in selection-in)]
+              [new-in-sched-agt (struct-copy agent-state in-sched-agt [state new-in-agt])]
+              [out-sched-agt (hash-ref agents out)]
+              [out-agt (agent-state-state out-sched-agt)]
+              [new-out-agt (agent-disconnect-array-to out-agt port-out selection-out)]
+              [new-out-sched-agt (struct-copy agent-state out-sched-agt [state new-out-agt])]
+              [new-agents (hash-set agents in new-in-sched-agt)]
+              [new-agents (hash-set new-agents out new-out-sched-agt)])
          (scheduler-loop (struct-copy scheduler self [agents new-agents])))]
       [(msg-iip agt port iip)
        (let* ([agents (scheduler-agents self)]

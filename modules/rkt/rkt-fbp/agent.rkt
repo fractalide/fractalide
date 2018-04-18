@@ -9,9 +9,8 @@
          send
          recv-option
          get-in get-out get-in-array get-out-array
-         agent-connect
-         agent-connect-to-array
-         agent-connect-array-to
+         agent-connect agent-connect-to-array agent-connect-array-to
+         agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          make-agent)
 
 (require fractalide/modules/rkt/rkt-fbp/port)
@@ -67,6 +66,10 @@
   (if port
       (port-send port msg)
       (void)))
+
+;;
+;; Methods for building the input arguments of the procedure
+;;
 
 (: recv-option (-> agent agent))
 (define (recv-option agt)
@@ -141,8 +144,39 @@
   )
 
 ; disconnect
+(: agent-disconnect (-> agent String agent))
+(define (agent-disconnect agt port)
+  (let* ([out (agent-outport agt)]
+         [new-out (hash-set out port #f)])
+    (struct-copy agent agt [outport new-out])))
+
 ; disconnect-to-array
+(: agent-disconnect-to-array (-> agent String String agent))
+(define (agent-disconnect-to-array agt port selection)
+  (let* ([in (agent-in-array-port agt)]
+         [array (hash-ref in port)]
+         [select (hash-ref array selection)]
+         [nbr (car select)]
+         [sender (cdr select)])
+    (if (= nbr 1)
+        ; Must remove the selection
+        (let* ([new-array (hash-remove array selection)]
+               [new-in (hash-set in port new-array)])
+          (struct-copy agent agt [in-array-port new-in]))
+        ; Must decrease the selection)
+        (let* ([new-array (hash-set array selection (cons (- nbr 1) sender))]
+               [new-in (hash-set in port new-array)])
+          (struct-copy agent agt [in-array-port new-in])))))
+
+
 ; disconnect-array-to
+(: agent-disconnect-array-to (-> agent String String agent))
+(define (agent-disconnect-array-to agt port selection)
+  (let* ([out (agent-out-array-port agt)]
+         [array (hash-ref out port)]
+         [new-array (hash-remove array selection)]
+         [new-out (hash-set out port new-array)])
+    (struct-copy agent agt [out-array-port new-out])))
 
 ;;
 ;; Methods for building the agent
