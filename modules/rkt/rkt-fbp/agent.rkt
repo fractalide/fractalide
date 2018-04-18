@@ -103,7 +103,7 @@
                [new-agent (struct-copy agent self [in-array-port new-in])])
           (values sender new-agent))
         ; Not yet existing, set at 1, create and return
-        (let* ([sender (make-port 30 name sched)]
+        (let* ([sender (make-port 30 name sched #t)]
                [new-selec (cons 1 sender)]
                [new-array (hash-set array selection new-selec)]
                [new-in (hash-set in port new-array)]
@@ -134,7 +134,11 @@
 (: build-inport (-> (Listof String) String Thread (Immutable-HashTable String port)))
 (define (build-inport inputs name sched)
   (for/hash: : (Immutable-HashTable String port) ([input inputs])
-    (values input (make-port 30 name sched))))
+    (if (or (string=? input "acc"))
+        ; It's an acc or option port
+        (values input (make-port 30 name sched #f))
+        ; It's a normal port
+        (values input (make-port 30 name sched #t)))))
 
 (: build-outport (-> (Listof String) (Immutable-HashTable String False)))
 (define (build-outport outputs)
@@ -152,16 +156,20 @@
   (for/hash: : (Immutable-HashTable String out-array-port) ([input inputs])
     (let ([empty : out-array-port (make-immutable-hash)])
       (values input empty))))
+
 ;;
 ;; The method to create an agent
 ;;
 
 (: make-agent (-> opt-agent String Thread agent))
 (define (make-agent opt name sched)
-  (agent
-   (build-inport (opt-agent-inport opt) name sched)
+  (define agt (agent
+   (build-inport (cons "acc" (opt-agent-inport opt)) name sched)
    (build-in-array-port (opt-agent-in-array opt))
-   (build-outport (opt-agent-outport opt))
+   (build-outport (cons "acc" (opt-agent-outport opt)))
    (build-out-array-port (opt-agent-out-array opt))
    (opt-agent-proc opt)
    sched)) ;TODO check if useful
+  (let* ([input (agent-inport agt)]
+        [sender (hash-ref input "acc")])
+    (agent-connect agt "acc" sender)))

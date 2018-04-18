@@ -6,21 +6,26 @@
 (require fractalide/modules/rkt/rkt-fbp/msg)
 
 (struct port([channel : (Async-Channelof Any)]
-             [name : String ]
-             [thd : Thread]))
+             [name : String]
+             [thd : Thread]
+             [sync? : Boolean]))
 
-(: make-port (-> Exact-Positive-Integer String Thread port))
-(define (make-port size name thd)
-    (port (make-async-channel size) name thd))
+(: make-port (-> Exact-Positive-Integer String Thread Boolean port))
+(define (make-port size name thd sync?)
+    (port (make-async-channel size) name thd sync?))
 
 (: port-send (-> port Any Void))
 (define (port-send self msg)
   (async-channel-put (port-channel self) msg)
-  (thread-send (port-thd self) (msg-inc-ip (port-name self))))
+  (if (port-sync? self)
+      (thread-send (port-thd self) (msg-inc-ip (port-name self)))
+      (void)))
 
 (: port-recv (-> port Any))
 (define (port-recv self)
-  (thread-send (port-thd self) (msg-dec-ip (port-name self)))
+  (if (port-sync? self)
+      (thread-send (port-thd self) (msg-dec-ip (port-name self)))
+      (void))
   (async-channel-get (port-channel self)))
 
 (: port-try-recv (-> port Any))
@@ -28,6 +33,8 @@
   (let ([msg (async-channel-try-get (port-channel self))])
     (if msg
         (begin
-          (thread-send (port-thd self) (msg-dec-ip (port-name self)))
+          (if (port-sync? self)
+              (thread-send (port-thd self) (msg-dec-ip (port-name self)))
+              (void))
           msg)
         #f)))

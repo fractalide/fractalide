@@ -15,5 +15,13 @@
 
 (sched (msg-iip "clone" "in" 5))
 
+(sched (msg-add-agent "accumulator" "acc"))
+(sched (msg-iip "acc" "acc" 0))
+(sched (msg-iip "acc" "in" 2))
+(sched (msg-iip "acc" "in" 2))
+(sched (msg-iip "acc" "in" 2))
+(sched (msg-iip "acc" "in" 2))
+(sched (msg-iip "acc" "in" 2))
+
 (sleep 0.5)
 (sched (msg-stop))
