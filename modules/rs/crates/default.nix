@@ -1,4 +1,4 @@
-{ lib, buildPlatform, buildRustCrate, fetchgit, edgesModule }:
+{ lib, buildPlatform, buildRustCrate, fetchgit, edgesModule, rustc, makeWrapper, stdenv }:
 
 let
   mapFeatures = features: map (fun: fun { features = features; });
@@ -9,6 +9,12 @@ crates // rec {
   }).override (args: {
     preConfigure = "cp ${edgesModule.out}/edges.rs src";
   });
+  generate_msg_0_1_0 = if stdenv.isDarwin then f: (crates.generate_msg_0_1_0 f).overrideAttrs (oldAttrs: {
+    nativeBuildInputs = oldAttrs.nativeBuildInputs ++ [ makeWrapper ];
+    postFixup = ''
+      wrapProgram $out/bin/generate_msg --prefix DYLD_LIBRARY_PATH : ${rustc}/lib
+    '';
+  }) else crates.generate_msg_0_1_0;
   libloading_0_5_0 = f: (crates.libloading_0_5_0 f).override (args: {
     patches = [ (builtins.toFile "libloading-darwin.diff" ''
       diff --git a/build.rs b/build.rs
