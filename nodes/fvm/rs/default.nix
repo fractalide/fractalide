@@ -4,7 +4,7 @@ buffet.support.node.rs.fvm {
   name = "fvm";
   src = ./.;
   libPath = "main.rs";
-  mods = with buffet.mods.rs; [ (rustfbp_0_3_34 {}) (env_logger_0_5_7 {}) ];
+  mods = with buffet.mods.rs; [ (rustfbp_0_3_34 {}) (env_logger_0_5_8 {}) ];
   edges = with buffet.edges.rs; [ CoreAction ];
   postInstall = with buffet.nodes; ''
     cp $src/main.rs $out/src

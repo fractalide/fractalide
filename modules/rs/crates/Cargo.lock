@@ -10,8 +10,8 @@ dependencies = [
 name = "all_crates"
 version = "1.1.1"
 dependencies = [
- "env_logger 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "generate-msg 0.1.0",
+ "env_logger 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "generate_msg 0.1.0",
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "nom 3.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustfbp 0.3.34",
@@ -39,7 +39,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "env_logger"
-version = "0.5.7"
+version = "0.5.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "atty 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -50,7 +50,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "generate-msg"
+name = "generate_msg"
 version = "0.1.0"
 dependencies = [
  "syn 0.12.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -181,7 +181,7 @@ dependencies = [
 name = "rustfbp"
 version = "0.3.34"
 dependencies = [
- "env_logger 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "libloading 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "threadpool 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -291,7 +291,7 @@ dependencies = [
 "checksum atty 0.2.8 (registry+https://github.com/rust-lang/crates.io-index)" = "af80143d6f7608d746df1520709e5d141c96f240b0e62b0aa41bdfb53374d9d4"
 "checksum cc 1.0.10 (registry+https://github.com/rust-lang/crates.io-index)" = "8b9d2900f78631a5876dc5d6c9033ede027253efcd33dd36b1309fc6cab97ee0"
 "checksum cfg-if 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "d4c819a1287eb618df47cc647173c5c4c66ba19d888a6e50d605672aed3140de"
-"checksum env_logger 0.5.7 (registry+https://github.com/rust-lang/crates.io-index)" = "0f475037312b91d34dbc3142a1ad3980ef0d070c7a855ce238afdd5e987cfecc"
+"checksum env_logger 0.5.8 (registry+https://github.com/rust-lang/crates.io-index)" = "be27f8ea102a7182093a80d98f0b78623b580eda8791cbe8e2345fe6e57567a6"
 "checksum humantime 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "0484fda3e7007f2a4a0d9c3a703ca38c71c54c55602ce4660c419fd32e188c9e"
 "checksum lazy_static 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c8f31047daa365f19be14b47c29df4f7c3b581832407daabe6ae77397619237d"
 "checksum libc 0.2.40 (registry+https://github.com/rust-lang/crates.io-index)" = "6fd41f331ac7c5b8ac259b8bf82c75c0fb2e469bbf37d2becbba9a6a2221965b"

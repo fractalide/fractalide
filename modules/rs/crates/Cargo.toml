@@ -6,7 +6,7 @@ version = "1.1.1"
 
 [dependencies]
 rustfbp = { path = "../rustfbp" }
-generate-msg = { path = "../generate-msg" }
+generate_msg = { path = "../generate-msg" }
 nom = "*"
 log = "*"
 env_logger = "*"
