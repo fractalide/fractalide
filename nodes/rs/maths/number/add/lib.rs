@@ -1,6 +1,6 @@
 #[macro_use]
 extern crate rustfbp;
-extern crate capnp;
+
 
 agent! {
   inarr(numbers: prim_i64),

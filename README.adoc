@@ -93,7 +93,7 @@ When nix is assigned the responsibility of declaratively building fbp `nodes`, a
 agent {
   src = ./.;
   edges = with edges; [ PrimText FsPath ];
-  mods = with mods.rs; [ rustfbp capnp rusqlite ];
+  mods = with mods.rs; [ rustfbp rusqlite ];
   osdeps = with pkgs; [ sqlite pkgconfig ];
 }
 ----

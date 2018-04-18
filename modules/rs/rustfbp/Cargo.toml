@@ -8,7 +8,6 @@ repository = "https://github.com/fractalide/fractalide/tree/master/modules/rs/ru
 description = "Rustfbp provides a simple, composable, clearly defined API, with a C ABI for every agent within a Fractalide deployment."
 
 [dependencies]
-capnp = "*"
 libloading = "0.5"
 threadpool = "*"
 env_logger = "*"

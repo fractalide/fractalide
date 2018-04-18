@@ -9,7 +9,6 @@
   , src ? null
   , mods ? []
   , osdeps ? []
-  , capnp_edges ? []
   , edges ? []
   , ...
 } @ args:

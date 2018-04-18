@@ -18,7 +18,6 @@ in
   bench_inc_1000 = callPackage ./bench/inc_1000 {};
   bench_inc = callPackage ./bench/inc {};
   debug = callPackage ./debug {};
-  docs = callPackage ./docs {};
   example_wrangle = buffet.fractals.example_wrangle.nodes.rs.example_wrangle;
   nanomsg_nodes = buffet.fractals.nanomsg.nodes.rs;
   nanomsg_test = buffet.fractals.nanomsg.nodes.test;

@@ -5,8 +5,6 @@
 //! It also declare the Trait Agent and the shared methods needed by every agent and the scheduler.
 
 
-extern crate capnp;
-
 // TODO : Add method to remove agents
 use ports::{MsgSender, MsgReceiver};
 use scheduler::Signal;
@@ -93,18 +91,11 @@ macro_rules! agent {
         #[allow(unused_imports)]
         use std::collections::HashMap;
 
-        use capnp::serialize;
-        use capnp::message;
-
         use std::io::{Read, Write};
         use std::any::Any;
 
         use rustfbp::scheduler::Signal::*;
 
-        mod edge_capnp {
-                include!("edge_capnp.rs");
-        }
-        use edge_capnp::*;
         use rustfbp::edges;
         use std::marker::PhantomData;
 
