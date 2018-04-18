@@ -11,6 +11,7 @@
          get-in get-out get-in-array get-out-array
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
+         agent-no-input?
          make-agent)
 
 (require fractalide/modules/rkt/rkt-fbp/port)
@@ -177,6 +178,13 @@
          [new-array (hash-remove array selection)]
          [new-out (hash-set out port new-array)])
     (struct-copy agent agt [out-array-port new-out])))
+
+; Are there input port or array input port?
+(: agent-no-input? (-> agent Boolean))
+(define (agent-no-input? agt)
+  (let ([input (agent-inport agt)]
+        [input-array (agent-in-array-port agt)])
+    (and (= 2 (hash-count input)) (hash-empty? input-array)))) ; 2 because option and acc port
 
 ;;
 ;; Methods for building the agent

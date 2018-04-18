@@ -23,6 +23,8 @@
 (struct msg-dec-ip ([agt : String]))
 (struct msg-run-end ([agt : String]))
 (struct msg-display ())
+(struct msg-start ())
+(struct msg-start-agent ([agt : String]))
 (struct msg-quit ())
 (struct msg-stop ())
 (struct msg-run ([agt : String]))
@@ -38,6 +40,7 @@
                     msg-dec-ip
                     msg-run-end
                     msg-display
+                    msg-start msg-start-agent
                     msg-quit
                     msg-stop
                     msg-run))

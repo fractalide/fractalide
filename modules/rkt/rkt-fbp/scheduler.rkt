@@ -167,6 +167,16 @@
          (if (and stop? (= nbr-running 0))
              (void)
              (scheduler-loop new-state)))]
+      [(msg-start)
+       (define new-self (for/fold
+                            ([acc : scheduler self])
+                            ([(name agt) (scheduler-agents self)])
+                          (if (agent-no-input? (agent-state-state agt))
+                              (exec-agent acc name #t)
+                              acc)))
+       (scheduler-loop new-self)]
+      [(msg-start-agent agt)
+         (scheduler-loop (exec-agent self agt #t))]
       [(msg-stop)
        (if (= (scheduler-number-running self) 0)
            (void)
@@ -176,8 +186,8 @@
       [else (display "unknown msg : ") (displayln msg)
             (scheduler-loop self)])))
 
-(: exec-agent (-> scheduler String scheduler))
-(define (exec-agent state agt-name)
+(: exec-agent (->* (scheduler String) (Boolean) scheduler))
+(define (exec-agent state agt-name [force? #f])
   ; Look if the agent have to run (not running yet and at least one IP)
   (let* ([agents (scheduler-agents state)]
          [sched (current-thread)]
@@ -189,7 +199,7 @@
          [opt (agent-option agt)]
          [nbr-ips (agent-state-number-ips agt-state)]
          [nbr-running (scheduler-number-running state)])
-    (if (and (not is-running) (> nbr-ips 0))
+    (if (and (not is-running) (or force? (> nbr-ips 0)))
         ;true -> must run
         ; change is-running to true and exec
         (begin
