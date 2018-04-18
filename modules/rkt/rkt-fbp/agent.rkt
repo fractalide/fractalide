@@ -56,6 +56,12 @@
     (port-recv (cdr port))
     (port-recv port)))
 
+(: try-recv (-> (U (cons Integer port) port) Any))
+(define (try-recv port)
+  (if (cons? port)
+      (port-try-recv (cdr port))
+      (port-try-recv port)))
+
 (: send (-> (U False port) Any Void))
 (define (send port msg)
   (if port
