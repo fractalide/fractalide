@@ -8,28 +8,26 @@
 (define-type out-array-port
   (Immutable-HashTable String port))
 
+(define-type procedure
+  (-> (-> String port)
+      (-> String (U False port))
+      (-> String in-array-port)
+      (-> String out-array-port)
+      Any ; the option
+      Void))
+
 (struct agent([inport : (Immutable-HashTable String port)]
               [in-array-port : (Immutable-HashTable String in-array-port)]
               [outport : (Immutable-HashTable String (U False port))]
               [out-array-port : (Immutable-HashTable String out-array-port)]
-              [proc : (-> (-> String port)
-                          (-> String (U False port))
-                          (-> String in-array-port)
-                          (-> String out-array-port)
-                          Any ; the option
-                          Void)]
+              [proc : procedure]
               [option : Any]) #:transparent)
 
 (struct opt-agent([inport : (Listof String)]
                   [in-array : (Listof String)]
                   [outport : (Listof String)]
                   [out-array : (Listof String)]
-                  [proc : (-> (-> String port)
-                              (-> String (U False port))
-                              (-> String in-array-port)
-                              (-> String out-array-port)
-                              Any ; the option
-                              Void)]) #:transparent)
+                  [proc : procedure]) #:transparent)
 
 (struct port([channel : (Async-Channelof Any)]
              [name : String]

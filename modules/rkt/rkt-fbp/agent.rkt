@@ -11,7 +11,7 @@
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          agent-no-input?
-         make-agent)
+         make-agent define-agent)
 
 (require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/port)
@@ -204,3 +204,18 @@
   (let* ([input (agent-inport agt)]
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
+
+(: define-agent (->* (#:proc procedure)
+                     (#:input (Listof String)
+                      #:output (Listof String)
+                      #:input-array (Listof String)
+                      #:output-array (Listof String))
+                     opt-agent))
+(define (define-agent
+          #:proc proc
+          #:input [input '()]
+          #:output [output '()]
+          #:input-array [input-array '()]
+          #:output-array [output-array '()]
+          )
+  (opt-agent input input-array output output-array proc))
