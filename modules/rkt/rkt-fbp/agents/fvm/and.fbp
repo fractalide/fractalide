@@ -1,0 +1,18 @@
+#lang racket/base
+
+(provide g)
+
+(struct graph (agent edge virtual-in virtual-out iip) #:prefab)
+(struct g-agent (name type) #:prefab)
+(struct g-edge (out port-out selection-out in port-in selection-in) #:prefab)
+(struct g-virtual (virtual-agent virtual-port agent agent-port) #:prefab)
+(struct g-iip (msg in port-in selection-in) #:prefab)
+
+(define g (graph
+               (list (g-agent "nand" "agents/fvm/nand.rkt")
+                     (g-agent "clone" "agents/clone.rkt"))
+               (list (g-edge "clone" "out" "1" "nand" "x" #f)
+                     (g-edge "clone" "out" "2" "nand" "y" #f))
+               (list (g-virtual "" "in" "clone" "in"))
+               (list (g-virtual "" "res" "nand" "res"))
+               '()))
