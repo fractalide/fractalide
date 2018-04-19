@@ -11,7 +11,7 @@
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          agent-no-input?
-         make-agent)
+         make-agent define-agent)
 
 (require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/port)
@@ -82,7 +82,7 @@
 
 ; Connect-to-array
 ; It retrieve the Sender from an input port
-(: agent-connect-to-array (-> agent String String String Thread (values port agent)))
+(: agent-connect-to-array (-> agent String String String (Async-Channelof Msg) (values port agent)))
 (define (agent-connect-to-array self port selection name sched)
   (let* ([in (agent-in-array-port self)]
          [array (hash-ref in port)]
@@ -162,7 +162,7 @@
 ;; privates
 ;;
 
-(: build-inport (-> (Listof String) String Thread (Immutable-HashTable String port)))
+(: build-inport (-> (Listof String) String (Async-Channelof Msg) (Immutable-HashTable String port)))
 (define (build-inport inputs name sched)
   (for/hash: : (Immutable-HashTable String port) ([input inputs])
     (if (or (string=? input "acc") (string=? input "option"))
@@ -192,7 +192,7 @@
 ;; The method to create an agent
 ;;
 
-(: make-agent (-> opt-agent String Thread agent))
+(: make-agent (-> opt-agent String (Async-Channelof Msg) agent))
 (define (make-agent opt name sched)
   (define agt (agent
    (build-inport (cons "acc" (cons "option" (opt-agent-inport opt))) name sched)
@@ -204,3 +204,18 @@
   (let* ([input (agent-inport agt)]
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
+
+(: define-agent (->* (#:proc procedure)
+                     (#:input (Listof String)
+                      #:output (Listof String)
+                      #:input-array (Listof String)
+                      #:output-array (Listof String))
+                     opt-agent))
+(define (define-agent
+          #:proc proc
+          #:input [input '()]
+          #:output [output '()]
+          #:input-array [input-array '()]
+          #:output-array [output-array '()]
+          )
+  (opt-agent input input-array output output-array proc))

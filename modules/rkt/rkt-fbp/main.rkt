@@ -1,7 +1,6 @@
 #lang typed/racket/base
 
 (require fractalide/modules/rkt/rkt-fbp/scheduler)
-(require fractalide/modules/rkt/rkt-fbp/msg)
 (require fractalide/modules/rkt/rkt-fbp/def)
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
@@ -10,14 +9,17 @@
 (sched (msg-add-agent "displayer" "disp"))
 (sched (msg-add-agent "displayer" "disp1"))
 (sched (msg-add-agent "clone" "clone"))
-(sched (msg-add-agent "dummy" "dummy"))
-(sched (msg-add-agent "clone" "useless-clone-for-start"))
 (sched (msg-connect "add" "out" "disp" "in"))
 (sched (msg-connect-array-to-array "clone" "out" "1" "add" "in" "1"))
 (sched (msg-connect-array-to "clone" "out" "2" "disp1" "in"))
 (sched (msg-connect-to-array "disp1" "out" "add" "in" "2"))
+
+; No input test
+(sched (msg-add-agent "dummy" "dummy"))
+(sched (msg-add-agent "clone" "useless-clone-for-start"))
 (sched (msg-start))
 
+; Acc test
 (sched (msg-add-agent "accumulator" "acc"))
 (sched (msg-iip "acc" "acc" 0))
 (sched (msg-iip "acc" "in" 2))
@@ -26,6 +28,7 @@
 (sched (msg-iip "acc" "in" 2))
 (sched (msg-iip "acc" "in" 2))
 
+; Option test
 (sched (msg-iip "disp1" "option" "never"))
 (sched (msg-iip "disp1" "option" "see"))
 (sched (msg-iip "disp1" "option" "this"))
@@ -79,5 +82,4 @@
 (sched (msg-iip "disp1" "in" "a beautiful msg"))
 
 
-(sleep 0.5)
 (sched (msg-stop))
