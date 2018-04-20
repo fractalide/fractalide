@@ -7,8 +7,9 @@
         "default-expand-on-website": true,
         "render-features-on-website": true,
         "description": "High level description of PASCAL release.",
-        "features": {
-          "Hyperflow MVP": {
+        "features": [
+          {
+            "title": "Hyperflow MVP",
             "progress-bar": 30,
             "Objectives": [
               "Errors can be communicated back home to help developers solve user problems",
@@ -22,7 +23,8 @@
               "[Improved] Example: Racket classes used to structure UI"
             ]
           },
-          "Hyperflow Alpha": {
+          {
+            "title": "Hyperflow Alpha",
             "progress-bar": 0,
             "Objectives": [
               "Design Mode includes a basic debugger",
@@ -31,7 +33,8 @@
             ],
             "Work Done": []
           },
-          "Hyperflow Beta": {
+          {
+            "title": "Hyperflow Beta",
             "progress-bar": 0,
             "Objectives": [
               "Information flow debugger",
@@ -41,7 +44,8 @@
             ],
             "Work Done": []
           },
-          "Hyperflow Stable": {
+          {
+            "title": "Hyperflow Stable",
             "progress-bar": 0,
             "Objectives": [
               "Hyperflow has been upgraded to use typed/racket as much as possible",
@@ -50,14 +54,14 @@
             ],
             "Work Done": []
           }
-        }
+        ]
       },
       {
         "title": "FIBONACCI",
         "default-expand-on-website": false,
         "render-features-on-website": false,
         "description": "High level description of PASCAL release.",
-        "features": {}
+        "features": []
       }
     ]
   }
