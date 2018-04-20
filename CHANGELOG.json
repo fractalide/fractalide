@@ -1,60 +1,64 @@
 {
   "Fractalide-Releases": {
     "description": "High level description of all releases.",
-    "PASCAL": {
-      "default-expand-on-website": true,
-      "render-features-on-website": true,
-      "description": "High level description of PASCAL release.",
-      "features": {
-        "Hyperflow MVP": {
-          "progress-bar": 30,
-          "Objectives": [
-            "Errors can be communicated back home to help developers solve user problems",
-            "Design Mode displays a basic text editor",
-            "Graph Mode displays graphs as text only",
-            "Run Mode renders developed applications",
-            "Basic structure of Hyperflow in place"
-          ],
-          "Work Done": [
-            "[Fixed] Example: bug when changing between Run Mode and Graph Mode",
-            "[Improved] Example: Racket classes used to structure UI"
-          ]
-        },
-        "Hyperflow Alpha": {
-          "progress-bar": 0,
-          "Objectives": [
-            "Design Mode includes a basic debugger",
-            "Improved Graph editing in graph mode, possibly with rudimentary graphical movable components",
-            "Improved UX"
-          ],
-          "Work Done": []
-        },
-        "Hyperflow Beta": {
-          "progress-bar": 0,
-          "Objectives": [
-            "Information flow debugger",
-            "Graphical construction of the graph",
-            "Support for multiple platforms (Mac OS, Linux and Windows 10)",
-            "Improved UX"
-          ],
-          "Work Done": []
-        },
-        "Hyperflow Stable": {
-          "progress-bar": 0,
-          "Objectives": [
-            "Hyperflow has been upgraded to use typed/racket as much as possible",
-            "The scheduler and core nodes makes use of dependent types that formally specify the system for heightened security",
-            "Extensive documentation is written"
-          ],
-          "Work Done": []
+    "releases": [
+      {
+        "title": "PASCAL",
+        "default-expand-on-website": true,
+        "render-features-on-website": true,
+        "description": "High level description of PASCAL release.",
+        "features": {
+          "Hyperflow MVP": {
+            "progress-bar": 30,
+            "Objectives": [
+              "Errors can be communicated back home to help developers solve user problems",
+              "Design Mode displays a basic text editor",
+              "Graph Mode displays graphs as text only",
+              "Run Mode renders developed applications",
+              "Basic structure of Hyperflow in place"
+            ],
+            "Work Done": [
+              "[Fixed] Example: bug when changing between Run Mode and Graph Mode",
+              "[Improved] Example: Racket classes used to structure UI"
+            ]
+          },
+          "Hyperflow Alpha": {
+            "progress-bar": 0,
+            "Objectives": [
+              "Design Mode includes a basic debugger",
+              "Improved Graph editing in graph mode, possibly with rudimentary graphical movable components",
+              "Improved UX"
+            ],
+            "Work Done": []
+          },
+          "Hyperflow Beta": {
+            "progress-bar": 0,
+            "Objectives": [
+              "Information flow debugger",
+              "Graphical construction of the graph",
+              "Support for multiple platforms (Mac OS, Linux and Windows 10)",
+              "Improved UX"
+            ],
+            "Work Done": []
+          },
+          "Hyperflow Stable": {
+            "progress-bar": 0,
+            "Objectives": [
+              "Hyperflow has been upgraded to use typed/racket as much as possible",
+              "The scheduler and core nodes makes use of dependent types that formally specify the system for heightened security",
+              "Extensive documentation is written"
+            ],
+            "Work Done": []
+          }
         }
+      },
+      {
+        "title": "FIBONACCI",
+        "default-expand-on-website": false,
+        "render-features-on-website": false,
+        "description": "High level description of PASCAL release.",
+        "features": {}
       }
-    },
-    "FIBONACCI": {
-      "default-expand-on-website": false,
-      "render-features-on-website": false,
-      "description": "High level description of PASCAL release.",
-      "features": {}
-    }
+    ]
   }
 }
