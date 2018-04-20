@@ -4,12 +4,7 @@
 
 (require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/agent)
-
-(struct graph (agent edge virtual-in virtual-out iip) #:prefab)
-(struct g-agent (name type) #:prefab)
-(struct g-edge (out port-out selection-out in port-in selection-in) #:prefab)
-(struct g-virtual (virtual-agent virtual-port agent agent-port) #:prefab)
-(struct g-iip (msg in port-in selection-in) #:prefab)
+(require fractalide/modules/rkt/rkt-fbp/graph)
 
 ; (-> agent graph)
 (define (get-graph agent input output)

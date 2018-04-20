@@ -3,6 +3,7 @@
 (require fractalide/modules/rkt/rkt-fbp/scheduler)
 (require fractalide/modules/rkt/rkt-fbp/def)
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define sched (make-scheduler #f))
 (sched (msg-add-agent "fvm/load-graph" "load-graph"))
@@ -16,22 +17,14 @@
 (sched (msg-iip "nand" "x" #t))
 (sched (msg-iip "nand" "y" #t))
 
-(struct graph (agent edge virtual-in virtual-out iip) #:prefab)
-(struct g-agent (name type) #:prefab)
-(struct g-edge (out port-out selection-out in port-in selection-in) #:prefab)
-(struct g-virtual (virtual-agent virtual-port agent agent-port) #:prefab)
-(struct g-iip (msg in port-in selection-in) #:prefab)
-
-(sched (msg-iip "load-graph" "in" (graph (list (g-agent "nand" "agents/fvm/nand.rkt")
-                                               (g-agent "and" "agents/fvm/and.fbp")
-                                               (g-agent "disp" "agents/displayer.rkt"))
-                                         (list
-                                          (g-edge "and" "res" #f "disp" "in" #f)
-                                          (g-edge "nand" "res" #f "and" "in" #f)
-                                          (g-edge "disp" "out" #f "nand" "x" #f))
-                                         '()
-                                         '()
-                                         '())))
+(define a-graph (make-graph (list
+                             (add-agent "nand" "agents/fvm/nand.rkt")
+                             (add-agent "and" "agents/fvm/and.fbp")
+                             (add-agent "disp" "agents/displayer.rkt")
+                             (connect "and" "res" #f "disp" "in" #f)
+                             (connect "nand" "res" #f "and" "in" #f)
+                             (iip #t "and" "in" #f))))
+(sched (msg-iip "load-graph" "in" a-graph))
 
 (sched (msg-add-agent "fvm/scheduler" "sched"))
 (sched (msg-iip "sched" "acc" (make-scheduler #f)))

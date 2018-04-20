@@ -3,12 +3,8 @@
 (provide agt)
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/graph)
 
-(struct graph (agent edge virtual-in virtual-out iip) #:prefab)
-(struct g-agent (name type) #:prefab)
-(struct g-edge (out port-out selection-out in port-in selection-in) #:prefab)
-(struct g-virtual (virtual-agent virtual-port agent agent-port) #:prefab)
-(struct g-iip (msg in port-in selection-in) #:prefab)
 
 (define agt (define-agent
               #:input '("in")
