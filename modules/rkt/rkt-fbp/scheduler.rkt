@@ -10,7 +10,6 @@
 (require fractalide/modules/rkt/rkt-fbp/agent)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
-(require fractalide/modules/rkt/rkt-fbp/loader)
 
 ; TODO : make sender that cannot read the channel
 ; TODO : make an helper function to change a agent-state, will be more clear
@@ -24,7 +23,7 @@
   (match msg
       [(msg-add-agent type name)
        (let* ([path (string-append "./agents/" type ".rkt")]
-              [agt (load-agent path)]
+              [agt (dynamic-require path 'agt)]
               [agt (make-agent agt name (scheduler-mail-box self))]
               [old-agent (scheduler-agents self)]
               [agt-state (agent-state agt 0 #f)]

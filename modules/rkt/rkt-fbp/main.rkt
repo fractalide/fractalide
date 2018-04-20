@@ -33,4 +33,10 @@
                                          '()
                                          '())))
 
+(sched (msg-add-agent "fvm/scheduler" "sched"))
+(sched (msg-iip "sched" "acc" (make-scheduler #f)))
+(sched (msg-iip "sched" "in" (msg-add-agent "displayer" "disp")))
+(sched (msg-iip "sched" "in" (msg-iip "disp" "in" "hello from a new scheduler!")))
+(sched (msg-iip "sched" "in" (msg-stop)))
+
 (sched (msg-stop))
