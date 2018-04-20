@@ -1,80 +1,34 @@
-#lang typed/racket/base
+#lang racket/base
 
-(provide (all-defined-out))
+(provide (all-defined-out)
+         (struct-out agent))
 
-(define-type in-array-port
-  (Immutable-HashTable String (cons Integer port)))
+(struct agent (inport in-array-port outport out-array-port proc option))
 
-(define-type out-array-port
-  (Immutable-HashTable String port))
+(struct opt-agent (inport in-array outport out-array proc))
 
-(define-type procedure
-  (-> (-> String port)
-      (-> String (U False port))
-      (-> String in-array-port)
-      (-> String out-array-port)
-      Any ; the option
-      Void))
-
-(struct agent([inport : (Immutable-HashTable String port)]
-              [in-array-port : (Immutable-HashTable String in-array-port)]
-              [outport : (Immutable-HashTable String (U False port))]
-              [out-array-port : (Immutable-HashTable String out-array-port)]
-              [proc : procedure]
-              [option : Any]) #:transparent)
-
-(struct opt-agent([inport : (Listof String)]
-                  [in-array : (Listof String)]
-                  [outport : (Listof String)]
-                  [out-array : (Listof String)]
-                  [proc : procedure]) #:transparent)
-
-(struct port([channel : (Async-Channelof Any)]
-             [name : String]
-             [thd : (Async-Channelof Msg)]
-             [sync? : Boolean]))
+(struct port (channel name thd sync?))
 
 ; All sched messages
 
-(struct msg-set-scheduler-thread ([t : Thread]))
-(struct msg-add-agent ([type : String] [name : String]))
-(struct msg-remove-agent ([name : String]))
-(struct msg-connect ([out : String][port-out : String][in : String][port-in : String]))
-(struct msg-connect-array-to ([out : String][port-out : String][selection : String]
-                                            [in : String][port-in : String]))
-(struct msg-connect-to-array ([out : String][port-out : String]
-                                            [in : String][port-in : String][selection : String]))
-(struct msg-connect-array-to-array ([out : String][port-out : String][selection-out : String]
-                                            [in : String][port-in : String][selection-in : String]))
-(struct msg-disconnect ([out : String][port-out : String]))
-(struct msg-disconnect-array-to ([out : String][port-out : String][selection : String]))
-(struct msg-disconnect-to-array ([out : String][port-out : String]
-                                 [in : String][port-in : String][selection : String]))
-(struct msg-disconnect-array-to-array ([out : String][port-out : String][selection-out : String]
-                                                  [in : String][port-in : String][selection-in : String]))
-(struct msg-iip ([agt : String][port : String][iip : Any]))
-(struct msg-inc-ip ([agt : String]))
-(struct msg-dec-ip ([agt : String]))
-(struct msg-run-end ([agt : String]))
+(struct msg-set-scheduler-thread (t))
+(struct msg-add-agent (type name))
+(struct msg-remove-agent (name))
+(struct msg-connect (out port-out in port-in))
+(struct msg-connect-array-to (out port-out selection in port-in))
+(struct msg-connect-to-array (out port-out in port-in selection))
+(struct msg-connect-array-to-array (out port-out selection-out in port-in selection-in))
+(struct msg-disconnect (out port-out))
+(struct msg-disconnect-array-to (out port-out selection))
+(struct msg-disconnect-to-array (out port-out in port-in selection))
+(struct msg-disconnect-array-to-array (out port-out selection-out in port-in selection-in))
+(struct msg-iip (agt port iip))
+(struct msg-inc-ip (agt))
+(struct msg-dec-ip (agt))
+(struct msg-run-end (agt))
 (struct msg-display ())
 (struct msg-start ())
-(struct msg-start-agent ([agt : String]))
-(struct msg-update-agent([agt : String][proc : (-> agent agent)]))
+(struct msg-start-agent (agt))
+(struct msg-update-agent(agt proc))
 (struct msg-stop ())
-(struct msg-run ([agt : String]))
-(define-type Msg (U msg-set-scheduler-thread
-                    msg-add-agent
-                    msg-remove-agent
-                    msg-connect
-                    msg-connect-array-to msg-connect-to-array msg-connect-array-to-array
-                    msg-disconnect
-                    msg-disconnect-array-to msg-disconnect-to-array msg-disconnect-array-to-array
-                    msg-iip
-                    msg-inc-ip
-                    msg-dec-ip
-                    msg-run-end
-                    msg-display
-                    msg-start msg-start-agent
-                    msg-update-agent
-                    msg-stop
-                    msg-run))
+(struct msg-run (agt))
