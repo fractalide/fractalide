@@ -1,85 +1,30 @@
-#lang typed/racket/base
+#lang racket/base
 
 (require fractalide/modules/rkt/rkt-fbp/scheduler)
 (require fractalide/modules/rkt/rkt-fbp/def)
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define sched (make-scheduler #f))
-(sched (msg-add-agent "adder" "add"))
-(sched (msg-add-agent "displayer" "disp"))
-(sched (msg-add-agent "displayer" "disp1"))
-(sched (msg-add-agent "clone" "clone"))
-(sched (msg-connect "add" "out" "disp" "in"))
-(sched (msg-connect-array-to-array "clone" "out" "1" "add" "in" "1"))
-(sched (msg-connect-array-to "clone" "out" "2" "disp1" "in"))
-(sched (msg-connect-to-array "disp1" "out" "add" "in" "2"))
+(sched (msg-add-agent "sched" "agents/fvm/scheduler.rkt"))
+(sched (msg-add-agent "load-graph" "agents/fvm/load-graph.rkt"))
+(sched (msg-add-agent "get-graph" "agents/fvm/get-graph.rkt"))
+(sched (msg-add-agent "fvm" "agents/fvm/fvm.rkt"))
+(sched (msg-add-agent "halt" "agents/halter.rkt"))
+(sched (msg-connect "fvm" "sched" "sched" "in"))
+(sched (msg-connect "fvm" "flat" "load-graph" "in"))
+(sched (msg-connect "fvm" "halt" "halt" "in"))
+(sched (msg-connect "load-graph" "out" "fvm" "flat"))
+(sched (msg-connect "load-graph" "ask-graph" "get-graph" "in"))
+(sched (msg-connect "get-graph" "out" "load-graph" "ask-graph"))
 
-; No input test
-(sched (msg-add-agent "dummy" "dummy"))
-(sched (msg-add-agent "clone" "useless-clone-for-start"))
-(sched (msg-start))
+(sched (msg-iip "sched" "acc" (make-scheduler #f)))
+(sched (msg-iip "halt" "in" #f))
 
-; Acc test
-(sched (msg-add-agent "accumulator" "acc"))
-(sched (msg-iip "acc" "acc" 0))
-(sched (msg-iip "acc" "in" 2))
-(sched (msg-iip "acc" "in" 2))
-(sched (msg-iip "acc" "in" 2))
-(sched (msg-iip "acc" "in" 2))
-(sched (msg-iip "acc" "in" 2))
+(define path (vector-ref (current-command-line-arguments) 0))
+(define a-graph (make-graph (list (add-agent "main" path))))
 
-; Option test
-(sched (msg-iip "disp1" "option" "never"))
-(sched (msg-iip "disp1" "option" "see"))
-(sched (msg-iip "disp1" "option" "this"))
-(sleep 0.5)
-(sched (msg-iip "disp1" "option" "disp1 : "))
-(sched (msg-iip "disp" "option" "Disp received a msg : "))
-
-; everything connected
-(sched (msg-iip "clone" "in" 5))
-
-(sleep 1)
-(displayln "-- add must out 5")
-(sleep 1)
-; Test disconnect : Add must out 5
-(sched (msg-disconnect-to-array "disp1" "out" "add" "in" "2"))
-(sched (msg-iip "clone" "in" 5))
-
-(sleep 1)
-(displayln "-- no more add")
-(sleep 1)
-; No more add
-(sched (msg-disconnect-array-to-array "clone" "out" "1" "add" "in" "1"))
-(sched (msg-iip "clone" "in" 5))
-
-
-(sleep 1)
-(displayln "-- no more disp1 msg")
-(sleep 1)
-; No more disp1 msg
-(sched (msg-disconnect-array-to "clone" "out" "2"))
-(sched (msg-iip "clone" "in" 5))
-
-(sleep 1)
-(displayln "-- disp1 before change")
-(sleep 1)
-(sched (msg-iip "disp1" "in" "a beautiful msg"))
-(sleep 1)
-(sched (msg-update-agent "disp1"
-                         (lambda (agt)
-                           (struct-copy agent agt [proc
-                                                   (lambda ([i : (-> String port)]
-                                                            [o : (-> String (U False port))]
-                                                            [ia : (-> String in-array-port)]
-                                                            [io : (-> String out-array-port)]
-                                                            [opt : Any])
-                                                     (recv (i "in"))
-                                                     (displayln "After change!"))]))))
-(sleep 1)
-(displayln "-- disp1 after change")
-(sleep 1)
-(sched (msg-iip "disp1" "in" "a beautiful msg"))
-
+(sched (msg-iip "fvm" "in" (vector "add" a-graph)))
+(sched (msg-iip "fvm" "in" "stop"))
 
 (sched (msg-stop))

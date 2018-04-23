@@ -1,10 +1,8 @@
-#lang typed/racket/base
+#lang racket/base
 
 ; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
 
-(provide (struct-out agent)
-         (struct-out opt-agent)
-         recv
+(provide recv try-recv
          send
          recv-option
          get-in get-out get-in-array get-out-array
@@ -21,19 +19,19 @@
 ;; Methods for using the agent
 ;;
 
-(: recv (-> (U (cons Integer port) port) Any))
+; (-> (U (cons Integer port) port) Any)
 (define (recv port)
   (if (cons? port)
     (port-recv (cdr port))
     (port-recv port)))
 
-(: try-recv (-> (U (cons Integer port) port) Any))
+; (-> (U (cons Integer port) port) Any)
 (define (try-recv port)
   (if (cons? port)
       (port-try-recv (cdr port))
       (port-try-recv port)))
 
-(: send (-> (U False port) Any Void))
+; (-> (U False port) Any Void)
 (define (send port msg)
   (if port
       (port-send port msg)
@@ -43,7 +41,7 @@
 ;; Methods for building the input arguments of the procedure
 ;;
 
-(: recv-option (-> agent agent))
+; (-> agent agent)
 (define (recv-option agt)
   (let* ([opt (hash-ref (agent-inport agt) "option")]
          [msg (port-try-recv opt)])
@@ -51,19 +49,19 @@
         (recv-option (struct-copy agent agt [option msg]))
         agt)))
 
-(: get-in (-> agent String port))
+; (-> agent String port)
 (define (get-in agent port)
   (hash-ref (agent-inport agent) port))
 
-(: get-out (-> agent String (U False port)))
+; (-> agent String (U False port))
 (define (get-out agent port)
   (hash-ref (agent-outport agent) port))
 
-(: get-in-array (-> agent String in-array-port))
+; (-> agent String in-array-port)
 (define (get-in-array agent port)
   (hash-ref (agent-in-array-port agent) port))
 
-(: get-out-array (-> agent String out-array-port))
+; (-> agent String out-array-port)
 (define (get-out-array agent port)
   (hash-ref (agent-out-array-port agent) port))
 
@@ -74,7 +72,7 @@
 ;;
 
 ; Connect
-(: agent-connect (-> agent String port agent))
+; (-> agent String port agent)
 (define (agent-connect self port sender)
   (let* ([out (agent-outport self)]
         [new-port (hash-set out port sender)])
@@ -82,7 +80,7 @@
 
 ; Connect-to-array
 ; It retrieve the Sender from an input port
-(: agent-connect-to-array (-> agent String String String (Async-Channelof Msg) (values port agent)))
+; (-> agent String String String (Async-Channelof Msg) (values port agent))
 (define (agent-connect-to-array self port selection name sched)
   (let* ([in (agent-in-array-port self)]
          [array (hash-ref in port)]
@@ -105,7 +103,7 @@
 
 ; Connect-array-to
 ; It set a sender to an array output port
-(: agent-connect-array-to (-> agent String String port agent))
+; (-> agent String String port agent)
 (define (agent-connect-array-to self port selection sender)
   (let* ([out (agent-out-array-port self)]
          [array (hash-ref out port)]
@@ -116,14 +114,14 @@
   )
 
 ; disconnect
-(: agent-disconnect (-> agent String agent))
+; (-> agent String agent)
 (define (agent-disconnect agt port)
   (let* ([out (agent-outport agt)]
          [new-out (hash-set out port #f)])
     (struct-copy agent agt [outport new-out])))
 
 ; disconnect-to-array
-(: agent-disconnect-to-array (-> agent String String agent))
+; (-> agent String String agent)
 (define (agent-disconnect-to-array agt port selection)
   (let* ([in (agent-in-array-port agt)]
          [array (hash-ref in port)]
@@ -142,7 +140,7 @@
 
 
 ; disconnect-array-to
-(: agent-disconnect-array-to (-> agent String String agent))
+; (-> agent String String agent)
 (define (agent-disconnect-array-to agt port selection)
   (let* ([out (agent-out-array-port agt)]
          [array (hash-ref out port)]
@@ -151,7 +149,7 @@
     (struct-copy agent agt [out-array-port new-out])))
 
 ; Are there input port or array input port?
-(: agent-no-input? (-> agent Boolean))
+; (-> agent Boolean)
 (define (agent-no-input? agt)
   (let ([input (agent-inport agt)]
         [input-array (agent-in-array-port agt)])
@@ -162,37 +160,37 @@
 ;; privates
 ;;
 
-(: build-inport (-> (Listof String) String (Async-Channelof Msg) (Immutable-HashTable String port)))
+; (-> (Listof String) String (Async-Channelof Msg) (Immutable-HashTable String port))
 (define (build-inport inputs name sched)
-  (for/hash: : (Immutable-HashTable String port) ([input inputs])
+  (for/hash ([input inputs])
     (if (or (string=? input "acc") (string=? input "option"))
         ; It's an acc or option port
         (values input (make-port 30 name sched #f))
         ; It's a normal port
         (values input (make-port 30 name sched #t)))))
 
-(: build-outport (-> (Listof String) (Immutable-HashTable String False)))
+; (-> (Listof String) (Immutable-HashTable String False))
 (define (build-outport outputs)
-  (for/hash: : (Immutable-HashTable String False) ([output outputs])
+  (for/hash ([output outputs])
     (values output #f)))
 
-(: build-in-array-port (-> (Listof String) (Immutable-HashTable String in-array-port)))
+; (-> (Listof String) (Immutable-HashTable String in-array-port))
 (define (build-in-array-port inputs)
-  (for/hash: : (Immutable-HashTable String in-array-port) ([input inputs])
-    (let ([empty : in-array-port (make-immutable-hash)])
+  (for/hash ([input inputs])
+    (let ([empty (make-immutable-hash)])
       (values input empty))))
 
-(: build-out-array-port (-> (Listof String) (Immutable-HashTable String out-array-port)))
+; (-> (Listof String) (Immutable-HashTable String out-array-port))
 (define (build-out-array-port inputs)
-  (for/hash: : (Immutable-HashTable String out-array-port) ([input inputs])
-    (let ([empty : out-array-port (make-immutable-hash)])
+  (for/hash ([input inputs])
+    (let ([empty (make-immutable-hash)])
       (values input empty))))
 
 ;;
 ;; The method to create an agent
 ;;
 
-(: make-agent (-> opt-agent String (Async-Channelof Msg) agent))
+; (-> opt-agent String (Async-Channelof Msg) agent)
 (define (make-agent opt name sched)
   (define agt (agent
    (build-inport (cons "acc" (cons "option" (opt-agent-inport opt))) name sched)
@@ -205,12 +203,12 @@
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
 
-(: define-agent (->* (#:proc procedure)
-                     (#:input (Listof String)
-                      #:output (Listof String)
-                      #:input-array (Listof String)
-                      #:output-array (Listof String))
-                     opt-agent))
+; (->* (#:proc procedure)
+;      (#:input (Listof String)
+;       #:output (Listof String)
+;       #:input-array (Listof String)
+;       #:output-array (Listof String))
+;      opt-agent)
 (define (define-agent
           #:proc proc
           #:input [input '()]

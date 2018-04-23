@@ -1,9 +1,9 @@
-#lang typed/racket/base
+#lang racket/base
 
 ; (provide make-scheduler (struct-out scheduler))
 (provide make-scheduler (struct-out scheduler))
 
-(require typed/racket/async-channel)
+(require racket/async-channel)
 
 (require racket/match)
 (require racket/function)
@@ -11,27 +11,19 @@
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
 
-(require/typed fractalide/modules/rkt/rkt-fbp/loader
-  [load-agent (-> String opt-agent)])
-
 ; TODO : make sender that cannot read the channel
 ; TODO : make an helper function to change a agent-state, will be more clear
 
-(struct agent-state([state : agent]
-                    [number-ips : Integer] ; Check for Integer -> Natural
-                    [is-running : Boolean]) #:transparent)
+(struct agent-state (state number-ips is-running))
 
-(struct scheduler([agents : (Immutable-HashTable String agent-state)]
-                  [number-running : Integer]
-                  [will-stop : Boolean]
-                  [mail-box : (Async-Channelof Msg)]) #:transparent)
+(struct scheduler (agents number-running will-stop mail-box))
 
-(: scheduler-match (-> scheduler Msg scheduler))
+; (-> scheduler Msg scheduler)
 (define (scheduler-match self msg)
   (match msg
-      [(msg-add-agent type name)
-       (let* ([path (string-append "./agents/" type ".rkt")]
-              [agt (load-agent path)]
+      [(msg-add-agent name type)
+       (let* ([path type]
+              [agt (dynamic-require path 'agt)]
               [agt (make-agent agt name (scheduler-mail-box self))]
               [old-agent (scheduler-agents self)]
               [agt-state (agent-state agt 0 #f)]
@@ -171,7 +163,7 @@
          new-state)]
       [(msg-start)
        (define new-self (for/fold
-                            ([acc : scheduler self])
+                            ([acc self])
                             ([(name agt) (scheduler-agents self)])
                           (if (agent-no-input? (agent-state-state agt))
                               (exec-agent acc name #t)
@@ -193,7 +185,7 @@
       [else (display "unknown msg : ") (displayln msg)
             self]))
 
-(: scheduler-loop (-> scheduler Void))
+; (-> scheduler Void)
 (define (scheduler-loop self)
   (let ([msg (async-channel-try-get (scheduler-mail-box self))])
     (cond
@@ -204,7 +196,7 @@
       [else
        (scheduler-loop (scheduler-match self (async-channel-get (scheduler-mail-box self))))])))
 
-(: exec-agent (->* (scheduler String) (Boolean) scheduler))
+; (->* (scheduler String) (Boolean) scheduler)
 (define (exec-agent state agt-name [force? #f])
   ; Look if the agent have to run (not running yet and at least one IP)
   (let* ([agents (scheduler-agents state)]
@@ -238,9 +230,9 @@
         ;false -> do nothing
         state)))
 
-(: make-scheduler (-> False (-> Msg Void)))
+; (-> False (-> Msg Void))
 (define (make-scheduler opt)
-  (let* ([mail-box (ann (make-async-channel) (Async-Channelof Msg))]
+  (let* ([mail-box (make-async-channel)]
          [state (scheduler #hash() 0 #f mail-box)]
          [t (thread (lambda() (scheduler-loop state)))])
     (lambda (msg)
