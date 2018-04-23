@@ -2,7 +2,7 @@
 
 ; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
 
-(provide recv
+(provide recv try-recv
          send
          recv-option
          get-in get-out get-in-array get-out-array

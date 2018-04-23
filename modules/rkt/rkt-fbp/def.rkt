@@ -12,7 +12,7 @@
 ; All sched messages
 
 (struct msg-set-scheduler-thread (t))
-(struct msg-add-agent (type name))
+(struct msg-add-agent (name type))
 (struct msg-remove-agent (name))
 (struct msg-connect (out port-out in port-in))
 (struct msg-connect-array-to (out port-out selection in port-in))
