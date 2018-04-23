@@ -22,7 +22,7 @@
 (define (scheduler-match self msg)
   (match msg
       [(msg-add-agent name type)
-       (let* ([path (string-append "./agents/" type ".rkt")]
+       (let* ([path type]
               [agt (dynamic-require path 'agt)]
               [agt (make-agent agt name (scheduler-mail-box self))]
               [old-agent (scheduler-agents self)]

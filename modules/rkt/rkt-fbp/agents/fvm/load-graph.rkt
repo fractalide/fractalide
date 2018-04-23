@@ -84,4 +84,4 @@
               #:proc (lambda (input output input-array output-array option)
                        (let* ([msg (recv (input "in"))])
                          (define flat (flat-graph msg input output))
-                         (displayln flat)))))
+                         (send (output "out") flat)))))
