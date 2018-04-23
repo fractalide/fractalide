@@ -19,7 +19,7 @@
 
 (define a-graph (make-graph (list
                              (add-agent "nand" "agents/fvm/nand.rkt")
-                             (add-agent "and" "agents/fvm/and.fbp")
+                             (add-agent "and" "agents/fvm/and.rkt")
                              (add-agent "disp" "agents/displayer.rkt")
                              (connect "and" "res" #f "disp" "in" #f)
                              (connect "nand" "res" #f "and" "in" #f)

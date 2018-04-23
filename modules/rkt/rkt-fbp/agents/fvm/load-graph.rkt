@@ -58,10 +58,9 @@
   (define (rec-flat-graph not-visited virtual-in virtual-out actual-graph)
     (if (empty? not-visited)
         (resolve-virtual virtual-in virtual-out actual-graph)
-        (let ([next (car not-visited)])
-          (if (string=? ".rkt" (substring (g-agent-type next) (- (string-length (g-agent-type next)) 4)))
-              ; It's a normal agent, do nothing and go for the next
-              (rec-flat-graph (cdr not-visited) virtual-in virtual-out (struct-copy graph actual-graph [agent (cons next (graph-agent actual-graph))]))
+        (let* ([next (car not-visited)]
+              [is-subnet? (dynamic-require (g-agent-type next) 'g (lambda () #f))])
+          (if is-subnet?
               ; It's a sub-graph. Get the new graph, add the nodes in not-visited, save the virtual port and save the rest of the graph
               (let* ([new-graph (get-graph next input output)]
                      ; Add the agents in the not-visited list
@@ -74,7 +73,9 @@
                      ; add the edges
                      [new-edge (append (graph-edge new-graph) (graph-edge actual-graph))])
                 (rec-flat-graph new-not-visited new-virtual-in new-virtual-out
-                            (struct-copy graph actual-graph [iip new-iip][edge new-edge])))))))
+                                (struct-copy graph actual-graph [iip new-iip][edge new-edge])))
+              ; It's a normal agent, do nothing and go for the next
+              (rec-flat-graph (cdr not-visited) virtual-in virtual-out (struct-copy graph actual-graph [agent (cons next (graph-agent actual-graph))]))))))
   (rec-flat-graph (graph-agent actual-graph) '() '() (struct-copy graph actual-graph [agent '()])))
 
 (define agt (define-agent
