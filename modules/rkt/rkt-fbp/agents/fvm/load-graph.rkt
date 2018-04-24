@@ -59,7 +59,8 @@
     (if (empty? not-visited)
         (resolve-virtual virtual-in virtual-out actual-graph)
         (let* ([next (car not-visited)]
-              [is-subnet? (dynamic-require (g-agent-type next) 'g (lambda () #f))])
+               [next (begin (send (output "ask-path") next) (recv (input "ask-path")))]
+               [is-subnet? (dynamic-require (g-agent-type next) 'g (lambda () #f))])
           (if is-subnet?
               ; It's a sub-graph. Get the new graph, add the nodes in not-visited, save the virtual port and save the rest of the graph
               (let* ([new-graph (get-graph next input output)]
@@ -79,8 +80,8 @@
   (rec-flat-graph (graph-agent actual-graph) '() '() (struct-copy graph actual-graph [agent '()])))
 
 (define agt (define-agent
-              #:input '("in" "ask-graph")
-              #:output '("out" "ask-graph")
+              #:input '("in" "ask-path" "ask-graph")
+              #:output '("out" "ask-path" "ask-graph")
               #:proc (lambda (input output input-array output-array option)
                        (let* ([msg (recv (input "in"))])
                          (define flat (flat-graph msg input output))

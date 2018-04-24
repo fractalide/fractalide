@@ -5,17 +5,17 @@
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define g (make-graph (list
-                       (add-agent "frame" "agents/gui/frame.rkt")
+                       (add-agent "frame" "gui/frame")
                        ; HP
-                       (add-agent "hp" "agents/gui/horizontal-panel.rkt")
+                       (add-agent "hp" "gui/horizontal-panel")
                        (connect "hp" "out" #f "frame" "in" #f)
                        ; Msg, button, ...
-                       (add-agent "button" "agents/gui/button.rkt")
-                       (add-agent "msg" "agents/gui/message.rkt")
-                       (add-agent "msg2" "agents/gui/message.rkt")
-                       (add-agent "acc" "agents/test/accumulator.rkt")
+                       (add-agent "button" "gui/button")
+                       (add-agent "msg" "gui/message")
+                       (add-agent "msg2" "gui/message")
+                       (add-agent "acc" "test/accumulator")
                        ; For halting
-                       (add-agent "halt" "agents/halter.rkt")
+                       (add-agent "halt" "halter")
                        (connect "frame" "halt" #f "halt" "in" #f)
                        (iip "halt" "in" #f)
                        ; Connect everything
@@ -29,8 +29,8 @@
                        (iip "button" "in" (vector "set-label" "Click me!!"))
                        (iip "acc" "acc" 0)
                        ; Quit button
-                       (add-agent "but-quit" "agents/gui/button.rkt")
-                       (add-agent "ip-to-close" "agents/test/to-close.rkt")
+                       (add-agent "but-quit" "gui/button")
+                       (add-agent "ip-to-close" "test/to-close")
                        (connect "but-quit" "out" "button-clicked" "ip-to-close" "in" #f)
                        (connect "but-quit" "out" #f "frame" "in" #f)
                        (connect "ip-to-close" "out" #f "frame" "in" #f)
