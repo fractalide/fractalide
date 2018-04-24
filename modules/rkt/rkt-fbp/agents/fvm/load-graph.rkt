@@ -12,46 +12,32 @@
   (recv (input "ask-graph")))
 
 ; (-> (Listof virtual) (Listof virtual) graph graph)
-; TODO : one pass over the edges for optimization
 (define (resolve-virtual virtual-in virtual-out actual-graph)
   ; virtual-in resolve
-  (define new-edge
-    (if (empty? virtual-in)
-        (graph-edge actual-graph)
-        (for*/fold
-            ([acc '()])
-            ([edg (graph-edge actual-graph)]
-             [virt virtual-in])
-          (if (and (string=? (g-edge-in edg) (g-virtual-virtual-agent virt))
-                   (string=? (g-edge-port-in edg) (g-virtual-virtual-port virt)))
-              (cons (struct-copy g-edge edg [in (g-virtual-agent virt)][port-in (g-virtual-agent-port virt)]) acc)
-              (cons edg acc)))))
-  ; virtual out-resolve
   (define res-edge
-    (if (empty? virtual-out)
-        new-edge
-        (for*/fold
-            ([acc '()])
-            ([edg new-edge]
-             [virt virtual-out])
-          (if (and (string=? (g-edge-out edg) (g-virtual-virtual-agent virt))
-                   (string=? (g-edge-port-out edg) (g-virtual-virtual-port virt)))
-              (cons (struct-copy g-edge edg [out (g-virtual-agent virt)][port-out (g-virtual-agent-port virt)]) acc)
-              (cons edg acc)))))
+    (for/list ([edg (graph-edge actual-graph)])
+      (define new-edge (for/fold ([acc edg])
+                                 ([virt virtual-in])
+                         (if (and (string=? (g-edge-in edg) (g-virtual-virtual-agent virt))
+                                  (string=? (g-edge-port-in edg) (g-virtual-virtual-port virt)))
+                             (struct-copy g-edge acc [in (g-virtual-agent virt)][port-in (g-virtual-agent-port virt)])
+                             acc)))
+      (for/fold ([acc new-edge])
+                ([virt virtual-out])
+        (if (and (string=? (g-edge-out edg) (g-virtual-virtual-agent virt))
+                 (string=? (g-edge-port-out edg) (g-virtual-virtual-port virt)))
+            (struct-copy g-edge acc [out (g-virtual-agent virt)][port-out (g-virtual-agent-port virt)])
+            acc))))
   ; Iip resolve
   (define res-iip
-    (if (empty? virtual-in)
-        (graph-iip actual-graph)
-        (for*/fold
-            ([acc '()])
-            ([iip (graph-iip actual-graph)]
-             [virt virtual-in])
-          (if (and (string=? (g-iip-in iip) (g-virtual-virtual-agent virt))
-                   (string=? (g-iip-port-in iip) (g-virtual-virtual-port virt)))
-              (cons (struct-copy g-iip iip [in (g-virtual-agent virt)] [port-in (g-virtual-agent-port virt)]) acc)
-              (cons iip acc)))))
-  (struct-copy graph actual-graph [edge res-edge] [iip res-iip])
-  )
+    (for/list ([iip (graph-iip actual-graph)])
+      (for*/fold ([acc iip])
+                 ([virt virtual-in])
+        (if (and (string=? (g-iip-in iip) (g-virtual-virtual-agent virt))
+                 (string=? (g-iip-port-in iip) (g-virtual-virtual-port virt)))
+            (struct-copy g-iip acc [in (g-virtual-agent virt)] [port-in (g-virtual-agent-port virt)])
+            acc))))
+  (struct-copy graph actual-graph [edge res-edge] [iip res-iip]))
 
 ; (- (Listof agent) graph String graph)
 (define (flat-graph actual-graph input output)
