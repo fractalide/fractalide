@@ -10,7 +10,6 @@
               #:proc (lambda (input output input-array output-array option)
                        (let* ([msg (recv (input "in"))]
                               [acc (recv (input "acc"))]
-                              [sum (+ msg acc)])
-                         (displayln sum)
-                         (send (output "out") sum)
+                              [sum (+ 1 acc)])
+                         (send (output "out") (vector "set-label" (string-append "button clicked : " (number->string sum))))
                          (send (output "acc") sum)))))
