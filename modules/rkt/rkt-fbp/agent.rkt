@@ -4,7 +4,7 @@
 
 (provide recv try-recv
          send
-         recv-option
+         recv-option send-action
          get-in get-out get-in-array get-out-array
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
@@ -59,11 +59,20 @@
 
 ; (-> agent String in-array-port)
 (define (get-in-array agent port)
-  (hash-ref (agent-in-array-port agent) port))
+  (hash-ref (agent-in-array-port agent) port #f))
 
 ; (-> agent String out-array-port)
 (define (get-out-array agent port)
-  (hash-ref (agent-out-array-port agent) port))
+  (hash-ref (agent-out-array-port agent) port #f))
+
+(define (send-action output output-array msg)
+  (cond
+     [(vector? msg)
+      (if (hash-has-key? (output-array "out") (vector-ref msg 0))
+          (send (hash-ref (output-array "out") (vector-ref msg 0)) msg)
+          (send (output "out") msg))]
+     [else
+      (send (output "out") msg)]))
 
 
 
