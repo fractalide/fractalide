@@ -6,9 +6,12 @@
 
 (define g (make-graph (list
                        (add-agent "frame" "gui/frame")
+                       ; VP
+                       (add-agent "vp" "gui/vertical-panel")
+                       (connect "vp" "out" #f "frame" "in" #f)
                        ; HP
                        (add-agent "hp" "gui/horizontal-panel")
-                       (connect "hp" "out" #f "frame" "in" #f)
+                       (connect "hp" "out" #f "vp" "place" 2)
                        ; Msg, button, ...
                        (add-agent "button" "gui/button")
                        (add-agent "msg" "gui/message")
@@ -32,7 +35,7 @@
                        (add-agent "but-quit" "gui/button")
                        (add-agent "ip-to-close" "test/to-close")
                        (connect "but-quit" "out" "button-clicked" "ip-to-close" "in" #f)
-                       (connect "but-quit" "out" #f "frame" "in" #f)
+                       (connect "but-quit" "out" #f "vp" "place" 1)
                        (connect "ip-to-close" "out" #f "frame" "in" #f)
                        (iip "but-quit" "in" (vector "set-label" "Close"))
                        )))

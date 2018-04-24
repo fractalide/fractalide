@@ -34,6 +34,8 @@
                        (if msg-in
                            ; A message in the input port
                            (match msg-in
+                             [(vector "set-orientation" orientation)
+                              (class-send hp set-orientation orientation)]
                              [else (send-action output output-array msg-in)])
                            ; At least a message in the input array port
                            (for ([(place containee) (input-array "place")])
