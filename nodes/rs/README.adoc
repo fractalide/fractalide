@@ -100,7 +100,7 @@ This is the output of the above ``agent``'s compilation:
 
 === The `agent!` Rust macro
 
-This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `${maths_boolean_nand}` `agent` seen earlier.
+This is the heart of `Fractalide`. Everything revolves around this `API`. The below is an implementation of the `&#x24;{maths_boolean_nand}` `agent` seen earlier.
 
 [source, rust]
 ----
