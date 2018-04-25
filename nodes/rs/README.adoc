@@ -67,7 +67,7 @@ The `agent` function in the `default.nix` requires you make decisions about thre
 * What `mods` from https://crates.io[crates.io] are needed?
 * What `osdeps` or `operating system level dependencies` are needed?
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { agent, edges, mods, pkgs }:
 

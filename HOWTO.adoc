@@ -223,13 +223,13 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/get.png[get]
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     db_path => db_path get_sql()
     input => input id(${todo_get_id}) id -> get get_sql(${sqlite_local_get})
     get_sql() id -> id todo_build_json(${todo_build_json})
@@ -238,7 +238,7 @@ subgraph {
     todo_build_json() json -> playload build_resp(${todo_build_response})
     get_sql() error -> error build_resp()
     build_resp() response -> response todo_add_req_id() response => response
-   '';
+   &#x27;&#x27;;
 }
 ----
 
@@ -271,13 +271,13 @@ Please understand how the code maps to the above diagram, as these particular di
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/post.png[post]
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     db_path => db_path insert_todo()
     input => input todo_get_todo(${todo_get_todo}) todo -> input cl_todo(${msg_clone})
     cl_todo() clone[0] -> insert insert_todo(${sqlite_local_insert})
@@ -286,7 +286,7 @@ subgraph {
     todo_get_todo() req_id -> id todo_add_req_id(${todo_add_req_id})
     todo_build_json() json -> playload todo_build_response(${todo_build_response})
     todo_build_response() response -> response todo_add_req_id() response => response
-   '';
+   &#x27;&#x27;;
 }
 ----
 
@@ -316,20 +316,20 @@ post() response -> response http()
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/delete.png[delete]
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     input => input id(${todo_get_id})
     db_path => db_path delete_sql()
     id() id -> delete delete_sql(${sqlite_local_delete})
     delete_sql() response -> playload build_resp(${todo_build_response})
     id() req_id -> id todo_add_req_id(${todo_add_req_id})
     build_resp() response -> response todo_add_req_id() response => response
-   '';
+   &#x27;&#x27;;
 }
 ----
 
@@ -371,13 +371,13 @@ To simplify the graph a little, we've not mentioned the edge from `synch` to `pa
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/patch_final.png[patch_final]
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     input => input todo_get_todo(${todo_get_todo})
     db_path => db_path patch_sql()
     todo_get_todo() id -> get get_sql(${sqlite_local_get})
@@ -390,7 +390,7 @@ subgraph {
     get_sql() error -> error synch() error -> error build_resp()
     todo_get_todo() req_id -> id todo_add_req_id(${todo_add_req_id})
     build_resp() response -> response todo_add_req_id() response => response
-   '';
+   &#x27;&#x27;;
 }
 ----
 
@@ -426,7 +426,7 @@ You can also fiddle with
 
 Insert this into your `Configuration.nix`
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { config, pkgs, ... }:
 

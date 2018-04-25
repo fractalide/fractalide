@@ -35,7 +35,7 @@ This approach is when you have a service you don't consider generic and is not w
 
 in your `configuration.nix` put these lines:
 
-[source, nix]
+[source, nix, subs="none"]
 .configuration.nix
 ----
 { config, pkgs, ... }:
@@ -67,7 +67,7 @@ in
 
 in your `configuration.nix` put these lines:
 
-[source, nix]
+[source, nix, subs="none"]
 .configuration.nix
 ----
 let
