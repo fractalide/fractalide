@@ -64,10 +64,10 @@ in
 subgraph {
   src = ./.;
   flowscript = with nodes.rs;&#x27;&#x27;
-    nand(${maths_boolean_nand})
-    '${imsgTrue}' -> a nand()
-    '${imsgTrue}' -> b nand()
-    nand() output -> input io_print(${maths_boolean_print})
+    nand(&#x24;{maths_boolean_nand})
+    '&#x24;{imsgTrue}' -> a nand()
+    '&#x24;{imsgTrue}' -> b nand()
+    nand() output -> input io_print(&#x24;{maths_boolean_print})
   &#x27;&#x27;;
 }
 ----
@@ -78,7 +78,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 * The `subgraph` building function accepts these arguments:
 ** The `src` attribute is used to derive a `Subgraph` name based on location in the directory hierarchy.
 ** The `flowscript` attribute defines the business logic. Here data flowing through a system becomes a first class citizen that can be manipulated. `Nodes` and `Edges` are brought into scope between the opening &#x27;&#x27; and closing &#x27;&#x27; double single quotes by using the `with nodes; with edges;` syntax.
-* `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``${...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
+* `Nix` assists us greatly, in that each `node` name (the stuff between the curly quotes ``&#x24;{...}``) undergoes a compilation step resolving every name into an absolute `/path/to/compiled/lib.subgraph` text file and `/path/to/compiled/libagent.so` shared object.
 * This compilation is lazy and only referenced names will be compiled. In other words `Subgraph` could be a top level `Subgraph` of a many layer deep hierarchy and only referenced `Nodes` will be compiled in a lazy fashion, *not* the entire `fractalide/nodes` folder.
 
 This is the output of the above ``Subgraph``'s compilation:
@@ -122,7 +122,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    agent_name(${name_of_agent})
+    agent_name(&#x24;{name_of_agent})
   &#x27;&#x27;;
 }
 ----
@@ -138,7 +138,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    agent_name(${name_of_agent}) // <──┐
+    agent_name(&#x24;{name_of_agent}) // <──┐
     agent_name()                 // <──┴─ same instance
   &#x27;&#x27;;
 }
@@ -155,7 +155,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    agent1(${name_of_agent1}) output_port -> input_port agent2(${name_of_agent2})
+    agent1(&#x24;{name_of_agent1}) output_port -> input_port agent2(&#x24;{name_of_agent2})
   &#x27;&#x27;;
 }
 ----
@@ -178,7 +178,7 @@ in
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    '${imsgTrue}' -> a agent(${name_of_agent})
+    '&#x24;{imsgTrue}' -> a agent(&#x24;{name_of_agent})
   &#x27;&#x27;;
 }
 ----
@@ -200,8 +200,8 @@ in
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    td(${ui_js_nodes.flex})
-    '${UiJsCreate}' -> input td()
+    td(&#x24;{ui_js_nodes.flex})
+    '&#x24;{UiJsCreate}' -> input td()
   &#x27;&#x27;;
 }
 ----
@@ -220,7 +220,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    subgraph_input => input agent(${name_of_agent})
+    subgraph_input => input agent(&#x24;{name_of_agent})
   &#x27;&#x27;;
 }
 ----
@@ -236,7 +236,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    agent(${name_of_agent}) output => subgraph_output
+    agent(&#x24;{name_of_agent}) output => subgraph_output
   &#x27;&#x27;;
 }
 ----
@@ -252,7 +252,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    subgraph(${name_of_subgraph})
+    subgraph(&#x24;{name_of_subgraph})
   &#x27;&#x27;;
 }
 ----
@@ -268,8 +268,8 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    subgraph(${name_of_subgraph})
-    agent(${name_of_agent})
+    subgraph(&#x24;{name_of_subgraph})
+    agent(&#x24;{name_of_agent})
     subgraph() output -> input agent()
   &#x27;&#x27;;
 }
@@ -286,7 +286,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    db_path => input clone(${msg_clone})
+    db_path => input clone(&#x24;{msg_clone})
     clone() clone[0] => db_path0
     clone() clone[1] => db_path1
     clone() clone[2] => db_path2
@@ -308,7 +308,7 @@ NOTE: `clone[1]` is an `array output port` and in this particular `Subgraph` `Me
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    add0 => add[0] adder(${path_to_adder})
+    add0 => add[0] adder(&#x24;{path_to_adder})
     add1 => add[1] adder()
     add2 => add[2] adder()
     add3 => add[3] adder() output -> output
@@ -329,8 +329,8 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    input => input clone(${msg_clone})
-    clone() clone[0] -> a nand(${maths_boolean_nand})
+    input => input clone(&#x24;{msg_clone})
+    clone() clone[0] -> a nand(&#x24;{maths_boolean_nand})
     clone() clone[1] -> b nand() output => output
   &#x27;&#x27;;
 }
@@ -338,7 +338,7 @@ subgraph {
 
 image::https://raw.githubusercontent.com/fractalide/fractalide/master/doc/images/subnet_ex13.png[]
 
-The `Node` and `Edge` names, i.e.: `${maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by opening to the `nodes/rs/maths/boolean/not/default.nix` file. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
+The `Node` and `Edge` names, i.e.: `&#x24;{maths_boolean_nand}` seem quite long. Fractalide uses a hierarchical naming scheme. So you can find the `maths_boolean_not` node by opening to the `nodes/rs/maths/boolean/not/default.nix` file. The whole goal of this is to avoid name shadowing among potentially hundreds to thousands of nodes.
 
 Explanation of the `Subgraph`:
 
@@ -360,10 +360,10 @@ in
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    '${imsgTrue}' -> a nand(${maths_boolean_nand})
-    '${imsgTrue}' -> b nand()
-    nand() output -> input not(${maths_boolean_not})
-    not() output -> input print(${maths_boolean_print})
+    '&#x24;{imsgTrue}' -> a nand(&#x24;{maths_boolean_nand})
+    '&#x24;{imsgTrue}' -> b nand()
+    nand() output -> input not(&#x24;{maths_boolean_not})
+    not() output -> input print(&#x24;{maths_boolean_print})
   &#x27;&#x27;;
 }
 ----
@@ -381,12 +381,12 @@ Notice we're using the `not` node implemented earlier. One can build hierarchies
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; &#x27;&#x27;
-    listen => listen http(${net_http_nodes.http})
-    db_path => input clone(${msg_clone})
-    clone() clone[1] -> db_path get(${app_todo_nodes.todo_get})
-    clone() clone[2] -> db_path post(${app_todo_nodes.todo_post})
-    clone() clone[3] -> db_path del(${app_todo_nodes.todo_delete})
-    clone() clone[4] -> db_path patch(${app_todo_nodes.todo_patch})
+    listen => listen http(&#x24;{net_http_nodes.http})
+    db_path => input clone(&#x24;{msg_clone})
+    clone() clone[1] -> db_path get(&#x24;{app_todo_nodes.todo_get})
+    clone() clone[2] -> db_path post(&#x24;{app_todo_nodes.todo_post})
+    clone() clone[3] -> db_path del(&#x24;{app_todo_nodes.todo_delete})
+    clone() clone[4] -> db_path patch(&#x24;{app_todo_nodes.todo_patch})
 
     http() GET[/todos/.+] -> input get() response -> response http()
     http() POST[/todos/?] -> input post() response -> response http()

@@ -249,15 +249,15 @@ Then insert the below into `default.nix`:
 subgraph {
   src = ./.;
   flowscript = with nodes.rs; &#x27;&#x27;
-    input => input clone(${msg_clone})
-    clone() clone[1] -> a nand(${maths_boolean_nand}) output => output
+    input => input clone(&#x24;{msg_clone})
+    clone() clone[1] -> a nand(&#x24;{maths_boolean_nand}) output => output
     clone() clone[2] -> b nand()
   &#x27;&#x27;;
 }
 
 ----
 
-Notice the `${maths_boolean_nand}` and `${msg_clone}`. Nix will replace these with fully qualified paths to the compiled `agents` at compile time. `msg_clone` is a different `agent`, you may reference the source code at `nodes/rs/msg/clone`.
+Notice the `&#x24;{maths_boolean_nand}` and `&#x24;{msg_clone}`. Nix will replace these with fully qualified paths to the compiled `agents` at compile time. `msg_clone` is a different `agent`, you may reference the source code at `nodes/rs/msg/clone`.
 
 
 * Add your new NOT `subgraph` to the `nodes/rs/default.nix`
@@ -297,7 +297,7 @@ clone() clone[1] -> a nand(/nix/store/bi0jacqxz1az1bbrc8470jbl7z3cmwdn-maths_boo
 clone() clone[2] -> b nand()
 ----
 
-Notice the `${maths_boolean_nand}` and `${msg_clone}` were replaced with fully qualified paths. This output is meant for the `fvm` (Fractalide Virtual Machine) to parse and isn't meant to be edited by humans.
+Notice the `&#x24;{maths_boolean_nand}` and `&#x24;{msg_clone}` were replaced with fully qualified paths. This output is meant for the `fvm` (Fractalide Virtual Machine) to parse and isn't meant to be edited by humans.
 
 * Let us prepare to run our new `NOT` component. This is where we create `imsgs` which contain the actual values to be passed into the `NOT` gate.
 
@@ -318,7 +318,7 @@ in
 subgraph {
  src = ./.;
  flowscript = with nodes.rs; &#x27;&#x27;
-  '${PrimBool}' -> input not(${maths_boolean_not}) output -> input io_print(${maths_boolean_print})
+  '&#x24;{PrimBool}' -> input not(&#x24;{maths_boolean_not}) output -> input io_print(&#x24;{maths_boolean_print})
  &#x27;&#x27;;
 }
 ----

@@ -30,7 +30,7 @@ When developing a `subgraph` there comes a time when the developer wants to inje
 subgraph {
   src = ./.;
   flowscript = with nodes; with edges; &#x27;&#x27;
-    '${prim_bool}:(boolean=true)' -> INPUT_PORT NAME()
+    '&#x24;{prim_bool}:(boolean=true)' -> INPUT_PORT NAME()
   &#x27;&#x27;;
 }
 ----
@@ -142,7 +142,7 @@ edge {
   edges = with edges; [ command ];
   schema = with edges; &#x27;&#x27;
     @0xf61e7fcd2b18d862;
-    using Command = import "${command}/src/edge.capnp";
+    using Command = import "&#x24;{command}/src/edge.capnp";
     struct ListCommand {
         commands @0 :List(Command.Command);
     }
@@ -220,7 +220,7 @@ edge {
   edges = with edges; [ command ];
   schema = with edges; &#x27;&#x27;
     @0xf61e7fcd2b18d862;
-    using CommandInstanceName = import "${command}/src/edge.capnp";
+    using CommandInstanceName = import "&#x24;{command}/src/edge.capnp";
     struct ListCommand {
         commands @0 :List(CommandInstanceName.Command);
     }
@@ -229,7 +229,7 @@ edge {
 ----
 
 You must pull explicitly mention the `edge` you want to import via the `  edges = with edges; [ command ];`
-Then you must `import` it via this mechanism: `using CommandInstanceName = import "${command}/src/edge.capnp";`
+Then you must `import` it via this mechanism: `using CommandInstanceName = import "&#x24;{command}/src/edge.capnp";`
 and lastly use it `... commands @0 :List(CommandInstanceName.Command); ...`
 
 Out of curiosity what does the output of the above `list_command` `contract` function look like?
