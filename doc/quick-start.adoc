@@ -16,7 +16,7 @@ $ cd fractalide
 
 The directory will have one file:
 
-[source, nix]
+[source, nix, subs="none"]
 .edges/prim/bool/default.nix
 ----
 { edge, edges }:
@@ -24,17 +24,17 @@ The directory will have one file:
 edge {
   src = ./.;
   edges =  with edges; [];
-  schema = with edges; ''
+  schema = with edges; &#x27;&#x27;
     struct PrimBool {
             bool @0 :Bool;
     }
-  '';
+  &#x27;&#x27;;
 }
 ----
 
 * Now we need to make your new `edge` seen by the system. Insert your newly created `edge` into `edges/default.nix`.
 
-[source, nix]
+[source, nix, subs="none"]
 .edges/default.nix
 ----
   { pkgs, support, ... }:
@@ -185,7 +185,7 @@ $ touch nodes/rs/maths/boolean/nand/default.nix
 
 Then insert the below into the `default.nix`
 
-[source, nix]
+[source, nix, subs="none"]
 .nodes/rs/maths/boolean/nand/default.nix
 ----
 { agent, edges, mods, pkgs }:
@@ -205,7 +205,7 @@ Also `mods = with mods.rs; [ rustfbp capnp ];` is where we included our `crate` 
 
 * We need to make our `NAND` seen by the system by adding it to `nodes/rs/default.nix`
 
-[source, nix]
+[source, nix, subs="none"]
 .nodes/rs/default.nix
 ----
 { pkgs, support, ... }:
@@ -241,18 +241,18 @@ touch nodes/rs/maths/boolean/not/default.nix
 
 Then insert the below into `default.nix`:
 
-[source, nix]
+[source, nix, subs="none"]
 .nodes/rs/maths/boolean/not/default.nix
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes.rs; ''
+  flowscript = with nodes.rs; &#x27;&#x27;
     input => input clone(${msg_clone})
     clone() clone[1] -> a nand(${maths_boolean_nand}) output => output
     clone() clone[2] -> b nand()
-  '';
+  &#x27;&#x27;;
 }
 
 ----
@@ -262,7 +262,7 @@ Notice the `${maths_boolean_nand}` and `${msg_clone}`. Nix will replace these wi
 
 * Add your new NOT `subgraph` to the `nodes/rs/default.nix`
 
-[source, nix]
+[source, nix, subs="none"]
 .nodes/rs/default.nix
 ----
 { pkgs, support, ... }:
@@ -303,7 +303,7 @@ Notice the `${maths_boolean_nand}` and `${msg_clone}` were replaced with fully q
 
 First, edit `nodes/rs/test/not/default.nix` so that it looks like this:
 
-[source, nix]
+[source, nix, subs="none"]
 .nodes/rs/test/not/default.nix
 ----
 { subgraph, imsg, nodes, edges }:
@@ -317,9 +317,9 @@ let
 in
 subgraph {
  src = ./.;
- flowscript = with nodes.rs; ''
+ flowscript = with nodes.rs; &#x27;&#x27;
   '${PrimBool}' -> input not(${maths_boolean_not}) output -> input io_print(${maths_boolean_print})
- '';
+ &#x27;&#x27;;
 }
 ----
 

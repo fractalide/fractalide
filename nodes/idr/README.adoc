@@ -61,7 +61,7 @@ The `agent` function in the `default.nix` requires you make decisions about thre
 * What `mods` which are idris library dependencies available online.
 * What `osdeps` or `operating system level dependencies` are needed?
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { agent, edges, mods, pkgs }:
 

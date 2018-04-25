@@ -23,15 +23,15 @@ So despite you seeing only Cap'n Proto schema in this directory, the concept of 
 
 When developing a `subgraph` there comes a time when the developer wants to inject data into an `agent` or another `subgraph`. One needs to use an `exposed edge` or an `imsg` (initial message) which has this syntax:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     '${prim_bool}:(boolean=true)' -> INPUT_PORT NAME()
-  '';
+  &#x27;&#x27;;
 }
 ----
 
@@ -47,43 +47,43 @@ Examples of `hidden edges`
 
 * From one `agent` to another `agent`:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     agent1() output -> input agent2()
-  '';
+  &#x27;&#x27;;
 }
 ----
 
 * Into a `subgraph`:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     output => input subgraph()
-  '';
+  &#x27;&#x27;;
 }
 ----
 
 * Out of a `subgraph`:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { subgraph, nodes, edges }:
 
 subgraph {
   src = ./.;
-  flowscript = with nodes; with edges; ''
+  flowscript = with nodes; with edges; &#x27;&#x27;
     agent() output => output
-  '';
+  &#x27;&#x27;;
 }
 ----
 
@@ -133,20 +133,20 @@ The `edge` building function accepts these arguments:
 * The `edges` attribute resolve transitive dependencies and ensures your `agent` has all the needed files to type check.
 * a https://capnproto.org[Cap 'n Proto] `schema`. This is the heart of the contract, this is where you may create potentially complex deep hierarchies of structured data. Please read more about the https://capnproto.org/language.html[schema language].
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { edge, edges }:
 
 edge {
   src = ./.;
   edges = with edges; [ command ];
-  schema = with edges; ''
+  schema = with edges; &#x27;&#x27;
     @0xf61e7fcd2b18d862;
     using Command = import "${command}/src/edge.capnp";
     struct ListCommand {
         commands @0 :List(Command.Command);
     }
-  '';
+  &#x27;&#x27;;
 }
 ----
 
@@ -164,14 +164,14 @@ The same naming applies for Cap'n Proto `enums` and `interfaces`. It's crucial t
 We prefer composition of schema, and the schema must have fully qualified struct names.
 Hence, this is example shouldn't be used:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { edge, edges }:
 
 edge {
   src = ./.;
   edges = with edges; [ command ];
-  schema = with edges; ''
+  schema = with edges; &#x27;&#x27;
     @0xf61e7fcd2b18d862;
     struct Person {
       name @0 :Text;
@@ -197,7 +197,7 @@ edge {
       month @1 :UInt8;
       day @2 :UInt8;
     }
-  '';
+  &#x27;&#x27;;
 }
 ----
 
@@ -211,20 +211,20 @@ Therefore to avoid this scenario please put `struct Date ...` into it's own sche
 
 Fractalide resolves transitive dependencies for you but you have to use this method:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { edge, edges }:
 
 edge {
   src = ./.;
   edges = with edges; [ command ];
-  schema = with edges; ''
+  schema = with edges; &#x27;&#x27;
     @0xf61e7fcd2b18d862;
     using CommandInstanceName = import "${command}/src/edge.capnp";
     struct ListCommand {
         commands @0 :List(CommandInstanceName.Command);
     }
-  '';
+  &#x27;&#x27;;
 }
 ----
 

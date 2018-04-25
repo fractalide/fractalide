@@ -58,7 +58,7 @@ Should you start a new shell, type `<ctrl>-r` then type `125ff` this will search
 
 Insert the below code into a file called `default.nix` which sits in the above folder.
 
-[source, nix]
+[source, nix, subs="none"]
 .dev/fractalide/fractals/net/http/default.nix
 ----
 { pkgs

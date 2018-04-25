@@ -86,7 +86,7 @@ Flow-based programming in our books has delivered on its promise. In our system 
 
 When nix is assigned the responsibility of declaratively building fbp `nodes`, a magic thing happens. All that manual overhead of having to build, manage and package etc gets done once and only once by the `node` author, and completely disappears for everyone thereafter. We're left with the reusable good parts that FBP has to offer. Indeed the greatest overhead a `node` user has, is typing the ``node``'s name. We've gone further and distilled the overhead to a few lines, no more intimidating than a typical config file such as `Cargo.toml`:
 
-[source, nix]
+[source, nix, subs="none"]
 ----
 { agent, edges, mods, pkgs }:
 
@@ -233,9 +233,9 @@ Now you can add and commit your changes:
 [source, sh]
 ----
 $ git add changed_file.js //repeat for each file you changed
-$ git commit -m 'problem: very short description of problem //do not close the '', press ENTER two (2) times
+$ git commit -m 'problem: very short description of problem //do not close the &#x27;&#x27;, press ENTER two (2) times
 >
->solution: short description of how you solved the problem.' //Now you can close the ''. Also mention the issue number if there is one (e.g. #6)
+>solution: short description of how you solved the problem.' //Now you can close the &#x27;&#x27;. Also mention the issue number if there is one (e.g. #6)
 $ git push //this will send your changes to _your_ fork on Github
 ----
 * Go to your fork on Github and select the branch you just worked on. Click "pull request" to send a pull request back to the Fractalide repository.
