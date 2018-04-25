@@ -2,7 +2,7 @@ image::https://raw.githubusercontent.com/fractalide/fractalide/master/pkgs/hyper
 
 **Reusable Reproducible Composable Software**
 
-image:https://img.shields.io/badge/license-MPLv2-blue.svg[LICENSE,link=https://github.com/fractalide/fractalide/blob/master/LICENSE] image:https://badges.gitter.im/Join%20Chat.svg[Join the chat at \https://gitter.im/fractalide,link=https://gitter.im/fractalide?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge]
+image:https://img.shields.io/badge/license-MPLv2-blue.svg[LICENSE,link=https://github.com/fractalide/fractalide/blob/master/LICENSE]
 image:https://travis-ci.org/fractalide/fractalide.svg?branch=master["Build Status", link="https://travis-ci.org/fractalide/fractalide"]
 
 == Welcome
