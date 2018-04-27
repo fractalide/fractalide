@@ -214,12 +214,14 @@
         ; change is-running to true and exec
         (begin
           (thread (lambda ()
-                    (proc
-                     ((curry get-in) agt)
-                     ((curry get-out) agt)
-                     ((curry get-in-array) agt)
-                     ((curry get-out-array) agt)
-                     opt)
+                    (with-handlers ([exn:fail? (lambda (v) (displayln (string-append "Agent " agt-name " fails with : "))
+                                                       (displayln v))])
+                      (proc
+                       ((curry get-in) agt)
+                       ((curry get-out) agt)
+                       ((curry get-in-array) agt)
+                       ((curry get-out-array) agt)
+                       opt))
                     (async-channel-put sched (msg-run-end agt-name))))
           (let* ([new-agt-state (struct-copy agent-state agt-state [is-running #t]
                                               [state agt])]
