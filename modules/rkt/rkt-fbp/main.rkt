@@ -1,9 +1,9 @@
 #lang racket/base
 
-(require fractalide/modules/rkt/rkt-fbp/scheduler)
-(require fractalide/modules/rkt/rkt-fbp/def)
-(require fractalide/modules/rkt/rkt-fbp/agent)
-(require fractalide/modules/rkt/rkt-fbp/graph)
+(require fractalide/modules/rkt/rkt-fbp/scheduler
+         fractalide/modules/rkt/rkt-fbp/def
+         fractalide/modules/rkt/rkt-fbp/agent
+         (prefix-in graph: fractalide/modules/rkt/rkt-fbp/graph))
 
 (define sched (make-scheduler #f))
 (sched (msg-add-agent "sched" "agents/fvm/scheduler.rkt"))
@@ -25,7 +25,7 @@
 (sched (msg-iip "halt" "in" #f))
 
 (define path (vector-ref (current-command-line-arguments) 0))
-(define a-graph (make-graph (list (add-agent "main" path))))
+(define a-graph (graph:make-graph (graph:agent "main" path)))
 
 (sched (msg-iip "fvm" "in" (vector "add" a-graph)))
 (sched (msg-iip "fvm" "in" "stop"))
