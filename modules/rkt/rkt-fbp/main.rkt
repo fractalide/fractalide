@@ -25,7 +25,7 @@
 (sched (msg-iip "halt" "in" #f))
 
 (define path (vector-ref (current-command-line-arguments) 0))
-(define a-graph (graph:make-graph (graph:agent "main" path)))
+(define a-graph (graph:make-graph (graph:node "main" path)))
 
 (sched (msg-iip "fvm" "in" (vector "add" a-graph)))
 (sched (msg-iip "fvm" "in" "stop"))
