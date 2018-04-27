@@ -14,7 +14,7 @@
     (let* ([but (new button% [parent frame]
                        [label "Click here"]
                        [callback (lambda (button event)
-                                   (send (input "in") (vector "button-clicked")))])])
+                                   (send (input "in") (vector (class-send event get-event-type))))])])
       (send (input "acc") but))))
 
 (define agt (define-agent

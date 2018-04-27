@@ -21,11 +21,18 @@
                        (add-agent "halt" "halter")
                        (connect "frame" "halt" #f "halt" "in" #f)
                        (iip "halt" "in" #f)
+                       ; step
+                       (add-agent "step" "gui/text-field")
+                       (connect "step" "out" #f "vp" "place" 8)
+                       (iip "step" "in" #t)
+                       (add-agent "to-step" "test/to-step")
+                       (connect "step" "out" 'text-field "to-step" "in" #f)
+                       (connect "to-step" "out" #f "acc" "option" #f)
                        ; Connect everything
                        (connect "msg" "out" #f "hp" "place" 8)
                        (connect "msg2" "out" #f "hp" "place" 1)
                        (connect "button" "out" #f "hp" "place" 5)
-                       (connect "button" "out" "button-clicked" "acc" "in" #f)
+                       (connect "button" "out" 'button "acc" "in" #f)
                        (connect "acc" "out" #f "msg" "in" #f)
                        (iip "msg" "in" (vector "set-label" "Not yet clicked"))
                        (iip "msg2" "in" (vector "set-label" "please click the button"))
@@ -34,7 +41,7 @@
                        ; Quit button
                        (add-agent "but-quit" "gui/button")
                        (add-agent "ip-to-close" "test/to-close")
-                       (connect "but-quit" "out" "button-clicked" "ip-to-close" "in" #f)
+                       (connect "but-quit" "out" 'button "ip-to-close" "in" #f)
                        (connect "but-quit" "out" #f "vp" "place" 1)
                        (connect "ip-to-close" "out" #f "frame" "in" #f)
                        (iip "but-quit" "in" (vector "set-label" "Close"))
