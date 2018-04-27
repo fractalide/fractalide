@@ -5,7 +5,7 @@
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define g (make-graph
-           (agent "panel" "gui/horizontal-panel")
+           (node "panel" "gui/horizontal-panel")
            (iip "panel" "in" (vector "set-orientation" #f))
            (virtual-in "in" "panel" "in")
            (virtual-in "place" "panel" "place")
