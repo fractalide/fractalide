@@ -6,21 +6,22 @@
         "title": "PASCAL",
         "default-expand-on-website": true,
         "render-features-on-website": true,
-        "description": "High level description of PASCAL release.",
+        "description": "The PASCAL release represents the initial release of Hyperflow. It implements the basic infrastructure which allows the building and execution of Fractalide applications in Hyperflow.",
         "features": [
           {
             "title": "Hyperflow MVP",
             "progress-bar": 30,
             "Objectives": [
-              "Errors can be communicated back home to help developers solve user problems",
+              "Racket Flow-based programming scheduler",
+              "Node, agent and graph interfaces",
               "Design Mode displays a basic text editor",
               "Graph Mode displays graphs as text only",
               "Run Mode renders developed applications",
               "Basic structure of Hyperflow in place"
             ],
             "Work Done": [
-              "[Fixed] Example: bug when changing between Run Mode and Graph Mode",
-              "[Improved] Example: Racket classes used to structure UI"
+              "Racket Flow-based programming scheduler",
+              "Agent, graph and node interface implemented"
             ]
           },
           {
@@ -60,7 +61,7 @@
         "title": "FIBONACCI",
         "default-expand-on-website": false,
         "render-features-on-website": false,
-        "description": "High level description of PASCAL release.",
+        "description": "The FIBONACCI release builds out the first user facing Fractalide applications.",
         "features": []
       }
     ]
