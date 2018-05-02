@@ -17,10 +17,6 @@
            (node "msg" "gui/message")
            (node "msg2" "gui/message")
            (node "acc" "test/accumulator")
-           ; For halting
-           (node "halt" "halter")
-           (edge "frame" "halt" #f "halt" "in" #f)
-           (iip "halt" "in" #f)
            ; step
            (node "step" "gui/text-field")
            (edge "step" "out" #f "vp" "place" 8)
@@ -45,4 +41,12 @@
            (edge "but-quit" "out" #f "vp" "place" 1)
            (edge "ip-to-close" "out" #f "frame" "in" #f)
            (iip "but-quit" "in" (vector "set-label" "Close"))
+           ; dynamic
+           (node "but-add" "gui/button")
+           (edge "but-add" "out" #f "vp" "place" 98)
+           (iip "but-add" "in" (vector "set-label" "add counter"))
+           (node "dynamic" "test/dynamic")
+           (edge "dynamic" "out" #f "vp" "place" 99)
+           (iip "dynamic" "option" "test/counter")
+           (edge "but-add" "out" 'button "dynamic" "in" #f)
            ))

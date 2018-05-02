@@ -22,6 +22,7 @@
 (struct msg-disconnect-array-to (out port-out selection))
 (struct msg-disconnect-to-array (out port-out in port-in selection))
 (struct msg-disconnect-array-to-array (out port-out selection-out in port-in selection-in))
+(struct msg-raw-connect (out port-out sender))
 (struct msg-iip (agt port iip))
 (struct msg-inc-ip (agt))
 (struct msg-dec-ip (agt))

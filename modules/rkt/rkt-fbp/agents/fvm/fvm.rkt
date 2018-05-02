@@ -25,13 +25,22 @@
                                            ; The virtuals were already merged in send-sched -> resolve-virtual
                                            [virtual-in (g:graph-virtual-in acc)]
                                            [virtual-out (g:graph-virtual-out acc)])]
+                             [(vector "dynamic-add" graph port)
+                              ; do a classic add
+                              (define flat (send-sched graph acc input output port))
+                              (struct-copy g:graph acc
+                                           [agent (append (g:graph-agent acc) (g:graph-agent flat))]
+                                           [edge (append (g:graph-edge acc) (g:graph-edge flat))]
+                                           ; The virtuals were already merged in send-sched -> resolve-virtual
+                                           [virtual-in (g:graph-virtual-in acc)]
+                                           [virtual-out (g:graph-virtual-out acc)])]
                              ["stop"
                               (send (output "halt") #t)
                               (send (output "sched") (msg-stop))
                               acc]))
                          (send (output "acc") new-acc)))))
 
-(define (send-sched add actual input output)
+(define (send-sched add actual input output [sender #f])
   ; Flat the graph
   (send (output "flat") add)
   (define flat (recv (input "flat")))
@@ -51,6 +60,21 @@
        (send (output "sched") (msg-connect-to-array out p-out in p-in s-in))]
       [(g:g-edge out p-out s-out in p-in s-in)
        (send (output "sched") (msg-connect-array-to-array out p-out s-out in p-in s-in))]))
+  (if sender
+      (for ([vo (g:graph-virtual-out flat)])
+        (if (string=? "out" (g:g-virtual-virtual-port vo))
+            (let ([final-out (for/fold ([acc (cons (g:g-virtual-agent vo) (g:g-virtual-agent-port vo))])
+                                       ([virt (g:graph-virtual-out add-flat)])
+                               (if (and (string=? (car acc) (g:g-virtual-virtual-agent virt))
+                                        (string=? (cdr acc) (g:g-virtual-virtual-port virt)))
+                                   (cons (g:g-virtual-agent virt) (g:g-virtual-agent-port virt))
+                                   acc))])
+              (send (output "sched") (msg-raw-connect
+                                      (car final-out)
+                                      (cdr final-out)
+                                      sender)))
+            (void)))
+      (void))
   (for ([iip (g:graph-iip add-flat)])
     (match iip
       [(g:g-iip in p-in iip)
