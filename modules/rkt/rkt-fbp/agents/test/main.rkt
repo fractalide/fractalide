@@ -30,6 +30,7 @@
            (edge "button" "out" #f "hp" "place" 5)
            (edge "button" "out" 'button "acc" "in" #f)
            (edge "acc" "out" #f "msg" "in" #f)
+           (edge "acc" "delete" #f "hp" "place" 1)
            (iip "msg" "in" (vector "set-label" "Not yet clicked"))
            (iip "msg2" "in" (vector "set-label" "please click the button"))
            (iip "button" "in" (vector "set-label" "Click me!!"))

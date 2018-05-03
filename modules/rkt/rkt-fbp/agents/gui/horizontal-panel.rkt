@@ -29,30 +29,39 @@
                                       acc
                                       (begin
                                         (send (output "out") (vector "init" (generate-hp input)))
-                                        (recv (input "acc")))))
+                                        (cons '() (recv (input "acc"))))))
 
                        (if msg-in
-                           ; A message in the input port
+                           ; TRUE : A message in the input port
                            (match msg-in
                              [(vector "set-orientation" orientation)
-                              (class-send hp set-orientation orientation)]
+                              (class-send (cdr hp) set-orientation orientation)]
                              [else (send-action output output-array msg-in)])
-                           ; At least a message in the input array port
+                           ; FALSE : At least a message in the input array port
+                           ; Change the accumulator HP with set!
                            (for ([(place containee) (input-array "place")])
                              (define msg (try-recv containee))
                              (if msg
                                  (match msg
                                    [(vector "init" cont)
                                     ; Add it
-                                    (cont hp)
+                                    (cont (cdr hp))
                                     ; order
                                     (define index (index-of (sort (hash-keys (input-array "place")) <) place))
-                                    (class-send hp change-children
+                                    (class-send (cdr hp) change-children
                                                 (lambda (act)
                                                   (define val (last act))
                                                   (define ls (take act (- (length act) 1)))
                                                   (append-at-least ls index val '())
                                                   ))
+                                    (set! hp (cons (sort (cons place (car hp)) <) (cdr hp)))
+                                    ]
+                                   [(vector "delete")
+                                    (define index (index-of (car hp) place))
+                                    (class-send (cdr hp) change-children
+                                                (lambda (act)
+                                                  (remove-at act index)))
+                                    (set! hp (cons (remq index (car hp)) (cdr hp)))
                                     ]
                                    [else (send-action output output-array msg)])
                                  void)
@@ -65,3 +74,10 @@
     [(empty? ls) (reverse (cons v acc))]
     [(= k 0) (append (reverse (cons v acc)) ls)]
     [else (append-at-least (cdr ls) (- k 1) v (cons (car ls) acc))]))
+
+(define (remove-at ls k)
+  (define (rem-acc ls k acc)
+    (if (= k 0)
+        (append (reverse acc) (cdr ls))
+        (rem-acc (cdr ls) (- k 1) (cons (car ls) acc))))
+  (rem-acc ls k '()))
