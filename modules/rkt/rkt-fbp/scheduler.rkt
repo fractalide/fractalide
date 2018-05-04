@@ -124,6 +124,14 @@
               [new-agents (hash-set agents in new-in-sched-agt)]
               [new-agents (hash-set new-agents out new-out-sched-agt)])
          (struct-copy scheduler self [agents new-agents]))]
+      [(msg-raw-connect out port-out sender)
+       (let* ([agents (scheduler-agents self)]
+              [out-agt-state (hash-ref agents out)]
+              [out-agt (agent-state-state out-agt-state)]
+              [new-out-agt (agent-connect out-agt port-out sender)]
+              [new-agent-state (struct-copy agent-state out-agt-state [state new-out-agt])]
+              [new-agents (hash-set agents out new-agent-state)])
+         (struct-copy scheduler self [agents new-agents]))]
       [(msg-iip agt port iip)
        (let* ([agents (scheduler-agents self)]
               [in-agt-state (hash-ref agents agt)]

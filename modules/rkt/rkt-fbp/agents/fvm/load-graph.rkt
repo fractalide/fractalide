@@ -11,39 +11,13 @@
   (send (output "ask-graph") agent)
   (recv (input "ask-graph")))
 
-; (-> (Listof virtual) (Listof virtual) graph graph)
-(define (resolve-virtual virtual-in virtual-out actual-graph)
-  ; virtual-in resolve
-  (define res-edge
-    (for/list ([edg (graph-edge actual-graph)])
-      (define new-edge (for/fold ([acc edg])
-                                 ([virt virtual-in])
-                         (if (and (string=? (g-edge-in edg) (g-virtual-virtual-agent virt))
-                                  (string=? (g-edge-port-in edg) (g-virtual-virtual-port virt)))
-                             (struct-copy g-edge acc [in (g-virtual-agent virt)][port-in (g-virtual-agent-port virt)])
-                             acc)))
-      (for/fold ([acc new-edge])
-                ([virt virtual-out])
-        (if (and (string=? (g-edge-out edg) (g-virtual-virtual-agent virt))
-                 (string=? (g-edge-port-out edg) (g-virtual-virtual-port virt)))
-            (struct-copy g-edge acc [out (g-virtual-agent virt)][port-out (g-virtual-agent-port virt)])
-            acc))))
-  ; Iip resolve
-  (define res-iip
-    (for/list ([iip (graph-iip actual-graph)])
-      (for*/fold ([acc iip])
-                 ([virt virtual-in])
-        (if (and (string=? (g-iip-in iip) (g-virtual-virtual-agent virt))
-                 (string=? (g-iip-port-in iip) (g-virtual-virtual-port virt)))
-            (struct-copy g-iip acc [in (g-virtual-agent virt)] [port-in (g-virtual-agent-port virt)])
-            acc))))
-  (struct-copy graph actual-graph [edge res-edge] [iip res-iip]))
-
 ; (- (Listof agent) graph String graph)
 (define (flat-graph actual-graph input output)
-  (define (rec-flat-graph not-visited virtual-in virtual-out actual-graph)
+  (define (rec-flat-graph not-visited actual-graph)
     (if (empty? not-visited)
-        (resolve-virtual virtual-in virtual-out actual-graph)
+        ; True -> End of the flat part
+        actual-graph
+        ; False -> Visit the next node
         (let* ([next (car not-visited)]
                [next (begin (send (output "ask-path") next) (recv (input "ask-path")))]
                [is-subnet? (dynamic-require (g-agent-type next) 'g (lambda () #f))])
@@ -53,17 +27,21 @@
                      ; Add the agents in the not-visited list
                      [new-not-visited (append (graph-agent new-graph) (cdr not-visited))]
                      ; add the virtual port
-                     [new-virtual-in (append (graph-virtual-in new-graph) virtual-in)]
-                     [new-virtual-out (append (graph-virtual-out new-graph) virtual-out)]
+                     ; Order is important, we need to save first virtual first, for reccursive array port
+                     [new-virtual-in (append (graph-virtual-in actual-graph) (graph-virtual-in new-graph))]
+                     [new-virtual-out (append (graph-virtual-out actual-graph) (graph-virtual-out new-graph))]
                      ; add the iips
                      [new-iip (append (graph-iip new-graph) (graph-iip actual-graph))]
                      ; add the edges
                      [new-edge (append (graph-edge new-graph) (graph-edge actual-graph))])
-                (rec-flat-graph new-not-visited new-virtual-in new-virtual-out
-                                (struct-copy graph actual-graph [iip new-iip][edge new-edge])))
+                (rec-flat-graph new-not-visited
+                                (struct-copy graph actual-graph [iip new-iip]
+                                             [edge new-edge]
+                                             [virtual-in new-virtual-in]
+                                             [virtual-out new-virtual-out])))
               ; It's a normal agent, do nothing and go for the next
-              (rec-flat-graph (cdr not-visited) virtual-in virtual-out (struct-copy graph actual-graph [agent (cons next (graph-agent actual-graph))]))))))
-  (rec-flat-graph (graph-agent actual-graph) '() '() (struct-copy graph actual-graph [agent '()])))
+              (rec-flat-graph (cdr not-visited) (struct-copy graph actual-graph [agent (cons next (graph-agent actual-graph))]))))))
+  (rec-flat-graph (graph-agent actual-graph) (struct-copy graph actual-graph [agent '()])))
 
 (define agt (define-agent
               #:input '("in" "ask-path" "ask-graph")
