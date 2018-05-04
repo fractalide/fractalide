@@ -26,6 +26,8 @@
                          [(vector "init" curry) (curry fr)]
                          [(vector "dynamic-add" graph port)
                           (send (output "fvm") msg)]
+                         [(vector "dynamic-remove" graph)
+                          (send (output "fvm") msg)]
                          [(vector "close") (send (output "halt") #t) (send (output "fvm") "stop")]
                          [else (display "msg: ") (displayln msg)])
                        (send (output "acc") fr))))

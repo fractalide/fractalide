@@ -23,4 +23,6 @@
            (edge "model" "out" #f "msg" "in" #f)
            (edge "add" "out" 'button "model" "add" #f)
            (edge "sub" "out" 'button "model" "sub" #f)
+           ; Virtual in for the card paradigm
+           (virtual-in "in" "hp" "in")
            ))
