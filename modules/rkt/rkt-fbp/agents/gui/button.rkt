@@ -2,7 +2,8 @@
 
 (provide agt)
 
-(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
 
 (require racket/gui/base
@@ -14,7 +15,7 @@
     (let* ([but (new button% [parent frame]
                        [label "Click here"]
                        [callback (lambda (button event)
-                                   (send (input "in") (vector (class-send event get-event-type))))])])
+                                   (send (input "in") (cons (class-send event get-event-type) #t)))])])
       (send (input "acc") but))))
 
 (define agt (define-agent
@@ -27,10 +28,13 @@
                        (define btn (if acc
                                       acc
                                       (begin
-                                        (send (output "out") (vector "init" (generate-button input)))
+                                        (send (output "out") (cons 'init (generate-button input)))
                                         (recv (input "acc")))))
-                       (match msg
-                         [(vector "set-label" new-label)
-                          (class-send btn set-label new-label)]
-                         [else (send-action output output-array msg)])
+                       (define managed #f)
+                       (set! managed (area-manage btn msg output output-array))
+                       (set! managed (subarea-manage btn msg output output-array))
+                       (set! managed (window-manage btn msg output output-array))
+                       (if managed
+                           (void)
+                           (send-action output output-array msg))
                        (send (output "acc") btn))))

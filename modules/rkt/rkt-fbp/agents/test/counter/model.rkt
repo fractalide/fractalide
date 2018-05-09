@@ -16,5 +16,5 @@
                               ; Add?
                               [add-acc (if add (+ 1 acc) acc)]
                               [sub-acc (if sub (- add-acc 1) add-acc)])
-                         (send (output "out") (vector "set-label" (string-append "counter : " (number->string sub-acc))))
+                         (send (output "out") (cons 'set-label (string-append "counter : " (number->string sub-acc))))
                          (send (output "acc") sub-acc)))))

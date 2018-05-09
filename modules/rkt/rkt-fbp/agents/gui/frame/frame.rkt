@@ -23,11 +23,11 @@
                                            (class-send fr show #t)
                                            fr)))
                        (match msg
-                         [(vector "init" curry) (curry fr)]
-                         [(vector "dynamic-add" graph port)
+                         [(cons 'init curry) (curry fr)]
+                         [(cons 'dynamic-add _)
                           (send (output "fvm") msg)]
-                         [(vector "dynamic-remove" graph)
+                         [(cons 'dynamic-remove graph)
                           (send (output "fvm") msg)]
-                         [(vector "close") (send (output "halt") #t) (send (output "fvm") "stop")]
+                         [(cons 'close #t) (send (output "halt") #t) (send (output "fvm") (cons 'stop #t))]
                          [else (display "msg: ") (displayln msg)])
                        (send (output "acc") fr))))

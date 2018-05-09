@@ -29,13 +29,13 @@
                        (define hp (if acc
                                       acc
                                       (begin
-                                        (send (output "out") (vector "init" (generate-hp input)))
+                                        (send (output "out") (cons 'init (generate-hp input)))
                                         (cons '() (recv (input "acc"))))))
 
                        (if msg-in
                            ; TRUE : A message in the input port
                            (match msg-in
-                             [(vector "set-orientation" orientation)
+                             [(cons 'set-orientation orientation)
                               (class-send (cdr hp) set-orientation orientation)]
                              [else (send-action output output-array msg-in)])
                            ; FALSE : At least a message in the input array port
@@ -44,7 +44,7 @@
                              (define msg (try-recv containee))
                              (if msg
                                  (match msg
-                                   [(vector "init" cont)
+                                   [(cons 'init cont)
                                     ; Add it
                                     (cont (cdr hp))
                                     ; order
@@ -57,7 +57,7 @@
                                                   ))
                                     (set! hp (cons (sort (cons place (car hp)) <) (cdr hp)))
                                     ]
-                                   [(vector "delete")
+                                   [(cons 'delete #t)
                                     (define index (index-of (car hp) place))
                                     (class-send (cdr hp) change-children
                                                 (lambda (act)

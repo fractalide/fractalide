@@ -13,7 +13,7 @@
                               [step (or option 1)]
                               [sum (+ step acc)])
                          (if (= sum 3)
-                             (send (output "delete") (vector "delete"))
+                             (send (output "delete") (cons 'delete #t))
                              (void))
-                         (send (output "out") (vector "set-label" (string-append "button clicked : " (number->string sum))))
+                         (send (output "out") (cons 'set-label (string-append "button clicked : " (number->string sum))))
                          (send (output "acc") sum)))))
