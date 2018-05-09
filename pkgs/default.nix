@@ -2,8 +2,8 @@
 , pkgs ? import (bootPkgs.fetchFromGitHub {
     owner  = "NixOS";
     repo   = "nixpkgs";
-    rev    = "d91caac6c3e58b8a5f4721c0a6cc8f0dc3b93fd3";
-    sha256 = "1x19607ypfcdz0i5aims4cbi2ca7dm0d8jyar46knv0nqx8kly0s";
+    rev    = "9d0b6b9dfc92a2704e2111aa836f5bdbf8c9ba42";
+    sha256 = "096r7ylnwz4nshrfkh127dg8nhrcvgpr69l4xrdgy3kbq049r3nb";
   })
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
 , rustOverlay ? fetchFromGitHub {
