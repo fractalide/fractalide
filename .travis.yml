@@ -4,13 +4,13 @@ matrix:
   include:
     - os: linux
       script:
-        - nix-build tests
-        - nix-build -A pkgs.fractalide
+        - ./support/utils/nix-build-travis-fold.sh tests
+        - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
     - os: linux
       dist: trusty
       script:
-        - nix-build tests
-        - nix-build -A pkgs.fractalide
+        - ./support/utils/nix-build-travis-fold.sh tests
+        - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
     - os: osx
       script:
-        - nix-build -A pkgs.fractalide
+        - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
