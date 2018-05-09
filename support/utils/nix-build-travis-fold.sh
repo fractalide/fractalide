@@ -7,7 +7,7 @@ function subfold() {
   local prefix=$1
   awk '
     BEGIN {
-      date_cmd=sprintf("echo $(( ($(date +%%s) - 1) * 1000000000 + $(echo 1$(date +%%N)) ))")
+      date_cmd="date +%s%N"
       current_scope="'$prefix'"
       printf "travis_fold:start:%s\r", current_scope
       printf "travis_time:start:%s\r", current_scope
