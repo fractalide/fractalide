@@ -21,7 +21,7 @@
                               [msg (recv (input "in"))])
                          (define new-acc
                            (match msg
-                             [(vector "add" (? g:graph? add))
+                             [(cons 'add (? g:graph? add))
                               (define flat (send-sched add acc input output))
                               (struct-copy g:graph acc
                                            [agent (append (g:graph-agent acc) (g:graph-agent flat))]
@@ -29,7 +29,7 @@
                                            ; The virtuals were already merged in send-sched -> resolve-virtual
                                            [virtual-in (g:graph-virtual-in flat)]
                                            [virtual-out (g:graph-virtual-out flat)])]
-                             [(vector "dynamic-add" msg)
+                             [(cons 'dynamic-add msg)
                               ; do a classic add with the sender "port"
                               (define flat (send-sched (dynamic-add-graph msg) acc input output (dynamic-add-sender msg)))
                               (struct-copy g:graph acc
@@ -38,9 +38,9 @@
                                            ; The virtuals were already merged in send-sched -> resolve-virtual
                                            [virtual-in (g:graph-virtual-in flat)]
                                            [virtual-out (g:graph-virtual-out flat)])]
-                             [(vector "dynamic-remove" graph)
+                             [(cons 'dynamic-remove graph)
                               (send-sched-remove graph acc input output)]
-                             ["stop"
+                             [(cons 'stop #t)
                               (send (output "halt") #t)
                               (send (output "sched") (msg-stop))
                               acc]))

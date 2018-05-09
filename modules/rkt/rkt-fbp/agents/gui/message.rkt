@@ -25,10 +25,10 @@
                        (define message (if acc
                                       acc
                                       (begin
-                                        (send (output "out") (vector "init" (generate-message input)))
+                                        (send (output "out") (cons 'init (generate-message input)))
                                         (recv (input "acc")))))
                        (match msg
-                         [(vector "set-label" new-label)
+                         [(cons 'set-label (? string? new-label))
                           (class-send message set-label new-label)]
                          [else (send-action output output-array msg)])
                        (send (output "acc") message))))

@@ -14,7 +14,7 @@
     (let* ([text-field (new text-field% [parent frame]
                      [label #f]
                      [callback (lambda (t-f event)
-                                 (send (input "in") (vector (class-send event get-event-type)
+                                 (send (input "in") (cons (class-send event get-event-type)
                                                             (class-send t-f get-value))))])])
       (send (input "acc") text-field))))
 
@@ -28,10 +28,10 @@
                        (define text-f (if acc
                                           acc
                                           (begin
-                                            (send (output "out") (vector "init" (generate-text-field input)))
+                                            (send (output "out") (cons 'init (generate-text-field input)))
                                             (recv (input "acc")))))
                        (match msg
-                         [(vector "set-label" new-label)
+                         [(cons 'set-label (? string? new-label))
                           (class-send text-f set-label new-label)]
                          [else (send-action output output-array msg)])
                        (send (output "acc") text-f))))

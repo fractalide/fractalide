@@ -9,4 +9,4 @@
               #:output '("out")
               #:proc (lambda (input output input-array output-array option)
                        (let* ([msg (recv (input "in"))])
-                         (send (output "out") (vector "remove"))))))
+                         (send (output "out") (cons 'remove #t))))))

@@ -9,6 +9,6 @@
               #:output '("out")
               #:proc (lambda (input output input-array output-array option)
                        (let* ([msg (recv (input "in"))]
-                              [step (string->number (vector-ref msg 1))]
+                              [step (string->number (cdr msg))]
                               [step (or step 1)])
                          (send (output "out") step)))))

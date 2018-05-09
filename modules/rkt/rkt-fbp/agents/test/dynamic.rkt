@@ -24,7 +24,7 @@
                                                0)))
                          (match msg
                            ; We want to add a node given as option, and connect it to the previous vertical-panel
-                           [(vector 'button)
+                           [(cons 'button #t)
                             (let* ([name (string-append "dynamic" (number->string new-acc))])
                               (define g (make-graph
                                          (node name option)
@@ -32,7 +32,7 @@
                               (send-dynamic-add g input output))
                             (set! new-acc (+ new-acc 1))]
                            ; We want to remove the last node added
-                           [(vector "remove")
+                           [(cons 'remove #t)
                             ; Don't remove if there is nothing to remove...
                             (if (> new-acc 0)
                                 ; true, remove
@@ -40,7 +40,7 @@
                                   (set! new-acc (- new-acc 1))
                                   (let* ([name (string-append "dynamic" (number->string new-acc))])
                                     ; send delete to vp
-                                    (send-dynamic-add (make-graph (iip name "in" (vector "delete"))) input output)
+                                    (send-dynamic-add (make-graph (iip name "in" (cons 'delete #t))) input output)
                                     ; remove the actual nodes
                                     (define g (make-graph
                                                (node name option)

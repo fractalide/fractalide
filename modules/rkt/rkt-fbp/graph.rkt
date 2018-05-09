@@ -58,4 +58,4 @@
                                    [agent (string-append name "-" (g-virtual-agent vo))])))
   (define new-delta (graph new-agent new-edge new-v-in new-v-out new-iip))
   ; send the differences
-  (agt:send (output "out") (vector "dynamic-remove" new-delta)))
+  (agt:send (output "out") (cons 'dynamic-remove new-delta)))

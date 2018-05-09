@@ -67,9 +67,9 @@
 
 (define (send-action output output-array msg)
   (cond
-     [(vector? msg)
-      (if (hash-has-key? (output-array "out") (vector-ref msg 0))
-          (send (hash-ref (output-array "out") (vector-ref msg 0)) msg)
+     [(cons? msg)
+      (if (hash-has-key? (output-array "out") (car msg))
+          (send (hash-ref (output-array "out") (car msg)) msg)
           (send (output "out") msg))]
      [else
       (send (output "out") msg)]))
