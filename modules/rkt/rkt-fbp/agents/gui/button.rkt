@@ -2,7 +2,8 @@
 
 (provide agt)
 
-(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
 
 (require racket/gui/base
@@ -29,8 +30,11 @@
                                       (begin
                                         (send (output "out") (cons 'init (generate-button input)))
                                         (recv (input "acc")))))
-                       (match msg
-                         [(cons 'set-label (? string? new-label))
-                          (class-send btn set-label new-label)]
-                         [else (send-action output output-array msg)])
+                       (define managed #f)
+                       (set! managed (area-manage btn msg output output-array))
+                       (set! managed (subarea-manage btn msg output output-array))
+                       (set! managed (window-manage btn msg output output-array))
+                       (if managed
+                           (void)
+                           (send-action output output-array msg))
                        (send (output "acc") btn))))
