@@ -29,4 +29,4 @@ function subfold() {
   '
 }
 
-nix-build "$@" |& subfold ${!#}
+{ nix-build "$@" 2>&1; } | subfold ${!#}
