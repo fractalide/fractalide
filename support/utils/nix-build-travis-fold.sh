@@ -1,4 +1,5 @@
-#! /usr/bin/env bash
+#! /usr/bin/env nix-shell
+#! nix-shell --quiet -p bash coreutils gawk -i bash
 set -e
 set -u
 set -o pipefail
