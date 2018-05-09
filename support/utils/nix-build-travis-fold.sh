@@ -1,4 +1,5 @@
-#! /usr/bin/env bash
+#! /usr/bin/env nix-shell
+#! nix-shell -p bash coreutils gawk -i bash
 set -e
 set -u
 set -o pipefail
@@ -29,4 +30,4 @@ function subfold() {
   '
 }
 
-{ nix-build "$@" 2>&1; } | subfold ${!#}
+nix-build "$@" |& subfold ${!#}
