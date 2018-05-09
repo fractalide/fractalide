@@ -15,8 +15,8 @@
 , racket2nix ? import (fetchFromGitHub {
     owner  = "fractalide";
     repo   = "racket2nix";
-    rev    = "20354a92230bf5c9aeb53aa5e6d9720dbd8380e5";
-    sha256 = "1z2ni1b3zh8hx8wnzdipyi7ys06zwm4kqzql6d0555dy3y18g70m";
+    rev    = "f694823e1bf959a11f717e60b4e95bc0185f4fc0";
+    sha256 = "1b1gwbjp91i555dy18shfyfsp272qdwhqi72pzl09lfl14d5z37r";
   }) { racket = (pkgs {}).racket-minimal; }
 }:
 pkgs {
