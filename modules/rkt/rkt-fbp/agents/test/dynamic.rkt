@@ -6,6 +6,8 @@
          fractalide/modules/rkt/rkt-fbp/graph
          racket/match)
 
+(require fractalide/modules/rkt/rkt-fbp/edges/fvm/dynamic-add)
+
 (define agt (define-agent
               #:input '("in")
               #:output '("out")
@@ -18,7 +20,7 @@
                                              (let ([g (make-graph
                                                        (node "vp" "gui/vertical-panel")
                                                        (virtual-out "dynamic-out" "vp" "out"))])
-                                               (dynamic-add g input output)
+                                               (send-dynamic-add g input output)
                                                0)))
                          (match msg
                            ; We want to add a node given as option, and connect it to the previous vertical-panel
@@ -27,7 +29,7 @@
                               (define g (make-graph
                                          (node name option)
                                          (edge name "out" #f "vp" "place" new-acc)))
-                              (dynamic-add g input output))
+                              (send-dynamic-add g input output))
                             (set! new-acc (+ new-acc 1))]
                            ; We want to remove the last node added
                            [(vector "remove")
@@ -38,7 +40,7 @@
                                   (set! new-acc (- new-acc 1))
                                   (let* ([name (string-append "dynamic" (number->string new-acc))])
                                     ; send delete to vp
-                                    (dynamic-add (make-graph (iip name "in" (vector "delete"))) input output)
+                                    (send-dynamic-add (make-graph (iip name "in" (vector "delete"))) input output)
                                     ; remove the actual nodes
                                     (define g (make-graph
                                                (node name option)

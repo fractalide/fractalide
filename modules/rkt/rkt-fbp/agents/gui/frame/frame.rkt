@@ -24,7 +24,7 @@
                                            fr)))
                        (match msg
                          [(vector "init" curry) (curry fr)]
-                         [(vector "dynamic-add" graph port)
+                         [(vector "dynamic-add" _)
                           (send (output "fvm") msg)]
                          [(vector "dynamic-remove" graph)
                           (send (output "fvm") msg)]

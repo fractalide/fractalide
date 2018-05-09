@@ -6,6 +6,8 @@
          (prefix-in g: fractalide/modules/rkt/rkt-fbp/graph)
          fractalide/modules/rkt/rkt-fbp/def)
 
+(require fractalide/modules/rkt/rkt-fbp/edges/fvm/dynamic-add)
+
 (require racket/match)
 
 ; TODO : manage well recursive virtual array (not all deleted for the moment)
@@ -19,7 +21,7 @@
                               [msg (recv (input "in"))])
                          (define new-acc
                            (match msg
-                             [(vector "add" add)
+                             [(vector "add" (? g:graph? add))
                               (define flat (send-sched add acc input output))
                               (struct-copy g:graph acc
                                            [agent (append (g:graph-agent acc) (g:graph-agent flat))]
@@ -27,9 +29,9 @@
                                            ; The virtuals were already merged in send-sched -> resolve-virtual
                                            [virtual-in (g:graph-virtual-in flat)]
                                            [virtual-out (g:graph-virtual-out flat)])]
-                             [(vector "dynamic-add" graph port)
+                             [(vector "dynamic-add" msg)
                               ; do a classic add with the sender "port"
-                              (define flat (send-sched graph acc input output port))
+                              (define flat (send-sched (dynamic-add-graph msg) acc input output (dynamic-add-sender msg)))
                               (struct-copy g:graph acc
                                            [agent (append (g:graph-agent acc) (g:graph-agent flat))]
                                            [edge (append (g:graph-edge acc) (g:graph-edge flat))]
