@@ -13,8 +13,8 @@
     sha256 = "1shz56l19kgk05p2xvhb7jg1whhfjix6njx1q4rvrc5p1lvyvizd";
   }
 , racket2nix ? import (fetchFromGitHub {
-    owner  = "clacke";
-    repo   = "racket2nix-clacke";
+    owner  = "fractalide";
+    repo   = "racket2nix";
     rev    = "622cb6c52fe59b82dea88ec75a2d5d2a98e408b6";
     sha256 = "1qvfrab24zsm1ygnqcin9vjqv63a0swqiwdr3im8f2v2kciklwkx";
   }) { racket = (pkgs {}).racket-minimal; }
