@@ -13,6 +13,10 @@
            (node "tf" "gui/text-field")
            (edge "tf" "out" #f "vp" "place" 1)
            (iip "tf" "in" #t)
+           ; dummy check box
+           (node "cb" "gui/check-box")
+           (edge "cb" "out" #f "vp" "place" 7)
+           (iip "cb" "in" (cons 'set-value #t))
            ; Quit button
            (node "but-quit" "gui/button")
            (node "ip-to-close" "test/to-close")
