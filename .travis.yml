@@ -3,11 +3,17 @@ language: nix
 matrix:
   include:
     - os: linux
+      dist: trusty
       script:
         - ./support/utils/nix-build-travis-fold.sh tests
         - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
     - os: linux
-      dist: trusty
+      dist: xenial
+      script:
+        - ./support/utils/nix-build-travis-fold.sh tests
+        - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
+    - os: linux
+      dist: bionic
       script:
         - ./support/utils/nix-build-travis-fold.sh tests
         - ./support/utils/nix-build-travis-fold.sh -A pkgs.fractalide
