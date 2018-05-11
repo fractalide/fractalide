@@ -2,7 +2,8 @@
 
 (provide agt)
 
-(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
 
 (require racket/gui/base
@@ -11,7 +12,7 @@
 
 (define (generate-message input)
   (lambda (frame)
-    (let* ([msg (new message% [parent frame]
+    (let* ([msg (new (with-event message% input)[parent frame]
                      [auto-resize #t]
                      [label ""])])
       (send (input "acc") msg))))
@@ -19,6 +20,7 @@
 (define agt (define-agent
               #:input '("in") ; in port
               #:output '("out") ; out port
+              #:output-array '("out")
               #:proc (lambda (input output input-array output-array option)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
@@ -27,8 +29,11 @@
                                       (begin
                                         (send (output "out") (cons 'init (generate-message input)))
                                         (recv (input "acc")))))
-                       (match msg
-                         [(cons 'set-label (? string? new-label))
-                          (class-send message set-label new-label)]
-                         [else (send-action output output-array msg)])
+                       (define managed #f)
+                       (set! managed (area-manage message msg output output-array))
+                       (set! managed (subarea-manage message msg output output-array))
+                       (set! managed (window-manage message msg output output-array))
+                       (if managed
+                           (void)
+                           (send-action output output-array msg))
                        (send (output "acc") message))))

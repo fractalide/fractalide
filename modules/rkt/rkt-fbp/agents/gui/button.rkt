@@ -12,7 +12,7 @@
 
 (define (generate-button input)
   (lambda (frame)
-    (let* ([but (new button% [parent frame]
+    (let* ([but (new (with-event button% input) [parent frame]
                        [label "Click here"]
                        [callback (lambda (button event)
                                    (send (input "in") (cons (class-send event get-event-type) #t)))])])

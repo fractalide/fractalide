@@ -2,7 +2,8 @@
 
 (provide agt)
 
-(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
 
 (require racket/gui/base
@@ -12,7 +13,7 @@
 
 (define (generate-hp input)
   (lambda (frame)
-    (let* ([hp (new horizontal-panel% [parent frame]
+    (let* ([hp (new (with-event horizontal-panel% input) [parent frame]
                     [stretchable-height #f]
                     [alignment '(center center)])])
       (send (input "acc") hp))))
