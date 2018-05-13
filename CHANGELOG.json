@@ -6,31 +6,39 @@
         "title": "PASCAL",
         "default-expand-on-website": true,
         "render-features-on-website": true,
-        "description": "The PASCAL release represents the initial release of Hyperflow. It implements the basic infrastructure which allows the building and execution of Fractalide applications in Hyperflow.",
+        "description": "The Pascal release represents the initial release of Hyperflow. It implements the basic infrastructure which allows the building and execution of Fractalide applications in Hyperflow.",
         "features": [
           {
             "title": "Hyperflow MVP",
-            "progress-bar": 30,
+            "progress-bar": 45,
             "Objectives": [
+              "Fractalide.com website",
+              "Continuous Integration pipeline using Hydra; so users don't need to build dependencies",
+              "Racket2Nix: Wraps Racket packages and their transitive dependencies in Nix",
               "Racket Flow-based programming scheduler",
               "Node, agent and graph interfaces",
-              "Design Mode displays a basic text editor",
-              "Graph Mode displays graphs as text only",
-              "Run Mode renders developed applications",
-              "Basic structure of Hyperflow in place"
+              "Card Paradigm: a HyperCard inspired representation of GUI compositions using Flow-based programming",
+              "Node Mode displays a basic text editor; to write agent source code in",
+              "Graph Mode displays graphs as text only; to compose agents together into apps",
+              "Run Mode renders developed applications"
             ],
             "Work Done": [
+              "Fractalide.com website",
+              "Racket2Nix: Wraps Racket packages in Nix",
               "Racket Flow-based programming scheduler",
-              "Agent, graph and node interface implemented"
+              "Node, agent and graph interfaces",
+              "Card Paradigm: a HyperCard inspired representation of GUI compositions using Flow-based programming"
             ]
           },
           {
             "title": "Hyperflow Alpha",
             "progress-bar": 0,
             "Objectives": [
-              "Design Mode includes a basic debugger",
+              "Named Data Networking Layer for Apps",
+              "Node Mode includes a basic debugger",
               "Improved Graph editing in graph mode, possibly with rudimentary graphical movable components",
-              "Improved UX"
+              "Improved UX by upgrading to GTK+ 3",
+              "Improve the graph language such that it'll write to a Nix expression"
             ],
             "Work Done": []
           },
@@ -38,10 +46,10 @@
             "title": "Hyperflow Beta",
             "progress-bar": 0,
             "Objectives": [
-              "Information flow debugger",
+              "Graph Mode Information flow debugger",
               "Graphical construction of the graph",
               "Support for multiple platforms (Mac OS, Linux and Windows 10)",
-              "Improved UX"
+              "Improved UX by creating a new GTK+ 3 CSS theme"
             ],
             "Work Done": []
           },
@@ -49,9 +57,8 @@
             "title": "Hyperflow Stable",
             "progress-bar": 0,
             "Objectives": [
-              "Hyperflow has been upgraded to use typed/racket as much as possible",
-              "The scheduler and core nodes makes use of dependent types that formally specify the system for heightened security",
-              "Extensive documentation is written"
+              "Extensive documentation is written",
+              "More items to add as we get closer to this release"
             ],
             "Work Done": []
           }
@@ -59,10 +66,21 @@
       },
       {
         "title": "FIBONACCI",
-        "default-expand-on-website": false,
-        "render-features-on-website": false,
-        "description": "The FIBONACCI release builds out the first user facing Fractalide applications.",
-        "features": []
+        "default-expand-on-website": true,
+        "render-features-on-website": true,
+        "description": "The Fibonacci release builds out the first user facing Fractalide applications.",
+        "features": [
+          {
+            "title": "Cardano Wallet",
+            "progress-bar": 5,
+            "Objectives": [
+              "Stand alone Cardano Wallet implemented using the Card Paradigm, though it doesn't execute in Hyperflow",
+              "The same Cardano Wallet executes as an app within Hyperflow"
+            ],
+            "Work Done": [
+            ]
+          },
+        ]
       }
     ]
   }
