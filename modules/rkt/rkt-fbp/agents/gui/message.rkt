@@ -8,14 +8,53 @@
 
 (require racket/gui/base
          racket/match)
-(require (rename-in racket/class [send class-send]))
+(require (prefix-in class: racket/class))
 
-(define (generate-message input)
+(define base-default
+  (hash 'label #f
+        'auto-resize #t
+        'style '()
+        'font normal-control-font
+        'enabled #t
+        'vert-margin 2
+        'horiz-margin 2
+        'min-width #f
+        'min-height #f
+        'stretchable-width #f
+        'stretchable-height #f))
+
+(define (generate input data)
   (lambda (frame)
-    (let* ([msg (new (with-event message% input)[parent frame]
-                     [auto-resize #t]
-                     [label ""])])
-      (send (input "acc") msg))))
+    (define default (for/fold ([acc base-default])
+                              ([d data])
+                      (hash-set acc (car d) (cdr d))))
+    (let* ([cb (class:new (with-event message% input) [parent frame]
+                          [auto-resize (hash-ref default 'auto-resize)]
+                          [label (hash-ref default 'label)]
+                          [style (hash-ref default 'style)]
+                          [font (hash-ref default 'font)]
+                          [enabled (hash-ref default 'enabled)]
+                          [vert-margin (hash-ref default 'vert-margin)]
+                          [horiz-margin (hash-ref default 'horiz-margin)]
+                          [min-width (hash-ref default 'min-width)]
+                          [min-height (hash-ref default 'min-height)]
+                          [stretchable-width (hash-ref default 'stretchable-width)]
+                          [stretchable-height (hash-ref default 'stretchable-height)])])
+      (send (input "acc") cb))))
+
+(define (process-msg msg widget input output output-array)
+  (define managed #f)
+  (set! managed (area-manage widget msg output output-array))
+  (set! managed (subarea-manage widget msg output output-array))
+  (set! managed (window-manage widget msg output output-array))
+  (if managed
+      (void)
+      (match msg
+        [(cons 'get-auto-resize act)
+         (send-action output output-array (cons act (class:send widget get-auto-resize)))]
+        [(cons 'set-auto-resize b)
+         (class:send widget set-auto-resize b)]
+        [else (send-action output output-array msg)])))
 
 (define agt (define-agent
               #:input '("in") ; in port
@@ -24,16 +63,5 @@
               #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
-                       (define message (if acc
-                                      acc
-                                      (begin
-                                        (send (output "out") (cons 'init (generate-message input)))
-                                        (recv (input "acc")))))
-                       (define managed #f)
-                       (set! managed (area-manage message msg output output-array))
-                       (set! managed (subarea-manage message msg output output-array))
-                       (set! managed (window-manage message msg output output-array))
-                       (if managed
-                           (void)
-                           (send-action output output-array msg))
-                       (send (output "acc") message))))
+                       (set! acc (manage acc msg input output output-array generate process-msg))
+                       (send (output "acc") acc))))

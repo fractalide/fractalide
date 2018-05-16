@@ -15,9 +15,10 @@
            (edge "sub" "out" #f "hp" "place" 1)
            (edge "msg" "out" #f "hp" "place" 2)
            (edge "add" "out" #f "hp" "place" 3)
-           (iip "add" "in" (cons 'set-label "Add"))
-           (iip "sub" "in" (cons 'set-label "Sub"))
-           (iip "msg" "in" (cons 'set-label "No yet started"))
+           (iip "add" "in" '(init . ((label . "Add"))))
+           (iip "sub" "in" '(init . ((label . "Sub"))))
+           (iip "msg" "in" '(init . ((label . "No yet started")
+                                     (auto-resize . #f))))
            ; Model
            (node "model" "test/counter/model")
            (edge "model" "out" #f "msg" "in" #f)

@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/match
+         racket/list
          (prefix-in class: racket/class))
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
@@ -185,3 +186,27 @@
     (class:define/override (on-superwindow-show b?)
       (send (input "in") (cons 'superwindow-show b?)))
     (class:super-new)))
+
+
+(define (manage acc msg input output output-array create process-msg)
+  ; If no acc, create a empty list
+  (set! acc (if acc acc (cons 'init (list))))
+  (if (and (cons? acc) (eq? (car acc) 'init))
+      (begin
+        ; true -> widget in creation
+        (if (eq? (car msg) 'init)
+            ; True -> create widget and receive it
+            ;      -> process the list
+            (begin
+              ; create the widget
+              (send (output "out") (cons 'init (create input (cdr msg))))
+              (let ([widget (recv (input "acc"))])
+                (for ([m (cdr acc)])
+                  (process-msg m widget input output output-array))
+                widget))
+            ; False -> add to the list
+            (cons 'init (cons msg (cdr acc)))))
+      ; false -> already created
+      (begin
+        (process-msg msg acc input output output-array)
+        acc)))

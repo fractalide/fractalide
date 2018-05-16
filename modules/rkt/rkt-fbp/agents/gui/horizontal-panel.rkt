@@ -13,7 +13,7 @@
 
 (define (generate-hp input)
   (lambda (frame)
-    (let* ([hp (new (with-event horizontal-panel% input) [parent frame]
+    (let* ([hp (new horizontal-panel% [parent frame]
                     [stretchable-height #f]
                     [alignment '(center center)])])
       (send (input "acc") hp))))

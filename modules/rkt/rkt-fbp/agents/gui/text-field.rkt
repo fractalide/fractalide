@@ -8,16 +8,53 @@
 
 (require racket/gui/base
          racket/match)
-(require (rename-in racket/class [send class-send]))
+(require (prefix-in class: racket/class))
 
-(define (generate-text-field input)
+(define base-default
+  (hash 'label #f
+        'init-value ""
+        'style '(single)
+        'font normal-control-font
+        'enabled #t
+        'vert-margin 2
+        'horiz-margin 2
+        'min-width #f
+        'min-height #f
+        'stretchable-width #t
+        'stretchable-height (memq 'multiple '(single))))
+
+(define (generate input data)
   (lambda (frame)
-    (let* ([text-field (new (with-event text-field% input) [parent frame]
-                     [label #f]
-                     [callback (lambda (t-f event)
-                                 (send (input "in") (cons (class-send event get-event-type)
-                                                            (class-send t-f get-value))))])])
-      (send (input "acc") text-field))))
+    (define default (for/fold ([acc base-default])
+                              ([d data])
+                      (hash-set acc (car d) (cdr d))))
+    (let* ([cb (class:new (with-event text-field% input) [parent frame]
+                          [init-value (hash-ref default 'init-value)]
+                          [label (hash-ref default 'label)]
+                          [style (hash-ref default 'style)]
+                          [font (hash-ref default 'font)]
+                          [enabled (hash-ref default 'enabled)]
+                          [vert-margin (hash-ref default 'vert-margin)]
+                          [horiz-margin (hash-ref default 'horiz-margin)]
+                          [min-width (hash-ref default 'min-width)]
+                          [min-height (hash-ref default 'min-height)]
+                          [stretchable-width (hash-ref default 'stretchable-width)]
+                          [stretchable-height (hash-ref default 'stretchable-height)]
+                          [callback (lambda (t-f event)
+                                      (send (input "in") (cons (class:send event get-event-type)
+                                                               (class:send t-f get-value))))])])
+      (send (input "acc") cb))))
+
+(define (process-msg msg widget input output output-array)
+  (define managed #f)
+  (set! managed (area-manage widget msg output output-array))
+  (set! managed (subarea-manage widget msg output output-array))
+  (set! managed (window-manage widget msg output output-array))
+  (if managed
+      (void)
+      (match msg
+        ; TODO : manage msg for text-field
+        [else (send-action output output-array msg)])))
 
 (define agt (define-agent
               #:input '("in") ; in port
@@ -26,16 +63,5 @@
               #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
-                       (define text-f (if acc
-                                          acc
-                                          (begin
-                                            (send (output "out") (cons 'init (generate-text-field input)))
-                                            (recv (input "acc")))))
-                       (define managed #f)
-                       (set! managed (area-manage text-f msg output output-array))
-                       (set! managed (subarea-manage text-f msg output output-array))
-                       (set! managed (window-manage text-f msg output output-array))
-                       (if managed
-                           (void)
-                           (send-action output output-array msg))
-                       (send (output "acc") text-f))))
+                       (set! acc (manage acc msg input output output-array generate process-msg))
+                       (send (output "acc") acc))))

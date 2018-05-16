@@ -8,15 +8,49 @@
 
 (require racket/gui/base
          racket/match)
-(require (rename-in racket/class [send class-send]))
+(require (prefix-in class: racket/class))
 
-(define (generate-button input)
+(define base-default
+  (hash 'label #f
+        'style '()
+        'font normal-control-font
+        'enabled #t
+        'vert-margin 2
+        'horiz-margin 2
+        'min-width #f
+        'min-height #f
+        'stretchable-width #f
+        'stretchable-height #f))
+
+(define (generate input data)
   (lambda (frame)
-    (let* ([but (new (with-event button% input) [parent frame]
-                       [label "Click here"]
-                       [callback (lambda (button event)
-                                   (send (input "in") (cons (class-send event get-event-type) #t)))])])
-      (send (input "acc") but))))
+    (define default (for/fold ([acc base-default])
+                              ([d data])
+                      (hash-set acc (car d) (cdr d))))
+    (let* ([cb (class:new (with-event button% input) [parent frame]
+                          [label (hash-ref default 'label)]
+                          [style (hash-ref default 'style)]
+                          [font (hash-ref default 'font)]
+                          [enabled (hash-ref default 'enabled)]
+                          [vert-margin (hash-ref default 'vert-margin)]
+                          [horiz-margin (hash-ref default 'horiz-margin)]
+                          [min-width (hash-ref default 'min-width)]
+                          [min-height (hash-ref default 'min-height)]
+                          [stretchable-width (hash-ref default 'stretchable-width)]
+                          [stretchable-height (hash-ref default 'stretchable-height)]
+                          [callback (lambda (button event)
+                                      (send (input "in") (cons (class:send event get-event-type) #t)))])])
+      (send (input "acc") cb))))
+
+(define (process-msg msg widget input output output-array)
+  (define managed #f)
+  (set! managed (area-manage widget msg output output-array))
+  (set! managed (subarea-manage widget msg output output-array))
+  (set! managed (window-manage widget msg output output-array))
+  (if managed
+      (void)
+      (send-action output output-array msg)))
+
 
 (define agt (define-agent
               #:input '("in") ; in port
@@ -25,16 +59,5 @@
               #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
-                       (define btn (if acc
-                                      acc
-                                      (begin
-                                        (send (output "out") (cons 'init (generate-button input)))
-                                        (recv (input "acc")))))
-                       (define managed #f)
-                       (set! managed (area-manage btn msg output output-array))
-                       (set! managed (subarea-manage btn msg output output-array))
-                       (set! managed (window-manage btn msg output output-array))
-                       (if managed
-                           (void)
-                           (send-action output output-array msg))
-                       (send (output "acc") btn))))
+                       (set! acc (manage acc msg input output output-array generate process-msg))
+                       (send (output "acc") acc))))
