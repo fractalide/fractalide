@@ -6,28 +6,28 @@
         "title": "PASCAL",
         "default-expand-on-website": true,
         "render-features-on-website": true,
-        "description": "The Pascal release represents the initial release of Hyperflow. It implements the basic infrastructure which allows the building and execution of Fractalide applications in Hyperflow.",
+        "description": "Pascal represents the initial release of Hyperflow. Hyperflow is a new browser for decentralized applications that may interface with cryptocurrencies and associated smart contracts. It solves the problem of governments and banks censoring people. Once cryptocurrencies scale, whole new domains of economic activity will arise. The activity must develop on infractructure that is decentralized. Not the centralized client-server model of today's point-to-point TCP/IP centralized Internet. A model governments and international corporations already control. Pascal implements the basic infrastructure which allows the building and execution of Fractalide applications in Hyperflow.",
         "features": [
           {
-            "title": "Hyperflow MVP",
-            "progress-bar": 45,
+            "title": "Hyperflow Minimal",
+            "progress-bar": 40,
             "Objectives": [
-              "Fractalide.com website",
-              "Continuous Integration pipeline using Hydra; so users don't need to build dependencies",
-              "Racket2Nix: Wraps Racket packages and their transitive dependencies in Nix",
               "Racket Flow-based programming scheduler",
               "Node, agent and graph interfaces",
               "Card Paradigm: a HyperCard inspired representation of GUI compositions using Flow-based programming",
-              "Node Mode displays a basic text editor; to write agent source code in",
+              "Node Mode displays a basic text editor; to write agent source code",
               "Graph Mode displays graphs as text only; to compose agents together into apps",
-              "Run Mode renders developed applications"
+              "Run Mode renders apps"
             ],
             "Work Done": [
-              "Fractalide.com website",
-              "Racket2Nix: Wraps Racket packages in Nix",
-              "Racket Flow-based programming scheduler",
-              "Node, agent and graph interfaces",
-              "Card Paradigm: a HyperCard inspired representation of GUI compositions using Flow-based programming"
+              "Fractalide.com website - what you're reading!",
+              "Racket2Nix now wraps Racket packages and their transitive dependencies in Nix. Allowing you to declaratively pull in racket dependencies into your agent",
+              "Racket Flow-based programming scheduler correctly schedules the execution of agents",
+              "Racket Fractalide Virtual Machine executes graphs describing applications",
+              "Graph interfaces are completed, this includes virtual ports between agents",
+              "Minimal Graph description language is completed and surprisingly succinct, we might just keep this as the primary inerface for composing graphs",
+              "Agent interfaces are completed, we've reduced an agent's interface to the minimal amount of code allowing for fast programming. Agents support input and output array ports, simple input and output ports along with an accumulator and option port",
+              "Card Paradigm, interacting with racket/gui and the Card Paradigm works, we can get simple applications running that dynamically change"
             ]
           },
           {
@@ -36,9 +36,10 @@
             "Objectives": [
               "Named Data Networking Layer for Apps",
               "Node Mode includes a basic debugger",
-              "Improved Graph editing in graph mode, possibly with rudimentary graphical movable components",
-              "Improved UX by upgrading to GTK+ 3",
-              "Improve the graph language such that it'll write to a Nix expression"
+              "Improved Graph editing in graph mode, possibly with rudimentary graphical movable components, or maybe a regenerated image of the graph",
+              "Improved UI by upgrading to GTK+ 3",
+              "Improve the graph language such that it'll be fast for the develop/compile/test cycle yet be completely reproducible. Meaning add a nix layer to describe graph dependencies declaratively"
+
             ],
             "Work Done": []
           },
@@ -49,7 +50,8 @@
               "Graph Mode Information flow debugger",
               "Graphical construction of the graph",
               "Support for multiple platforms (Mac OS, Linux and Windows 10)",
-              "Improved UX by creating a new GTK+ 3 CSS theme"
+              "Allow for optimizations by easily dropping down into an existing Rust implementation",
+              "Improved User Interface by creating a new GTK+ 3 CSS theme"
             ],
             "Work Done": []
           },
@@ -68,17 +70,17 @@
         "title": "FIBONACCI",
         "default-expand-on-website": true,
         "render-features-on-website": true,
-        "description": "The Fibonacci release builds out the first user facing Fractalide applications.",
+        "description": "The Fibonacci release builds out the first user facing Fractalide applications. Primarily this will be a Cardano Wallet implementation. It'll be a functional wallet that will implement features similar to that of Daedalus. The only other wallet on the Cardano system",
         "features": [
           {
             "title": "Cardano Wallet",
             "progress-bar": 5,
             "Objectives": [
-              "Stand alone Cardano Wallet implemented using the Card Paradigm, though it doesn't execute in Hyperflow",
-              "The same Cardano Wallet executes as an app within Hyperflow"
+              "Stand alone Cardano Wallet",
+              "Multiple platform support (Linux, Windows 10, MacOS, Android, iOS)",
+              "Hyperflow support"
             ],
-            "Work Done": [
-            ]
+            "Work Done": []
           }
         ]
       }
