@@ -11,7 +11,7 @@
 (define agt (define-agent
               #:input '("in") ; in port
               #:output '("out" "halt" "fvm") ; out port
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
                        (define fr (if acc

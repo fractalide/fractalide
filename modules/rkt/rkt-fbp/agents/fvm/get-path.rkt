@@ -9,7 +9,7 @@
 (define agt (define-agent
               #:input '("in")
               #:output '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([agt (recv (input "in"))])
                          (define new-type (string-append "agents/" (g-agent-type agt) ".rkt"))
                          (define new-agent (struct-copy g-agent agt

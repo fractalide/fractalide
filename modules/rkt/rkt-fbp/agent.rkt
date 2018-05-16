@@ -4,14 +4,15 @@
 
 (provide recv try-recv
          send
-         recv-option send-action
+         send-action
          get-in get-out get-in-array get-out-array
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          agent-no-input?
          make-agent define-agent)
 
-(require racket/list)
+(require racket/list
+         racket/match)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
 
@@ -40,14 +41,6 @@
 ;;
 ;; Methods for building the input arguments of the procedure
 ;;
-
-; (-> agent agent)
-(define (recv-option agt)
-  (let* ([opt (hash-ref (agent-inport agt) "option")]
-         [msg (port-try-recv opt)])
-    (if msg
-        (recv-option (struct-copy agent agt [option msg]))
-        agt)))
 
 ; (-> agent String port)
 (define (get-in agent port)
@@ -172,11 +165,13 @@
 ; (-> (Listof String) String (Async-Channelof Msg) (Immutable-HashTable String port))
 (define (build-inport inputs name sched)
   (for/hash ([input inputs])
-    (if (or (string=? input "acc") (string=? input "option"))
-        ; It's an acc or option port
-        (values input (make-port 30 name sched #f))
-        ; It's a normal port
-        (values input (make-port 30 name sched #t)))))
+    (match input
+      ["acc"
+       (values input (make-port 30 name sched #f))]
+      ["option"
+       (values input (make-port 30 name sched #f #:option #t))]
+      [_
+       (values input (make-port 30 name sched #t))])))
 
 ; (-> (Listof String) (Immutable-HashTable String False))
 (define (build-outport outputs)

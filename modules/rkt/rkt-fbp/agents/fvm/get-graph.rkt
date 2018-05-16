@@ -9,7 +9,7 @@
 (define agt (define-agent
               #:input '("in")
               #:output '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([agt (recv (input "in"))]
                               [name (g-agent-name agt)]
                               [type (g-agent-type agt)])

@@ -21,7 +21,7 @@
               #:input '("in") ; in port
               #:output '("out") ; out port
               #:output-array '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg (recv (input "in")))
                        (define message (if acc

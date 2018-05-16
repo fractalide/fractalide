@@ -7,7 +7,7 @@
 (define agt (define-agent
               #:input '("in")
               #:output '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([msg (recv (input "in"))]
                               [step (string->number (cdr msg))]
                               [step (or step 1)])

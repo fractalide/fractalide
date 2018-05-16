@@ -12,8 +12,9 @@
               #:input '("in")
               #:output '("out")
               #:output-array '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([acc (try-recv (input "acc"))]
+                              [option (recv (input "option"))]
                               [msg (recv (input "in"))])
                          ; If there is not yet an acc, it is the first run. We spawn a vertical-panel in the frame.
                          (define new-acc (if acc acc

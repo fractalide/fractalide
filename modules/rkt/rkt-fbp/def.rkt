@@ -7,7 +7,7 @@
 
 (struct opt-agent (inport in-array outport out-array proc))
 
-(struct port (channel name thd sync?))
+(struct port (channel name thd sync? option))
 
 ; All sched messages
 
