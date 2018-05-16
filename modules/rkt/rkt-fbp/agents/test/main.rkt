@@ -9,23 +9,32 @@
            ; VP
            (node "vp" "gui/vertical-panel")
            (edge "vp" "out" #f "frame" "in" #f)
+           ; dummy text field
+           (node "tf" "gui/text-field")
+           (edge "tf" "out" #f "vp" "place" 1)
+           (iip "tf" "in" '(init . ((label . "test: "))))
+           ; dummy check box
+           (node "cb" "gui/check-box")
+           (edge "cb" "out" #f "vp" "place" 7)
+           (iip "cb" "in" (cons 'set-value #t))
+           (iip "cb" "in" (cons 'init '((label . "This is a check-box"))))
            ; Quit button
            (node "but-quit" "gui/button")
            (node "ip-to-close" "test/to-close")
            (edge "but-quit" "out" 'button "ip-to-close" "in" #f)
-           (edge "but-quit" "out" #f "vp" "place" 1)
+           (edge "but-quit" "out" #f "vp" "place" 2)
            (edge "ip-to-close" "out" #f "frame" "in" #f)
-           (iip "but-quit" "in" (cons 'set-label "Close"))
+           (iip "but-quit" "in" '(init . ((label . "&Close"))))
            ; HP
            (node "hp" "gui/horizontal-panel")
-           (edge "hp" "out" #f "vp" "place" 2)
+           (edge "hp" "out" #f "vp" "place" 3)
            ; dynamic
            (node "but-add" "gui/button")
            (edge "but-add" "out" #f "hp" "place" 10)
-           (iip "but-add" "in" (cons 'set-label "add counter"))
+           (iip "but-add" "in" '(init . ((label . "&add counter"))))
            (node "but-rem" "gui/button")
            (edge "but-rem" "out" #f "hp" "place" 20)
-           (iip "but-rem" "in" (cons 'set-label "remove counter"))
+           (iip "but-rem" "in" '(init . ((label . "&remove counter"))))
            (node "dynamic" "test/dynamic")
            (edge "dynamic" "out" #f "vp" "place" 99)
            (iip "dynamic" "option" "test/counter")

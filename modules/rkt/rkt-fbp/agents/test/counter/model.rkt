@@ -7,7 +7,7 @@
 (define agt (define-agent
               #:input '("add" "sub")
               #:output '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([add (try-recv (input "add"))]
                               [sub (try-recv (input "sub"))]
                               [try-acc (try-recv (input "acc"))]

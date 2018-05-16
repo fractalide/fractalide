@@ -2,7 +2,8 @@
 
 (provide agt)
 
-(require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
 
 (require racket/gui/base
@@ -22,7 +23,7 @@
               #:input-array '("place")
               #:output '("out") ; out port
               #:output-array '("out")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (define acc (try-recv (input "acc")))
                        (define msg-in (try-recv (input "in")))
                        ; Init the first time

@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require racket/match
+         racket/list
          (prefix-in class: racket/class))
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
@@ -160,3 +161,52 @@
      (class:send area reflow-container)
      #t]
     [else #f]))
+
+(define (with-event super-class input)
+  (class:class super-class
+    (class:define/override (on-subwindow-event item event)
+                           (send (input "in") (cons (class:send event get-event-type) event))
+                           #f)
+    (class:define/override (on-subwindow-char item event)
+                           (send (input "in") (cons 'key event))
+                           #f)
+    (class:define/override (on-drop-file path)
+      (send (input "in") (cons 'drop-file path)))
+    (class:define/override (on-focus on?)
+      (send (input "in") (cons 'focus on?)))
+    (class:define/override (on-subwindow-focus recv on?)
+                           (send (input "in") (cons 'subwindow-focus on?))
+                           #f)
+    (class:define/override (on-move x y)
+      (send (input "in") (cons 'move (cons x y))))
+    (class:define/override (on-size x y)
+      (send (input "in") (cons 'size (cons x y))))
+    (class:define/override (on-superwindow-enable b?)
+      (send (input "in") (cons 'superwindow-enable b?)))
+    (class:define/override (on-superwindow-show b?)
+      (send (input "in") (cons 'superwindow-show b?)))
+    (class:super-new)))
+
+
+(define (manage acc msg input output output-array create process-msg)
+  ; If no acc, create a empty list
+  (set! acc (if acc acc (cons 'init (list))))
+  (if (and (cons? acc) (eq? (car acc) 'init))
+      (begin
+        ; true -> widget in creation
+        (if (eq? (car msg) 'init)
+            ; True -> create widget and receive it
+            ;      -> process the list
+            (begin
+              ; create the widget
+              (send (output "out") (cons 'init (create input (cdr msg))))
+              (let ([widget (recv (input "acc"))])
+                (for ([m (cdr acc)])
+                  (process-msg m widget input output output-array))
+                widget))
+            ; False -> add to the list
+            (cons 'init (cons msg (cdr acc)))))
+      ; false -> already created
+      (begin
+        (process-msg msg acc input output output-array)
+        acc)))

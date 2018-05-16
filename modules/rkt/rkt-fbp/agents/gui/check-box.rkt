@@ -13,6 +13,7 @@
 (define base-default
   (hash 'label #f
         'style '()
+        'value #f
         'font normal-control-font
         'enabled #t
         'vert-margin 2
@@ -27,9 +28,10 @@
     (define default (for/fold ([acc base-default])
                               ([d data])
                       (hash-set acc (car d) (cdr d))))
-    (let* ([cb (class:new (with-event button% input) [parent frame]
+    (let* ([cb (class:new (with-event check-box% input) [parent frame]
                           [label (hash-ref default 'label)]
                           [style (hash-ref default 'style)]
+                          [value (hash-ref default 'value)]
                           [font (hash-ref default 'font)]
                           [enabled (hash-ref default 'enabled)]
                           [vert-margin (hash-ref default 'vert-margin)]
@@ -38,8 +40,8 @@
                           [min-height (hash-ref default 'min-height)]
                           [stretchable-width (hash-ref default 'stretchable-width)]
                           [stretchable-height (hash-ref default 'stretchable-height)]
-                          [callback (lambda (button event)
-                                      (send (input "in") (cons (class:send event get-event-type) #t)))])])
+                          [callback (lambda (cb event)
+                                   (send (input "in") (cons 'check-box (class:send cb get-value))))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
@@ -49,8 +51,12 @@
   (set! managed (window-manage widget msg output output-array))
   (if managed
       (void)
-      (send-action output output-array msg)))
-
+      (match msg
+        [(cons 'get-value act)
+         (send-action output output-array (cons act (class:send widget get-value)))]
+        [(cons 'set-value b)
+         (class:send widget set-value b)]
+        [else (send-action output output-array msg)])))
 
 (define agt (define-agent
               #:input '("in") ; in port

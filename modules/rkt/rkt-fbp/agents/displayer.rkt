@@ -7,8 +7,9 @@
 (define agt (define-agent
               #:input '("in") ; in port
               #:output '("out") ; out port
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (define msg (recv (input "in")))
+                       (define option (try-recv (input "option")))
                        (if option
                            (display option)
                            (void))

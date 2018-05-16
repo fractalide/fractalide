@@ -5,5 +5,5 @@
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
 (define agt (define-agent
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (displayln "I'm dummy, I do nothing!"))))

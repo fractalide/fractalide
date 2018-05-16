@@ -7,9 +7,10 @@
 (define agt (define-agent
               #:input '("in")
               #:output '("out" "delete")
-              #:proc (lambda (input output input-array output-array option)
+              #:proc (lambda (input output input-array output-array)
                        (let* ([msg (recv (input "in"))]
                               [acc (recv (input "acc"))]
+                              [option (try-recv (input "option"))]
                               [step (or option 1)]
                               [sum (+ step acc)])
                          (if (= sum 3)

@@ -212,9 +212,7 @@
          [agt-state (hash-ref agents agt-name)]
          [is-running (agent-state-is-running agt-state)]
          [agt (agent-state-state agt-state)]
-         [agt (recv-option agt)]
          [proc (agent-proc agt)]
-         [opt (agent-option agt)]
          [nbr-ips (agent-state-number-ips agt-state)]
          [nbr-running (scheduler-number-running state)])
     (if (and (not is-running) (or force? (> nbr-ips 0)))
@@ -228,8 +226,7 @@
                        ((curry get-in) agt)
                        ((curry get-out) agt)
                        ((curry get-in-array) agt)
-                       ((curry get-out-array) agt)
-                       opt))
+                       ((curry get-out-array) agt)))
                     (async-channel-put sched (msg-run-end agt-name))))
           (let* ([new-agt-state (struct-copy agent-state agt-state [is-running #t]
                                               [state agt])]
