@@ -19,6 +19,11 @@
            (iip "slider" "in" '(init . ((label . "a slider : ")
                                         (min-value . 0)
                                         (max-value . 100))))
+           ; Gauge
+           (node "gauge" "gui/gauge")
+           (edge "gauge" "out" #f "vp" "place" 9)
+           (iip "gauge" "in" '(init . ((range . 50))))
+           (iip "gauge" "in" '(set-value . 20))
            ; dummy check box
            (node "cb" "gui/check-box")
            (edge "cb" "out" #f "vp" "place" 7)
