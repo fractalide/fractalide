@@ -13,6 +13,18 @@
            (node "tf" "gui/text-field")
            (edge "tf" "out" #f "vp" "place" 1)
            (iip "tf" "in" '(init . ((label . "test: "))))
+           ; Quit button
+           (node "but-quit" "gui/button")
+           (node "ip-to-close" "test/to-close")
+           (edge "but-quit" "out" 'button "ip-to-close" "in" #f)
+           (edge "but-quit" "out" #f "vp" "place" 2)
+           (edge "ip-to-close" "out" #f "frame" "in" #f)
+           (iip "but-quit" "in" '(init . ((label . "&Close"))))
+           ; dummy check box
+           (node "cb" "gui/check-box")
+           (edge "cb" "out" #f "vp" "place" 7)
+           (iip "cb" "in" (cons 'set-value #t))
+           (iip "cb" "in" (cons 'init '((label . "This is a check-box"))))
            ; Slider
            (node "slider" "gui/slider")
            (edge "slider" "out" #f "vp" "place" 8)
@@ -24,18 +36,11 @@
            (edge "gauge" "out" #f "vp" "place" 9)
            (iip "gauge" "in" '(init . ((range . 50))))
            (iip "gauge" "in" '(set-value . 20))
-           ; dummy check box
-           (node "cb" "gui/check-box")
-           (edge "cb" "out" #f "vp" "place" 7)
-           (iip "cb" "in" (cons 'set-value #t))
-           (iip "cb" "in" (cons 'init '((label . "This is a check-box"))))
-           ; Quit button
-           (node "but-quit" "gui/button")
-           (node "ip-to-close" "test/to-close")
-           (edge "but-quit" "out" 'button "ip-to-close" "in" #f)
-           (edge "but-quit" "out" #f "vp" "place" 2)
-           (edge "ip-to-close" "out" #f "frame" "in" #f)
-           (iip "but-quit" "in" '(init . ((label . "&Close"))))
+           ; combo-field
+           (node "cf" "gui/combo-field")
+           (edge "cf" "out" #f "vp" "place" 10)
+           (iip "cf" "in" '(init . ((init-value . "here")
+                                    (choices . ("out" "res" "get-text")))))
            ; HP
            (node "hp" "gui/horizontal-panel")
            (edge "hp" "out" #f "vp" "place" 3)
