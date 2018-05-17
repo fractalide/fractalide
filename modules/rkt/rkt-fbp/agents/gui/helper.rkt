@@ -162,11 +162,42 @@
      #t]
     [else #f]))
 
+(define (list-control-manage area msg output output-array)
+  (match msg
+    [(cons 'append elem)
+     (class:send area append elem)
+     #t]
+    [(cons 'clear #t)
+     (class:send area clear)
+     #t]
+    [(cons 'delete elem)
+     (class:send area delete elem)
+     #t]
+    [(cons 'find-string (cons s act))
+     (send-action output output-array (cons act (class:send area find-string s)))
+     #t]
+    [(cons 'get-number act)
+     (send-action output output-array (cons act (class:send area get-number)))
+     #t]
+    [(cons 'get-string (cons s act))
+     (send-action output output-array (cons act (class:send area get-string s)))
+     #t]
+    [(cons 'get-string-selection act)
+     (send-action output output-array (cons act (class:send area get-string-selection)))
+     #t]
+    [(cons 'set-selection n)
+     (class:send area set-selection n)
+     #t]
+    [(cons 'set-string-selection s)
+     (class:send area set-string-selection s)
+     #t]
+    [else #f]))
+
 (define (with-event super-class input)
   (class:class super-class
-    (class:define/override (on-subwindow-event item event)
-                           (send (input "in") (cons (class:send event get-event-type) event))
-                           #f)
+    ; (class:define/override (on-subwindow-event item event)
+    ;                        (send (input "in") (cons (class:send event get-event-type) event))
+    ;                        #f)
     (class:define/override (on-subwindow-char item event)
                            (send (input "in") (cons 'key event))
                            #f)

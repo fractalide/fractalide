@@ -12,15 +12,16 @@
 
 (define base-default
   (hash 'label #f
-        'init-value ""
-        'style '(single)
+        'choices '()
+        'selection 0
+        'style '()
         'font normal-control-font
         'enabled #t
         'vert-margin 2
         'horiz-margin 2
         'min-width #f
         'min-height #f
-        'stretchable-width #t
+        'stretchable-width #f
         'stretchable-height #f))
 
 (define (generate input data)
@@ -28,9 +29,10 @@
     (define default (for/fold ([acc base-default])
                               ([d data])
                       (hash-set acc (car d) (cdr d))))
-    (let* ([cb (class:new (with-event text-field% input) [parent frame]
-                          [init-value (hash-ref default 'init-value)]
+    (let* ([cb (class:new (with-event choice% input) [parent frame]
                           [label (hash-ref default 'label)]
+                          [choices (hash-ref default 'choices)]
+                          [selection (hash-ref default 'selection)]
                           [style (hash-ref default 'style)]
                           [font (hash-ref default 'font)]
                           [enabled (hash-ref default 'enabled)]
@@ -39,11 +41,9 @@
                           [min-width (hash-ref default 'min-width)]
                           [min-height (hash-ref default 'min-height)]
                           [stretchable-width (hash-ref default 'stretchable-width)]
-                          [stretchable-height (or (hash-ref default 'stretchable-height)
-                                                  (memq 'multiple (hash-ref default 'style)))]
-                          [callback (lambda (t-f event)
-                                      (send (input "in") (cons (class:send event get-event-type)
-                                                               (class:send t-f get-value))))])])
+                          [stretchable-height (hash-ref default 'stretchable-height)]
+                          [callback (lambda (button event)
+                                      (send (input "in") (cons (class:send event get-event-type) event)))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
@@ -51,20 +51,11 @@
   (set! managed (area-manage widget msg output output-array))
   (set! managed (subarea-manage widget msg output output-array))
   (set! managed (window-manage widget msg output output-array))
+  (set! managed (list-control-manage widget msg output output-array))
   (if managed
       (void)
-      (match msg
-        [(cons 'get-editor act)
-         (send-action output output-array (cons act (class:send widget get-editor)))]
-        [(cons 'get-field-background act)
-         (send-action output output-array (cons act (class:send widget get-field-background)))]
-        [(cons 'set-field-background b)
-         (class:send widget set-field-background b)]
-        [(cons 'get-value act)
-         (send-action output output-array (cons act (class:send widget get-value)))]
-        [(cons 'set-value b)
-         (class:send widget set-value b)]
-        [else (send-action output output-array msg)])))
+      (send-action output output-array msg)))
+
 
 (define agt (define-agent
               #:input '("in") ; in port

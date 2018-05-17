@@ -12,15 +12,15 @@
 
 (define base-default
   (hash 'label #f
-        'init-value ""
-        'style '(single)
+        'range #f
+        'style '(horizontal)
         'font normal-control-font
         'enabled #t
         'vert-margin 2
         'horiz-margin 2
         'min-width #f
         'min-height #f
-        'stretchable-width #t
+        'stretchable-width #f
         'stretchable-height #f))
 
 (define (generate input data)
@@ -28,9 +28,9 @@
     (define default (for/fold ([acc base-default])
                               ([d data])
                       (hash-set acc (car d) (cdr d))))
-    (let* ([cb (class:new (with-event text-field% input) [parent frame]
-                          [init-value (hash-ref default 'init-value)]
+    (let* ([cb (class:new (with-event gauge% input) [parent frame]
                           [label (hash-ref default 'label)]
+                          [range (hash-ref default 'range)]
                           [style (hash-ref default 'style)]
                           [font (hash-ref default 'font)]
                           [enabled (hash-ref default 'enabled)]
@@ -38,12 +38,11 @@
                           [horiz-margin (hash-ref default 'horiz-margin)]
                           [min-width (hash-ref default 'min-width)]
                           [min-height (hash-ref default 'min-height)]
-                          [stretchable-width (hash-ref default 'stretchable-width)]
+                          [stretchable-width (or (hash-ref default 'stretchable-width)
+                                                 (memq 'horizontal (hash-ref default 'style))
+                                                 )]
                           [stretchable-height (or (hash-ref default 'stretchable-height)
-                                                  (memq 'multiple (hash-ref default 'style)))]
-                          [callback (lambda (t-f event)
-                                      (send (input "in") (cons (class:send event get-event-type)
-                                                               (class:send t-f get-value))))])])
+                                                  (memq 'vertical (hash-ref default 'style)))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
@@ -54,16 +53,14 @@
   (if managed
       (void)
       (match msg
-        [(cons 'get-editor act)
-         (send-action output output-array (cons act (class:send widget get-editor)))]
-        [(cons 'get-field-background act)
-         (send-action output output-array (cons act (class:send widget get-field-background)))]
-        [(cons 'set-field-background b)
-         (class:send widget set-field-background b)]
         [(cons 'get-value act)
          (send-action output output-array (cons act (class:send widget get-value)))]
-        [(cons 'set-value b)
-         (class:send widget set-value b)]
+        [(cons 'set-value v)
+         (class:send widget set-value v)]
+        [(cons 'get-range act)
+         (send-action output output-array (cons act (class:send widget get-range)))]
+        [(cons 'set-range v)
+         (class:send widget set-range v)]
         [else (send-action output output-array msg)])))
 
 (define agt (define-agent
