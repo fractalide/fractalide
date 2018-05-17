@@ -9,11 +9,11 @@
    (node "frame" "gui/frame/frame")
    ; For halting
    (node "halt" "halter")
-   (edge "frame" "halt" #f "halt" "in" #f)
+   (edge "frame" "halt" _ "halt" "in" _)
    (mesg "halt" "in" #f)
    ; The FVM for dynamic UI
    (node "fvm" "fvm")
-   (edge "frame" "fvm" #f "fvm" "in" #f)
+   (edge "frame" "fvm" _ "fvm" "in" _)
    ; Virtual
    (virtual-in "in" "frame" "in")
    (virtual-out "out" "frame" "out")))

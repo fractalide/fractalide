@@ -59,3 +59,6 @@
   (define new-delta (graph new-agent new-edge new-v-in new-v-out new-mesg))
   ; send the differences
   (agt:send (output "out") (cons 'dynamic-remove new-delta)))
+
+  ; used to indicate that we don't care about out-selection and in-port selection
+  (define _ #f)
