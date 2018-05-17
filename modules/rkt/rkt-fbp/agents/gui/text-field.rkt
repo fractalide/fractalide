@@ -21,7 +21,7 @@
         'min-width #f
         'min-height #f
         'stretchable-width #t
-        'stretchable-height (memq 'multiple '(single))))
+        'stretchable-height #f))
 
 (define (generate input data)
   (lambda (frame)
@@ -39,7 +39,8 @@
                           [min-width (hash-ref default 'min-width)]
                           [min-height (hash-ref default 'min-height)]
                           [stretchable-width (hash-ref default 'stretchable-width)]
-                          [stretchable-height (hash-ref default 'stretchable-height)]
+                          [stretchable-height (or (hash-ref default 'stretchable-height)
+                                                  (memq 'multiple (hash-ref default 'style)))]
                           [callback (lambda (t-f event)
                                       (send (input "in") (cons (class:send event get-event-type)
                                                                (class:send t-f get-value))))])])
@@ -53,7 +54,16 @@
   (if managed
       (void)
       (match msg
-        ; TODO : manage msg for text-field
+        [(cons 'get-editor act)
+         (send-action output output-array (cons act (class:send widget get-editor)))]
+        [(cons 'get-field-background act)
+         (send-action output output-array (cons act (class:send widget get-field-background)))]
+        [(cons 'set-field-background b)
+         (class:send widget set-field-background b)]
+        [(cons 'get-value act)
+         (send-action output output-array (cons act (class:send widget get-value)))]
+        [(cons 'set-value b)
+         (class:send widget set-value b)]
         [else (send-action output output-array msg)])))
 
 (define agt (define-agent
