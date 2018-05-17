@@ -13,6 +13,12 @@
            (node "tf" "gui/text-field")
            (edge "tf" "out" #f "vp" "place" 1)
            (iip "tf" "in" '(init . ((label . "test: "))))
+           ; Slider
+           (node "slider" "gui/slider")
+           (edge "slider" "out" #f "vp" "place" 8)
+           (iip "slider" "in" '(init . ((label . "a slider : ")
+                                        (min-value . 0)
+                                        (max-value . 100))))
            ; dummy check box
            (node "cb" "gui/check-box")
            (edge "cb" "out" #f "vp" "place" 7)
