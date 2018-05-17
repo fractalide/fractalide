@@ -12,34 +12,27 @@
 
 (define base-default
   (hash 'label #f
-        'init-value ""
         'choices '()
-        'style '()
+        'selection 0
+        'style '(vertical)
         'font normal-control-font
         'enabled #t
         'vert-margin 2
         'horiz-margin 2
         'min-width #f
         'min-height #f
-        'stretchable-width #t
+        'stretchable-width #f
         'stretchable-height #f))
-
-(define (event-combo-field input)
-  (class:class (with-event combo-field% input)
-               (class:define/override (on-popup event)
-                                      (send (input "in") (cons (class:send event get-event-type) event))
-                                      #f)
-               (class:super-new)))
 
 (define (generate input data)
   (lambda (frame)
     (define default (for/fold ([acc base-default])
                               ([d data])
                       (hash-set acc (car d) (cdr d))))
-    (let* ([cb (class:new (event-combo-field input) [parent frame]
-                          [init-value (hash-ref default 'init-value)]
+    (let* ([cb (class:new (with-event radio-box% input) [parent frame]
                           [label (hash-ref default 'label)]
                           [choices (hash-ref default 'choices)]
+                          [selection (hash-ref default 'selection)]
                           [style (hash-ref default 'style)]
                           [font (hash-ref default 'font)]
                           [enabled (hash-ref default 'enabled)]
@@ -49,9 +42,8 @@
                           [min-height (hash-ref default 'min-height)]
                           [stretchable-width (hash-ref default 'stretchable-width)]
                           [stretchable-height (hash-ref default 'stretchable-height)]
-                          [callback (lambda (t-f event)
-                                      (send (input "in") (cons (class:send event get-event-type)
-                                                               (class:send t-f get-value))))])])
+                          [callback (lambda (widget event)
+                                      (send (input "in") (cons (class:send event get-event-type) event)))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
@@ -62,21 +54,22 @@
   (if managed
       (void)
       (match msg
-        [(cons 'get-editor act)
-         (send-action output output-array (cons act (class:send widget get-editor)))]
-        [(cons 'get-field-background act)
-         (send-action output output-array (cons act (class:send widget get-field-background)))]
-        [(cons 'set-field-background b)
-         (class:send widget set-field-background b)]
-        [(cons 'get-value act)
-         (send-action output output-array (cons act (class:send widget get-value)))]
-        [(cons 'set-value b)
-         (class:send widget set-value b)]
-        [(cons 'append l)
-         (class:send widget append l)]
-        [(cons 'get-menu act)
-         (send-action output output-array (cons act (class:send widget get-menu)))]
+        [(cons 'set-enable (cons n b))
+         (class:send widget set-enable n b)]
+        [(cons 'is-enabled? (cons n act))
+         (send-action output output-array (cons act (class:send widget is-enabled? n)))]
+        [(cons 'get-item-label act)
+         (send-action output output-array (cons act (class:send widget get-item-label)))]
+        [(cons 'get-item-plain-label act)
+         (send-action output output-array (cons act (class:send widget get-item-plain-label)))]
+        [(cons 'get-number act)
+         (send-action output output-array (cons act (class:send widget get-number)))]
+        [(cons 'get-selection act)
+         (send-action output output-array (cons act (class:send widget get-selection)))]
+        [(cons 'set-selection n)
+         (class:send widget set-selection n)]
         [else (send-action output output-array msg)])))
+
 
 (define agt (define-agent
               #:input '("in") ; in port

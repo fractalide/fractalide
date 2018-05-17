@@ -41,6 +41,23 @@
            (edge "cf" "out" #f "vp" "place" 10)
            (iip "cf" "in" '(init . ((init-value . "here")
                                     (choices . ("out" "res" "get-text")))))
+           (iip "cf" "in" '(append . "A new value"))
+           ; radio-box
+           (node "rb" "gui/radio-box")
+           (edge "rb" "out" #f "vp" "place" 11)
+           (iip "rb" "in" '(init .((label . "Please choice : ")
+                                   (choices . ("42" "666")))))
+           ; List-box
+           (node "lb" "gui/list-box")
+           (edge "lb" "out" #f "vp" "place" 12)
+           (iip "lb" "in" '(init . ((label . "a test: ")
+                                    (choices . ("42" "666" "1" "7"))
+                                    (columns . ("Number")))))
+           ; Choice
+           (node "choice" "gui/choice")
+           (edge "choice" "out" #f "vp" "place" 13)
+           (iip "choice" "in" '(init . ((label . "choice test: ")
+                                        (choices . ("1" "7" "42" "666")))))
            ; HP
            (node "hp" "gui/horizontal-panel")
            (edge "hp" "out" #f "vp" "place" 3)
