@@ -21,7 +21,7 @@
            (edge "load-graph" "ask-path" #f "get-path" "in" #f)
            (edge "get-path" "out" #f "load-graph" "ask-path" #f)
 
-           (iip "sched" "acc" (make-scheduler #f))
-           (iip "halt" "in" #f)
+           (mesg "sched" "acc" (make-scheduler #f))
+           (mesg "halt" "in" #f)
 
            (virtual-in "in" "fvm" "in")))

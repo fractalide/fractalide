@@ -21,12 +21,12 @@
 (sched (msg-connect "load-graph" "ask-path" "get-path" "in"))
 (sched (msg-connect "get-path" "out" "load-graph" "ask-path"))
 
-(sched (msg-iip "sched" "acc" (make-scheduler #f)))
-(sched (msg-iip "halt" "in" #f))
+(sched (msg-mesg "sched" "acc" (make-scheduler #f)))
+(sched (msg-mesg "halt" "in" #f))
 
 (define path (vector-ref (current-command-line-arguments) 0))
 (define a-graph (graph:make-graph (graph:node "main" path)))
 
-(sched (msg-iip "fvm" "in" (cons 'add a-graph)))
-(sched (msg-iip "fvm" "in" (cons 'stop #t)))
+(sched (msg-mesg "fvm" "in" (cons 'add a-graph)))
+(sched (msg-mesg "fvm" "in" (cons 'stop #t)))
 (sched (msg-stop))

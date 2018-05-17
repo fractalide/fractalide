@@ -41,7 +41,7 @@
                                   (set! new-acc (- new-acc 1))
                                   (let* ([name (string-append "dynamic" (number->string new-acc))])
                                     ; send delete to vp
-                                    (send-dynamic-add (make-graph (iip name "in" (cons 'delete #t))) input output)
+                                    (send-dynamic-add (make-graph (mesg name "in" (cons 'delete #t))) input output)
                                     ; remove the actual nodes
                                     (define g (make-graph
                                                (node name option)

@@ -9,7 +9,7 @@
            ; For halting
            (node "halt" "halter")
            (edge "frame" "halt" #f "halt" "in" #f)
-           (iip "halt" "in" #f)
+           (mesg "halt" "in" #f)
            ; The FVM for dynamic UI
            (node "fvm" "fvm")
            (edge "frame" "fvm" #f "fvm" "in" #f)

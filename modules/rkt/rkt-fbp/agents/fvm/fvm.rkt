@@ -121,10 +121,10 @@
                                       sender)))
             (void)))
       (void))
-  (for ([iip (g:graph-iip add-flat)])
-    (match iip
-      [(g:g-iip in p-in iip)
-       (send (output "sched") (msg-iip in p-in iip))]))
+  (for ([mesg (g:graph-mesg add-flat)])
+    (match mesg
+      [(g:g-mesg in p-in mesg)
+       (send (output "sched") (msg-mesg in p-in mesg))]))
   add-flat)
 
 ; (-> (Listof virtual) (Listof virtual) graph graph)
@@ -144,13 +144,13 @@
                  (string=? (g:g-edge-port-out edg) (g:g-virtual-virtual-port virt)))
             (struct-copy g:g-edge acc [out (g:g-virtual-agent virt)][port-out (g:g-virtual-agent-port virt)])
             acc))))
-  ; Iip resolve
-  (define res-iip
-    (for/list ([iip (g:graph-iip actual-graph)])
-      (for*/fold ([acc iip])
+  ; Mesg resolve
+  (define res-mesg
+    (for/list ([mesg (g:graph-mesg actual-graph)])
+      (for*/fold ([acc mesg])
                  ([virt (g:graph-virtual-in actual-graph)])
-        (if (and (string=? (g:g-iip-in iip) (g:g-virtual-virtual-agent virt))
-                 (string=? (g:g-iip-port-in iip) (g:g-virtual-virtual-port virt)))
-            (struct-copy g:g-iip acc [in (g:g-virtual-agent virt)] [port-in (g:g-virtual-agent-port virt)])
+        (if (and (string=? (g:g-mesg-in mesg) (g:g-virtual-virtual-agent virt))
+                 (string=? (g:g-mesg-port-in mesg) (g:g-virtual-virtual-port virt)))
+            (struct-copy g:g-mesg acc [in (g:g-virtual-agent virt)] [port-in (g:g-virtual-agent-port virt)])
             acc))))
-  (struct-copy g:graph actual-graph [edge res-edge] [iip res-iip]))
+  (struct-copy g:graph actual-graph [edge res-edge] [mesg res-mesg]))

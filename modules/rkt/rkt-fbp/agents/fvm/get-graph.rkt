@@ -31,7 +31,7 @@
                                 (for/list ([out (graph-virtual-out g)])
                                   (struct-copy g-virtual out [virtual-agent name]
                                                [agent (string-append name "-" (g-virtual-agent out))]))]
-                               [new-iip
-                                (for/list ([iip (graph-iip g)])
-                                  (struct-copy g-iip iip [in (string-append name "-" (g-iip-in iip))]))])
-                           (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-iip)))))))
+                               [new-mesg
+                                (for/list ([mesg (graph-mesg g)])
+                                  (struct-copy g-mesg mesg [in (string-append name "-" (g-mesg-in mesg))]))])
+                           (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-mesg)))))))
