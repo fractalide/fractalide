@@ -7,12 +7,12 @@
 
 (define g
   (make-graph
-   (node "sched" "fvm/scheduler")
-   (node "load-graph" "fvm/load-graph")
-   (node "get-graph" "fvm/get-graph")
-   (node "get-path" "fvm/get-path")
-   (node "fvm" "fvm/fvm")
-   (node "halt" "halter")
+   (node "sched" "${fvm/scheduler}")
+   (node "load-graph" "${fvm/load-graph}")
+   (node "get-graph" "${fvm/get-graph}")
+   (node "get-path" "${fvm/get-path}")
+   (node "fvm" "${fvm/fvm}")
+   (node "halt" "${halter}")
    (edge "fvm" "sched" _ "sched" "in" _)
    (edge "fvm" "flat" _ "load-graph" "in" _)
    (edge "fvm" "halt" _ "halt" "in" _)
