@@ -21,9 +21,9 @@
   (define new-edge (for/list ([edg (graph-edge delta)])
                      (struct-copy g-edge edg [out (string-append name "-" (g-edge-out edg))]
                                   [in (string-append name "-" (g-edge-in edg))])))
-  ; iip
-  (define new-iip (for/list ([i (graph-iip delta)])
-                    (struct-copy g-iip i [in (string-append name "-" (g-iip-in i))])))
+  ; mesg
+  (define new-mesg (for/list ([i (graph-mesg delta)])
+                    (struct-copy g-mesg i [in (string-append name "-" (g-mesg-in i))])))
   ; virtual out - in
   (define new-v-in (for/list ([vi (graph-virtual-in delta)])
                      (struct-copy g-virtual vi [virtual-agent (string-append name "-" (g-virtual-virtual-agent vi))]
@@ -31,6 +31,6 @@
   (define new-v-out (for/list ([vo (graph-virtual-out delta)])
                       (struct-copy g-virtual vo [virtual-agent (string-append name "-" (g-virtual-virtual-agent vo))]
                                    [agent (string-append name "-" (g-virtual-agent vo))])))
-  (define new-delta (graph new-agent new-edge new-v-in new-v-out new-iip))
+  (define new-delta (graph new-agent new-edge new-v-in new-v-out new-mesg))
   ; send the differences
   (agt:send (output "out") (cons 'dynamic-add (dynamic-add new-delta (input "in")))))

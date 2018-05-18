@@ -132,13 +132,13 @@
               [new-agent-state (struct-copy agent-state out-agt-state [state new-out-agt])]
               [new-agents (hash-set agents out new-agent-state)])
          (struct-copy scheduler self [agents new-agents]))]
-      [(msg-iip agt port iip)
+      [(msg-mesg agt port mesg)
        (let* ([agents (scheduler-agents self)]
               [in-agt-state (hash-ref agents agt)]
               [in-agt (agent-state-state in-agt-state)]
               [port (hash-ref (agent-inport in-agt) port)]
               )
-         (port-send port iip)
+         (port-send port mesg)
          self)]
       [(msg-inc-ip agt)
        (let* ([agents (scheduler-agents self)]

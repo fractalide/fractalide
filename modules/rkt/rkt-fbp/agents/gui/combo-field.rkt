@@ -78,12 +78,14 @@
          (send-action output output-array (cons act (class:send widget get-menu)))]
         [else (send-action output output-array msg)])))
 
-(define agt (define-agent
-              #:input '("in") ; in port
-              #:output '("out") ; out port
-              #:output-array '("out")
-              #:proc (lambda (input output input-array output-array)
-                       (define acc (try-recv (input "acc")))
-                       (define msg (recv (input "in")))
-                       (set! acc (manage acc msg input output output-array generate process-msg))
-                       (send (output "acc") acc))))
+(define agt
+  (define-agent
+    #:input '("in") ; in port
+    #:output '("out") ; out port
+    #:output-array '("out")
+    #:proc
+    (lambda (input output input-array output-array)
+      (define acc (try-recv (input "acc")))
+      (define msg (recv (input "in")))
+      (set! acc (manage acc msg input output output-array generate process-msg))
+      (send (output "acc") acc))))

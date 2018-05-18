@@ -5,23 +5,24 @@
 (require fractalide/modules/rkt/rkt-fbp/graph
          fractalide/modules/rkt/rkt-fbp/scheduler)
 
-(define g (make-graph
-           (node "sched" "fvm/scheduler")
-           (node "load-graph" "fvm/load-graph")
-           (node "get-graph" "fvm/get-graph")
-           (node "get-path" "fvm/get-path")
-           (node "fvm" "fvm/fvm")
-           (node "halt" "halter")
-           (edge "fvm" "sched" #f "sched" "in" #f)
-           (edge "fvm" "flat" #f "load-graph" "in" #f)
-           (edge "fvm" "halt" #f "halt" "in" #f)
-           (edge "load-graph" "out" #f "fvm" "flat" #f)
-           (edge "load-graph" "ask-graph" #f "get-graph" "in" #f)
-           (edge "get-graph" "out" #f "load-graph" "ask-graph" #f)
-           (edge "load-graph" "ask-path" #f "get-path" "in" #f)
-           (edge "get-path" "out" #f "load-graph" "ask-path" #f)
+(define g
+  (make-graph
+   (node "sched" "fvm/scheduler")
+   (node "load-graph" "fvm/load-graph")
+   (node "get-graph" "fvm/get-graph")
+   (node "get-path" "fvm/get-path")
+   (node "fvm" "fvm/fvm")
+   (node "halt" "halter")
+   (edge "fvm" "sched" _ "sched" "in" _)
+   (edge "fvm" "flat" _ "load-graph" "in" _)
+   (edge "fvm" "halt" _ "halt" "in" _)
+   (edge "load-graph" "out" _ "fvm" "flat" _)
+   (edge "load-graph" "ask-graph" _ "get-graph" "in" _)
+   (edge "get-graph" "out" _ "load-graph" "ask-graph" _)
+   (edge "load-graph" "ask-path" _ "get-path" "in" _)
+   (edge "get-path" "out" _ "load-graph" "ask-path" _)
 
-           (iip "sched" "acc" (make-scheduler #f))
-           (iip "halt" "in" #f)
+   (mesg "sched" "acc" (make-scheduler _))
+   (mesg "halt" "in" _)
 
-           (virtual-in "in" "fvm" "in")))
+   (virtual-in "in" "fvm" "in")))

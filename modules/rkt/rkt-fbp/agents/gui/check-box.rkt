@@ -41,7 +41,7 @@
                           [stretchable-width (hash-ref default 'stretchable-width)]
                           [stretchable-height (hash-ref default 'stretchable-height)]
                           [callback (lambda (cb event)
-                                   (send (input "in") (cons 'check-box (class:send cb get-value))))])])
+                                      (send (input "in") (cons 'check-box (class:send cb get-value))))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
@@ -58,12 +58,14 @@
          (class:send widget set-value b)]
         [else (send-action output output-array msg)])))
 
-(define agt (define-agent
-              #:input '("in") ; in port
-              #:output '("out") ; out port
-              #:output-array '("out")
-              #:proc (lambda (input output input-array output-array)
-                       (define acc (try-recv (input "acc")))
-                       (define msg (recv (input "in")))
-                       (set! acc (manage acc msg input output output-array generate process-msg))
-                       (send (output "acc") acc))))
+(define agt
+  (define-agent
+    #:input '("in") ; in port
+    #:output '("out") ; out port
+    #:output-array '("out")
+    #:proc
+    (lambda (input output input-array output-array)
+      (define acc (try-recv (input "acc")))
+      (define msg (recv (input "in")))
+      (set! acc (manage acc msg input output output-array generate process-msg))
+      (send (output "acc") acc))))
