@@ -51,37 +51,37 @@
                    ; Add it
                    (cont (cdr hp))
                    ; order
-                   (define index (index-of (sort (hash-keys (input-array "place")) <) place))
                    (class-send (cdr hp) change-children
                                (lambda (act)
+                                 ; get the new one
                                  (define val (last act))
-                                 (define ls (take act (- (length act) 1)))
-                                 (append-at-least ls index val '())
-                                 ))
-                   (set! hp (cons (sort (cons place (car hp)) <) (cdr hp)))
-                   ]
+                                 ; add it in the acc
+                                 (set! hp (cons (add-ordered (car hp) place val)
+                                                (cdr hp)))
+                                 (map (lambda (x) (cdr x))
+                                      (car hp))))]
                   [(cons 'delete #t)
-                   (define index (index-of (car hp) place))
+                   (set! hp (cons (remove place (car hp)
+                                          (lambda (x y)
+                                            (= x (car y))))
+                                  (cdr hp)))
                    (class-send (cdr hp) change-children
                                (lambda (act)
-                                 (remove-at act index)))
-                   (set! hp (cons (remq index (car hp)) (cdr hp)))
-                   ]
+                                 (map (lambda (x) (cdr x))
+                                      (car hp))))]
                   [else (send-action output output-array msg)])
-                void)
-            ))
+                void)))
 
       (send (output "acc") hp))))
 
-(define (append-at-least ls k v acc)
-  (cond
-    [(empty? ls) (reverse (cons v acc))]
-    [(= k 0) (append (reverse (cons v acc)) ls)]
-    [else (append-at-least (cdr ls) (- k 1) v (cons (car ls) acc))]))
-
-(define (remove-at ls k)
-  (define (rem-acc ls k acc)
-    (if (= k 0)
-        (append (reverse acc) (cdr ls))
-        (rem-acc (cdr ls) (- k 1) (cons (car ls) acc))))
-  (rem-acc ls k '()))
+(define (add-ordered acc key val)
+  (define (add-ordered ls acc)
+    (cond
+      [(empty? ls) (reverse (cons (cons key val) acc))]
+      [else
+       (if (> (caar ls) key)
+           ; must add
+           (append (reverse (cons (cons key val) acc)) ls)
+           ; continue
+           (add-ordered (cdr ls) (cons (car ls) acc)))]))
+  (add-ordered acc '()))

@@ -14,13 +14,6 @@
    (node "tf" "gui/text-field")
    (edge "tf" "out" _ "vp" "place" 1)
    (mesg "tf" "in" '(init . ((label . "test: "))))
-   ; Quit button
-   (node "but-quit" "gui/button")
-   (node "ip-to-close" "test/to-close")
-   (edge "but-quit" "out" 'button "ip-to-close" "in" _)
-   (edge "but-quit" "out" _ "vp" "place" 2)
-   (edge "ip-to-close" "out" _ "frame" "in" _)
-   (mesg "but-quit" "in" '(init . ((label . "&Close"))))
    ; dummy check box
    (node "cb" "gui/check-box")
    (edge "cb" "out" _ "vp" "place" 7)
@@ -76,4 +69,11 @@
    (node "to-remove" "test/to-remove")
    (edge "but-rem" "out" 'button "to-remove" "in" _)
    (edge "to-remove" "out" _ "dynamic" "in" _)
+   ; Quit button
+   (node "but-quit" "gui/button")
+   (node "ip-to-close" "test/to-close")
+   (edge "but-quit" "out" 'button "ip-to-close" "in" _)
+   (edge "but-quit" "out" _ "vp" "place" 2)
+   (edge "ip-to-close" "out" _ "frame" "in" _)
+   (mesg "but-quit" "in" '(init . ((label . "&Close"))))
    ))
