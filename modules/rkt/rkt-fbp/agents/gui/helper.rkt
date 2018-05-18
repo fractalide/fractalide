@@ -195,11 +195,13 @@
 
 (define (with-event super-class input)
   (class:class super-class
-    ; (class:define/override (on-subwindow-event item event)
-    ;                        (send (input "in") (cons (class:send event get-event-type) event))
-    ;                        #f)
+    (class:define/override (on-subwindow-event item event)
+                           (thread (lambda ()
+                                     (send (input "in") (cons (class:send event get-event-type) event))))
+                           #f)
     (class:define/override (on-subwindow-char item event)
-                           (send (input "in") (cons 'key event))
+                           (thread (lambda ()
+                                     (send (input "in") (cons 'key event))))
                            #f)
     (class:define/override (on-drop-file path)
       (send (input "in") (cons 'drop-file path)))
