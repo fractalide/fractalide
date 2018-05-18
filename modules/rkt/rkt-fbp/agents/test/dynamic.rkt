@@ -22,7 +22,7 @@
         (define new-acc (if acc acc
                             (let ([g (make-graph
                                       (node "vp" "gui/vertical-panel")
-                                      (virtual-out "dynamic-out" "vp" "out"))])
+                                      (graph-out "dynamic-out" "vp" "out"))])
                               (send-dynamic-add g input output)
                               0)))
         (match msg

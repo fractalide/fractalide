@@ -15,5 +15,5 @@
    (node "fvm" "fvm")
    (edge "frame" "fvm" _ "fvm" "in" _)
    ; Virtual
-   (virtual-in "in" "frame" "in")
-   (virtual-out "out" "frame" "out")))
+   (graph-in "in" "frame" "in")
+   (graph-out "out" "frame" "out")))
