@@ -6,8 +6,8 @@
 
 (define g
   (make-graph
-   (node "nand" "${math/nand}")
-   (node "and" "${math/and}")
+   (node "nand" "${math.nand}")
+   (node "and" "${math.and}")
    (node "disp" "${displayer}")
    (edge "and" "res" _ "disp" "in" _)
    (edge "nand" "res" _ "and" "in" _)
