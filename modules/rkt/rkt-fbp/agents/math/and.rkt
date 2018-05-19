@@ -7,8 +7,9 @@
 (define g
   (make-graph
    (node "nand" "${math.nand}")
-   (node "clone" "${clone}")
-   (edge "clone" "out" "1" "nand" "x" _)
-   (edge "clone" "out" "2" "nand" "y" _)
-   (graph-in "in" "clone" "in")
-   (graph-out "res" "nand" "res")))
+   (node "not" "${math.not}")
+   (graph-in "a" "nand" "a")
+   (graph-in "b" "nand" "b")
+   (edge "nand" "out" _ "not" "in" _)
+   (graph-out "out" "not" "out")))
+
