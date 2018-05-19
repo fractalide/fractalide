@@ -6,7 +6,7 @@
 
 (define g
   (make-graph
-   (node "frame" "${gui/frame/frame}")
+   (node "frame" "${gui.frame.frame}")
    ; For halting
    (node "halt" "${halter}")
    (edge "frame" "halt" _ "halt" "in" _)
