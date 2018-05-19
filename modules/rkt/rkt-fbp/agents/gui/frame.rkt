@@ -6,14 +6,14 @@
 
 (define g
   (make-graph
-   (node "frame" "gui/frame/frame")
+   (node "frame" "${gui/frame/frame}")
    ; For halting
-   (node "halt" "halter")
+   (node "halt" "${halter}")
    (edge "frame" "halt" _ "halt" "in" _)
    (mesg "halt" "in" #f)
    ; The FVM for dynamic UI
-   (node "fvm" "fvm")
+   (node "fvm" "${fvm}")
    (edge "frame" "fvm" _ "fvm" "in" _)
    ; Virtual
-   (virtual-in "in" "frame" "in")
-   (virtual-out "out" "frame" "out")))
+   (graph-in "in" "frame" "in")
+   (graph-out "out" "frame" "out")))

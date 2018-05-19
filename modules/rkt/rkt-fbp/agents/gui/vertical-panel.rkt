@@ -6,8 +6,8 @@
 
 (define g
   (make-graph
-   (node "panel" "gui/horizontal-panel")
+   (node "panel" "${gui/horizontal-panel}")
    (mesg "panel" "in" (cons 'set-orientation #f))
-   (virtual-in "in" "panel" "in")
-   (virtual-in "place" "panel" "place")
-   (virtual-out "out" "panel" "out")))
+   (graph-in "in" "panel" "in")
+   (graph-in "place" "panel" "place")
+   (graph-out "out" "panel" "out")))

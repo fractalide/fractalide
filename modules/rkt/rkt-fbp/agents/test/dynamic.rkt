@@ -21,8 +21,8 @@
         ; If there is not yet an acc, it is the first run. We spawn a vertical-panel in the frame.
         (define new-acc (if acc acc
                             (let ([g (make-graph
-                                      (node "vp" "gui/vertical-panel")
-                                      (virtual-out "dynamic-out" "vp" "out"))])
+                                      (node "vp" "${gui/vertical-panel}")
+                                      (graph-out "dynamic-out" "vp" "out"))])
                               (send-dynamic-add g input output)
                               0)))
         (match msg
