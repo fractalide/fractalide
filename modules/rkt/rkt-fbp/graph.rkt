@@ -60,5 +60,5 @@
   ; send the differences
   (agt:send (output "out") (cons 'dynamic-remove new-delta)))
 
-  ; used to indicate that we don't care about out-selection and in-port selection
+  ; used to indicate that we don't care about out-selection and in-selection of an array port
   (define _ #f)

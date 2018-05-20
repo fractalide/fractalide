@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 (provide agt)
 
@@ -6,10 +6,10 @@
 
 (define agt
   (define-agent
-    #:input '("x" "y") ; in port
-    #:output '("res") ; out port
+    #:input '("a" "b") ; in port
+    #:output '("out") ; out port
     #:proc
     (lambda (input output input-array output-array)
-      (define x (recv (input "x")))
-      (define y (recv (input "y")))
-      (send (output "res") (not (and x y))))))
+      (define a (recv (input "a")))
+      (define b (recv (input "b")))
+      (send (output "out") (nand a b)))))
