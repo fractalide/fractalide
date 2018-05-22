@@ -1,6 +1,9 @@
-#lang racket/base
+#lang racket
 
 (provide (all-defined-out))
+
+(require (for-syntax syntax/to-string))
+(require syntax/to-string)
 
 (require racket/match
          (prefix-in agt: fractalide/modules/rkt/rkt-fbp/agent)
@@ -12,7 +15,17 @@
 (struct g-virtual (virtual-agent virtual-port agent agent-port) #:prefab)
 (struct g-mesg (in port-in mesg) #:prefab)
 
-(struct node (name type) #:prefab)
+(define-syntax node
+  (lambda (stx)
+    (syntax-case stx ()
+      [(_ name ${type})
+       #'(let ([t (syntax->string #'(type))])
+           (g-agent name (string-append "${" t "}")))]
+      [(_ name type)
+       #'(g-agent name type)]
+      )))
+
+; (struct node (name type) #:prefab)
 (struct edge (out out-port out-selection in in-port in-selection) #:prefab)
 (struct mesg (in in-port msg) #:prefab)
 (struct graph-in (name in in-port) #:prefab)
@@ -23,8 +36,8 @@
     (for/fold ([acc (graph '() '() '() '() '())])
               ([act actions])
       (match act
-        [(node name type)
-         (struct-copy graph acc [agent (cons (g-agent name type) (graph-agent acc))])]
+        [(g-agent name type)
+         (struct-copy graph acc [agent (cons act (graph-agent acc))])]
         [(mesg in in-p msg)
          (struct-copy graph acc [mesg (cons (g-mesg in in-p msg) (graph-mesg acc))])]
         [(graph-in name in in-port)
