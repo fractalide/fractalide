@@ -12,9 +12,7 @@
     ; Needs processing, transform into relative path
     [(equal? (substring type 0 2) "${")
      (define dot-path (regexp-match #px"\\$\\{(.*)\\}" type))
-     (string-append "agents/"
-                    (string-trim
-                      (string-replace (cadr dot-path) "." "/")) ".rkt")]
+     (string->symbol (string-trim (string-replace (cadr dot-path) "." "/")))]
     [else
      (raise-argument-error 'get-path
                            "type required to be a nix interpolation string or something recognized by dynamic-require"
