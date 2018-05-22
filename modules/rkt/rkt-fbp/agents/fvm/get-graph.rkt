@@ -3,6 +3,7 @@
 (provide agt)
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/loader)
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 
@@ -16,7 +17,7 @@
              [name (g-agent-name agt)]
              [type (g-agent-type agt)])
         ; retrieve the graph struct
-        (define g (dynamic-require type 'g))
+        (define g (load-graph type))
         ; rename the subgraph
         (let ([new-agent
                (for/list ([agent (graph-agent g)])
