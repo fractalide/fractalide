@@ -29,7 +29,7 @@
 (struct edge (out out-port out-selection in in-port in-selection) #:prefab)
 (struct mesg (in in-port msg) #:prefab)
 (struct graph-in (name in in-port) #:prefab)
-(struct graph-out (name out out-port) #:prefab)
+(struct graph-out (out out-port name) #:prefab)
 
 (define make-graph
   (lambda actions
@@ -42,7 +42,7 @@
          (struct-copy graph acc [mesg (cons (g-mesg in in-p msg) (graph-mesg acc))])]
         [(graph-in name in in-port)
          (struct-copy graph acc [virtual-in (cons (g-virtual "" name in in-port) (graph-virtual-in acc))])]
-        [(graph-out name out out-port)
+        [(graph-out out out-port name)
          (struct-copy graph acc [virtual-out (cons (g-virtual "" name out out-port) (graph-virtual-out acc))])]
         [(edge out out-p out-s in in-p in-s)
          (struct-copy graph acc [edge (cons (g-edge out out-p out-s in in-p in-s) (graph-edge acc))])]

@@ -11,5 +11,5 @@
    (graph-in "a" "nand" "a")
    (graph-in "b" "nand" "b")
    (edge "nand" "out" _ "not" "in" _)
-   (graph-out "out" "not" "out")))
+   (graph-out "not" "out" "out")))
 

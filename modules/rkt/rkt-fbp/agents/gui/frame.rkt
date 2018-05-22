@@ -16,4 +16,4 @@
    (edge "frame" "fvm" _ "fvm" "in" _)
    ; Virtual
    (graph-in "in" "frame" "in")
-   (graph-out "out" "frame" "out")))
+   (graph-out "frame" "out" "out")))

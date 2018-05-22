@@ -8,7 +8,7 @@
   (make-graph
    ; HP
    (node "hp" "${gui.horizontal-panel}")
-   (graph-out "out" "hp" "out")
+   (graph-out "hp" "out" "out")
    ; Msg, button, ...
    (node "add" "${gui.button}")
    (node "sub" "${gui.button}")

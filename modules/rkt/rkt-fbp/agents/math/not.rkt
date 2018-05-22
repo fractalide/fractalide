@@ -11,4 +11,4 @@
    (node "nand" "${math.nand}")
    (edge "clone" "out" "1" "nand" "a" _)
    (edge "clone" "out" "2" "nand" "b" _)
-   (graph-out "out" "nand" "out")))
+   (graph-out "nand" "out" "out")))
