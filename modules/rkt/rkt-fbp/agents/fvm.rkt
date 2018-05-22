@@ -25,4 +25,4 @@
    (mesg "sched" "acc" (make-scheduler _))
    (mesg "halt" "in" _)
 
-   (graph-in "in" "fvm" "in")))
+   (edge-in "in" "fvm" "in")))
