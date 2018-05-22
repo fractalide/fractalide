@@ -8,7 +8,7 @@
   (make-graph
    ; HP
    (node "hp" "${gui.horizontal-panel}")
-   (graph-out "hp" "out" "out")
+   (edge-out "hp" "out" "out")
    ; Msg, button, ...
    (node "add" "${gui.button}")
    (node "sub" "${gui.button}")
@@ -26,5 +26,5 @@
    (edge "add" "out" 'button "model" "add" _)
    (edge "sub" "out" 'button "model" "sub" _)
    ; Virtual in for the card paradigm
-   (graph-in "in" "hp" "in")
+   (edge-in "in" "hp" "in")
    ))
