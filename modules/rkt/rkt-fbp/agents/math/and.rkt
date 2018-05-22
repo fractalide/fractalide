@@ -8,8 +8,8 @@
   (make-graph
    (node "nand" "${math.nand}")
    (node "not" "${math.not}")
-   (graph-in "a" "nand" "a")
-   (graph-in "b" "nand" "b")
+   (edge-in "a" "nand" "a")
+   (edge-in "b" "nand" "b")
    (edge "nand" "out" _ "not" "in" _)
-   (graph-out "not" "out" "out")))
+   (edge-out "not" "out" "out")))
 
