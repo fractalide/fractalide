@@ -8,6 +8,7 @@
 (require racket/match)
 (require racket/function)
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require fractalide/modules/rkt/rkt-fbp/loader)
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
 
@@ -23,7 +24,7 @@
   (match msg
       [(msg-add-agent name type)
        (let* ([path type]
-              [agt (dynamic-require path 'agt)]
+              [agt (load-agent path)]
               [agt (make-agent agt name (scheduler-mail-box self))]
               [old-agent (scheduler-agents self)]
               [agt-state (agent-state agt 0 #f)]
