@@ -21,7 +21,7 @@
         ; False -> Visit the next node
         (let* ([next (car not-visited)]
                [next (begin (send (output "ask-path") next) (recv (input "ask-path")))]
-               [is-subnet? (dynamic-require-agent (g-agent-type next) 'g (lambda () #f))])
+               [is-subnet? (load-graph (g-agent-type next) (lambda () #f))])
           (if is-subnet?
               ; It's a sub-graph. Get the new graph, add the nodes in not-visited, save the virtual port and save the rest of the graph
               (let* ([new-graph (get-graph next input output)]

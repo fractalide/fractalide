@@ -1,6 +1,8 @@
 #lang racket/base
 
-(provide load-agent dynamic-require-agent)
+(provide dynamic-require-agent
+         load-agent
+         load-graph)
 
 (define (dynamic-require-agent agt provided (fail-thunk #f))
   (define (try-dynamic-require mod provided fail-thunk fallback)
@@ -17,3 +19,5 @@
       (try-dynamic-require agt provided fail-thunk (lambda (e) (raise e)))))
 
 (define (load-agent path) (dynamic-require-agent path 'agt))
+
+(define (load-graph path (fail-thunk #f)) (dynamic-require-agent path 'g fail-thunk))
