@@ -1,7 +1,11 @@
-#lang racket/base
+#lang racket
 
 (provide (all-defined-out)
          (struct-out agent))
+
+(require (for-syntax racket/syntax)
+         (for-syntax racket/string)
+         (for-syntax syntax/to-string))
 
 (struct agent (inport in-array-port outport out-array-port proc option))
 
@@ -33,3 +37,13 @@
 (struct msg-update-agent(agt proc))
 (struct msg-stop ())
 (struct msg-run (agt))
+
+; require/edge
+(define-syntax (require/edge stx)
+  (syntax-case stx ()
+    [(_ ${type})
+     (let ([transform (string->symbol (string-trim (string-replace (syntax->string #'(type)) "." "/")))])
+       (with-syntax ([type (format-id stx "fractalide/modules/rkt/rkt-fbp/edges/~a" transform)] )
+         #'(require type)))]
+    [(_ type)
+     #'(require type)]))
