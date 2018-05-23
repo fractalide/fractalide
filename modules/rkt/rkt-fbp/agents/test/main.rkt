@@ -47,11 +47,6 @@
    (mesg "lb" "in" '(init . ((label . "a test: ")
                              (choices . ("42" "666" "1" "7"))
                              (columns . ("Number")))))
-   ; Choice
-   (node "choice" ${gui.choice})
-   (edge "choice" "out" _ "vp" "place" 13)
-   (mesg "choice" "in" '(init . ((label . "choice test: ")
-                                 (choices . ("1" "7" "42" "666")))))
    ; HP
    (node "hp" ${gui.horizontal-panel})
    (edge "hp" "out" _ "vp" "place" 3)
@@ -69,6 +64,27 @@
    (node "to-remove" "${test.to-remove}")
    (edge "but-rem" "out" 'button "to-remove" "in" _)
    (edge "to-remove" "out" _ "dynamic" "in" _)
+   ; Choice
+   (node "choice" ${gui.choice})
+   (edge "choice" "out" _ "vp" "place" 109)
+   (mesg "choice" "in" '(init . ((label . "Select your counter : ")
+                                 (choices . ("1" "2" "3")))))
+   ; Place-holder
+   (node "ph" ${gui.place-holder})
+   (edge "ph" "out" _ "vp" "place" 110)
+   (node "counter1" ${test.counter})
+   (node "counter2" ${test.counter})
+   (node "counter3" ${test.counter})
+   (edge "counter1" "out" _ "ph" "place" 1)
+   (edge "counter2" "out" _ "ph" "place" 2)
+   (edge "counter3" "out" _ "ph" "place" 3)
+   (mesg "counter1" "in" '(display . #t))
+   ; connection between choice and place-holder
+   (node "to-display" ${test.to-display})
+   (edge "choice" "out" 'choice "to-display" "in" _)
+   (edge "to-display" "out" "1" "counter1" "in" _)
+   (edge "to-display" "out" "2" "counter2" "in" _)
+   (edge "to-display" "out" "3" "counter3" "in" _)
    ; Quit button
    (node "but-quit" "${gui.button}")
    (node "ip-to-close" "${test.to-close}")
