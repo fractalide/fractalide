@@ -4,11 +4,10 @@
 
 (require fractalide/modules/rkt/rkt-fbp/agent
          (prefix-in g: fractalide/modules/rkt/rkt-fbp/graph)
-         fractalide/modules/rkt/rkt-fbp/def)
+         fractalide/modules/rkt/rkt-fbp/def
+         racket/match)
 
-(require fractalide/modules/rkt/rkt-fbp/edges/fvm/dynamic-add)
-
-(require racket/match)
+(require/edge ${fvm.dynamic-add})
 
 ; TODO : manage well recursive virtual array (not all deleted for the moment)
 
