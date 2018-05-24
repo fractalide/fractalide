@@ -41,4 +41,4 @@ function subfold() {
   '
 }
 
-nix-build "$@" |& subfold ${!#}
+nix-build --show-trace "$@" |& subfold ${!#}
