@@ -1,4 +1,4 @@
-{ pkgs ? import nixpkgs.nix
+{ pkgs ? import ./nixpkgs.nix
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
 , rustOverlay ? fetchFromGitHub {
     owner  = "mozilla";
