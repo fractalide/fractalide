@@ -1,0 +1,51 @@
+#lang racket
+
+(provide agt)
+
+(require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/def)
+
+(require/edge ${hyperflow.node})
+
+(define agt
+  (define-agent
+    #:input '("in") ; in array port
+    #:input-array '("compute")
+    #:output '("out" "code" "eval" "os-deps" "modules") ; out port
+    #:output-array '("compute")
+    #:proc
+    (lambda (input output input-array output-array)
+      (define msg (recv (input "in")))
+      (define acc (try-recv (input "acc")))
+      (match msg
+        [(cons 'init type)
+         (set! acc (node type (list) (list)))
+         (send (output "code") (cons 'init (list (cons 'init-value "not yet loaded")
+                                                 (cons 'style (list 'multiple)))))
+         (send (output "eval") '(init . ((init-value . "Not yet evaluated"))))
+         (send (input "in") '(update-code . #t))]
+        [(cons 'update-code #t)
+         (send (hash-ref (output-array "compute") 'update-code) (node-type acc))
+         (send (output "code")
+               (cons 'set-value (recv (hash-ref (input-array "compute") 'update-code))))
+         (send (output "code")
+               '(refresh . #t))]
+        [(cons 'add-os-deps os-deps)
+         (set! acc (struct-copy node acc [os-deps (cons os-deps (node-os-deps acc))]))
+         (send (output "os-deps")
+               (cons 'add
+                     (cons 'init (list (cons 'label os-deps)
+                                       (cons 'on-delete 'remove-os-deps)))))]
+        [(cons 'remove-os-deps os-deps)
+         (set! acc (struct-copy node acc [os-deps (remove os-deps (node-os-deps acc) string=?)]))]
+        [(cons 'add-modules mod)
+         (set! acc (struct-copy node acc [modules (cons mod (node-modules acc))]))
+         (send (output "modules")
+               (cons 'add
+                     (cons 'init (list (cons 'label mod)
+                                       (cons 'on-delete 'remove-modules)))))]
+        [(cons 'remove-modules mod)
+         (set! acc (struct-copy node acc [modules (remove mod (node-modules acc) string=?)]))]
+        [else (send (output "out") msg)])
+      (send (output "acc") acc)
+      )))

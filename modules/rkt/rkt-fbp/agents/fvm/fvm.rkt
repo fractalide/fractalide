@@ -108,7 +108,7 @@
       [(g:g-edge out p-out s-out in p-in s-in)
        (send (output "sched") (msg-connect-array-to-array out p-out s-out in p-in s-in))]))
   (if sender
-      (for ([vo (g:graph-virtual-out add-flat)])
+      (for ([vo (g:graph-virtual-out flat)])
         (if (string=? "dynamic-out" (g:g-virtual-virtual-port vo))
             (let ([final-out (for/fold ([acc (cons (g:g-virtual-agent vo) (g:g-virtual-agent-port vo))])
                                        ([virt (g:graph-virtual-out add-flat)])
