@@ -41,4 +41,7 @@ function subfold() {
   '
 }
 
-nix-build --show-trace "$@" |& subfold ${!#}
+nix-build --option restrict-eval true \
+  -I . -I "$(readlink ~/.nix-defexpr/channels/nixpkgs)" \
+  -I "$(readlink /nix/var/nix/profiles/per-user/root/channels/nixpkgs)" \
+  --show-trace "$@" |& subfold ${!#}
