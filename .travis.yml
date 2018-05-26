@@ -1,7 +1,8 @@
 language: nix
 
 script:
- - ./support/utils/nix-build-travis-fold.sh -I fractalide=. -A fractalide release.nix
+ - sudo $(which nix-shell) ./support/utils/setup-hydra.fractalide.com.sh
+ - ./support/utils/nix-build-travis-fold.sh --fallback -I fractalide=. -A fractalide release.nix
 
 matrix:
   include:
