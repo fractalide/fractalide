@@ -1,5 +1,5 @@
 with import ./. {};
 
-[
-  pkgs.fractalide
-]
+{
+  inherit (pkgs) fractalide;
+}
