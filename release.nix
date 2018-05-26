@@ -6,5 +6,5 @@ with import ./. {};
     nixpkgs = import ../nixpkgs;
     pkgs = import pkgs { pkgs = nixpkgs; };
   in
-    inherit (pkgs) fractalide;
+    pkgs.fractalide;
 }
