@@ -1,7 +1,7 @@
 language: nix
 
 script:
- - sudo $(which nix-shell) ./support/utils/setup-hydra.fractalide.com.sh
+ - sudo env NIX_PATH=$NIX_PATH $(which nix-shell) ./support/utils/setup-hydra.fractalide.com.sh
  - ./support/utils/nix-build-travis-fold.sh --fallback -I fractalide=. -A fractalide release.nix
 
 matrix:
