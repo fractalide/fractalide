@@ -20,7 +20,6 @@ touch $nix_conf
 substituters = $nixos_url $fracta_url
 trusted-substituters = $nixos_url $fracta_url
 trusted-public-keys = $nixos_key $fracta_key
-require-sigs = false
 EOF
 } > ${nix_conf}.new
 mv ${nix_conf}.new $nix_conf
