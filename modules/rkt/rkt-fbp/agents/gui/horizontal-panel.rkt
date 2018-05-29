@@ -14,7 +14,7 @@
 (define (generate-hp input)
   (lambda (frame)
     (let* ([hp (new horizontal-panel% [parent frame]
-                    [stretchable-height #f]
+                    [stretchable-height #t]
                     [alignment '(center center)])])
       (send (input "acc") hp))))
 
@@ -40,6 +40,8 @@
           (match msg-in
             [(cons 'set-orientation orientation)
              (class-send (cdr hp) set-orientation orientation)]
+            [(cons 'set-alignment (cons horiz vert))
+             (class-send (cdr hp) set-alignment horiz vert)]
             [else (send-action output output-array msg-in)])
           ; FALSE : At least a message in the input array port
           ; Change the accumulator HP with set!
