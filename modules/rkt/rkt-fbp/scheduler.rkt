@@ -1,6 +1,5 @@
 #lang racket/base
 
-; (provide make-scheduler (struct-out scheduler))
 (provide make-scheduler (struct-out scheduler))
 
 (require racket/async-channel)
@@ -243,8 +242,9 @@
   (let* ([mail-box (make-async-channel)]
          [state (scheduler #hash() 0 #f mail-box)]
          [t (thread (lambda() (scheduler-loop state)))])
-    (lambda (msg)
-      (async-channel-put mail-box msg)
-      (match msg
-        [(msg-stop) (thread-wait t)]
-        [else (void)]))))
+    (lambda msgs
+      (for ([msg msgs])
+        (async-channel-put mail-box msg)
+        (match msg
+          [(msg-stop) (thread-wait t)]
+          [else (void)])))))
