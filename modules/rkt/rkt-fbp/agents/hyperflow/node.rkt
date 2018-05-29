@@ -25,6 +25,9 @@
    (node "file-open" ${IO.file.open})
    (edge "model" "compute" 'update-code "file-open" "in" _)
    (edge "file-open" "out" _ "model" "compute" 'update-code)
+   (node "exec" ${hyperflow.node.exec})
+   (edge "model" "compute" 'exec "exec" "in" _)
+   (edge "exec" "out" _ "model" "compute" 'exec)
    ;    change the code widget
    (edge "model" "code" _ "code" "in" _)
    ;   eval
