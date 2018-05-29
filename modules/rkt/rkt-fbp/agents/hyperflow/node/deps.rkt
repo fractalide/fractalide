@@ -13,7 +13,7 @@
    ; Add
    (node "add" ${gui.text-field})
    (edge "add" "out" _ "vp" "place" 1)
-   (mesg "add" "in" '(init . ((init-value . "add"))))
+   (mesg "add" "in" '(init . ()))
 
    ; set the correct action
    (node "to-add" ${mesg.set-action})
