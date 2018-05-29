@@ -16,12 +16,8 @@
       (define msg (recv (input "in")))
       (define exec
         (let ([out (open-output-string)])
-          (parameterize ([current-output-port out])
-            (with-handlers ([exn:fail?
-                             (lambda (exn)
-                               (display exn))])
-              (dynamic-require (string->path msg)
-                               0)))
+          (parameterize ([current-output-port out]
+                         [current-error-port out])
+            (system (string-append "racket " msg)))
           (get-output-string out)))
-      (send (output "out") exec)
-      )))
+      (send (output "out") exec))))

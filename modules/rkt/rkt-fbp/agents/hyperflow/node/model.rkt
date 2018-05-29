@@ -24,14 +24,18 @@
                                                  (cons 'style (list 'multiple)))))
          (send (output "eval") '(init . ((init-value . "Not yet evaluated")
                                          (style . (multiple)))))
-         (send (input "in") '(update-code . #t))]
-        [(cons 'update-code #t)
+         (send (input "in") (cons 'update-type (node-type acc)))]
+        [(cons 'update-type "")
+         (send (output "eval") '(set-value . "Please enter a type for the node"))]
+        [(cons 'update-type type)
+         (set! acc (struct-copy node acc [type type]))
          (send (hash-ref (output-array "compute") 'update-code) (node-type acc))
          (define code (recv (hash-ref (input-array "compute") 'update-code)))
          (send (output "code")
                (cons 'set-value code))
          (send (output "code")
                '(refresh . #t))
+         (send (output "eval") '(set-value . "..."))
          (send (hash-ref (output-array "compute") 'exec) (node-type acc))
          (define res-exec (recv (hash-ref (input-array "compute") 'exec)))
          (send (output "eval")

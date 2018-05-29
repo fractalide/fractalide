@@ -7,8 +7,23 @@
 (define g
   (make-graph
    (node "frame" ${gui.frame})
-   ; VP
+   (node "vp" ${gui.vertical-panel})
+   (edge "vp" "out" _ "frame" "in" _)
+   (mesg "vp" "in" '(set-alignment . (center . top)))
+   ; path selection
+   (node "hp-selec" ${gui.horizontal-panel})
+   (edge "hp-selec" "out" _ "vp" "place" 1)
+   (node "selec" ${gui.text-field})
+   (node "selec-but" ${gui.button})
+   (edge "selec" "out" _ "hp-selec" "place" 1)
+   (edge "selec-but" "out" _ "hp-selec" "place" 2)
+   (mesg "selec" "in" '(init . ((label . "Node path:"))))
+   (mesg "selec-but" "in" '(init . ((label . "go"))))
+   (mesg "selec-but" "option" '(get-value . update-type))
+   (edge "selec-but" "out" 'get-value "selec" "in" _)
+   (edge "selec" "out" 'update-type "node" "in" _)
+   ; node
    (node "node" ${hyperflow.node})
-   (edge "node" "out" _ "frame" "in" _)
-   (mesg "node" "in" '(init . "/home/denis/macro-node.rkt"))
+   (edge "node" "out" _ "vp" "place" 2)
+   (mesg "node" "in" '(init . ""))
    ))
