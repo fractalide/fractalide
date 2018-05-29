@@ -39,7 +39,9 @@
                           [stretchable-width (hash-ref default 'stretchable-width)]
                           [stretchable-height (hash-ref default 'stretchable-height)]
                           [callback (lambda (button event)
-                                      (send (input "in") (cons (class:send event get-event-type) #t)))])])
+                                      (define msg (or (try-recv (input "option"))
+                                                      (cons 'button #t)))
+                                      (send (input "in") msg))])])
       (send (input "acc") cb))))
 
 (define (process-msg msg widget input output output-array)
