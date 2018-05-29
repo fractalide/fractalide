@@ -3,8 +3,8 @@ let
   pinnedPkgs = bootPkgs.fetchFromGitHub {
     owner = "fractalide";
     repo = "racket2nix";
-    rev = "f322df56de6581f5c3cf70994b6d52298ba8a9e7";
-    sha256 = "1nijpr4npszk1nia06gzzd5b1mvmkrl0wzk9paay3lhk66xyp419";
+    rev = "cad00d50227dffa7ef3f2d597a65a735c15ab177";
+    sha256 = "04krjqpap791avxl6y954cmkfshm5vgwch9iqm7263gjv49gxsp1";
   };
 in
 import pinnedPkgs
