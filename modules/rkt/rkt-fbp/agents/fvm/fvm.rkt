@@ -1,7 +1,5 @@
 #lang racket/base
 
-(provide agt)
-
 (require fractalide/modules/rkt/rkt-fbp/agent
          (prefix-in g: fractalide/modules/rkt/rkt-fbp/graph)
          fractalide/modules/rkt/rkt-fbp/def
@@ -11,41 +9,39 @@
 
 ; TODO : manage well recursive virtual array (not all deleted for the moment)
 
-(define agt
-  (define-agent
-    #:input '("in" "flat") ; in port
-    #:output '("sched" "flat" "out" "halt") ; out port
-    #:proc
-    (lambda (input output input-array output-array)
-      (let* ([try-acc (try-recv (input "acc"))]
-             [acc (if try-acc try-acc (g:graph '() '() '() '() '()))]
-             [msg (recv (input "in"))])
-        (define new-acc
-          (match msg
-            [(cons 'add (? g:graph? add))
-             (define flat (send-sched add acc input output))
-             (struct-copy g:graph acc
-                          [agent (append (g:graph-agent acc) (g:graph-agent flat))]
-                          [edge (append (g:graph-edge acc) (g:graph-edge flat))]
-                          ; The virtuals were already merged in send-sched -> resolve-virtual
-                          [virtual-in (g:graph-virtual-in flat)]
-                          [virtual-out (g:graph-virtual-out flat)])]
-            [(cons 'dynamic-add msg)
-             ; do a classic add with the sender "port"
-             (define flat (send-sched (dynamic-add-graph msg) acc input output (dynamic-add-sender msg)))
-             (struct-copy g:graph acc
-                          [agent (append (g:graph-agent acc) (g:graph-agent flat))]
-                          [edge (append (g:graph-edge acc) (g:graph-edge flat))]
-                          ; The virtuals were already merged in send-sched -> resolve-virtual
-                          [virtual-in (g:graph-virtual-in flat)]
-                          [virtual-out (g:graph-virtual-out flat)])]
-            [(cons 'dynamic-remove graph)
-             (send-sched-remove graph acc input output)]
-            [(cons 'stop #t)
-             (send (output "halt") #t)
-             (send (output "sched") (msg-stop))
-             acc]))
-        (send (output "acc") new-acc)))))
+(define-agent
+  #:input '("in" "flat") ; in port
+  #:output '("sched" "flat" "out" "halt") ; out port
+  (fun
+   (let* ([try-acc (try-recv (input "acc"))]
+          [acc (if try-acc try-acc (g:graph '() '() '() '() '()))]
+          [msg (recv (input "in"))])
+     (define new-acc
+       (match msg
+         [(cons 'add (? g:graph? add))
+          (define flat (send-sched add acc input output))
+          (struct-copy g:graph acc
+                       [agent (append (g:graph-agent acc) (g:graph-agent flat))]
+                       [edge (append (g:graph-edge acc) (g:graph-edge flat))]
+                       ; The virtuals were already merged in send-sched -> resolve-virtual
+                       [virtual-in (g:graph-virtual-in flat)]
+                       [virtual-out (g:graph-virtual-out flat)])]
+         [(cons 'dynamic-add msg)
+          ; do a classic add with the sender "port"
+          (define flat (send-sched (dynamic-add-graph msg) acc input output (dynamic-add-sender msg)))
+          (struct-copy g:graph acc
+                       [agent (append (g:graph-agent acc) (g:graph-agent flat))]
+                       [edge (append (g:graph-edge acc) (g:graph-edge flat))]
+                       ; The virtuals were already merged in send-sched -> resolve-virtual
+                       [virtual-in (g:graph-virtual-in flat)]
+                       [virtual-out (g:graph-virtual-out flat)])]
+         [(cons 'dynamic-remove graph)
+          (send-sched-remove graph acc input output)]
+         [(cons 'stop #t)
+          (send (output "halt") #t)
+          (send (output "sched") (msg-stop))
+          acc]))
+     (send (output "acc") new-acc))))
 
 (define (send-sched-remove rem actual input output)
   ; Flat the graph
