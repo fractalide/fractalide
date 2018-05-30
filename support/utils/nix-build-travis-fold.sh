@@ -4,6 +4,40 @@ set -e
 set -u
 set -o pipefail
 
+function main() {
+  local maybe_file=${!#}  # last argument
+  local file=$(nixizeFilename "$maybe_file")
+
+  if [[ -n $file ]] && fileHasAttr "$file" travisOrder; then
+    while read attr; do
+      # attr may be optional
+      fileHasAttr "$file" $attr &&
+        build "$@" -A $attr
+    done < <(getOrder "$file")
+  else
+    build "$@"
+  fi
+}
+
+
+
+function build() {
+  local nixpkgs_paths=()
+
+  for path in \
+    $HOME/.nix-defexpr/channel/nixpkgs \
+    /home/travis/.nix-defexpr/channels/nixpkgs \
+    /nix/var/nix/profiles/per-user/root/channels/nixpkgs \
+  ; do
+    [[ -e $path ]] &&
+    nixpkgs_paths+=(-I "$(readlink "$path")")
+  done
+
+  nix-build --option restrict-eval true \
+    "${nixpkgs_paths[@]}" \
+    --show-trace "$@" |& subfold ${!#}
+}
+
 function subfold() {
   local prefix=$1
   awk '
@@ -41,7 +75,32 @@ function subfold() {
   '
 }
 
-nix-build --option restrict-eval true \
-  -I . -I "$(readlink ~/.nix-defexpr/channels/nixpkgs)" \
-  -I "$(readlink /nix/var/nix/profiles/per-user/root/channels/nixpkgs)" \
-  --show-trace "$@" |& subfold ${!#}
+function nixizeFilename() {
+  local maybe_filename
+  local filename
+
+  maybe_filename=$1
+  [[ -e $maybe_filename ]] || return
+  [[ $maybe_filename == */* ]] && printf %s "$maybe_filename" || printf ./%s "$maybe_filename"
+}
+
+function fileHasAttr() {
+  local filename=$1
+  local attr=$2
+
+  (( $(nix-instantiate --eval --argstr attr "$attr" --arg filename "$filename" \
+       -E '{filename, attr}: if builtins.hasAttr attr (import filename) then 1 else 0' 2>/dev/null || true) ))
+}
+
+function getOrder() {
+  # This is not overkill, this is the simplest way to parse a nix array -- let nix parse
+  local filename=$1
+
+  out=$(nix-build -E '(import <nixpkgs> {}).runCommand "order" { inherit (import '$filename') travisOrder; }
+                      "for item in $travisOrder; do echo $item >> $out; done"' 2>/dev/null || true)
+
+  [[ -z $out ]] && return
+  cat $out
+}
+
+main "$@"

@@ -9,4 +9,6 @@ with import <fractalide> {};
     fractapkgs.fractalide;
 } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
   rs-tests = import ./tests;
+} // {
+  travisOrder = [ "rs-tests" "fractalide" ];
 }
