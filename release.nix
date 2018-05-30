@@ -1,3 +1,6 @@
+{ isTravis ? false
+}:
+
 with import <fractalide> {};
 
 {
@@ -9,6 +12,6 @@ with import <fractalide> {};
     fractapkgs.fractalide;
 } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
   rs-tests = import ./tests;
-} // {
+} // pkgs.lib.optionalAttrs isTravis {
   travisOrder = [ "rs-tests" "fractalide" ];
 }
