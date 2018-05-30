@@ -7,4 +7,6 @@ with import <fractalide> {};
     fractapkgs = import ./pkgs { pkgs = nixpkgs; };
   in
     fractapkgs.fractalide;
+} // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+  rs-tests = import ./tests;
 }

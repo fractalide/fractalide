@@ -13,7 +13,18 @@ pkgs {
   overlays = [
     (import (builtins.toPath "${rustOverlay}/rust-overlay.nix"))
     (self: super: rec {
-      rust = let channel = self.rustChannelOf { date = "2018-04-01"; channel = "nightly"; }; in {
+      rust = let
+        fromManifestFixed = manifest: sha256: { stdenv, fetchurl, patchelf }:
+          self.lib.rustLib.fromManifestFile
+            (fetchurl { url = manifest; sha256 = sha256; })
+            { inherit stdenv fetchurl patchelf; };
+        rustChannelOfFixed = manifest_args: sha256: fromManifestFixed
+          (self.lib.rustLib.manifest_v2_url manifest_args) sha256
+          { inherit (self) stdenv fetchurl patchelf; };
+        channel = rustChannelOfFixed
+          { date = "2018-04-01"; channel = "nightly"; }
+          "186lzxrff9pyakgcf7gv604abl7dcjmy69ilk762anmwya3lgjmj";
+      in {
         rustc = channel.rust;
         inherit (channel) cargo;
       };
