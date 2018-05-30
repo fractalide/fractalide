@@ -33,7 +33,7 @@ function build() {
     nixpkgs_paths+=(-I "$(readlink "$path")")
   done
 
-  nix-build --option restrict-eval true \
+  nix-build --fallback --option restrict-eval true \
     "${nixpkgs_paths[@]}" \
     --show-trace "$@" |& subfold ${!#}
 }
