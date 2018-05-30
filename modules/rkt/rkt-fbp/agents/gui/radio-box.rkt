@@ -1,7 +1,5 @@
 #lang racket/base
 
-(provide agt)
-
 (require fractalide/modules/rkt/rkt-fbp/agent
          fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
@@ -28,7 +26,7 @@
   (lambda (frame)
     (define default (for/fold ([acc base-default])
                               ([d data])
-                      (hash-set acc (car d) (cdr d))))
+                              (hash-set acc (car d) (cdr d))))
     (let* ([cb (class:new (with-event radio-box% input) [parent frame]
                           [label (hash-ref default 'label)]
                           [choices (hash-ref default 'choices)]
@@ -54,31 +52,29 @@
   (if managed
       (void)
       (match msg
-        [(cons 'set-enable (cons n b))
-         (class:send widget set-enable n b)]
-        [(cons 'is-enabled? (cons n act))
-         (send-action output output-array (cons act (class:send widget is-enabled? n)))]
-        [(cons 'get-item-label act)
-         (send-action output output-array (cons act (class:send widget get-item-label)))]
-        [(cons 'get-item-plain-label act)
-         (send-action output output-array (cons act (class:send widget get-item-plain-label)))]
-        [(cons 'get-number act)
-         (send-action output output-array (cons act (class:send widget get-number)))]
-        [(cons 'get-selection act)
-         (send-action output output-array (cons act (class:send widget get-selection)))]
-        [(cons 'set-selection n)
-         (class:send widget set-selection n)]
-        [else (send-action output output-array msg)])))
+             [(cons 'set-enable (cons n b))
+              (class:send widget set-enable n b)]
+             [(cons 'is-enabled? (cons n act))
+              (send-action output output-array (cons act (class:send widget is-enabled? n)))]
+             [(cons 'get-item-label act)
+              (send-action output output-array (cons act (class:send widget get-item-label)))]
+             [(cons 'get-item-plain-label act)
+              (send-action output output-array (cons act (class:send widget get-item-plain-label)))]
+             [(cons 'get-number act)
+              (send-action output output-array (cons act (class:send widget get-number)))]
+             [(cons 'get-selection act)
+              (send-action output output-array (cons act (class:send widget get-selection)))]
+             [(cons 'set-selection n)
+              (class:send widget set-selection n)]
+             [else (send-action output output-array msg)])))
 
 
-(define agt
-  (define-agent
-    #:input '("in") ; in port
-    #:output '("out") ; out port
-    #:output-array '("out")
-    #:proc
-    (lambda (input output input-array output-array)
-      (define acc (try-recv (input "acc")))
-      (define msg (recv (input "in")))
-      (set! acc (manage acc msg input output output-array generate process-msg))
-      (send (output "acc") acc))))
+(define-agent
+  #:input '("in") ; in port
+  #:output '("out") ; out port
+  #:output-array '("out")
+  (fun
+    (define acc (try-recv (input "acc")))
+    (define msg (recv (input "in")))
+    (set! acc (manage acc msg input output output-array generate process-msg))
+    (send (output "acc") acc)))

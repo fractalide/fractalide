@@ -1,7 +1,5 @@
 #lang racket/base
 
-(provide agt)
-
 (require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/agent)
 (require fractalide/modules/rkt/rkt-fbp/loader)
@@ -44,12 +42,10 @@
               (rec-flat-graph (cdr not-visited) (struct-copy graph actual-graph [agent (cons next (graph-agent actual-graph))]))))))
   (rec-flat-graph (graph-agent actual-graph) (struct-copy graph actual-graph [agent '()])))
 
-(define agt
-  (define-agent
-    #:input '("in" "ask-path" "ask-graph")
-    #:output '("out" "ask-path" "ask-graph")
-    #:proc
-    (lambda (input output input-array output-array)
-      (let* ([msg (recv (input "in"))])
-        (define flat (flat-graph msg input output))
-        (send (output "out") flat)))))
+(define-agent
+  #:input '("in" "ask-path" "ask-graph")
+  #:output '("out" "ask-path" "ask-graph")
+  (fun
+   (let* ([msg (recv (input "in"))])
+     (define flat (flat-graph msg input output))
+     (send (output "out") flat))))

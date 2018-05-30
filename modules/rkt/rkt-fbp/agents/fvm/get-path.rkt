@@ -1,7 +1,5 @@
 #lang racket
 
-(provide agt)
-
 (require fractalide/modules/rkt/rkt-fbp/agent)
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
@@ -18,14 +16,12 @@
                            "type required to be a nix interpolation string or something recognized by dynamic-require"
                            type)]))
 
-(define agt
-  (define-agent
-    #:input '("in")
-    #:output '("out")
-    #:proc
-    (lambda (input output input-array output-array)
-      (let* ([agt (recv (input "in"))])
-        (define new-type (maybe-nix-string->module-path-or-passthrough (g-agent-type agt)))
-        (define new-agent (struct-copy g-agent agt
-                                       [type new-type]))
-        (send (output "out") new-agent)))))
+(define-agent
+  #:input '("in")
+  #:output '("out")
+  (fun
+   (let* ([agt (recv (input "in"))])
+     (define new-type (maybe-nix-string->module-path-or-passthrough (g-agent-type agt)))
+     (define new-agent (struct-copy g-agent agt
+                                    [type new-type]))
+     (send (output "out") new-agent))))

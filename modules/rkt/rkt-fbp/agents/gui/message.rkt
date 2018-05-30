@@ -1,7 +1,5 @@
 #lang racket/base
 
-(provide agt)
-
 (require fractalide/modules/rkt/rkt-fbp/agent
          fractalide/modules/rkt/rkt-fbp/agents/gui/helper)
 
@@ -27,7 +25,7 @@
   (lambda (frame)
     (define default (for/fold ([acc base-default])
                               ([d data])
-                      (hash-set acc (car d) (cdr d))))
+                              (hash-set acc (car d) (cdr d))))
     (let* ([cb (class:new (with-event message% input) [parent frame]
                           [auto-resize (hash-ref default 'auto-resize)]
                           [label (hash-ref default 'label)]
@@ -50,20 +48,18 @@
   (if managed
       (void)
       (match msg
-        [(cons 'get-auto-resize act)
-         (send-action output output-array (cons act (class:send widget get-auto-resize)))]
-        [(cons 'set-auto-resize b)
-         (class:send widget set-auto-resize b)]
-        [else (send-action output output-array msg)])))
+             [(cons 'get-auto-resize act)
+              (send-action output output-array (cons act (class:send widget get-auto-resize)))]
+             [(cons 'set-auto-resize b)
+              (class:send widget set-auto-resize b)]
+             [else (send-action output output-array msg)])))
 
-(define agt
-  (define-agent
-    #:input '("in") ; in port
-    #:output '("out") ; out port
-    #:output-array '("out")
-    #:proc
-    (lambda (input output input-array output-array)
-      (define acc (try-recv (input "acc")))
-      (define msg (recv (input "in")))
-      (set! acc (manage acc msg input output output-array generate process-msg))
-      (send (output "acc") acc))))
+(define-agent
+  #:input '("in") ; in port
+  #:output '("out") ; out port
+  #:output-array '("out")
+  (fun
+    (define acc (try-recv (input "acc")))
+    (define msg (recv (input "in")))
+    (set! acc (manage acc msg input output output-array generate process-msg))
+    (send (output "acc") acc)))

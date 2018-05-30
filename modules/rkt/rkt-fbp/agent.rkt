@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket
 
 ; TODO : what to do with unconnected output port? For the moment, the msg is silently destroy
 
@@ -9,7 +9,7 @@
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          agent-no-input?
-         make-agent define-agent)
+         make-agent define-agent fun)
 
 (require racket/list
          racket/match)
@@ -213,11 +213,26 @@
 ;       #:input-array (Listof String)
 ;       #:output-array (Listof String))
 ;      opt-agent)
-(define (define-agent
-          #:proc proc
+(define (define-agent-priv
+          [proc #f]
+          #:proc [proc2 #f]
           #:input [input '()]
           #:output [output '()]
           #:input-array [input-array '()]
           #:output-array [output-array '()]
           )
-  (opt-agent input input-array output output-array proc))
+  (opt-agent input input-array output output-array (or proc2 proc)))
+
+(define-syntax (define-agent stx)
+  (syntax-case stx ()
+    [(_ args ...)
+     #'(begin
+         (provide agt)
+         (define agt (define-agent-priv
+                       args ...)))
+     ]))
+
+(define-syntax (fun stx)
+  (define ls (syntax->list stx))
+  (datum->syntax stx `(lambda (input output input-array output-array) (unquote-splicing (cdr ls))))
+  )

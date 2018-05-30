@@ -48,6 +48,15 @@
          (struct-copy graph acc [edge (cons (g-edge out out-p out-s in in-p in-s) (graph-edge acc))])]
         ))))
 
+(define-syntax (define-graph stx)
+  (syntax-case stx ()
+    [(_ args ...)
+     #'(begin
+         (provide g)
+         (define g (make-graph
+                       args ...)))
+     ]))
+
 ; TODO duplicate code in dynamic-add and dynamic-remove
 (define (dynamic-remove delta input output)
   (define name (port-name (input "in")))
