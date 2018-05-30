@@ -25,8 +25,7 @@ function build() {
   local nixpkgs_paths=()
 
   for path in \
-    $HOME/.nix-defexpr/channel/nixpkgs \
-    /home/travis/.nix-defexpr/channels/nixpkgs \
+    $HOME/.nix-defexpr/channels/nixpkgs \
     /nix/var/nix/profiles/per-user/root/channels/nixpkgs \
   ; do
     [[ -e $path ]] &&
