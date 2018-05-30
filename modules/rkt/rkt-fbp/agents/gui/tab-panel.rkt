@@ -83,7 +83,7 @@
                         [else (send-action output output-array msg)])
                  void)))
 
-    (send (output "acc") ph))))
+    (send (output "acc") ph)))
 
 (define (split-place place)
   (define ls (string-split place ";"))
@@ -100,4 +100,4 @@
 (define (update-choices acc widget)
   (define choices (map (lambda (elem) (choices-name elem))
                        acc))
-  (class-send widget set choices)
+  (class-send widget set choices))
