@@ -16,6 +16,17 @@
     (let* ([hp (new vertical-panel% [parent frame])])
       (send (input "acc") hp))))
 
+(define (process-msg msg widget input output output-array)
+  (define managed #f)
+  (set! managed (area-manage widget msg output output-array))
+  (set! managed (window-manage widget msg output output-array))
+  (set! managed (area-container-manage widget msg output output-array))
+  (if managed
+      (void)
+      (match msg
+        ;TODO: manage orientation
+        [else (send-action output output-array msg)])))
+
 (define agt
   (define-agent
     #:input '("in") ; in port
@@ -35,12 +46,7 @@
 
       (if msg-in
           ; TRUE : A message in the input port
-          (match msg-in
-            [(cons 'set-orientation orientation)
-             (class-send (cdr hp) set-orientation orientation)]
-            [(cons 'set-alignment (cons horiz vert))
-             (class-send (cdr hp) set-alignment horiz vert)]
-            [else (send-action output output-array msg-in)])
+          (process-msg msg-in (cdr hp) input output output-array)
           ; FALSE : At least a message in the input array port
           ; Change the accumulator HP with set!
           (for ([(place containee) (input-array "place")])

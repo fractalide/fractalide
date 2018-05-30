@@ -9,10 +9,10 @@
    (node "frame" ${gui.frame})
    (node "vp" ${gui.vertical-panel})
    (edge "vp" "out" _ "frame" "in" _)
-   (mesg "vp" "in" '(set-alignment . (center . top)))
    ; path selection
    (node "hp-selec" ${gui.horizontal-panel})
    (edge "hp-selec" "out" _ "vp" "place" 1)
+   (mesg "hp-selec" "in" '(set-stretchable-height . #f))
    (node "selec" ${gui.text-field})
    (node "selec-but" ${gui.button})
    (edge "selec" "out" _ "hp-selec" "place" 1)
