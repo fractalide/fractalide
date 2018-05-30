@@ -11,7 +11,7 @@
   (define-agent
     #:input '("in") ; in array port
     #:input-array '("compute")
-    #:output '("out" "code" "eval" "os-deps" "modules") ; out port
+    #:output '("out" "code" "eval") ; out port
     #:output-array '("compute")
     #:proc
     (lambda (input output input-array output-array)
@@ -19,7 +19,7 @@
       (define acc (try-recv (input "acc")))
       (match msg
         [(cons 'init type)
-         (set! acc (node type (list) (list)))
+         (set! acc (node type))
          (send (output "code") (cons 'init (list (cons 'init-value "not yet loaded")
                                                  (cons 'style (list 'multiple)))))
          (send (output "eval") '(init . ((init-value . "Not yet evaluated")
@@ -43,22 +43,6 @@
          (send (output "eval")
                '(refresh . #t))
          ]
-        [(cons 'add-os-deps os-deps)
-         (set! acc (struct-copy node acc [os-deps (cons os-deps (node-os-deps acc))]))
-         (send (output "os-deps")
-               (cons 'add
-                     (cons 'init (list (cons 'label os-deps)
-                                       (cons 'on-delete 'remove-os-deps)))))]
-        [(cons 'remove-os-deps os-deps)
-         (set! acc (struct-copy node acc [os-deps (remove os-deps (node-os-deps acc) string=?)]))]
-        [(cons 'add-modules mod)
-         (set! acc (struct-copy node acc [modules (cons mod (node-modules acc))]))
-         (send (output "modules")
-               (cons 'add
-                     (cons 'init (list (cons 'label mod)
-                                       (cons 'on-delete 'remove-modules)))))]
-        [(cons 'remove-modules mod)
-         (set! acc (struct-copy node acc [modules (remove mod (node-modules acc) string=?)]))]
         [else (send (output "out") msg)])
       (send (output "acc") acc)
       )))

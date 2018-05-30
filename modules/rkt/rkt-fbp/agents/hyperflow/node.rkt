@@ -8,12 +8,9 @@
   (make-graph
    ; Entry point
    (node "model" ${hyperflow.node.model})
-   ; Exit point
-   (node "hp" ${gui.horizontal-panel})
    ; Edit panel
    ; display
    (node "vp" ${gui.vertical-panel})
-   (edge "vp" "out" _ "hp" "place" 2)
    (node "code" ${gui.text-field})
    (node "eval" ${gui.text-field})
    (edge "code" "out" _ "vp" "place" 1)
@@ -33,26 +30,6 @@
    ;   eval
    (edge "model" "eval" _ "eval" "in" _)
 
-   ; Option panel
-   (node "option" ${gui.tab-panel})
-   (edge "option" "out" _ "hp" "place" 0)
-   ;  Os-deps
-   (node "os-deps" ${hyperflow.node.deps})
-   (edge "os-deps" "out" _ "option" "place" "1;os-deps")
-   (mesg "os-deps" "option" 'add-os-deps)
-   (edge "model" "os-deps" _ "os-deps" "in" _)
-   (edge "os-deps" "out" 'add-os-deps "model" "in" _)
-   (edge "os-deps" "out" 'remove-os-deps "model" "in" _)
-   ;  Modules
-   (node "modules" ${hyperflow.node.deps})
-   (edge "modules" "out" _ "option" "place" "2;modules")
-   (mesg "modules" "option" 'add-modules)
-   (edge "model" "modules" _ "modules" "in" _)
-   (edge "modules" "out" 'add-modules "model" "in" _)
-   (edge "modules" "out" 'remove-modules "model" "in" _)
-   ; initial display
-   (mesg "os-deps" "in" '(display . #t))
-
    (edge-in "in" "model" "in")
-   (edge-out "hp" "out" "out")
+   (edge-out "vp" "out" "out")
    ))
