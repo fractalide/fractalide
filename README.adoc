@@ -42,7 +42,7 @@ Fractalide stands on the shoulders of giants by combining the strengths of each 
 
 Fractalide brings __safe, fast, reusable, black-box__ dataflow functions and a means to compose them.
 
-__Tagline: "Nixpkgs is not enough! Here have 'Nixfuncs' too."__
+__Tagline: "Nixpkgs is not enough! Here, have 'Nixfuncs' too!"__
 
 === Rust Programmers
 
