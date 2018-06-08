@@ -7,7 +7,7 @@
   (node "model" ${hyperflow.node.model})
   ; Edit panel
   ; display
-  (node "vp" ${gui.vertical-panel})
+  (node "vp" ${gui.vertical-dragable})
   (node "code" ${gui.text-field})
   (node "eval" ${gui.text-field})
   (edge "code" "out" _ "vp" "place" 1)
