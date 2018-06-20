@@ -15,7 +15,7 @@
 (struct state (widget) #:prefab #:mutable)
 
 (define (my-canvas state)
-  (class canvas% ; The base class is canvas%
+  (class canvas% (super-new); The base class is canvas%
     ; Define overriding method to handle mouse events
     (define/override (on-event event)
       (displayln "Canvas mouse")
@@ -30,7 +30,7 @@
     (define/override (on-char event)
       (displayln "Canvas keyboard"))
     ; Call the superclass init, passing on all init args
-    (super-new)))
+    ))
 
 (define (generate input)
   (lambda (frame)
@@ -83,9 +83,9 @@
                          ]
                         [(cons 'delete #t)
                          (set-state-widget! (car canvas)
-                                            (remove place (car canvas)
-                                                    (lambda (x y)
-                                                      (= x (widget-id (state-widget y))))))
+                                            (filter (lambda (x)
+                                                      (not (=  place (widget-id x))))
+                                                    (state-widget (car canvas))))
                          (class-send (cdr canvas) refresh)
                          ]
                         [else (send-action output output-array msg)])

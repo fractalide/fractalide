@@ -33,4 +33,8 @@
   (node "text" ${gui.canvas.text})
   (edge "text" "out" _ "canvas" "place" 3)
   (mesg "text" "in" (cons 'init (vector "Hello Canvas!" 25 100)))
+
+  (node "delay" ${delayer})
+  (edge "delay" "out" _ "rect" "in" _)
+  (mesg "delay" "in" '(delete . #t))
   )

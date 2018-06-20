@@ -30,5 +30,5 @@
                            (send (input "in") event)))))]
      [(cons 'delete #t)
       (send (output "out") msg)]
-     [else (display "msg in text: ") (displayln msg)])
-   ))
+     [else
+      (send-action output output-array (cons (class-send msg get-event-type) msg))])))
