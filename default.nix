@@ -13,7 +13,6 @@ let
   fractals = import ./fractals { inherit buffet; };
   services = import ./services { inherit buffet; };
   mods     = import ./modules  { inherit buffet; };
-  imsg     = support.imsg;
 
   generateMsg = mods.rs.generate_msg_0_1_0 {};
   edgesModule = pkgs.stdenv.mkDerivation {
@@ -29,7 +28,7 @@ let
       '';
     };
   buffet = {
-    inherit support edges imsg nodes services fractals mods pkgs release verbose edgesModule;
+    inherit support edges nodes services fractals mods pkgs release verbose edgesModule;
   };
   fvm = import (./nodes/fvm + "/${backend}") { inherit buffet; };
   bin = let
