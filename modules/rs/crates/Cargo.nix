@@ -68,7 +68,7 @@ rec {
     crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/generate-msg;
+    src = ../generate-msg;
     inherit dependencies buildDependencies features;
   };
   humantime_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -191,7 +191,7 @@ rec {
     crateName = "rustfbp";
     version = "0.3.34";
     authors = [ "Denis Michiels <dmichiels@gmail.com>" "Stewart Mackenzie <setori88@gmail.com>" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rustfbp;
+    src = ../rustfbp;
     inherit dependencies buildDependencies features;
   };
   syn_0_12_15_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
