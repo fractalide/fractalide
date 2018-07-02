@@ -22,8 +22,8 @@ pkgs {
           (self.lib.rustLib.manifest_v2_url manifest_args) sha256
           { inherit (self) stdenv fetchurl patchelf; };
         channel = rustChannelOfFixed
-          { date = "2018-04-01"; channel = "nightly"; }
-          "186lzxrff9pyakgcf7gv604abl7dcjmy69ilk762anmwya3lgjmj";
+          { date = "2018-05-30"; channel = "nightly"; }
+          "06w12izi2hfz82x3wy0br347hsjk43w9z9s5y6h4illwxgy8v0x8";
       in {
         rustc = channel.rust;
         inherit (channel) cargo;
