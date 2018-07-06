@@ -4,27 +4,22 @@ paging-jsend-get
 Generic node that makes GET requests and expects paginated JSend
 replies a la Cardano.
 
-On the "client side" it has a `setup` input that accepts a
-`(pjg-setup)` struct. It listens to this first. After receiving its
-setup message, it goes on to listen to its `get-request` input and
-eventually send to responses to its `send-response` output. It sends
-response objects to `send-reponse` one by one until all pages have
-been exhausted, then sends a `#f` and goes back to listening for
-requests. If a JSend failure or error occurs, or an HTTP error, it
-sends an exception object and goes back to listening.
+It accepts HTTP requests on its `in` port and sends a sequence of
+objects on its `out` port. It sends and receives HTTP requests and
+data on its `http` in and out ports.
 
-On the "server side" it has a `send-request` output and a
-`get-response` input. After receiving a message on `get-request` it
-sends a request object on `send-request` and waits for a JSON string
-on `get-response`. If it receives an exception, it forwards it to
-`send-response` and goes back to listening on `get-response`. It
-expects the JSON to be JSend JSON.
+The data coming `in` is a `http-get-request` (POST requests cannot do
+paging), and it initially simply forwards that to its `http` out. If
+the `http` in port returns an `http-error`, that is simply forwarded
+to `out`.
 
-For each page it receives, it sends each of the elements in the `data`
-array, parsed to Racket objects, to `send-response`.
+It assumes that an `http-response` coming in on `http` has valid JSON
+bytes as its data and that a JSON object with `paging` in `metadata`
+will have an array in `data`.
 
-If the pagination data indicates that the information is incomplete,
-it keeps sending requests, parsing the responses and sending the
-objects, until it has received all of the pages and sent all the
-objects, then it sends a `#f`, and goes back to listening for
-requests.
+For each object in the `data` array, it send the parsed object to its
+`out` as a JSExpr (lists, numbers, strings, hashes with symbol keys).
+
+If the metadata indicates that there are more pages, it requests the
+next page and stars over. When there are no more objects, it sends an
+eof to `out`.
