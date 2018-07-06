@@ -97,6 +97,10 @@
         (send (output "send-response" (json-data data)))
         (send (output "send-response" eof))])]))
 
-      (define request (recv (input "get-request")))
+      (define request (recv (input "recv-request")))
       (match-define (http-get-request url accept) request) 
       (do-get-request (string->url url) accept))))
+
+(module+ test
+  (require syntax/location)
+  (dynamic-require (quote (submod paging-jsend-get/test main)) #f))
