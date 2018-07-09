@@ -5,7 +5,9 @@
          fractalide/modules/rkt/rkt-fbp/agent
          (prefix-in graph: fractalide/modules/rkt/rkt-fbp/graph))
 
-(provide setup-fvm fbp-agents-string->symbol)
+(provide call-with-new-fvm-and-scheduler
+         fbp-agents-string->symbol
+         setup-fvm)
 
 (define (fbp-agents-string->symbol agent-relative-path)
   (string->symbol (string-append "fractalide/modules/rkt/rkt-fbp/agents/"
@@ -29,13 +31,18 @@
   (sched (msg-connect "load-graph" "ask-path" "get-path" "in"))
   (sched (msg-connect "get-path" "out" "load-graph" "ask-path")))
 
+(define (call-with-new-fvm-and-scheduler f)
+  (define fvm-scheduler (make-scheduler #f))
+  (setup-fvm fvm-scheduler)
+  (define scheduler (make-scheduler #f))
+  (fvm-scheduler (msg-mesg "sched" "acc" scheduler))
+  (fvm-scheduler (msg-mesg "halt" "in" #f))
+  (f fvm-scheduler scheduler)
+  (fvm-scheduler (msg-mesg "fvm" "in" (cons 'stop #t)))
+  (fvm-scheduler (msg-stop)))
+
 (module+ main
-  (define sched (make-scheduler #f))
-  (setup-fvm sched)
-  (sched (msg-mesg "sched" "acc" (make-scheduler #f)))
-  (sched (msg-mesg "halt" "in" #f))
-  (define path (vector-ref (current-command-line-arguments) 0))
-  (define a-graph (graph:make-graph (graph:node "main" path)))
-  (sched (msg-mesg "fvm" "in" (cons 'add a-graph)))
-  (sched (msg-mesg "fvm" "in" (cons 'stop #t)))
-  (sched (msg-stop)))
+  (call-with-new-fvm-and-scheduler (lambda (fvm-sched sched)
+    (define path (vector-ref (current-command-line-arguments) 0))
+    (define a-graph (graph:make-graph (graph:node "main" path)))
+    (fvm-sched (msg-mesg "fvm" "in" (cons 'add a-graph))))))
