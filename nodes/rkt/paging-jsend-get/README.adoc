@@ -1,0 +1,25 @@
+paging-jsend-get
+================
+
+Generic node that makes GET requests and expects paginated JSend
+replies a la Cardano.
+
+It accepts HTTP requests on its `in` port and sends a sequence of
+objects on its `out` port. It sends and receives HTTP requests and
+data on its `http` in and out ports.
+
+The data coming `in` is a `http-get-request` (POST requests cannot do
+paging), and it initially simply forwards that to its `http` out. If
+the `http` in port returns an `http-error`, that is simply forwarded
+to `out`.
+
+It assumes that an `http-response` coming in on `http` has valid JSON
+bytes as its data and that a JSON object with `paging` in `metadata`
+will have an array in `data`.
+
+For each object in the `data` array, it send the parsed object to its
+`out` as a JSExpr (lists, numbers, strings, hashes with symbol keys).
+
+If the metadata indicates that there are more pages, it requests the
+next page and stars over. When there are no more objects, it sends an
+eof to `out`.
