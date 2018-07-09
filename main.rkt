@@ -50,56 +50,52 @@
  (struct-out http-error)
  (struct-out json-data)
  (struct-out json-fail)
- (struct-out json-error)
- agt)
+ (struct-out json-error))
 
 (define (url-with-page u page)
   (define query (url-query u))
   (define new-query (hash->list (hash-set (make-immutable-hash query) 'page (number->string page))))
   (struct-copy url u (query new-query)))
 
-(define agt
-  (define-agent
-    #:input '("in" "http")
-    #:output '("out" "http")
-    #:proc
-    (lambda (input output input-array output-array)
+(define-agent
+  #:input '("in" "http")
+  #:output '("out" "http")
+  (fun
+   (define (do-get-request url accept)
+     (send (output "http")
+           (http-get-request (url->string url) (if accept accept #"application/json")))
+     (define response (recv (input "http")))
+     (match response
+       [(http-error _) (send (output "out") response)]
+       [(http-response status headers data)
+        (define jsexpr (with-input-from-bytes data read-json))
+        (match jsexpr
+          [(hash-table ('status "fail") ('data data))
+           (send (output "out") (json-fail data))]
+          [(hash-table ('status "error"))
+           (send (output "out")
+                 (json-error
+                  (hash-ref jsexpr 'diagnostic (hash-ref jsexpr 'data #hash()))
+                  (hash-ref jsexpr 'message "")
+                  (hash-ref jsexpr 'code status)))]
+          [(hash-table
+            ('status "success")
+            ('data (list _ ...))
+            ('meta (hash-table ('pagination
+                                (hash-table ('totalPages total-pages) ('page page) ('perPage per-page) ('totalEntries total-entries))))))
+           (for ([elem (hash-ref jsexpr 'data)])
+             (send (output "out")
+                   (json-data elem)))
+           (if (> total-pages page)
+               (do-get-request (url-with-page url (+ 1 (string->number page))) accept)
+               (send (output "out") eof))]
+          [(hash-table ('status "success") ('data data))
+           (send (output "out" (json-data data)))
+           (send (output "out" eof))])]))
 
-      (define (do-get-request url accept)
-        (send (output "http")
-              (http-get-request (url->string url) (if accept accept #"application/json")))
-        (define response (recv (input "http")))
-        (match response
-          [(http-error _) (send (output "out") response)]
-          [(http-response status headers data)
-           (define jsexpr (with-input-from-bytes data read-json))
-           (match jsexpr
-             [(hash-table ('status "fail") ('data data))
-              (send (output "out") (json-fail data))]
-             [(hash-table ('status "error"))
-              (send (output "out")
-                    (json-error
-                     (hash-ref jsexpr 'diagnostic (hash-ref jsexpr 'data #hash()))
-                     (hash-ref jsexpr 'message "")
-                     (hash-ref jsexpr 'code status)))]
-             [(hash-table
-               ('status "success")
-               ('data (list _ ...))
-               ('meta (hash-table ('pagination
-                                   (hash-table ('totalPages total-pages) ('page page) ('perPage per-page) ('totalEntries total-entries))))))
-              (for ([elem (hash-ref jsexpr 'data)])
-                (send (output "out")
-                      (json-data elem)))
-              (if (> total-pages page)
-                  (do-get-request (url-with-page url (+ 1 (string->number page))) accept)
-                  (send (output "out") eof))]
-             [(hash-table ('status "success") ('data data))
-              (send (output "out" (json-data data)))
-              (send (output "out" eof))])]))
-
-      (define request (recv (input "in")))
-      (match-define (http-get-request url accept) request) 
-      (do-get-request (string->url url) accept))))
+   (define request (recv (input "in")))
+   (match-define (http-get-request url accept) request)
+   (do-get-request (string->url url) accept)))
 
 (module+ test
   (require rackunit)
