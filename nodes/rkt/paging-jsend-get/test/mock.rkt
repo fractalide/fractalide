@@ -4,7 +4,7 @@
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
-(require paging-jsend-get)
+(require fractalide/nodes/rkt/paging-jsend-get)
 
 (define-agent
   #:input '("in" "jsend")
