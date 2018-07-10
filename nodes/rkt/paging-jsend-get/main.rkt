@@ -107,8 +107,8 @@
    "Trivial HTTP request returning 1 item only"
    (define sched (make-scheduler #f))
    (define state-port (make-port 30 #f #f #f))
-   (for ([msg (list (msg-add-agent "jsend" 'paging-jsend-get)
-                    (msg-add-agent "mock" 'paging-jsend-get/test/mock)
+   (for ([msg (list (msg-add-agent "jsend" 'fractalide/nodes/rkt/paging-jsend-get/main)
+                    (msg-add-agent "mock" 'fractalide/nodes/rkt/paging-jsend-get/test/mock)
                     (msg-connect "jsend" "http" "mock" "in")
                     (msg-connect "mock" "out" "jsend" "http")
                     (msg-connect "jsend" "out" "mock" "jsend")
