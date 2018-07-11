@@ -24,7 +24,7 @@
   (mesg "menu-about" "in" #t)
   (mesg "menu-about" "option" "About")
 
-  (node "welcome" ${cardano-wallet.welcome})
+  (node "welcome" ${cardano-wallet.menu})
   (edge "welcome" "out" _ "frame" "in" _))
 
 (module+ main
