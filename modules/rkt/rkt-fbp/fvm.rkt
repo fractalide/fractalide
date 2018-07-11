@@ -32,14 +32,14 @@
          (msg-connect "get-path" "out" "load-graph" "ask-path")))
 
 (define (call-with-new-fvm-and-scheduler f)
-  (define fvm-scheduler (make-scheduler #f))
-  (setup-fvm fvm-scheduler)
-  (define scheduler (make-scheduler #f))
-  (fvm-scheduler (msg-mesg "sched" "acc" scheduler))
-  (fvm-scheduler (msg-mesg "halt" "in" #f))
-  (f fvm-scheduler scheduler)
-  (fvm-scheduler (msg-mesg "fvm" "in" (cons 'stop #t)))
-  (fvm-scheduler (msg-stop)))
+  (define fvm-sched (make-scheduler #f))
+  (setup-fvm fvm-sched)
+  (define sched (make-scheduler #f))
+  (fvm-sched (msg-mesg "sched" "acc" sched))
+  (fvm-sched (msg-mesg "halt" "in" #f))
+  (f fvm-sched sched)
+  (fvm-sched (msg-mesg "fvm" "in" (cons 'stop #t)))
+  (fvm-sched (msg-stop)))
 
 (module+ main
   (call-with-new-fvm-and-scheduler (lambda (fvm-sched sched)
