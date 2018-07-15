@@ -23,3 +23,4 @@ trusted-public-keys = $nixos_key $fracta_key
 EOF
 } > ${nix_conf}.new
 mv ${nix_conf}.new $nix_conf
+pkill -HUP nix-daemon || true
