@@ -4,7 +4,6 @@
 let
   genJobs = pkgs: {
     inherit (pkgs) fractalide;
-  } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
     rs-tests = import ./tests;
   };
 in
