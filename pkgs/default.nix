@@ -1,4 +1,5 @@
 { pkgs ? import ./nixpkgs.nix
+, system ? builtins.currentSystem
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
 , rustOverlay ? fetchFromGitHub {
     owner  = "mozilla";
@@ -6,10 +7,11 @@
     rev    = "7e54fb37cd177e6d83e4e2b7d3e3b03bd6de0e0f";
     sha256 = "1shz56l19kgk05p2xvhb7jg1whhfjix6njx1q4rvrc5p1lvyvizd";
   }
-, racket2nix ? import ./racket2nix { racket = (pkgs {}).racket-minimal; }
+, racket2nix ? import ./racket2nix { racket = (pkgs { inherit system; }).racket-minimal; }
 }:
 
 pkgs {
+  inherit system;
   overlays = [
     (import (builtins.toPath "${rustOverlay}/rust-overlay.nix"))
     (self: super: rec {
