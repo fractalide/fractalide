@@ -1,17 +1,18 @@
 { isTravis ? false
 }:
 
-with import <fractalide> {};
-
-{
-  inherit (pkgs) fractalide;
-  fractalide-nixpkgs-unstable = let
-    nixpkgs = import <nixpkgs>;
-    fractapkgs = import ./pkgs { pkgs = nixpkgs; };
-  in
-    fractapkgs.fractalide;
-} // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
-  rs-tests = import ./tests;
-} // pkgs.lib.optionalAttrs isTravis {
-  travisOrder = [ "rs-tests" "fractalide" ];
-}
+let
+  genJobs = pkgs: {
+    inherit (pkgs) fractalide;
+    rs-tests = import ./tests;
+  };
+in
+  (genJobs (import ./pkgs {})) //
+  {
+    latest-nixpkgs = genJobs (import ./pkgs { pkgs = import <nixpkgs>; });
+    x86_64-darwin = genJobs (import ./pkgs { system = "x86_64-darwin"; }) // {
+      latest-nixpkgs = genJobs (import ./pkgs { system = "x86_64-darwin"; pkgs = import <nixpkgs>; });
+    };
+  } // (import <nixpkgs> {}).lib.optionalAttrs isTravis {
+    travisOrder = [ "rs-tests" "fractalide" ];
+  }
