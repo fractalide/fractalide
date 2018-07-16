@@ -24,8 +24,18 @@
   (mesg "menu-about" "in" #t)
   (mesg "menu-about" "option" "About")
 
-  (node "welcome" ${cardano-wallet.menu})
-  (edge "welcome" "out" _ "frame" "in" _))
+  (node "app" ${gui.horizontal-panel})
+  (edge "app" "out" _ "frame" "in" _)
+
+  (node "sidebar" ${cardano-wallet.menu})
+  (edge "sidebar" "out" _ "app" "place" 10)
+
+  (node "stack" ${gui.place-holder})
+  (edge "stack" "out" _ "app" "place" 20)
+
+  (node "welcome" ${cardano-wallet.welcome})
+  (edge "welcome" "out" _ "stack" "place" 30)
+  (mesg "welcome" "in" '(display . #t)))
 
 (module+ main
   (require syntax/location)

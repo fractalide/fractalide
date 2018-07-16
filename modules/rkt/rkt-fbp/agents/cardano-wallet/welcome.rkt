@@ -5,6 +5,7 @@
 (define-graph
   (node "vp" ${gui.vertical-panel})
   (edge-out "vp" "out" "out")
+  (edge-in "in" "vp" "in")
 
   (node "headline" ${gui.message})
   (edge "headline" "out" _ "vp" "place" 1)
