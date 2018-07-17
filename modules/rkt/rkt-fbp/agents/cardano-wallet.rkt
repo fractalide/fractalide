@@ -34,8 +34,15 @@
   (edge "stack" "out" _ "app" "place" 20)
 
   (node "welcome" ${cardano-wallet.welcome})
-  (edge "welcome" "out" _ "stack" "place" 30)
-  (mesg "welcome" "in" '(display . #t)))
+  (edge "welcome" "out" _ "stack" "place" 10)
+  ; (mesg "welcome" "in" '(display . #t))
+
+  (node "summary" ${cardano-wallet.wallet})
+  (edge "summary" "out" _ "stack" "place" 20)
+  (mesg "summary" "in" '(display . #t))
+  (mesg "summary" "label" '(init . ((label . "My first wallet"))))
+  (mesg "summary" "balance" '(init . ((label . "70.000000 ADA"))))
+  (mesg "summary" "numtransactions" '(init . ((label . "2")))))
 
 (module+ main
   (require syntax/location)
