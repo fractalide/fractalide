@@ -17,8 +17,7 @@
   (mesg "headline" "in" `(init . ((label . ,fractalide-logo))))
 
   (node "button-pushes" ${plumbing.demux})
-  (node "debug" ${displayer})
-  (edge "button-pushes" "out" _ "debug" "in" _)
+  (edge-out "button-pushes" "out" "choice")
 
   (node "summary" ${gui.button})
   (edge "summary" "out" _ "vp" "place" 10)

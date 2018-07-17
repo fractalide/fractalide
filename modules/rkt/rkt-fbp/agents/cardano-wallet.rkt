@@ -35,14 +35,23 @@
 
   (node "welcome" ${cardano-wallet.welcome})
   (edge "welcome" "out" _ "stack" "place" 10)
-  ; (mesg "welcome" "in" '(display . #t))
+  (mesg "welcome" "in" '(display . #t))
 
   (node "summary" ${cardano-wallet.wallet})
   (edge "summary" "out" _ "stack" "place" 20)
-  (mesg "summary" "in" '(display . #t))
   (mesg "summary" "label" '(init . ((label . "My first wallet"))))
   (mesg "summary" "balance" '(init . ((label . "70.000000 ADA"))))
-  (mesg "summary" "numtransactions" '(init . ((label . "2")))))
+  (mesg "summary" "numtransactions" '(init . ((label . "2"))))
+
+  (node "card-display-in" ${plumbing.option-transform})
+  (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
+
+  (node "card-display-out" ${plumbing.mux})
+  (edge "card-display-in" "out" _ "card-display-out" "in" _)
+
+  (edge "sidebar" "choice" _ "card-display-in" "in" _)
+  (edge "card-display-out" "out" "new" "welcome" "in" _)
+  (edge "card-display-out" "out" "summary" "summary" "in" _))
 
 (module+ main
   (require syntax/location)
