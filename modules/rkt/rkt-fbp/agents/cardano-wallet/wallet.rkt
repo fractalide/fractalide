@@ -31,4 +31,8 @@
 
   (node "numtransactions" ${gui.message})
   (edge "numtransactions" "out" _ "numtxshp" "place" 20)
-  (edge-in "numtransactions" "numtransactions" "in"))
+  (edge-in "numtransactions" "numtransactions" "in")
+
+  (node "transactions" ${gui.vertical-panel})
+  (edge "transactions" "out" _ "vp" "place" 30)
+  (edge-in "transactions-place" "transactions" "place"))
