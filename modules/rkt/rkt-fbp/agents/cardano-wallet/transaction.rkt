@@ -45,4 +45,44 @@
 
   (node "time" ${gui.message})
   (edge "time" "out" _ "right" "place" 60)
-  (edge-in "time" "time" "in"))
+  (edge-in "time" "time" "in")
+
+  (node "details-button" ${gui.button})
+  (edge "details-button" "out" _ "right" "place" 70)
+  (mesg "details-button" "in" '(init . ((label . "Details"))))
+
+  (node "details-toggle" ${plumbing.toggle-transform})
+  (mesg "details-toggle" "option" (cons (lambda (_) (list* "details" 'display #t))
+                                        (lambda (_) (list* "no-details" 'display #t))))
+  (edge "details-button" "out" 'button "details-toggle" "in" _)
+
+  (node "details-choice" ${plumbing.mux})
+  (edge "details-toggle" "out" _ "details-choice" "in" _)
+
+  (node "maybe-details" ${gui.place-holder})
+  (edge "maybe-details" "out" _ "right" "place" 80)
+
+  (node "no-details" ${gui.vertical-panel})
+  (edge "no-details" "out" _ "maybe-details" "place" 10)
+  (edge "details-choice" "out" "no-details" "no-details" "in" _)
+  (mesg "no-details" "in" '(display . #t))
+
+  (node "details" ${gui.vertical-panel})
+  (edge "details" "out" _ "maybe-details" "place" 20)
+  (edge "details-choice" "out" "details" "details" "in" _)
+
+  (node "from-label" ${gui.message})
+  (edge "from-label" "out" _ "details" "place" 10)
+  (mesg "from-label" "in" '(init . ((label . "From address"))))
+  
+  (node "from" ${gui.message})
+  (edge "from" "out" _ "details" "place" 20)
+  (edge-in "from" "from" "in")
+
+  (node "to-label" ${gui.message})
+  (edge "to-label" "out" _ "details" "place" 30)
+  (mesg "to-label" "in" '(init . ((label . "To address"))))
+  
+  (node "to" ${gui.message})
+  (edge "to" "out" _ "details" "place" 40)
+  (edge-in "to" "to" "in"))
