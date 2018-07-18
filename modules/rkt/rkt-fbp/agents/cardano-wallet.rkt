@@ -50,6 +50,8 @@
   (mesg "transaction-1" "confirmations" '(init . ((label . "High; 26 confirmations"))))
   (mesg "transaction-1" "id" '(init . ((label . "deadbeef"))))
   (mesg "transaction-1" "time" '(init . ((label . "2018-05-27 09:23:12"))))
+  (mesg "transaction-1" "from" '(init . ((label . "12345678"))))
+  (mesg "transaction-1" "to" '(init . ((label . "87654321"))))
 
   (node "transaction-2" ${cardano-wallet.transaction})
   (edge "transaction-2" "out" _ "summary" "transactions-place" 20)
@@ -58,6 +60,8 @@
   (mesg "transaction-2" "confirmations" '(init . ((label . "High; 25 confirmations"))))
   (mesg "transaction-2" "id" '(init . ((label . "0badc0de"))))
   (mesg "transaction-2" "time" '(init . ((label . "2018-05-26 11:20:12"))))
+  (mesg "transaction-2" "from" '(init . ((label . "23456789"))))
+  (mesg "transaction-2" "to" '(init . ((label . "87654321"))))
 
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
