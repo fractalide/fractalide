@@ -51,8 +51,8 @@
   (edge "details-button" "out" _ "right" "place" 70)
   (mesg "details-button" "in" '(init . ((label . "Details"))))
 
-  (node "details-toggle" ${plumbing.toggle-transform})
-  (mesg "details-toggle" "option" (cons (lambda (_) (list* "details" 'display #t))
+  (node "details-toggle" ${plumbing.cycle-transform})
+  (mesg "details-toggle" "option" (list (lambda (_) (list* "details" 'display #t))
                                         (lambda (_) (list* "no-details" 'display #t))))
   (edge "details-button" "out" 'button "details-toggle" "in" _)
 
