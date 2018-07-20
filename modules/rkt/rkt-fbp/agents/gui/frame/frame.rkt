@@ -27,9 +27,11 @@
      [(cons 'dynamic-remove graph)
       (send (output "fvm") msg)]
      [(cons 'close #t) (send (output "halt") #t) (send (output "fvm") (cons 'stop #t))]
-     [(cons (or 'motion 'leave 'enter 'left-down 'left-up 'subwindow-focus
+     [(or #t
+          (cons (or 'motion 'leave 'enter 'left-down 'left-up 'subwindow-focus
                 'move 'superwindow-show 'size 'focus 'radio-box 'key 'list-box
                 'text-field 'check-box 'slider)
-            _) (void)]
+                _))
+      (void)]
      [else (display "msg: ") (displayln msg)])
    (send (output "acc") fr)))
