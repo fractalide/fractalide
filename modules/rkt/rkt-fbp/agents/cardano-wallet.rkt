@@ -63,6 +63,14 @@
   (mesg "transaction-2" "from" '(init . ((label . "23456789"))))
   (mesg "transaction-2" "to" '(init . ((label . "87654321"))))
 
+  (node "wsettings" ${cardano-wallet.wsettings})
+  (edge "wsettings" "out" _ "stack" "place" 30)
+  (mesg "wsettings" "name" "My first wallet")
+
+  (node "display-wallet-name" ${displayer})
+  (mesg "display-wallet-name" "option" "wallet name: ")
+  (edge "wsettings" "name" _ "display-wallet-name" "in" _)
+
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
 
@@ -71,7 +79,8 @@
 
   (edge "sidebar" "choice" _ "card-display-in" "in" _)
   (edge "card-display-out" "out" "new" "welcome" "in" _)
-  (edge "card-display-out" "out" "summary" "summary" "in" _))
+  (edge "card-display-out" "out" "summary" "summary" "in" _)
+  (edge "card-display-out" "out" "wsettings" "wsettings" "in" _))
 
 (module+ main
   (require syntax/location)
