@@ -27,4 +27,22 @@
   (node "name-out" ${plumbing.option-transform})
   (mesg "name-out" "option" cdr)
   (edge "name" "out" 'text-field-enter "name-out" "in" _)
-  (edge-out "name-out" "out" "name"))
+  (edge-out "name-out" "out" "name")
+
+  (node "assurance-level-label" ${gui.message})
+  (edge "assurance-level-label" "out" _ "vp" "place" 40)
+  (mesg "assurance-level-label" "in" '(init . ((label . "Transaction assurance security level"))))
+
+  (node "assurance-level" ${gui.choice})
+  (edge "assurance-level" "out" _ "vp" "place" 50)
+  (mesg "assurance-level" "in" '(init . ((choices . ("Low" "Medium" "High")))))
+
+  (node "assurance-level-in" ${plumbing.option-transform})
+  (mesg "assurance-level-in" "option" (lambda (choice) (cons 'set-string-selection choice)))
+  (edge "assurance-level-in" "out" _  "assurance-level" "in" _)
+  (edge-in "assurance-level" "assurance-level-in" "in")
+
+  (node "assurance-level-out" ${plumbing.option-transform})
+  (mesg "assurance-level-out" "option" (match-lambda [(cons 'choice choice) choice]))
+  (edge "assurance-level" "out" 'choice "assurance-level-out" "in" _)
+  (edge-out "assurance-level-out" "out" "assurance-level"))
