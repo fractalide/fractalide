@@ -67,6 +67,11 @@
   (edge "wsettings" "out" _ "stack" "place" 30)
   (mesg "wsettings" "name" "My first wallet")
 
+  (node "display-assurance-level" ${displayer})
+  (mesg "display-assurance-level" "option" "display-assurance-level: ")
+  (edge "wsettings" "assurance-level" _ "display-assurance-level" "in" _)
+  (mesg "wsettings" "assurance-level" "Medium")
+
   (node "display-wallet-name" ${displayer})
   (mesg "display-wallet-name" "option" "wallet name: ")
   (edge "wsettings" "name" _ "display-wallet-name" "in" _)
