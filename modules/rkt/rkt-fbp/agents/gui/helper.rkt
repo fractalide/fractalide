@@ -75,8 +75,8 @@
     [(cons 'get-screen->client (vector act x y))
      (send-action output output-array (cons act (class:send window screen->client x y)))
      #t]
-    [(cons 'set-enable enable)
-     (class:send window set-enable enable)
+    [(cons 'set-enabled e?)
+     (class:send window enable e?)
      #t]
     [(cons 'focus #t)
      (class:send window focus)

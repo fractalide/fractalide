@@ -31,10 +31,6 @@
      ; no msg
      [#f (void)]
      ; check for a message
-     ; [(cons 'set-enable e?)
-     ;  (class:send (cdr acc) set-enable e?)]
-     ; [(cons 'is-enable? act)
-     ;  (send-action output output-array (cons act (class:send (cdr acc) is-enabled?)))]
      [else (send-action output output-array msg-in)])
 
    ; Check for place

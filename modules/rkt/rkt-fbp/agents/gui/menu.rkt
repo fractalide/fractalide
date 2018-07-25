@@ -29,9 +29,9 @@
    (if msg-in
        ; True; there is a message in the input port
        (match msg-in
-         [(cons 'set-enable e?)
-          (class:send (cdr acc) set-enable e?)]
-         [(cons 'is-enable? act)
+         [(cons 'set-enabled e?)
+          (class:send (cdr acc) enable e?)]
+         [(cons 'is-enabled? act)
           (send-action output output-array (cons act (class:send (cdr acc) is-enabled?)))
           #t]
          [else (send-action output output-array msg-in)])

@@ -30,7 +30,7 @@
      [(or #t
           (cons (or 'motion 'leave 'enter 'left-down 'left-up 'subwindow-focus
                 'move 'superwindow-show 'size 'focus 'radio-box 'key 'list-box
-                'text-field 'check-box 'slider)
+                'text-field 'text-field-enter 'check-box 'slider 'button 'superwindow-enable)
                 _))
       (void)]
      [else (display "msg: ") (displayln msg)])

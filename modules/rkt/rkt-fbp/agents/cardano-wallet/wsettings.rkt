@@ -45,4 +45,16 @@
   (node "assurance-level-out" ${plumbing.option-transform})
   (mesg "assurance-level-out" "option" (match-lambda [(cons 'choice choice) choice]))
   (edge "assurance-level" "out" 'choice "assurance-level-out" "in" _)
-  (edge-out "assurance-level-out" "out" "assurance-level"))
+  (edge-out "assurance-level-out" "out" "assurance-level")
+
+  (node "password-label" ${gui.message})
+  (edge "password-label" "out" _ "vp" "place" 60)
+  (mesg "password-label" "in" '(init . ((label . "Password"))))
+
+  (node "password" ${cardano-wallet.password})
+  (edge "password" "out" _ "vp" "place" 70)
+  (mesg "password" "in" '(display . #t))
+
+  (node "display-password" ${displayer})
+  (mesg "display-password" "option" "set password: ")
+  (edge "password" "password" _ "display-password" "in" _))

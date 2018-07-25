@@ -52,8 +52,8 @@
   (if managed
       (void)
       (match msg
-             [(cons 'set-enable (cons n b))
-              (class:send widget set-enable n b)]
+             [(cons 'set-enabled (cons n e?))
+              (class:send widget enable n e?)]
              [(cons 'is-enabled? (cons n act))
               (send-action output output-array (cons act (class:send widget is-enabled? n)))]
              [(cons 'get-item-label act)
