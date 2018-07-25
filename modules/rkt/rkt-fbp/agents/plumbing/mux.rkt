@@ -26,8 +26,7 @@
    (define msg "hello")
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
-          (msg-add-agent "identity" 'plumbing/option-transform)
-          (msg-mesg "identity" "option" identity)
+          (msg-add-agent "identity" 'plumbing/identity)
 
           (msg-connect-array-to "agent-under-test" "out" selection "identity" "in")
           (msg-raw-connect "identity" "out" tap))
