@@ -56,7 +56,7 @@
                                         (lambda (_) (list* "no-details" 'display #t))))
   (edge "details-button" "out" 'button "details-toggle" "in" _)
 
-  (node "details-choice" ${plumbing.mux})
+  (node "details-choice" ${plumbing.demux})
   (edge "details-toggle" "out" _ "details-choice" "in" _)
 
   (node "maybe-details" ${gui.place-holder})

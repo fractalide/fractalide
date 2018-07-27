@@ -72,7 +72,7 @@
   (edge "confirm-button" "out" 'button "set-password" "in" _)
   (edge-out "set-password" "out" "password")
 
-  (node "passwords-match-out" ${plumbing.mux})
+  (node "passwords-match-out" ${plumbing.demux})
   (edge "passwords-match" "out" _ "passwords-match-out" "in" _)
   (edge "passwords-match-out" "out" "valid" "confirm-button" "in" _)
   (edge "passwords-match-out" "out" "password" "set-password" "password" _))

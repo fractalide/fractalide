@@ -3,11 +3,12 @@
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
 (define-agent
-  #:input '("in")
-  #:output-array '("out")
+  #:input-array '("in")
+  #:output '("out")
   (fun
-   (define msg (recv (input "in")))
-   (send (hash-ref (output-array "out") (car msg)) (cdr msg))))
+   (for ([(selection port) (input-array "in")])
+        (define msg (try-recv port))
+        (when msg (send (output "out") (cons selection msg))))))
 
 (module+ test
   (require rackunit)
@@ -18,7 +19,7 @@
   (require fractalide/modules/rkt/rkt-fbp/scheduler)
 
   (test-case
-   "Sending message (X . Y) yields message Y on port X"
+   "Sending message Y to port X yields message (X . Y)"
    (define sched (make-scheduler #f))
    (define tap (make-port 30 #f #f #f))
 
@@ -26,11 +27,13 @@
    (define msg "hello")
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
+          (msg-raw-connect "agent-under-test" "out" tap)
+
           (msg-add-agent "identity" 'plumbing/identity)
+          (msg-connect-to-array "identity" "out" "agent-under-test" "in" selection))
 
-          (msg-connect-array-to "agent-under-test" "out" selection "identity" "in")
-          (msg-raw-connect "identity" "out" tap))
-
-   (sched (msg-mesg "agent-under-test" "in" (cons selection msg)))
-   (check-equal? (port-recv tap) msg)
+   (sched (msg-mesg "identity" "in" msg))
+   (check-equal? (port-recv tap)
+                 (cons selection msg))
    (sched (msg-stop))))
+
