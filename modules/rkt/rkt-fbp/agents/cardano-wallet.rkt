@@ -79,7 +79,7 @@
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
 
-  (node "card-display-out" ${plumbing.mux})
+  (node "card-display-out" ${plumbing.demux})
   (edge "card-display-in" "out" _ "card-display-out" "in" _)
 
   (edge "sidebar" "choice" _ "card-display-in" "in" _)
