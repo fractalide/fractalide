@@ -8,7 +8,6 @@
   (fun
    (define maybe-passwd (try-recv (input "password")))
    (define maybe-acc (try-recv (input "acc")))
-   (eprintf "passwd ~a acc ~a~n" maybe-passwd maybe-acc)
    (define password (or maybe-passwd maybe-acc))
    (define button-pushed? (try-recv (input "in")))
    (when (and button-pushed? (and password (> (string-length password) 0)))
