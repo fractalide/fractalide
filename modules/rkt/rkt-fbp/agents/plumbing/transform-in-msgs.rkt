@@ -3,16 +3,11 @@
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
 (define-agent
-  #:input '("in" "password")
+  #:input '("in")
   #:output '("out")
   (fun
-   (define maybe-passwd (try-recv (input "password")))
-   (define maybe-acc (try-recv (input "acc")))
-   (define password (or maybe-passwd maybe-acc))
-   (define button-pushed? (try-recv (input "in")))
-   (when (and button-pushed? (and password (> (string-length password) 0)))
-         (send (output "out") password))
-   (send (output "acc") password)))
+   (for ([msg ((recv (input "option")) (recv (input "in")))])
+     (send (output "out") msg))))
 
 (module+ test
   (require rackunit)
@@ -23,56 +18,76 @@
   (require fractalide/modules/rkt/rkt-fbp/scheduler)
 
   (test-case
-   "Password sent when button pushed, password set"
+   "Identity function"
    (define sched (make-scheduler #f))
    (define tap (make-port 30 #f #f #f))
+
+   (define msg "hello")
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
           (msg-raw-connect "agent-under-test" "out" tap))
 
-   (define password "hello")
+   (sched (msg-mesg "agent-under-test" "option" list))
 
-   (sched (msg-mesg "agent-under-test" "password" password)
-          (msg-mesg "agent-under-test" "in" #t))
-   (check-equal? (port-recv tap) password)
+   (sched (msg-mesg "agent-under-test" "in" msg))
+   (check-equal? (port-recv tap) msg)
+
+   (sched (msg-mesg "agent-under-test" "in" msg))
+   (check-equal? (port-recv tap) msg)
+
    (sched (msg-stop)))
 
   (test-case
-   "Password not sent when button pushed, password not set"
+   "Reverse function"
    (define sched (make-scheduler #f))
    (define tap (make-port 30 #f #f #f))
+
+   (define msg '(1 2 3))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
           (msg-raw-connect "agent-under-test" "out" tap))
 
-   (sched (msg-mesg "agent-under-test" "in" #t))
-   (check-false (port-try-recv tap))
+   (sched (msg-mesg "agent-under-test" "option" (compose list reverse)))
+
+   (sched (msg-mesg "agent-under-test" "in" msg))
+   (check-equal? (port-recv tap) (reverse msg))
+
+   (sched (msg-mesg "agent-under-test" "in" (reverse msg)))
+   (check-equal? (port-recv tap) msg)
+
    (sched (msg-stop)))
 
   (test-case
-   "Password not sent when password set, button not pushed"
+   "No messages"
    (define sched (make-scheduler #f))
    (define tap (make-port 30 #f #f #f))
+
+   (define msg '(1 2 3))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
           (msg-raw-connect "agent-under-test" "out" tap))
 
-   (define password "hello")
+   (sched (msg-mesg "agent-under-test" "option" (lambda (_) (list))))
 
-   (sched (msg-mesg "agent-under-test" "password" password))
+   (sched (msg-mesg "agent-under-test" "in" msg))
    (check-false (port-try-recv tap))
+
    (sched (msg-stop)))
 
   (test-case
-   "Password not sent when button pushed, password set then reset"
+   "Two messages"
    (define sched (make-scheduler #f))
    (define tap (make-port 30 #f #f #f))
+
+   (define msg '(1 2))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
           (msg-raw-connect "agent-under-test" "out" tap))
 
-   (sched (msg-mesg "agent-under-test" "password" "hello")
-          (msg-mesg "agent-under-test" "password" "")
-          (msg-mesg "agent-under-test" "in" #t))
-   (check-false (port-try-recv tap))
+   (sched (msg-mesg "agent-under-test" "option" identity))
+
+   (sched (msg-mesg "agent-under-test" "in" msg))
+   (check-equal? (port-recv tap) (first msg))
+   (check-equal? (port-recv tap) (second msg))
+
    (sched (msg-stop))))
