@@ -31,18 +31,13 @@
   (mesg "confirm-password" "in" '(init . ((label . "Confirm new password")
                                           (style . (single password)))))
 
-  (node "initialize-password" ${plumbing.mux})
-
-  (node "initialize-password-trans" ${plumbing.transform-in-msgs})
-  (mesg "initialize-password-trans" "option" (match-lambda [(cons _ password)
-                                                            (list (list* "new-password" 'set-value password)
-                                                                  (list* "confirm-password" 'set-value password))]))
-  (edge "initialize-password" "out" _ "initialize-password-trans" "in" _)
-
-  (node "initialize-password-out" ${plumbing.demux})
-  (edge "initialize-password-trans" "out" _ "initialize-password-out" "in" _)
-  (edge "initialize-password-out" "out" "new-password" "new-password" "in" _)
-  (edge "initialize-password-out" "out" "confirm-password" "confirm-password" "in" _)
+  (node "initialize-password" ${plumbing.mux-demux})
+  (mesg "initialize-password" "option"
+        (match-lambda [(cons _ password)
+                       (list (list* "new-password" 'set-value password)
+                             (list* "confirm-password" 'set-value password))]))
+  (edge "initialize-password" "out" "new-password" "new-password" "in" _)
+  (edge "initialize-password" "out" "confirm-password" "confirm-password" "in" _)
 
   (node "passwords-match" ${plumbing.transform-ins-msgs})
   (mesg "passwords-match" "option"
@@ -70,34 +65,25 @@
   (mesg "confirm-button" "in" '(init . ((label . "Change")
                                         (enabled . #f))))
 
-  (node "confirm-button-trans" ${plumbing.transform-in-msgs})
-  (mesg "confirm-button-trans" "option"
+  (node "confirm-button-out" ${plumbing.demux})
+  (mesg "confirm-button-out" "option"
         (match-lambda [(cons 'button #t)
                        (list (list* "set-password" 'button #t)
                              (cons "finish" #t))]))
-  (edge "confirm-button" "out" 'button "confirm-button-trans" "in" _)
-
-  (node "confirm-button-out" ${plumbing.demux})
-  (edge "confirm-button-trans" "out" _ "confirm-button-out" "in" _)
+  (edge "confirm-button" "out" 'button "confirm-button-out" "in" _)
 
   (node "cancel-button" ${gui.button})
   (edge "cancel-button" "out" _ "buttons" "place" 20)
   (mesg "cancel-button" "in" '(init . ((label . "Cancel"))))
 
-  (node "finish" ${plumbing.mux})
-  (edge "cancel-button" "out" 'button "finish" "in" "cancel")
-  (edge "confirm-button-out" "out" "finish" "finish" "in" "confirm")
-
-  (node "finish-trans" ${plumbing.transform-in-msgs})
-  (mesg "finish-trans" "option"
+  (node "finish" ${plumbing.mux-demux})
+  (mesg "finish" "option"
         (lambda (_) (list (list* "change-button" 'display #t)
                           (cons "initialize-password" ""))))
-  (edge "finish" "out" _ "finish-trans" "in" _)
-
-  (node "finish-out" ${plumbing.demux})
-  (edge "finish-trans" "out" _ "finish-out" "in" _)
-  (edge "finish-out" "out" "change-button" "change-button" "in" _)
-  (edge "finish-out" "out" "initialize-password" "initialize-password" "in" "finish")
+  (edge "cancel-button" "out" 'button "finish" "in" "cancel")
+  (edge "confirm-button-out" "out" "finish" "finish" "in" "confirm")
+  (edge "finish" "out" "change-button" "change-button" "in" _)
+  (edge "finish" "out" "initialize-password" "initialize-password" "in" "finish")
 
   (node "set-password" ${cardano-wallet.set-password})
   (edge "confirm-button-out" "out" "set-password" "set-password" "in" _)
