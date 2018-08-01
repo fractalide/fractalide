@@ -35,4 +35,25 @@
 
    (sched (msg-mesg "agent-under-test" "in" (cons selection msg)))
    (check-equal? (port-recv tap) msg)
+   (sched (msg-stop)))
+
+  (test-case
+   "Transform"
+   (define sched (make-scheduler #f))
+   (define tap (make-port 30 #f #f #f))
+
+   (define selection "the-selection")
+   (define msg '(1 2 3 4))
+
+   (sched (msg-add-agent "agent-under-test" (quote-module-path ".."))
+          (msg-add-agent "identity" 'plumbing/identity)
+
+          (msg-connect-array-to "agent-under-test" "out" selection "identity" "in")
+          (msg-raw-connect "identity" "out" tap))
+
+   (sched (msg-mesg "agent-under-test" "option"
+                    (match-lambda [(cons sel data)
+                                   (list (cons sel (reverse data)))]))
+          (msg-mesg "agent-under-test" "in" (cons selection msg)))
+   (check-equal? (port-recv tap) (reverse msg))
    (sched (msg-stop))))
