@@ -6,9 +6,12 @@
   #:input-array '("in")
   #:output '("out")
   (fun
+   (define f (or (try-recv (input "option")) list))
    (for ([(selection port) (input-array "in")])
-        (define msg (try-recv port))
-        (when msg (send (output "out") (cons selection msg))))))
+        (define in-msg (try-recv port))
+        (when in-msg
+              (for ([msg (f (cons selection in-msg))])
+                   (send (output "out") msg))))))
 
 (module+ test
   (require rackunit)

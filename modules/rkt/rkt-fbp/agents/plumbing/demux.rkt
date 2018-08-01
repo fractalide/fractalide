@@ -6,8 +6,10 @@
   #:input '("in")
   #:output-array '("out")
   (fun
-   (define msg (recv (input "in")))
-   (send (hash-ref (output-array "out") (car msg)) (cdr msg))))
+   (define in-msg (recv (input "in")))
+   (define f (or (try-recv (input "option")) list))
+   (for ([msg (f in-msg)])
+        (send (hash-ref (output-array "out") (car msg)) (cdr msg)))))
 
 (module+ test
   (require rackunit)
