@@ -12,7 +12,7 @@
   #:input ports
   #:output '("out" "select")
   (fun
-   (define acc (or (try-recv (input "acc")) (make-hash)))
+   (define acc (or (try-recv (input "acc")) (list)))
    (define action (for/or ([port ports])
                           (define val (try-recv (input port)))
                           (if val (cons port val) #f)))
@@ -87,5 +87,27 @@
    (port-recv (hash-ref taps "out"))
 
    (sched (msg-mesg "agent-under-test" "select" 1))
+   (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+   (sched (msg-stop)))
+
+  (test-case
+   "Add"
+   (define sched (make-scheduler #f))
+   (define taps (for/hash ([port '("select" "out")]) (values port (make-port 30 #f #f #f))))
+
+   (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
+
+   (for ([(port tap) (in-hash taps)])
+        (sched (msg-raw-connect "agent-under-test" port tap)))
+
+   (define wallets (list #hash(("name" . "asdf"))
+                         #hash(("name" . "qwer"))))
+
+   (sched (msg-mesg "agent-under-test" "add" (first wallets)))
+   (check-equal? (port-recv (hash-ref taps "select")) 0)
+   (check-equal? (port-recv (hash-ref taps "out")) (first wallets))
+
+   (sched (msg-mesg "agent-under-test" "add" (second wallets)))
+   (check-equal? (port-recv (hash-ref taps "select")) 1)
    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
    (sched (msg-stop))))
