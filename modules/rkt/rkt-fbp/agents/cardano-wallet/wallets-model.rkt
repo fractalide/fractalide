@@ -52,7 +52,7 @@
   (require fractalide/modules/rkt/rkt-fbp/scheduler)
 
   (test-case
-   "Initializing gives us head wallet"
+   "In"
    (define sched (make-scheduler #f))
    (define taps (for/hash ([port '("select" "out")]) (values port (make-port 30 #f #f #f))))
 
@@ -70,7 +70,7 @@
    (sched (msg-stop)))
 
   (test-case
-   "Initialize then select"
+   "Select"
    (define sched (make-scheduler #f))
    (define taps (for/hash ([port '("select" "out")]) (values port (make-port 30 #f #f #f))))
 
@@ -109,5 +109,27 @@
 
    (sched (msg-mesg "agent-under-test" "add" (second wallets)))
    (check-equal? (port-recv (hash-ref taps "select")) 1)
+   (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+   (sched (msg-stop)))
+
+  (test-case
+   "Delete"
+   (define sched (make-scheduler #f))
+   (define taps (for/hash ([port '("select" "out")]) (values port (make-port 30 #f #f #f))))
+
+   (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
+
+   (for ([(port tap) (in-hash taps)])
+        (sched (msg-raw-connect "agent-under-test" port tap)))
+
+   (define wallets (list #hash(("name" . "asdf"))
+                         #hash(("name" . "qwer"))))
+
+   (sched (msg-mesg "agent-under-test" "in" wallets))
+   (port-recv (hash-ref taps "select"))
+   (port-recv (hash-ref taps "out"))
+
+   (sched (msg-mesg "agent-under-test" "delete" 0))
+   (check-equal? (port-recv (hash-ref taps "select")) 0)
    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
    (sched (msg-stop))))
