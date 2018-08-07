@@ -54,6 +54,9 @@
   (if managed
       (void)
       (match msg
+	     [(cons 'set-choices choices)
+	      (class:send widget clear)
+	      (for ([choice choices]) (class:send widget append choice))]
              [(cons 'get-selection act)
               (send-action output output-array (cons act (class:send widget get-selection)))]
              [(cons 'set-selection n)
