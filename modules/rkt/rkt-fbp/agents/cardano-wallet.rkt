@@ -65,7 +65,7 @@
 
   (node "wsettings" ${cardano-wallet.wsettings})
   (edge "wsettings" "out" _ "stack" "place" 30)
-  (mesg "wsettings" "name" "My first wallet")
+  (edge "sidebar" "data" "wallet-name" "wsettings" "name" _)
 
   (node "display-assurance-level" ${displayer})
   (mesg "display-assurance-level" "option" "display-assurance-level: ")
