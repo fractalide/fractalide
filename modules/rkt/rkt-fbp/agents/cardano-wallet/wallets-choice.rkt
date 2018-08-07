@@ -38,4 +38,5 @@
   (edge-in "init" "model" "in")
   (edge "select" "out" _ "model" "select" _)
   (edge "model" "select" _ "choice-cmd" "in" 'set-selection)
-  (edge "model" "choices" _ "choice-cmd" "in" 'set-choices))
+  (edge "model" "choices" _ "choice-cmd" "in" 'set-choices)
+  (edge-out "model" "out" "choice"))
