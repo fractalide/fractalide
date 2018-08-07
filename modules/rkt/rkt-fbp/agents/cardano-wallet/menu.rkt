@@ -16,6 +16,12 @@
   (edge "headline" "out" _ "vp" "place" 0)
   (mesg "headline" "in" `(init . ((label . ,fractalide-logo))))
 
+  (node "wallets-choice" ${cardano-wallet.wallets-choice})
+  (edge "wallets-choice" "out" _ "vp" "place" 5)
+  (mesg "wallets-choice" "in" '(init . ()))
+  (mesg "wallets-choice" "init" '(#hash((name . "my wallet"))
+                                  #hash((name . "my other wallet is also a wallet"))))
+
   (node "button-pushes" ${plumbing.mux})
   (edge-out "button-pushes" "out" "choice")
 
