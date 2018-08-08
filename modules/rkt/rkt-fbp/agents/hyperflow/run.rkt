@@ -33,7 +33,7 @@
   (mesg "node" "in" '(init . ""))
 
   ;canvas
-  (node "canvas" ${gui.canvas})
+  (node "canvas" ${gui.pasteboard})
   (edge "canvas" "out" _ "vp" "place" 2)
   (node "rect" ${gui.canvas.rectangle})
   (edge "rect" "out" _ "canvas" "place" 1)
@@ -44,6 +44,13 @@
   (node "text" ${gui.canvas.text})
   (edge "text" "out" _ "canvas" "place" 3)
   (mesg "text" "in" (cons 'init (vector "Hello Canvas!" 25 100)))
+
+  (node "img" ${gui.snip.image})
+  (edge "img" "out" _ "canvas" "snip" 3)
+  (mesg "img" "in" (cons 'init (vector 100 100 "/home/denis/dmi/signature.png")))
+  (node "img2" ${gui.snip.image})
+  (edge "img2" "out" _ "canvas" "snip" 2)
+  (mesg "img2" "in" (cons 'init (vector 200 100 "/home/denis/dmi/stewart.png")))
 
   (node "delay" ${delayer})
   (edge "delay" "out" _ "rect" "in" _)
