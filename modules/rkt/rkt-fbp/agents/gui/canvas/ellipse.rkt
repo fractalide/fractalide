@@ -18,7 +18,7 @@
       (send (output "out")
             (cons 'init (widget
                          0
-                         (lambda (dc)
+                         (lambda (before? dc left top right bottom dx dy)
                            (class-send dc draw-ellipse x y width height))
                          (lambda (dc a b)
                            (and (> a x)

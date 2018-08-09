@@ -14,21 +14,24 @@
   (fun
    (define msg (recv (input "in")))
    (match msg
-     [(cons 'init (vector text x y))
+     [(cons 'init (vector x y end-x end-y))
       (send (output "out")
             (cons 'init (widget
                          0
                          (lambda (before? dc left top right bottom dx dy)
-                           (class-send dc draw-text text x y))
+                           (class-send dc draw-line
+                                       (+ x dx) (+ y dy)
+                                       (+ end-x dx) (+ end-y dy)))
+                         ; TODO: Be more precise for click on the line...
                          (lambda (dc a b)
-                           (define-values (width height _ __) (class-send dc get-text-extent text))
                            (and (> a x)
-                                (< a (+ x width))
+                                (< a end-x))
                                 (> b y)
-                                (< b (+ y height))))
+                                (< b end-y))
                          (lambda (event)
                            (send (input "in") event)))))]
      [(cons 'delete #t)
       (send (output "out") msg)]
      [else
-      (send-action output output-array (cons (class-send msg get-event-type) msg))])))
+      (displayln "LINE!")
+      (send-action output output-array msg)])))
