@@ -16,7 +16,7 @@
     (match msg
       [(cons 'init (vector x y name))
        (set! acc (node x y name))
-       (send (output "circle") (cons 'init (vector x y "/home/denis/circle.png")))]
+       (send (output "circle") (cons 'init (vector x y "./circle.png")))]
       [(cons 'move-to (vector x y drag?))
        (set! x (+ x 50))
        (set! y (+ y 50))
