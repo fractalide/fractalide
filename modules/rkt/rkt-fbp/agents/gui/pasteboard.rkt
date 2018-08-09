@@ -24,14 +24,14 @@
                               dx dy
                               draw-caret)
      (for ([wdg (agt-place state)])
-       ((widget-draw wdg) dc)))
+       ((widget-draw wdg) before? dc left top right bottom dx dy)))
 
     (define (after-select snip on?)
       (class-send snip send-event (cons 'select on?)))
     (augment after-select)
 
     (define (after-delete snip)
-      (class-send snip send-event (cons 'delete #t)))
+      (class-send snip send-event (cons 'is-deleted #t)))
     (augment after-delete)
 
     (define (after-move-to snip x y drag?)
@@ -138,8 +138,16 @@
                      (snip-snip wdg)
                      before
                      (snip-x wdg) (snip-y wdg))
-         (class-send (agt-widget acc) refresh)
-         ]
+         (class-send (agt-widget acc) refresh)]
+        [(cons 'delete #t)
+         (define snp (findf (lambda (x) (= id-snip (snip-id x))) (agt-snip acc)))
+         (define pb (class-send (agt-widget acc) get-editor))
+         (class-send pb delete (snip-snip snp))
+         (set-agt-snip! acc
+                        (filter (lambda (x)
+                                  (not (= id-snip (snip-id x))))
+                                (agt-snip acc)))
+         (class-send (agt-widget acc) refresh)]
         [else (send-action output output-array msg)]
         ))
 

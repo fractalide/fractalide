@@ -6,7 +6,11 @@
 
 (provide (contract-out
           [struct widget ([id number?]
-                          [draw (-> (is-a?/c dc<%>) void?)]
+                          [draw (-> boolean?
+                                    (is-a?/c dc<%>)
+                                    real? real? real? real?
+                                    real? real?
+                                    void?)]
                           [box (-> (is-a?/c dc<%>) number? number? boolean?)]
                           [event (-> any/c void?)]
                           )]))
