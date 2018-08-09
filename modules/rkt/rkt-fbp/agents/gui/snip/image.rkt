@@ -7,6 +7,16 @@
 (require (rename-in racket/class [send class-send]))
 (require/edge ${gui.snip})
 
+(define my-i-s%
+  (class image-snip%
+    (init input)
+
+    (define port-input input)
+    (super-new)
+
+    (define/public (send-event event)
+      (send (port-input "in") event))))
+
 (define-agent
   #:input '("in") ; in port
   #:output '("out") ; out port
@@ -15,7 +25,7 @@
    (define msg (recv (input "in")))
    (match msg
      [(cons 'init (vector x y path))
-      (define snp (make-object image-snip% path))
+      (define snp (make-object my-i-s% input path))
       (send (output "out")
             (cons 'init (snip
                          0
@@ -26,4 +36,4 @@
      [(cons 'delete #t)
       (send (output "out") msg)]
      [else
-      (send-action output output-array (cons (class-send msg get-event-type) msg))])))
+      (send-action output output-array msg)])))

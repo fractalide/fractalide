@@ -24,7 +24,24 @@
                               dx dy
                               draw-caret)
      (for ([wdg (agt-place state)])
-       ((widget-draw wdg) dc)))))
+       ((widget-draw wdg) dc)))
+
+    (define (after-select snip on?)
+      (class-send snip send-event (cons 'select on?)))
+    (augment after-select)
+
+    (define (after-delete snip)
+      (class-send snip send-event (cons 'delete #t)))
+    (augment after-delete)
+
+    (define (after-move-to snip x y drag?)
+      (class-send snip send-event (cons 'move-to (vector x y drag?))))
+    (augment after-move-to)
+
+    (define (can-interactive-resize? snip)
+      #f)
+    (augment can-interactive-resize?)
+    ))
 
 (define (my-ed state)
   (class editor-canvas% (super-new); The base class is canvas%
@@ -121,7 +138,9 @@
                      (snip-snip wdg)
                      before
                      (snip-x wdg) (snip-y wdg))
+         (class-send (agt-widget acc) refresh)
          ]
+        [else (send-action output output-array msg)]
         ))
 
     (send (output "acc") acc)))

@@ -46,7 +46,7 @@
   (mesg "text" "in" (cons 'init (vector "Hello Canvas!" 25 100)))
 
   (node "img" ${gui.snip.image})
-  (edge "img" "out" _ "canvas" "snip" 3)
+  (edge "img" "out" _ "canvas" "snip" 1)
   (mesg "img" "in" (cons 'init (vector 100 100 "/home/denis/dmi/signature.png")))
   (node "img2" ${gui.snip.image})
   (edge "img2" "out" _ "canvas" "snip" 2)
