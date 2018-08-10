@@ -6,14 +6,15 @@
   (define-values (heads tail) (split-at lst idx))
   (append heads (cdr tail)))
 
-(define ports '("in" "add" "select" "delete"))
+(define in-ports '("in" "add" "edit" "select" "delete"))
+(define out-ports '("out" "choices" "select"))
 
 (define-agent
-  #:input ports
-  #:output '("out" "choices" "select")
+  #:input in-ports
+  #:output out-ports
   (fun
    (define acc (or (try-recv (input "acc")) (list)))
-   (define action (for/or ([port ports])
+   (define action (for/or ([port in-ports])
                           (define val (try-recv (input port)))
                           (if val (cons port val) #f)))
    (for ([port-msg (match action
@@ -59,7 +60,7 @@
   (test-case
    "In"
    (define sched (make-scheduler #f))
-   (define taps (for/hash ([port '("choices" "select" "out")]) (values port (make-port 30 #f #f #f))))
+   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
 
@@ -78,7 +79,7 @@
   (test-case
    "Select"
    (define sched (make-scheduler #f))
-   (define taps (for/hash ([port '("choices" "select" "out")]) (values port (make-port 30 #f #f #f))))
+   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
 
@@ -101,7 +102,7 @@
   (test-case
    "Add"
    (define sched (make-scheduler #f))
-   (define taps (for/hash ([port '("choices" "select" "out")]) (values port (make-port 30 #f #f #f))))
+   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
 
@@ -125,7 +126,7 @@
   (test-case
    "Delete"
    (define sched (make-scheduler #f))
-   (define taps (for/hash ([port '("choices" "select" "out")]) (values port (make-port 30 #f #f #f))))
+   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
 
    (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
 
