@@ -33,5 +33,4 @@
      [(cons 'delete #t)
       (send (output "out") msg)]
      [else
-      (displayln "LINE!")
       (send-action output output-array msg)])))

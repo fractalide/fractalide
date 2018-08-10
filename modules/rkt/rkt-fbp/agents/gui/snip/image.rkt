@@ -14,6 +14,9 @@
     (define port-input input)
     (super-new)
 
+    (define/override (on-event dc x y editorx editory event)
+      (send (port-input "in") (cons (class-send event get-event-type) event)))
+
     (define/public (send-event event)
       (send (port-input "in") event))))
 
@@ -26,6 +29,7 @@
    (match msg
      [(cons 'init (vector x y path))
       (define snp (make-object my-i-s% input path))
+      (class-send snp set-flags '(handles-all-mouse-events))
       (send (output "out")
             (cons 'init (snip
                          0

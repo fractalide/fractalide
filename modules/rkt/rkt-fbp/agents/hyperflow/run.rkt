@@ -34,5 +34,5 @@
 
   (node "graph" ${hyperflow.graph})
   (edge "graph" "out" _ "vp" "place" 1)
-
+  (mesg "graph" "in" (cons 'init #t))
   )

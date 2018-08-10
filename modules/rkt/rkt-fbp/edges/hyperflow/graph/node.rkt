@@ -7,4 +7,4 @@
                         (y number?)
                         (name string?))]))
 
-(struct node (x y name) #:prefab)
+(struct node (x y name) #:prefab #:mutable)
