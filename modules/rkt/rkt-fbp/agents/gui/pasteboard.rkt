@@ -41,24 +41,36 @@
     (define (can-interactive-resize? snip)
       #f)
     (augment can-interactive-resize?)
+
+    (define (can-interactive-move? event)
+      (if (eq? 'left-down (class-send event get-event-type))
+          #t
+          #f))
+    (augment can-interactive-move?)
     ))
 
-(define (my-ed state)
+(define (my-ed state input)
   (class editor-canvas% (super-new); The base class is canvas%
     ; Define overriding method to handle mouse events
     (define/override (on-event event)
-      (displayln "Canvas mouse")
+      (define send? #f)
       (for/or ([wdg (reverse (agt-place state))])
         (if ((widget-box wdg)
              (class-send this get-dc)
              (class-send event get-x)
              (class-send event get-y))
-            ((widget-event wdg) event)
+            (begin
+              (set! send? #t)
+              ((widget-event wdg) (cons (class-send event get-event-type) event))
+              )
+            ; False : send it from the pasteboard
             #f))
+      (if send?
+          void
+          (send (input "in") (cons (class-send event get-event-type) event)))
       (super on-event event))
     ; Define overriding method to handle keyboard events
     (define/override (on-char event)
-      (displayln "Canvas keyboard")
       (super on-char event))
     ; Call the superclass init, passing on all init args
     ))
@@ -66,7 +78,7 @@
 (define (generate input)
   (lambda (frame)
     (let* ([state (agt '() '() #f)]
-           [canvas (new (my-ed state)
+           [canvas (new (my-ed state input)
                         [parent frame]
                         [editor (new (my-pb% state))]
                                           )])
@@ -78,7 +90,9 @@
   (if managed
       (void)
       (match msg
-             [else (send-action output output-array msg)])))
+        [(cons 'init #t)
+         void]
+        [else (send-action output output-array msg)])))
 
 (define-agent
   #:input '("in") ; in port
