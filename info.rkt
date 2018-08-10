@@ -1,6 +1,6 @@
 #lang info
 (define collection "fractalide")
-(define deps '("base" "gui-lib" "typed-map-lib" "typed-racket-more"))
+(define deps '("base" "gui-lib" "typed-map-lib" "typed-racket-more" "graph"))
 (define build-deps '())
 (define scribblings '())
 (define pkg-desc "An IDE for Fractalide that enables building HyperCard-like applications. Fractalide is a free and open source service programming platform using dataflow graphs.")
