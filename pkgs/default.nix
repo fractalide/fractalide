@@ -1,4 +1,4 @@
-{ pkgs ? import ./nixpkgs.nix
+{ pkgs ? import ./nixpkgs
 , system ? builtins.currentSystem
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
 , rustOverlay ? fetchFromGitHub {
