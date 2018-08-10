@@ -57,8 +57,7 @@
   (require fractalide/modules/rkt/rkt-fbp/port)
   (require fractalide/modules/rkt/rkt-fbp/scheduler)
 
-  (test-case
-   "In"
+  (define (run-sched-test test)
    (define sched (make-scheduler #f))
    (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
 
@@ -67,82 +66,63 @@
    (for ([(port tap) (in-hash taps)])
         (sched (msg-raw-connect "agent-under-test" port tap)))
 
-   (define choices '("asdf" "qwer"))
-   (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
-
-   (sched (msg-mesg "agent-under-test" "in" wallets))
-   (check-equal? (port-recv (hash-ref taps "select")) 0)
-   (check-equal? (port-recv (hash-ref taps "out")) (car wallets))
-   (check-equal? (port-recv (hash-ref taps "choices")) choices)
+   (test sched taps)
    (sched (msg-stop)))
+
+  (test-case
+   "In"
+   (run-sched-test (lambda (sched taps)
+    (define choices '("asdf" "qwer"))
+    (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
+
+    (sched (msg-mesg "agent-under-test" "in" wallets))
+    (check-equal? (port-recv (hash-ref taps "select")) 0)
+    (check-equal? (port-recv (hash-ref taps "out")) (car wallets))
+    (check-equal? (port-recv (hash-ref taps "choices")) choices))))
 
   (test-case
    "Select"
-   (define sched (make-scheduler #f))
-   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
+   (run-sched-test (lambda (sched taps)
+    (define wallets (list #hash((name . "asdf"))
+                          #hash((name . "qwer"))))
 
-   (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
+    (sched (msg-mesg "agent-under-test" "in" wallets))
+    (port-recv (hash-ref taps "select"))
+    (port-recv (hash-ref taps "out"))
+    (port-recv (hash-ref taps "choices"))
 
-   (for ([(port tap) (in-hash taps)])
-        (sched (msg-raw-connect "agent-under-test" port tap)))
-
-   (define wallets (list #hash((name . "asdf"))
-                         #hash((name . "qwer"))))
-
-   (sched (msg-mesg "agent-under-test" "in" wallets))
-   (port-recv (hash-ref taps "select"))
-   (port-recv (hash-ref taps "out"))
-   (port-recv (hash-ref taps "choices"))
-
-   (sched (msg-mesg "agent-under-test" "select" 1))
-   (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
-   (check-equal? (port-try-recv (hash-ref taps "choices")) #f)
-   (sched (msg-stop)))
+    (sched (msg-mesg "agent-under-test" "select" 1))
+    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+    (check-equal? (port-try-recv (hash-ref taps "choices")) #f))))
 
   (test-case
    "Add"
-   (define sched (make-scheduler #f))
-   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
+   (run-sched-test (lambda (sched taps)
+    (define choices '("asdf" "qwer"))
+    (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
 
-   (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
+    (sched (msg-mesg "agent-under-test" "add" (first wallets)))
+    (check-equal? (port-recv (hash-ref taps "select")) 0)
+    (check-equal? (port-recv (hash-ref taps "out")) (first wallets))
+    (check-equal? (port-recv (hash-ref taps "choices")) (list (first choices)))
 
-   (for ([(port tap) (in-hash taps)])
-        (sched (msg-raw-connect "agent-under-test" port tap)))
-
-   (define choices '("asdf" "qwer"))
-   (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
-
-   (sched (msg-mesg "agent-under-test" "add" (first wallets)))
-   (check-equal? (port-recv (hash-ref taps "select")) 0)
-   (check-equal? (port-recv (hash-ref taps "out")) (first wallets))
-   (check-equal? (port-recv (hash-ref taps "choices")) (list (first choices)))
-
-   (sched (msg-mesg "agent-under-test" "add" (second wallets)))
-   (check-equal? (port-recv (hash-ref taps "select")) 1)
-   (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
-   (check-equal? (port-recv (hash-ref taps "choices")) choices)
-   (sched (msg-stop)))
+    (sched (msg-mesg "agent-under-test" "add" (second wallets)))
+    (check-equal? (port-recv (hash-ref taps "select")) 1)
+    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+    (check-equal? (port-recv (hash-ref taps "choices")) choices))))
 
   (test-case
    "Delete"
-   (define sched (make-scheduler #f))
-   (define taps (for/hash ([port out-ports]) (values port (make-port 30 #f #f #f))))
+   (run-sched-test (lambda (sched taps)
+    (define choices '("asdf" "qwer"))
+    (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
 
-   (sched (msg-add-agent "agent-under-test" (quote-module-path "..")))
+    (sched (msg-mesg "agent-under-test" "in" wallets))
+    (port-recv (hash-ref taps "select"))
+    (port-recv (hash-ref taps "out"))
+    (port-recv (hash-ref taps "choices"))
 
-   (for ([(port tap) (in-hash taps)])
-        (sched (msg-raw-connect "agent-under-test" port tap)))
-
-   (define choices '("asdf" "qwer"))
-   (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
-
-   (sched (msg-mesg "agent-under-test" "in" wallets))
-   (port-recv (hash-ref taps "select"))
-   (port-recv (hash-ref taps "out"))
-   (port-recv (hash-ref taps "choices"))
-
-   (sched (msg-mesg "agent-under-test" "delete" 0))
-   (check-equal? (port-recv (hash-ref taps "select")) 0)
-   (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
-   (check-equal? (port-recv (hash-ref taps "choices")) (list (second choices)))
-   (sched (msg-stop))))
+    (sched (msg-mesg "agent-under-test" "delete" 0))
+    (check-equal? (port-recv (hash-ref taps "select")) 0)
+    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+    (check-equal? (port-recv (hash-ref taps "choices")) (list (second choices)))))))
