@@ -131,7 +131,7 @@
         [(cons 'delete #t)
          (set-agt-place! acc
                          (filter (lambda (x)
-                                   (not (=  place (widget-id x))))
+                                   (not (eq?  place (widget-id x))))
                                  (agt-place acc)))
          (class-send (agt-widget acc) refresh)
          ]
@@ -154,12 +154,12 @@
                      (snip-x wdg) (snip-y wdg))
          (class-send (agt-widget acc) refresh)]
         [(cons 'delete #t)
-         (define snp (findf (lambda (x) (= id-snip (snip-id x))) (agt-snip acc)))
+         (define snp (findf (lambda (x) (eq? id-snip (snip-id x))) (agt-snip acc)))
          (define pb (class-send (agt-widget acc) get-editor))
          (class-send pb delete (snip-snip snp))
          (set-agt-snip! acc
                         (filter (lambda (x)
-                                  (not (= id-snip (snip-id x))))
+                                  (not (eq? id-snip (snip-id x))))
                                 (agt-snip acc)))
          (class-send (agt-widget acc) refresh)]
         [else (send-action output output-array msg)]
@@ -172,7 +172,10 @@
     (cond
       [(empty? ls) (reverse (cons widget acc))]
       [else
-        (if (> (widget-id (car ls)) (widget-id widget))
+       (define comp (if (string? (widget-id (car ls)))
+                        string>?
+                        >))
+        (if (comp (widget-id (car ls)) (widget-id widget))
             ; must add
             (append (reverse (cons widget acc)) ls)
             ; continue
@@ -189,7 +192,10 @@
            void)
        (reverse (cons widget acc))]
       [else
-       (if (> (snip-id (car ls)) (snip-id widget))
+       (define comp (if (string? (snip-id (car ls)))
+                        string>?
+                        >))
+       (if (comp (snip-id (car ls)) (snip-id widget))
            (begin
              ; must add
              (if (not (empty? acc))

@@ -20,10 +20,14 @@
     (define acc (try-recv (input "acc")))
     (match msg
       [(cons 'init #t)
-       (set! acc (raw-graph (g:directed-graph '()) #f 0 0))
+       (define g (g:directed-graph '()))
+       (set! acc (raw-graph g #f 0 0))
        (send-dynamic-add
         (make-graph
          (node "pb" ${gui.pasteboard})
+         (node "preload-node" ${hyperflow.graph.node})
+         (node "building-edge" ${hyperflow.graph.line})
+         (edge "building-edge" "out" _ "pb" "place" "0")
          (edge-out "pb" "out" "dynamic-out")
          (mesg "pb" "in" (cons 'init #t)))
         input output)]
@@ -34,60 +38,63 @@
        (send-dynamic-add
         (make-graph
          (node name ${hyperflow.graph.node})
-         (edge name "out" _ "pb" "snip" id)
+         (edge name "out" _ "pb" "snip" name)
          (mesg name "in" (cons 'init (vector x y name))))
         input output)]
       [(cons 'build-edge (vector name n-x n-y m-x m-y))
        (define actual (raw-graph-build-edge acc))
        (cond
          [(eq? actual #f)
-          (define id (+ 1 (length (g:get-edges (raw-graph-graph acc)))))
-          (define edge-name (format "edge~a" id))
-          (set-raw-graph-build-edge-id! acc id)
-          (set-raw-graph-build-edge! acc name)
           (send-dynamic-add
            (make-graph
-            (node edge-name ${hyperflow.graph.line})
-            (edge edge-name "out" _ "pb" "place" id)
-            (mesg edge-name "in" (cons 'init (vector n-x n-y m-x m-y)))
-            (edge name "line-start" id edge-name "in" _))
-           input output)]
+            (mesg "building-edge" "in" (cons 'init (vector "building-edge" n-x n-y m-x m-y)))
+            (edge name "line-start" 0 "building-edge" "in" _))
+           input output)
+          (set-raw-graph-build-edge! acc name)]
          [(eq? actual name)
-          (define id (raw-graph-build-edge-id acc))
-          (define edge-name (format "edge~a" id))
           (set-raw-graph-build-edge! acc #f)
           (send-dynamic-add
            (make-graph
-            (mesg edge-name "in" (cons 'delete #t)))
+            (mesg "building-edge" "in" (cons 'delete #t)))
            input output)
           (dynamic-remove
            (make-graph
-            (node edge-name ${hyperflow.graph.line})
-            (edge edge-name "out" _ "pb" "place" id)
-            (edge name "line-start" id edge-name "in" _))
+            (edge name "line-start" 0 "building-edge" "in" _))
            input output)
           ]
          [else
-          (define id (raw-graph-build-edge-id acc))
-          (define edge-name (format "edge~a" id))
+          ; Remove the building edge
           (send-dynamic-add
            (make-graph
-            (edge name "line-end" id edge-name "in" _)
-            (mesg edge-name "in" (cons 'move-line-end (cons n-x n-y))))
+            (mesg "building-edge" "in" (cons 'delete #t)))
+           input output)
+          (dynamic-remove
+           (make-graph
+            (edge actual "line-start" 0 "building-edge" "in" _))
+           input output)
+          ; Add the new one
+          (define edge-name (string-append "edge-" actual "-" name))
+          (send-dynamic-add
+           (make-graph
+            (node edge-name ${hyperflow.graph.line})
+            (edge edge-name "out" _ "pb" "place" edge-name)
+            (mesg edge-name "in" (cons 'init (vector edge-name n-x n-y n-x n-y)))
+            (edge actual "line-start" edge-name edge-name "in" _)
+            (mesg actual "in" (cons 'refresh #t))
+            (edge name "line-end" edge-name edge-name "in" _))
            input output)
           (set-raw-graph-build-edge! acc #f)
-          (g:add-edge! (raw-graph-graph acc) actual name)])
+          (g:add-directed-edge! (raw-graph-graph acc) actual name)])
        ]
       [(cons 'motion event)
        (if (eq? #f (raw-graph-build-edge acc))
            void
-           (let* ((id (+ 1 (length (g:get-edges (raw-graph-graph acc)))))
-                 (edge-name (format "edge~a" id)))
-             (send-dynamic-add
-              (make-graph
-               (mesg edge-name "in" (cons 'move-line-end (cons (class-send event get-x)
-                                                               (class-send event get-y)))))
-              input output)))
+           (begin
+           (send-dynamic-add
+            (make-graph
+             (mesg "building-edge" "in" (cons 'move-line-end (cons (class-send event get-x)
+                                                                   (class-send event get-y)))))
+            input output)))
        ]
       [(cons 'left-down event)
        (define new (class-send event get-time-stamp))
@@ -98,8 +105,29 @@
            void)
        (set-raw-graph-last-click! acc new)]
       [(cons 'delete-node name)
-       ;TODO
-       void]
+       (define edges (g:get-edges (raw-graph-graph acc)))
+       (set! edges (filter (lambda (edge)
+                             (cond
+                               [(string=? name (car edge)) #t]
+                               [(string=? name (cadr edge)) #t]
+                               [else #f]))
+                           edges))
+       (for ([e edges])
+         (define edge-name (string-append "edge-" (car e) "-" (cadr e)))
+         (dynamic-remove
+          (make-graph
+           (node edge-name ${hyperflow.graph.line})
+           (edge (car e) "line-start" edge-name edge-name "in" _)
+           (edge (cadr e) "line-end" edge-name edge-name "in" _))
+          input output)
+         )
+       (dynamic-remove
+        (make-graph
+         (node name ${hyperflow.graph.node})
+         (edge name "out" _ "pb" "snip" name))
+        input output)
+       (g:remove-vertex! (raw-graph-graph acc) name)
+       ]
       [else (send (output "out") msg)])
     (send (output "acc") acc)
     ))

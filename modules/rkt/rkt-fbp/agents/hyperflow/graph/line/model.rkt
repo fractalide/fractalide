@@ -14,8 +14,8 @@
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
-      [(cons 'init (vector x y x-end y-end))
-       (set! acc (line x y x-end y-end))
+      [(cons 'init (vector id x y x-end y-end))
+       (set! acc (line id x y x-end y-end))
        (send (output "line") (cons 'init (vector x y x-end y-end)))]
       [(cons 'move-line-start (cons x y))
        (set! acc (struct-copy line acc [x x] [y y]))
@@ -23,6 +23,8 @@
       [(cons 'move-line-end (cons x y))
        (set! acc (struct-copy line acc [x-end x] [y-end y]))
        (redraw acc output)]
+      [(cons 'delete #t)
+       (send (output "line") (cons 'delete #t))]
       [else (send (output "out") msg)])
     (send (output "acc") acc)
     ))

@@ -5,7 +5,7 @@
          racket/gui/base)
 
 (provide (contract-out
-          [struct snip ([id number?]
+          [struct snip ([id (or/c string? number?)]
                         [x number?]
                         [y number?]
                           [snip (is-a?/c snip%)]

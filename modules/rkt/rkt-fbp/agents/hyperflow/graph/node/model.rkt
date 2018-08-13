@@ -34,7 +34,17 @@
                                                                   (class-send event get-x)
                                                                   (class-send event get-y))))]
       [(cons 'is-deleted #t)
-       (send-action output output-array (cons 'delete-node (node-name acc)))]
+       (send-action output output-array (cons 'delete-node (node-name acc)))
+       (send (output "circle") (cons 'delete #t))
+       (for ([(k v) (output-array "line-start")])
+         (send v (cons 'delete #t)))
+       (for ([(k v) (output-array "line-end")])
+         (send v (cons 'delete #t)))]
+      [(cons 'refresh #t)
+       (sleep 0.05)
+       (for ([(k v) (output-array "line-start")])
+         (send v (cons 'move-line-start (cons (node-x acc) (node-y acc)))))
+       ]
       [else (send (output "out") msg)])
     (send (output "acc") acc)
     ))

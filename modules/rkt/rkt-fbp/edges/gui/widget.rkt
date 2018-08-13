@@ -5,7 +5,7 @@
          racket/gui/base)
 
 (provide (contract-out
-          [struct widget ([id number?]
+          [struct widget ([id (or/c string? number?)]
                           [draw (-> boolean?
                                     (is-a?/c dc<%>)
                                     real? real? real? real?
