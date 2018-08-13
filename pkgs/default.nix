@@ -45,12 +45,17 @@ pkgs {
         ) ./..;
       };
 
+      # fractalide/racket2nix#78 workaround
       # This simple switcheroo only works because fractalide happens to depend on all of
-      # compiler-lib's dependencies.
-      fractalide-tests-pkg = fractalide.racketDerivation.override { src = fetchurl {
-        url = "https://download.racket-lang.org/releases/6.12/pkgs/compiler-lib.zip";
-        sha1 = "8921c26c498e920aca398df7afb0ab486636430f";
-      }; };
+      # compiler-lib's dependencies (because it happens to depend on compiler-lib).
+      fractalide-tests-pkg = fractalide.overrideRacketDerivation (oldAttrs: {
+        src = fetchurl {
+          url = "https://download.racket-lang.org/releases/6.12/pkgs/compiler-lib.zip";
+          sha1 = "8921c26c498e920aca398df7afb0ab486636430f";
+        };
+        # Remove compiler-lib from its own dependencies.
+        racketBuildInputs = builtins.filter (input: input.name != "compiler-lib") oldAttrs.racketBuildInputs;
+      });
 
       fractalide-tests = self.runCommand "fractalide-tests" {
         buildInputs = [ fractalide-tests-pkg.env ];
