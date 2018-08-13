@@ -19,9 +19,11 @@
             (cons 'init (widget
                          0
                          (lambda (before? dc left top right bottom dx dy)
-                           (class-send dc draw-line
-                                       (+ x dx) (+ y dy)
-                                       (+ end-x dx) (+ end-y dy)))
+                           (if before?
+                               (void)
+                               (class-send dc draw-line
+                                           (+ x dx) (+ y dy)
+                                           (+ end-x dx) (+ end-y dy))))
                          ; TODO: Be more precise for click on the line...
                          (lambda (dc a b)
                            (and (> a x)
