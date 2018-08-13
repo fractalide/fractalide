@@ -1,6 +1,7 @@
 { pkgs ? import ./nixpkgs
 , system ? builtins.currentSystem
 , fetchFromGitHub ? (pkgs {}).fetchFromGitHub
+, fetchurl ? (pkgs {}).fetchurl
 , rustOverlay ? fetchFromGitHub {
     owner  = "mozilla";
     repo   = "nixpkgs-mozilla";
@@ -43,6 +44,19 @@ pkgs {
           (null == builtins.match ".*~" path)
         ) ./..;
       };
+
+      # This simple switcheroo only works because fractalide happens to depend on all of
+      # compiler-lib's dependencies.
+      fractalide-tests-pkg = fractalide.racketDerivation.override { src = fetchurl {
+        url = "https://download.racket-lang.org/releases/6.12/pkgs/compiler-lib.zip";
+        sha1 = "8921c26c498e920aca398df7afb0ab486636430f";
+      }; };
+
+      fractalide-tests = self.runCommand "fractalide-tests" {
+        buildInputs = [ fractalide-tests-pkg.env ];
+      } ''
+        racket -l- raco test ${fractalide.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents
+      '';
     })
   ];
 }
