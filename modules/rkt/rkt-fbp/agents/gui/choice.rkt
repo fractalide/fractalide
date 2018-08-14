@@ -48,9 +48,9 @@
 (define (process-msg msg widget input output output-array)
   (define managed #f)
   (set! managed (area-manage widget msg output output-array))
-  (set! managed (subarea-manage widget msg output output-array))
-  (set! managed (window-manage widget msg output output-array))
-  (set! managed (list-control-manage widget msg output output-array))
+  (set! managed (or managed (subarea-manage widget msg output output-array)))
+  (set! managed (or managed (window-manage widget msg output output-array)))
+  (set! managed (or managed (list-control-manage widget msg output output-array)))
   (if managed
       (void)
       (match msg
