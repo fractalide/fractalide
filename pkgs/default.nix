@@ -67,23 +67,19 @@ pkgs {
           exit ''${PIPESTATUS[0]}
         '';
       in self.runCommand "fractalide-tests" {
-        buildInputs = [ fractalide-tests-pkg.env self.parallel self.time ];
+        buildInputs = [ fractalide-tests-pkg.env self.parallel ];
         inherit racoTest;
       } ''
         # If we do raco test <directory> the discovery process will try to mkdir $HOME.
         # If we allow raco test to run on anything in agents/gui it will fail because
-        # requiring gui fails on headless.
+        # requiring (gui/...) fails on headless.
 
         find ${fractalide-tests-pkg.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents \
           '(' -name gui -prune ')' -o '(' -name '*.rkt' -print ')' |
-          time -p parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
+          parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
           tee $out
         exit ''${PIPESTATUS[1]}
       '';
-
-      fractalide-tests-flat = fractalide-tests.overrideAttrs (oldAttrs: {
-        buildInputs = [ (fractalide.override { flat = true; }).env self.parallel self.time ];
-      });
     })
   ];
 }
