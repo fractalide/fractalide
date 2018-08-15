@@ -46,7 +46,6 @@ pkgs {
       };
 
       # fractalide/racket2nix#78 workaround
-      # I considered just flattening, but fractalide/racket2nix#156
 
       # This simple addition works because fractalide happens to depend on all of
       # compiler-lib's dependencies (because it happens to depend on compiler-lib).
@@ -59,10 +58,27 @@ pkgs {
         racketBuildInputs = builtins.filter (input: input.name != "compiler-lib") oldAttrs.racketBuildInputs;
       });
 
-      fractalide-tests = self.runCommand "fractalide-tests" {
-        buildInputs = [ fractalide-tests-pkg.env ];
+      fractalide-tests = let
+        # parallel cannot quite handle full inline bash, and destroys quoting, so we can't use bash -c
+
+        racoTest = builtins.toFile "raco-test.sh" ''
+          racket -l- raco test "$@" |&
+            grep -v -e "warning: tool .* registered twice" -e "@[(]test-responsible"
+          exit ''${PIPESTATUS[0]}
+        '';
+      in self.runCommand "fractalide-tests" {
+        buildInputs = [ fractalide-tests-pkg.env self.parallel ];
+        inherit racoTest;
       } ''
-        racket -l- raco test ${fractalide-tests-pkg.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents
+        # If we do raco test <directory> the discovery process will try to mkdir $HOME.
+        # If we allow raco test to run on anything in agents/gui it will fail because
+        # requiring gui fails on headless.
+
+        find ${fractalide-tests-pkg.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents \
+          '(' -name gui -prune ')' -o '(' -name '*.rkt' -print ')' |
+          parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
+          tee $out
+        exit ''${PIPESTATUS[1]}
       '';
     })
   ];
