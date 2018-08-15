@@ -1,5 +1,5 @@
 #! /usr/bin/env nix-shell
-#! nix-shell -i bash -p bash findutils gawk git
+#! nix-shell -i bash -p bash findutils gawk git nix-prefetch-git
 
 set -e
 set -u
