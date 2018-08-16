@@ -62,12 +62,12 @@ pkgs {
 
         # parallel cannot quite handle full inline bash, and destroys quoting, so we can't use bash -c
         racoTest = builtins.toFile "raco-test.sh" ''
-          racket -l- raco test "$@" |&
+          timeout 20 time -f '%e s' racket -l- raco test "$@" |&
             grep -v -e "warning: tool .* registered twice" -e "@[(]test-responsible"
           exit ''${PIPESTATUS[0]}
         '';
       in self.runCommand "rkt-tests" {
-        buildInputs = [ fractalide-rkt-tests.env self.parallel ];
+        buildInputs = [ fractalide-rkt-tests.env self.coreutils self.parallel self.time ];
         inherit racoTest;
       } ''
         # If we do raco test <directory> the discovery process will try to mkdir $HOME.
