@@ -56,12 +56,13 @@
       (match msg
 	     [(cons 'set-choices choices)
 	      (class:send widget clear)
-	      (for ([choice choices]) (class:send widget append choice))]
-             [(cons 'get-selection act)
-              (send-action output output-array (cons act (class:send widget get-selection)))]
-             [(cons 'set-selection n)
-              (class:send widget set-selection n)]
-             [else (send-action output output-array msg)])))
+	      (for ([choice choices]) (class:send widget append choice))
+        (class:send widget refresh)]
+       [(cons 'get-selection act)
+        (send-action output output-array (cons act (class:send widget get-selection)))]
+       [(cons 'set-selection n)
+        (class:send widget set-selection n)]
+       [else (send-action output output-array msg)])))
 
 (define-agent
   #:input '("in") ; in port

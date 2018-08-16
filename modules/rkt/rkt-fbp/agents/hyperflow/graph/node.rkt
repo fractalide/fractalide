@@ -21,6 +21,7 @@
   (edge "model" "config" _ "config" "in" _)
   (edge "config" "out" _ "out" "in" _)
   (edge "config" "out" 'set-name "model" "in" _)
+  (edge "config" "out" 'set-type "model" "in" _)
 
   ; IO
   (edge-in "in" "model" "in")

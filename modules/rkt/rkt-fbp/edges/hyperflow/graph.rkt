@@ -5,8 +5,11 @@
 
 (provide (contract-out
           [struct raw-graph ((graph graph?)
+                             (nodes (and/c hash? hash-equal?))
                              (build-edge (or/c boolean? string?))
-                             (build-edge-id number?)
                              (last-click exact-integer?))]))
 
-(struct raw-graph (graph build-edge build-edge-id last-click) #:prefab #:mutable)
+(struct raw-graph (graph
+                   nodes
+                   build-edge
+                   last-click) #:prefab #:mutable)
