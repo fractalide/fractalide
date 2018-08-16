@@ -36,12 +36,13 @@ pkgs {
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
       fractalide = self.buildRacket {
         package = builtins.filterSource (path: type:
-          (type != "symlink" || null == builtins.match "result.*" (baseNameOf path)) &&
-          (null == builtins.match ".*[.]nix" path) &&
-          (null == builtins.match "[.].*[.]swp" path) &&
-          (null == builtins.match "[.][#].*" path) &&
-          (null == builtins.match "[#].*[#]" path) &&
-          (null == builtins.match ".*~" path)
+          let basePath = baseNameOf path; in
+          (type != "symlink" || null == builtins.match "result.*" basePath) &&
+          (null == builtins.match ".*[.]nix" basePath) &&
+          (null == builtins.match "[.].*[.]swp" basePath) &&
+          (null == builtins.match "[.][#].*" basePath) &&
+          (null == builtins.match "[#].*[#]" basePath) &&
+          (null == builtins.match ".*~" basePath)
         ) ./..;
       };
 
