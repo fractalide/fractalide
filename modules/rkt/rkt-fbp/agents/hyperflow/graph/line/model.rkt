@@ -8,7 +8,7 @@
 (define-agent
   #:input '("in") ; in array port
   #:input-array '()
-  #:output '("out" "line") ; out port
+  #:output '("out" "line" "from" "to") ; out port
   #:output-array '("out")
   (fun
     (define msg (recv (input "in")))
@@ -25,6 +25,21 @@
        (redraw acc output)]
       [(cons 'delete #t)
        (send (output "line") (cons 'delete #t))]
+      [(cons 'inport inports)
+       (send (output "to") (cons 'delete #t))
+       (send (output "to") (cons 'init (list (cons 'label "To: ")
+                                             (cons 'choices inports))))]
+      [(cons 'outport outports)
+       (send (output "from") (cons 'delete #t))
+       (send (output "from") (cons 'init  (list (cons 'label "From: ")
+                                                (cons 'choices outports))))]
+      [(cons 'left-down event)
+       (send (output "from") (cons 'display #t))]
+      [(cons 'choice from)
+       (send (output "out") (cons 'set-outport (vector (line-id acc) from)))]
+      [(cons 'choice-outport to)
+       (displayln "choice-outport")
+       (send (output "out") (cons 'set-inport (vector (line-id acc) to)))]
       [else (send (output "out") msg)])
     (send (output "acc") acc)
     ))

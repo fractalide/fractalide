@@ -7,5 +7,5 @@
   #:output '("out") ; out port
   (fun
    (define msg (recv (input "in")))
-   (sleep 5)
+   (sleep 2)
    (send (output "out") msg)))

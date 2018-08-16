@@ -170,6 +170,8 @@
     [(cons 'clear #t)
      (class:send area clear)
      #t]
+    [(cons 'delete #t)
+     #f]
     [(cons 'delete elem)
      (class:send area delete elem)
      #t]
@@ -240,6 +242,13 @@
             ; False -> add to the list
             (cons 'init (cons msg (cdr acc)))))
       ; false -> already created
-      (begin
-        (process-msg msg acc input output output-array)
-        acc)))
+      (if (and (cons? msg) (eq? (car msg) 'init))
+          ; True, recreate
+          (begin
+            (send (output "out") (cons 'init (create input (cdr msg))))
+            (let ([widget (recv (input "acc"))])
+              widget))
+          ; False, process the msg
+          (begin
+            (process-msg msg acc input output output-array)
+            acc))))

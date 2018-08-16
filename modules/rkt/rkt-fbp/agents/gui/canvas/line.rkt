@@ -26,10 +26,14 @@
                                            (+ end-x dx) (+ end-y dy))))
                          ; TODO: Be more precise for click on the line...
                          (lambda (dc a b)
-                           (and (> a x)
-                                (< a end-x))
-                                (> b y)
-                                (< b end-y))
+                           (define min-x (min x end-x))
+                           (define max-x (max x end-x))
+                           (define min-y (min y end-y))
+                           (define max-y (max y end-y))
+                           (and (> a min-x)
+                                (< a max-x)
+                                (> b min-y)
+                                (< b max-y)))
                          (lambda (event)
                            (send (input "in") event)))))]
      [(cons 'delete #t)

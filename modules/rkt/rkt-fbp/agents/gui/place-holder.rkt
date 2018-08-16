@@ -14,6 +14,17 @@
     (let* ([ph (new panel% [parent frame])])
       (send (input "acc") ph))))
 
+(define (process-msg msg widget input output output-array)
+  (define managed #f)
+  (set! managed (area-manage widget msg output output-array))
+  (set! managed (or managed (window-manage widget msg output output-array)))
+  (set! managed (or managed (area-container-manage widget msg output output-array)))
+  (if managed
+      (void)
+      (match msg
+        ;TODO: manage orientation
+        [else (send-action output output-array msg)])))
+
 (define-agent
   #:input '("in") ; in port
   #:input-array '("place")
@@ -31,8 +42,7 @@
 
     (if msg-in
         ; TRUE : A message in the input port
-        (match msg-in
-               [else (send-action output output-array msg-in)])
+        (process-msg msg-in (cdr ph) input output output-array)
         ; FALSE : At least a message in the input array port
         ; Change the accumulator ph with set!
         (for ([(place containee) (input-array "place")])
@@ -64,6 +74,14 @@
                          (class-send (cdr ph) change-children
                                      (lambda (_)
                                        (list (hash-ref (car ph) place))))]
+                        [(cons 'display #f)
+                         (class-send (cdr ph) change-children
+                                     (lambda (c)
+                                       (if (eq? (car c) (hash-ref (car ph) place))
+                                           ; true, it is the actual widget that is display, we remove
+                                           '()
+                                           ; false, do nothing
+                                           c)))]
                         [else (send-action output output-array msg)])
                  void)))
 
