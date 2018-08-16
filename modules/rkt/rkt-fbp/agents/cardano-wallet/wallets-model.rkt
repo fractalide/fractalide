@@ -6,6 +6,10 @@
   (define-values (heads tail) (split-at lst idx))
   (append heads (cdr tail)))
 
+(define (list-replace-index lst idx elem)
+  (build-list (length lst) (lambda (n)
+   (if (= n idx) elem (list-ref lst n)))))
+
 (define in-ports '("in" "add" "edit" "select" "delete"))
 (define out-ports '("out" "choices" "select"))
 
@@ -38,6 +42,11 @@
                            (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
                            (cons "select" new-selection)
                            (cons "out" wallet-data))]
+                    [(cons "edit" new-wallet-data)
+                     (define new-state (list-replace-index state selection new-wallet-data))
+                     (list (cons "acc" (hash-set acc 'state new-state))
+                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
+                           (cons "out" new-wallet-data))]
                     [(cons "delete" delete-selection)
                      (define new-selection (min (max 0 (- (length state) 2))
                                                 selection))
@@ -114,6 +123,30 @@
     (check-equal? (port-recv (hash-ref taps "select")) 1)
     (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
     (check-equal? (port-recv (hash-ref taps "choices")) choices))))
+
+  (test-case
+   "Edit"
+   (run-sched-test (lambda (sched taps)
+    (define choices '("asdf" "qwer"))
+    (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
+    (define new-state #hash((name . "zxcv")))
+    (define new-wallets (list new-state (second wallets)))
+    (define new-choices (list (hash-ref new-state 'name) (second choices)))
+
+    (sched (msg-mesg "agent-under-test" "in" wallets))
+    (port-recv (hash-ref taps "select"))
+    (port-recv (hash-ref taps "out"))
+    (port-recv (hash-ref taps "choices"))
+
+    (sched (msg-mesg "agent-under-test" "edit" new-state))
+    (check-equal? (port-recv (hash-ref taps "out")) new-state)
+    (check-equal? (port-recv (hash-ref taps "choices")) new-choices)
+
+    (sched (msg-mesg "agent-under-test" "select" 1))
+    (port-recv (hash-ref taps "out"))
+
+    (sched (msg-mesg "agent-under-test" "select" 0))
+    (check-equal? (port-recv (hash-ref taps "out")) new-state))))
 
   (test-case
    "Delete"
