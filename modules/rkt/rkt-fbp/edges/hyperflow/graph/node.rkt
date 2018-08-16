@@ -3,8 +3,9 @@
 (require fractalide/modules/rkt/rkt-fbp/def)
 
 (provide (contract-out
-          [struct node ((x number?)
+          [struct node ((id string?)
+                        (x number?)
                         (y number?)
                         (name string?))]))
 
-(struct node (x y name) #:prefab #:mutable)
+(struct node (id x y name) #:prefab #:mutable)

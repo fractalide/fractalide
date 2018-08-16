@@ -24,11 +24,19 @@
        (set! acc (raw-graph g #f 0 0))
        (send-dynamic-add
         (make-graph
+         (node "vp" ${gui.vertical-panel})
+
          (node "pb" ${gui.pasteboard})
+         (edge "pb" "out" _ "vp" "place" 1)
+
+         (node "ph-config" ${gui.place-holder})
+         (edge "ph-config" "out" _ "vp" "place" 2)
+         (mesg "ph-config" "in" (cons 'set-stretchable-height #f))
+
          (node "preload-node" ${hyperflow.graph.node})
          (node "building-edge" ${hyperflow.graph.line})
          (edge "building-edge" "out" _ "pb" "place" "0")
-         (edge-out "pb" "out" "dynamic-out")
+         (edge-out "vp" "out" "dynamic-out")
          (mesg "pb" "in" (cons 'init #t)))
         input output)]
       [(cons 'add-node (vector x y))
@@ -39,7 +47,8 @@
         (make-graph
          (node name ${hyperflow.graph.node})
          (edge name "out" _ "pb" "snip" name)
-         (mesg name "in" (cons 'init (vector x y name))))
+         (edge name "config" _ "ph-config" "place" name)
+         (mesg name "in" (cons 'init (vector name x y name))))
         input output)]
       [(cons 'build-edge (vector name n-x n-y m-x m-y))
        (define actual (raw-graph-build-edge acc))
@@ -124,6 +133,7 @@
        (dynamic-remove
         (make-graph
          (node name ${hyperflow.graph.node})
+         (edge name "config" _ "ph-config" "place" name)
          (edge name "out" _ "pb" "snip" name))
         input output)
        (g:remove-vertex! (raw-graph-graph acc) name)

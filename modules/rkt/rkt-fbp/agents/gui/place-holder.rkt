@@ -74,6 +74,14 @@
                          (class-send (cdr ph) change-children
                                      (lambda (_)
                                        (list (hash-ref (car ph) place))))]
+                        [(cons 'display #f)
+                         (class-send (cdr ph) change-children
+                                     (lambda (c)
+                                       (if (eq? (car c) (hash-ref (car ph) place))
+                                           ; true, it is the actual widget that is display, we remove
+                                           '()
+                                           ; false, do nothing
+                                           c)))]
                         [else (send-action output output-array msg)])
                  void)))
 
