@@ -34,6 +34,7 @@
 
   (node "model" ${cardano-wallet.wallets-model})
   (edge-in "add" "model" "add")
+  (edge-in "edit" "model" "edit")
   (edge-in "delete" "model" "delete")
   (edge-in "init" "model" "in")
   (edge "select" "out" _ "model" "select" _)

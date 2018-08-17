@@ -22,11 +22,18 @@
   (mesg "wallets-choice" "init" '(#hash((name . "my wallet"))
                                   #hash((name . "my other wallet is also a wallet"))))
 
-  (node "wallet-data" ${plumbing.demux})
-  (mesg "wallet-data" "option"
+  (node "wallet-data-in" ${plumbing.mux-demux})
+  (mesg "wallet-data-in" "option"
+        (match-lambda [(cons "wallet-name" new-name)
+                       (list (cons "edit" `#hash((name . ,new-name))))]))
+  (edge "wallet-data-in" "out" "edit" "wallets-choice" "edit" _)
+  (edge-in "data" "wallet-data-in" "in")
+
+  (node "wallet-data-out" ${plumbing.demux})
+  (mesg "wallet-data-out" "option"
 	(lambda (data) (list (cons "wallet-name" (hash-ref data 'name)))))
-  (edge "wallets-choice" "choice" _ "wallet-data" "in" _)
-  (edge-out "wallet-data" "out" "data")
+  (edge "wallets-choice" "choice" _ "wallet-data-out" "in" _)
+  (edge-out "wallet-data-out" "out" "data")
 
   (node "button-pushes" ${plumbing.mux})
   (edge-out "button-pushes" "out" "choice")

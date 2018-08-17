@@ -23,6 +23,9 @@
                           (define val (try-recv (input port)))
                           (if val (cons port val) #f)))
    (for ([port-msg (match action
+                    ; If you send a "choices", remember to always send a "select".
+                    ; choice% resets selection to 0 when the list gets updated.
+
                     [(cons "in" (list))
                      (list (cons "acc" #hash((selection . 0) (state . ())))
                            (cons "choices" (list))
@@ -46,6 +49,7 @@
                      (define new-state (list-replace-index state selection new-wallet-data))
                      (list (cons "acc" (hash-set acc 'state new-state))
                            (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
+                           (cons "select" selection)
                            (cons "out" new-wallet-data))]
                     [(cons "delete" delete-selection)
                      (define new-selection (min (max 0 (- (length state) 2))
@@ -141,6 +145,7 @@
     (sched (msg-mesg "agent-under-test" "edit" new-state))
     (check-equal? (port-recv (hash-ref taps "out")) new-state)
     (check-equal? (port-recv (hash-ref taps "choices")) new-choices)
+    (check-equal? (port-recv (hash-ref taps "select")) 0)
 
     (sched (msg-mesg "agent-under-test" "select" 1))
     (port-recv (hash-ref taps "out"))
