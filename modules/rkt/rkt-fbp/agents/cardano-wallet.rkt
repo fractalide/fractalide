@@ -27,7 +27,7 @@
   (node "app" ${gui.horizontal-panel})
   (edge "app" "out" _ "frame" "in" _)
 
-  (node "sidebar" ${cardano-wallet.menu})
+  (node "sidebar" ${cardano-wallet.sidebar})
   (edge "sidebar" "out" _ "app" "place" 10)
 
   (node "stack" ${gui.place-holder})
