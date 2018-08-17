@@ -13,39 +13,43 @@
   #:input in-ports
   #:output out-ports
   (fun
-   (define acc (or (try-recv (input "acc")) (list)))
+   (define acc (or (try-recv (input "acc")) #hash((selection . 0) (state . ()))))
+   (match-define (hash-table ('selection selection) ('state state)) acc)
    (define action (for/or ([port in-ports])
                           (define val (try-recv (input port)))
                           (if val (cons port val) #f)))
    (for ([port-msg (match action
                     [(cons "in" (list))
-                     (list (cons "acc" (list))
+                     (list (cons "acc" #hash((selection . 0) (state . ())))
                            (cons "choices" (list))
                            (cons "select" 0)
                            (cons "out" (make-hash)))]
                     [(cons "in" (list-rest head rest))
-                     (define new-acc (list* head rest))
-                     (list (cons "acc" new-acc)
-                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-acc))
+                     (define new-state (list* head rest))
+                     (list (cons "acc" (hash-set acc 'state new-state))
+                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
                            (cons "select" 0)
                            (cons "out" head))]
                     [(cons "add" wallet-data)
-                     (define new-acc (append acc (list wallet-data)))
-                     (list (cons "acc" new-acc)
-                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-acc))
-                           (cons "select" (length acc))
-                           (cons "out" wallet-data))]
-                    [(cons "delete" selection)
-                     (define new-selection (min (max 0 (- (length acc) 2))
-                                                selection))
-                     (define new-acc (list-remove-index acc selection))
-                     (list (cons "acc" new-acc)
-                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-acc))
+                     (define new-state (append state (list wallet-data)))
+                     (define new-selection (sub1 (length new-state)))
+                     (list (cons "acc" `#hash((state . ,new-state)
+                                              (selection . ,new-selection)))
+                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
                            (cons "select" new-selection)
-                           (cons "out" (list-ref new-acc new-selection)))]
-                    [(cons "select" selection)
-                     (list (cons "acc" acc)
-                           (cons "out" (list-ref acc selection)))])])
+                           (cons "out" wallet-data))]
+                    [(cons "delete" delete-selection)
+                     (define new-selection (min (max 0 (- (length state) 2))
+                                                selection))
+                     (define new-state (list-remove-index state delete-selection))
+                     (list (cons "acc" `#hash((state . ,new-state)
+                                              (selection . ,new-selection)))
+                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
+                           (cons "select" new-selection)
+                           (cons "out" (list-ref new-state new-selection)))]
+                    [(cons "select" new-selection)
+                     (list (cons "acc" (hash-set acc 'selection new-selection))
+                           (cons "out" (list-ref state new-selection)))])])
         (match-define (cons port msg) port-msg)
         (send (output port) msg))))
 
