@@ -8,8 +8,7 @@
           [struct snip ([id (or/c string? number?)]
                         [x number?]
                         [y number?]
-                          [snip (is-a?/c snip%)]
-                          [event (-> any/c void?)]
-                          )]))
+                        [snip (is-a?/c snip%)]
+                        )]))
 
-(struct snip (id x y snip event) #:prefab)
+(struct snip (id x y snip) #:prefab)
