@@ -109,8 +109,9 @@
            input output)
           (set-raw-graph-build-edge! acc #f)
           (g:add-directed-edge! (raw-graph-graph acc) actual name)
-          (hash-set! (raw-graph-nodes acc) edge-name (g-edge #f #f #f #f #f #f))])
-       ]
+          (hash-set! (raw-graph-nodes acc) edge-name (g-edge
+                                                      (string-append actual "-typed") #f #f
+                                                      (string-append name "-typed") #f #f))])]
       [(cons 'motion event)
        (if (eq? #f (raw-graph-build-edge acc))
            void
@@ -136,40 +137,19 @@
            void)
        (set-raw-graph-last-click! acc new)]
       [(cons 'delete-node name)
-       (define edges (g:get-edges (raw-graph-graph acc)))
-       (set! edges (filter (lambda (edge)
-                             (cond
-                               [(string=? name (car edge)) #t]
-                               [(string=? name (cadr edge)) #t]
-                               [else #f]))
-                           edges))
-       (for ([e edges])
-         (define edge-name (string-append "edge-" (car e) "-" (cadr e)))
-         (hash-remove! (raw-graph-nodes acc) edge-name)
-         (dynamic-remove
-          (make-graph
-           (node edge-name ${hyperflow.graph.line})
-           (edge (car e) "line-start" edge-name edge-name "in" _)
-           (edge (cadr e) "line-end" edge-name edge-name "in" _)
-           (edge edge-name "config" _ "ph-config" "place" edge-name))
-          input output)
-         )
-       (dynamic-remove
-        (make-graph
-         (node name ${hyperflow.graph.node})
-         (edge name "config" _ "ph-config" "place" name)
-         (edge name "out" _ "pb" "snip" name))
-        input output)
-       (g:remove-vertex! (raw-graph-graph acc) name)
-       (hash-remove! (raw-graph-nodes acc) name)
-       ]
+       (delete-node acc name input output)]
       [(cons 'set-name (vector id name))
        (define actual (hash-ref (raw-graph-nodes acc) id))
        (hash-set! (raw-graph-nodes acc) id (struct-copy g-agent actual [name name]))]
       [(cons 'set-type (vector id type))
        (define actual (hash-ref (raw-graph-nodes acc) id))
+       (if (g-agent-type actual)
+           ; True: there is a node running, need to remove edges and the node, then recreate.
+           ;TODO : it's all the hotswapping feature...
+           (void)
+           ; False: do nothing
+           (void))
        (hash-set! (raw-graph-nodes acc) id (struct-copy g-agent actual [type type]))
-       ; TODO Remove the old one
        (send-dynamic-add
         (make-graph
          (node (string-append id "-typed") type))
@@ -206,13 +186,15 @@
   ; Remove if already exists
   (displayln (g-edge-port-in old))
   (displayln (g-edge-port-out old))
+  (displayln (g-edge-out old))
+  (displayln (g-edge-in old))
   (if (and (g-edge-port-in old) (g-edge-port-out old))
       ; True - disconnect
       (begin
         (displayln "DisConnect!")
         (dynamic-remove
          (make-graph
-          (edge (cadr splited) (g-edge-port-out old) _ (caddr splited) (g-edge-port-in old) _))
+          (edge (g-edge-out old) (g-edge-port-out old) _ (g-edge-in old) (g-edge-port-in old) _))
          input output)
         )
       ; False - Nothing
@@ -222,12 +204,42 @@
   (define actual (hash-ref (raw-graph-nodes acc) id))
   (if (and (g-edge-port-in actual) (g-edge-port-out actual))
       ; True - connect
-      (let ([out (string-append (cadr splited) "-typed")]
-            [in (string-append (caddr splited) "-typed")])
+      (begin
         (displayln "Connect!")
         (send-dynamic-add
          (make-graph
-          (edge out (g-edge-port-out actual) _ in (g-edge-port-in actual) _))
+          (edge (g-edge-out actual) (g-edge-port-out actual) _ (g-edge-in actual) (g-edge-port-in actual) _))
          input output))
       ; False - Nothing
       (void)))
+
+(define (delete-node acc name input output)
+  (define edges (g:get-edges (raw-graph-graph acc)))
+  (set! edges (filter (lambda (edge)
+                        (cond
+                          [(string=? name (car edge)) #t]
+                          [(string=? name (cadr edge)) #t]
+                          [else #f]))
+                      edges))
+  (for ([e edges])
+    (define edge-name (string-append "edge-" (car e) "-" (cadr e)))
+    (define edg (hash-ref (raw-graph-nodes acc) edge-name))
+    (hash-remove! (raw-graph-nodes acc) edge-name)
+    (dynamic-remove
+     (make-graph
+      (node edge-name ${hyperflow.graph.line})
+      (edge (car e) "line-start" edge-name edge-name "in" _)
+      (edge (cadr e) "line-end" edge-name edge-name "in" _)
+      (edge edge-name "config" _ "ph-config" "place" edge-name)
+      (edge (g-edge-out edg) (g-edge-port-out edg) (g-edge-selection-out edg)
+            (g-edge-in edg) (g-edge-port-in edg) (g-edge-selection-in edg)))
+     input output)
+    )
+  (dynamic-remove
+   (make-graph
+    (node name ${hyperflow.graph.node})
+    (edge name "config" _ "ph-config" "place" name)
+    (edge name "out" _ "pb" "snip" name))
+   input output)
+  (g:remove-vertex! (raw-graph-graph acc) name)
+  (hash-remove! (raw-graph-nodes acc) name))
