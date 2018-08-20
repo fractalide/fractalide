@@ -19,9 +19,12 @@
   (edge "name" "out" _ "vp" "place" 30)
   (mesg "name" "in" '(init . ((label . ""))))
 
-  (node "name-in" ${plumbing.option-transform})
-  (mesg "name-in" "option" (lambda (x) (cons 'set-value x)))
-  (edge "name-in" "out" _ "name" "in" _)
+  (node "name-in" ${plumbing.demux})
+  (mesg "name-in" "option"
+        (lambda (new-name) (list (list* "name" 'set-value new-name)
+                                 (list* "delete" new-name))))
+  (edge "name-in" "out" "name" "name" "in" _)
+  (edge "name-in" "out" "delete" "delete" "wallet-name" _)
   (edge-in "name" "name-in" "in")
 
   (node "name-out" ${plumbing.option-transform})
@@ -62,5 +65,4 @@
   (node "delete" ${cardano-wallet.delete})
   (edge "delete" "out" _ "vp" "place" 80)
   (mesg "delete" "in" '(display . #t))
-  (edge-out "delete" "delete" "delete")
-  (mesg "delete" "wallet-name" "my wallet"))
+  (edge-out "delete" "delete" "delete"))
