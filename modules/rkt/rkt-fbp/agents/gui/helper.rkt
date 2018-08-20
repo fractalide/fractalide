@@ -229,22 +229,22 @@
   (cond
    [(and (pair? acc) (eq? (car acc) 'init))
     ; widget in creation
-    (cond
-     [(eq? (car msg) 'init)
+    (match msg
+     [(cons 'init msg-tail)
       ; create widget and receive it
       ; process the list
-      (send (output "out") (cons 'init (create input (cdr msg))))
-      (let ([widget (recv (input "acc"))])
-           (for ([m (cdr acc)])
-                (process-msg m widget input output output-array))
-           widget)]
+      (send (output "out") (cons 'init (create input msg-tail)))
+      (define widget (recv (input "acc")))
+      (for ([m (cdr acc)])
+           (process-msg m widget input output output-array))
+      widget]
      [else
       (cons 'init (cons msg (cdr acc)))])]
    [(and (cons? msg) (eq? (car msg) 'init))
     ; recreate widget
     (send (output "out") (cons 'init (create input (cdr msg))))
-    (let ([widget (recv (input "acc"))])
-         widget)]
+    (define widget (recv (input "acc")))
+    widget]
    [else
     ; not in creation, not to be recreated
     (process-msg msg acc input output output-array)
