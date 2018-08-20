@@ -75,6 +75,9 @@
   (edge "wsettings" "name" _ "sidebar" "data" "wallet-name")
   (edge "wsettings" "delete" _ "sidebar" "data" "delete")
 
+  (node "receive" ${cardano-wallet.receive})
+  (edge "receive" "out" _ "stack" "place" 40)
+
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
 
@@ -85,8 +88,8 @@
   (edge "card-display-out" "out" "new" "welcome" "in" _)
   (edge "card-display-out" "out" "summary" "summary" "in" _)
   (edge "card-display-out" "out" "wsettings" "wsettings" "in" _)
+  (edge "card-display-out" "out" "receive" "receive" "in" _)
 
-  (mesg "sidebar" "in" '(init . ()))
   (mesg "sidebar" "init" '(#hash((name . "my wallet"))
                            #hash((name . "my other wallet is also a wallet")))))
 
