@@ -222,30 +222,27 @@
       (send (input "in") (cons 'superwindow-show b?)))
     (class:super-new)))
 
-
 (define (manage acc msg input output output-array create process-msg)
   ; If no acc, create a empty list
   (set! acc (if acc acc (cons 'init (list))))
-  (cond
-   [(and (pair? acc) (eq? (car acc) 'init))
-    ; widget in creation
-    (match msg
-     [(cons 'init msg-tail)
-      ; create widget and receive it
-      ; process the list
-      (send (output "out") (cons 'init (create input msg-tail)))
-      (define widget (recv (input "acc")))
-      (for ([m (cdr acc)])
-           (process-msg m widget input output output-array))
-      widget]
-     [else
-      (cons 'init (cons msg (cdr acc)))])]
-   [(and (cons? msg) (eq? (car msg) 'init))
-    ; recreate widget
-    (send (output "out") (cons 'init (create input (cdr msg))))
+  (match* (acc msg)
+   [((cons 'init acc-tail) (cons 'init msg-tail))
+    ; widget not yet created: create widget, process accumulated list
+    (send (output "out") (cons 'init (create input msg-tail)))
+
+    (define widget (recv (input "acc")))
+    (for ([m (cdr acc)]) (process-msg m widget input output output-array))
+    widget]
+   [((cons 'init acc-tail) _)
+    ; widget not yet created, no init message: store message until init
+    (cons 'init (cons msg acc-tail))]
+   [(_ (cons 'init msg-tail))
+    ; widget exists, init message: recreate widget
+    (send (output "out") (cons 'init (create input msg-tail)))
+
     (define widget (recv (input "acc")))
     widget]
-   [else
-    ; not in creation, not to be recreated
+   [(_ _)
+    ; widget exists, normal message
     (process-msg msg acc input output output-array)
     acc]))
