@@ -18,9 +18,9 @@
 
   (node "wallets-choice" ${cardano-wallet.wallets-choice})
   (edge "wallets-choice" "out" _ "vp" "place" 5)
-  (mesg "wallets-choice" "in" '(init . ()))
-  (mesg "wallets-choice" "init" '(#hash((name . "my wallet"))
-                                  #hash((name . "my other wallet is also a wallet"))))
+
+  (edge-in "in" "wallets-choice" "in")
+  (edge-in "init" "wallets-choice" "init")
 
   (node "wallet-data-in" ${plumbing.mux-demux})
   (mesg "wallet-data-in" "option"
@@ -30,6 +30,7 @@
                        (list (cons "delete" #t))]))
   (edge "wallet-data-in" "out" "edit" "wallets-choice" "edit" _)
   (edge "wallet-data-in" "out" "delete" "wallets-choice" "delete" _)
+  (edge "wallet-data-in" "out" "init" "wallets-choice" "init" _)
   (edge-in "data" "wallet-data-in" "in")
 
   (node "wallet-data-out" ${plumbing.demux})
