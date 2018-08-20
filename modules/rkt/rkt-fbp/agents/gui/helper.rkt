@@ -222,33 +222,27 @@
       (send (input "in") (cons 'superwindow-show b?)))
     (class:super-new)))
 
-
 (define (manage acc msg input output output-array create process-msg)
   ; If no acc, create a empty list
   (set! acc (if acc acc (cons 'init (list))))
-  (if (and (cons? acc) (eq? (car acc) 'init))
-      (begin
-        ; true -> widget in creation
-        (if (eq? (car msg) 'init)
-            ; True -> create widget and receive it
-            ;      -> process the list
-            (begin
-              ; create the widget
-              (send (output "out") (cons 'init (create input (cdr msg))))
-              (let ([widget (recv (input "acc"))])
-                (for ([m (cdr acc)])
-                  (process-msg m widget input output output-array))
-                widget))
-            ; False -> add to the list
-            (cons 'init (cons msg (cdr acc)))))
-      ; false -> already created
-      (if (and (cons? msg) (eq? (car msg) 'init))
-          ; True, recreate
-          (begin
-            (send (output "out") (cons 'init (create input (cdr msg))))
-            (let ([widget (recv (input "acc"))])
-              widget))
-          ; False, process the msg
-          (begin
-            (process-msg msg acc input output output-array)
-            acc))))
+  (match* (acc msg)
+   [((cons 'init acc-tail) (cons 'init msg-tail))
+    ; widget not yet created: create widget, process accumulated list
+    (send (output "out") (cons 'init (create input msg-tail)))
+
+    (define widget (recv (input "acc")))
+    (for ([m (cdr acc)]) (process-msg m widget input output output-array))
+    widget]
+   [((cons 'init acc-tail) _)
+    ; widget not yet created, no init message: store message until init
+    (cons 'init (cons msg acc-tail))]
+   [(_ (cons 'init msg-tail))
+    ; widget exists, init message: recreate widget
+    (send (output "out") (cons 'init (create input msg-tail)))
+
+    (define widget (recv (input "acc")))
+    widget]
+   [(_ _)
+    ; widget exists, normal message
+    (process-msg msg acc input output output-array)
+    acc]))
