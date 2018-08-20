@@ -73,6 +73,7 @@
   (mesg "wsettings" "assurance-level" "Medium")
 
   (edge "wsettings" "name" _ "sidebar" "data" "wallet-name")
+  (edge "wsettings" "delete" _ "sidebar" "data" "delete")
 
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
@@ -83,7 +84,12 @@
   (edge "sidebar" "choice" _ "card-display-in" "in" _)
   (edge "card-display-out" "out" "new" "welcome" "in" _)
   (edge "card-display-out" "out" "summary" "summary" "in" _)
-  (edge "card-display-out" "out" "wsettings" "wsettings" "in" _))
+  (edge "card-display-out" "out" "wsettings" "wsettings" "in" _)
+
+  (mesg "sidebar" "in" '(init . ()))
+  (mesg "sidebar" "init" '(#hash((name . "my wallet"))
+                           #hash((name . "my other wallet is also a wallet")))))
+
 
 (module+ main
   (require syntax/location)

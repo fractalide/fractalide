@@ -51,6 +51,15 @@
                            (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
                            (cons "select" selection)
                            (cons "out" new-wallet-data))]
+                    [(cons "delete" #t)
+                     (define new-selection (min (max 0 (- (length state) 2))
+                                                selection))
+                     (define new-state (list-remove-index state selection))
+                     (list (cons "acc" `#hash((state . ,new-state)
+                                              (selection . ,new-selection)))
+                           (cons "choices" (map (lambda (h) (hash-ref h 'name)) new-state))
+                           (cons "select" new-selection)
+                           (cons "out" (list-ref new-state new-selection)))]
                     [(cons "delete" delete-selection)
                      (define new-selection (min (max 0 (- (length state) 2))
                                                 selection))
@@ -165,6 +174,22 @@
     (port-recv (hash-ref taps "choices"))
 
     (sched (msg-mesg "agent-under-test" "delete" 0))
+    (check-equal? (port-recv (hash-ref taps "select")) 0)
+    (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
+    (check-equal? (port-recv (hash-ref taps "choices")) (list (second choices))))))
+
+  (test-case
+   "Delete current"
+   (run-sched-test (lambda (sched taps)
+    (define choices '("asdf" "qwer"))
+    (define wallets (map (lambda (choice) (make-hash (list (cons 'name choice)))) choices))
+
+    (sched (msg-mesg "agent-under-test" "in" wallets))
+    (port-recv (hash-ref taps "select"))
+    (port-recv (hash-ref taps "out"))
+    (port-recv (hash-ref taps "choices"))
+
+    (sched (msg-mesg "agent-under-test" "delete" #t))
     (check-equal? (port-recv (hash-ref taps "select")) 0)
     (check-equal? (port-recv (hash-ref taps "out")) (second wallets))
     (check-equal? (port-recv (hash-ref taps "choices")) (list (second choices)))))))
