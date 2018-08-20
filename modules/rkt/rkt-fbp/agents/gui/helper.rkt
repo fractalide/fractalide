@@ -226,29 +226,27 @@
 (define (manage acc msg input output output-array create process-msg)
   ; If no acc, create a empty list
   (set! acc (if acc acc (cons 'init (list))))
-  (if (and (cons? acc) (eq? (car acc) 'init))
-      (begin
-        ; true -> widget in creation
-        (if (eq? (car msg) 'init)
-            ; True -> create widget and receive it
-            ;      -> process the list
-            (begin
-              ; create the widget
-              (send (output "out") (cons 'init (create input (cdr msg))))
-              (let ([widget (recv (input "acc"))])
-                (for ([m (cdr acc)])
-                  (process-msg m widget input output output-array))
-                widget))
-            ; False -> add to the list
-            (cons 'init (cons msg (cdr acc)))))
-      ; false -> already created
-      (if (and (cons? msg) (eq? (car msg) 'init))
-          ; True, recreate
-          (begin
-            (send (output "out") (cons 'init (create input (cdr msg))))
-            (let ([widget (recv (input "acc"))])
+  (cond
+   [(and (pair? acc) (eq? (car acc) 'init))
+    ; widget in creation
+    (if (eq? (car msg) 'init)
+        ; True -> create widget and receive it
+        ;      -> process the list
+        (begin
+         ; create the widget
+         (send (output "out") (cons 'init (create input (cdr msg))))
+         (let ([widget (recv (input "acc"))])
+              (for ([m (cdr acc)])
+                   (process-msg m widget input output output-array))
               widget))
-          ; False, process the msg
-          (begin
-            (process-msg msg acc input output output-array)
-            acc))))
+        ; False -> add to the list
+        (cons 'init (cons msg (cdr acc))))]
+   [(and (cons? msg) (eq? (car msg) 'init))
+    ; recreate widget
+    (send (output "out") (cons 'init (create input (cdr msg))))
+    (let ([widget (recv (input "acc"))])
+         widget)]
+   [else
+    ; not in creation, not to be recreated
+    (process-msg msg acc input output output-array)
+    acc]))
