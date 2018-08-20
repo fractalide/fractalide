@@ -57,4 +57,10 @@
 
   (node "display-password" ${displayer})
   (mesg "display-password" "option" "set password: ")
-  (edge "password" "password" _ "display-password" "in" _))
+  (edge "password" "password" _ "display-password" "in" _)
+
+  (node "delete" ${cardano-wallet.delete})
+  (edge "delete" "out" _ "vp" "place" 80)
+  (mesg "delete" "in" '(display . #t))
+  (edge-out "delete" "delete" "delete")
+  (mesg "delete" "wallet-name" "my wallet"))

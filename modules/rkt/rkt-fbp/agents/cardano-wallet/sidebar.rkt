@@ -25,8 +25,11 @@
   (node "wallet-data-in" ${plumbing.mux-demux})
   (mesg "wallet-data-in" "option"
         (match-lambda [(cons "wallet-name" new-name)
-                       (list (cons "edit" `#hash((name . ,new-name))))]))
+                       (list (cons "edit" `#hash((name . ,new-name))))]
+                      [(cons "delete" _)
+                       (list (cons "delete" #t))]))
   (edge "wallet-data-in" "out" "edit" "wallets-choice" "edit" _)
+  (edge "wallet-data-in" "out" "delete" "wallets-choice" "delete" _)
   (edge-in "data" "wallet-data-in" "in")
 
   (node "wallet-data-out" ${plumbing.demux})

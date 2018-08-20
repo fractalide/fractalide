@@ -73,6 +73,7 @@
   (mesg "wsettings" "assurance-level" "Medium")
 
   (edge "wsettings" "name" _ "sidebar" "data" "wallet-name")
+  (edge "wsettings" "delete" _ "sidebar" "data" "delete")
 
   (node "card-display-in" ${plumbing.option-transform})
   (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
