@@ -5,8 +5,8 @@
 
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
-(define-runtime-path fractalide-logo-path "../../../../../pkgs/hyperflow/imgs/fractalide.png")
-(define fractalide-logo (read-bitmap fractalide-logo-path))
+(define-runtime-path cantor-logo-path "cantor-logo-min.png")
+(define cantor-logo (read-bitmap cantor-logo-path))
 
 (define-graph
   (node "vp" ${gui.vertical-panel})
@@ -14,7 +14,7 @@
 
   (node "headline" ${gui.message})
   (edge "headline" "out" _ "vp" "place" 0)
-  (mesg "headline" "in" `(init . ((label . ,fractalide-logo))))
+  (mesg "headline" "in" `(init . ((label . ,cantor-logo))))
 
   (node "wallets-choice" ${cardano-wallet.wallets-choice})
   (edge "wallets-choice" "out" _ "vp" "place" 5)
