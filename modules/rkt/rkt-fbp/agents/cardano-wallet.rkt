@@ -75,6 +75,9 @@
   (edge "wsettings" "name" _ "sidebar" "data" "wallet-name")
   (edge "wsettings" "delete" _ "sidebar" "data" "delete")
 
+  (with-node-name "send" (node ${cardano-wallet.send})
+                         (edge "out" "stack" "place" #:selection 35))
+
   (node "receive" ${cardano-wallet.receive})
   (edge "receive" "out" _ "stack" "place" 40)
 
@@ -85,10 +88,13 @@
   (edge "card-display-in" "out" _ "card-display-out" "in" _)
 
   (edge "sidebar" "choice" _ "card-display-in" "in" _)
-  (edge "card-display-out" "out" "new" "welcome" "in" _)
-  (edge "card-display-out" "out" "summary" "summary" "in" _)
-  (edge "card-display-out" "out" "wsettings" "wsettings" "in" _)
-  (edge "card-display-out" "out" "receive" "receive" "in" _)
+
+  (with-node-name "card-display-out"
+                  (edge "out" #:selection "summary" "summary" "in")
+                  (edge "out" #:selection "send" "send" "in")
+                  (edge "out" #:selection "receive" "receive" "in")
+                  (edge "out" #:selection "wsettings" "wsettings" "in")
+                  (edge "out" #:selection "new" "welcome" "in"))
 
   (mesg "sidebar" "init" '(#hash((name . "my wallet"))
                            #hash((name . "my other wallet is also a wallet")))))
