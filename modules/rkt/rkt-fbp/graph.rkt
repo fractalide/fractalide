@@ -6,6 +6,7 @@
 (require syntax/to-string)
 
 (require racket/match
+         (for-syntax racket/match)
          (prefix-in agt: fractalide/modules/rkt/rkt-fbp/agent)
          fractalide/modules/rkt/rkt-fbp/def)
 
@@ -31,10 +32,29 @@
 (struct edge-in (name in in-port) #:prefab)
 (struct edge-out (out out-port name) #:prefab)
 
+(define-syntax (with-node-name stx)
+  (match-define (cons _ (cons name exprs)) (syntax-e stx))
+
+  (define (parse-expr expr)
+    (syntax-case expr (edge edge-in)
+      [(edge output-port input input-port) #`(edge #,name output-port #f input input-port #f)]
+      [(edge output-port :selection output-sel input input-port)
+       (eq? (string->keyword "selection") (syntax-e #':selection))
+       #`(edge #,name output-port output-sel input input-port #f)]
+      [(edge output-port input input-port :selection input-sel)
+       (eq? (string->keyword "selection") (syntax-e #':selection))
+       #`(edge #,name output-port #f input input-port input-sel)]
+      [(edge output-port output-sel input input-port input-sel)
+       #`(edge #,name output-port output-sel input input-port input-sel)]
+      [(edge-in in-name port) #`(edge-in in-name #,name port)]
+      [(cmd args ...) #`(cmd #,name args ...)]))
+
+  #`(list #,@(map parse-expr exprs)))
+
 (define make-graph
   (lambda actions
     (for/fold ([acc (graph '() '() '() '() '())])
-              ([act actions])
+              ([act (flatten actions)])
       (match act
         [(g-agent name type)
          (struct-copy graph acc [agent (cons act (graph-agent acc))])]
