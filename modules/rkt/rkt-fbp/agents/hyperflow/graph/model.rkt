@@ -39,10 +39,10 @@
          (edge-out "vp" "out" "dynamic-out")
          (mesg "pb" "in" (cons 'init #t)))
         input output)]
-      [(cons 'add-node (vector x y))
+      [(cons 'add-node (vector x y name?))
        (define id (+ 1 (length (g:get-vertices (raw-graph-graph acc)))))
-       (define name (format "node~a" id))
-       (g:add-vertex! (raw-graph-graph acc) id)
+       (define name (or name? (format "node~a" id)))
+       (g:add-vertex! (raw-graph-graph acc) name)
        (hash-set! (raw-graph-nodes acc) name (g-agent name #f))
        (send-dynamic-add
         (make-graph
@@ -95,6 +95,8 @@
             (edge actual "line-start" 0 "building-edge" "in" _))
            input output)
           ; Add the new one
+          ;; (set-raw-graph-build-edge! acc #f)
+          ;; (add-edge actual #f #f name #f #f acc input output)
           (define edge-name (string-append "edge-" actual "-" name))
           (send-dynamic-add
            (make-graph
@@ -132,7 +134,8 @@
                                                           (- (class-send event get-y) 50))))
                ; Add a Node
                (send (input "in") (cons 'add-node (vector (- (class-send event get-x) 50)
-                                                          (- (class-send event get-y) 50))))
+                                                          (- (class-send event get-y) 50)
+                                                          #f)))
                )
            void)
        (set-raw-graph-last-click! acc new)]
@@ -180,6 +183,37 @@
       [else (send (output "out") msg)])
     (send (output "acc") acc)
     ))
+
+(define (add-edge out port-out selec-out in port-in selec-in acc input output)
+  (define edge-name (string-append "edge-" out "-" in))
+  ; Build the visual
+  (send-dynamic-add
+   (make-graph
+    (node edge-name ${hyperflow.graph.line})
+    (edge edge-name "out" _ "pb" "place" edge-name)
+    (mesg edge-name "in" (cons 'init (vector edge-name 0 0 0 0)))
+    (edge out "line-start" edge-name edge-name "in" _)
+    (mesg out "in" (cons 'refresh #t))
+    (mesg in "in" (cons 'refresh #t))
+    (edge in "line-end" edge-name edge-name "in" _)
+    (edge edge-name "config" _ "ph-config" "place" edge-name))
+   input output)
+  ; Save the information
+  (g:add-directed-edge! (raw-graph-graph acc) out in)
+  (hash-set! (raw-graph-nodes acc) edge-name (g-edge
+                                              (string-append out "-typed") port-out selec-out
+                                              (string-append in "-typed") port-in selec-in))
+  ; Build the logic
+  (if (and port-out port-in)
+      ; True - connect
+      (begin
+        (send-dynamic-add
+         (make-graph
+          (edge (string-append out "-typed") port-out selec-out
+                (string-append in "-typed") port-in selec-in))
+         input output))
+      ; False - Nothing
+      (void)))
 
 (define (manage-edge id old acc input output)
   (define splited (string-split id "-"))
