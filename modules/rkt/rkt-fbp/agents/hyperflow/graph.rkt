@@ -6,9 +6,9 @@
   (node "model" ${hyperflow.graph.model})
 
   (node "load" ${hyperflow.graph.loader})
-  (node "punk" ${fvm.get-graph})
-  (edge "punk" "out" _ "load" "in" _)
-  (mesg "punk" "in" (g-agent "" "agents/hyperflow/graph.rkt"))
+  (node "get-graph" ${fvm.get-graph})
+  (edge "get-graph" "out" _ "load" "in" _)
+  (mesg "get-graph" "in" (g-agent "" "agents/hyperflow/graph.rkt"))
   (edge "load" "out" _ "model" "in" _)
 
 
