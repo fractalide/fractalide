@@ -56,7 +56,6 @@
    (define objects (hash-ref json 'objects))
    (define nodes (make-hash))
    (for ([obj objects])
-     (displayln (hash-ref obj 'label #f))
      (define pos (hash-ref obj 'pos #f))
      (if pos
          ; True, display
@@ -69,15 +68,20 @@
          ; False, do nothing
          (void)))
 
-   (displayln "")
-   (displayln nodes)
-
    (for ([agt (graph-agent msg)])
      (define pos (string-split (hash-ref nodes (g-agent-name agt)) ","))
      (send (output "out") (cons 'add-node (vector (string->number (car pos))
                                                   (string->number (cadr pos))
                                                   (substring (g-agent-name agt) 1)
                                                   (g-agent-type agt)))))
+   (for ([msg (graph-mesg msg)])
+     (define pos (string-split (hash-ref nodes (string-append "msg" (g-mesg-in msg) (g-mesg-port-in msg))) ","))
+     (send (output "out") (cons 'add-mesg (vector (string->number (car pos))
+                                                  (string->number (cadr pos))
+                                                  (g-mesg-mesg msg)
+                                                  (substring (g-mesg-in msg) 1)
+                                                  (g-mesg-port-in msg)))))
+
    (for ([edg (graph-edge msg)])
      (send (output "out") (cons 'add-edge (vector (substring (g-edge-out edg) 1)
                                                   (g-edge-port-out edg)

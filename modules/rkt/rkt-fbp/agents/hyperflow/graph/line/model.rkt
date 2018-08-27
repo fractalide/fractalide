@@ -38,7 +38,6 @@
       [(cons 'choice from)
        (send (output "out") (cons 'set-outport (vector (line-id acc) from)))]
       [(cons 'choice-outport to)
-       (displayln "choice-outport")
        (send (output "out") (cons 'set-inport (vector (line-id acc) to)))]
       [else (send (output "out") msg)])
     (send (output "acc") acc)

@@ -80,7 +80,6 @@
   (define real-type (symbol->string (graph:g-agent-type (recv (input "get-path")))))
   ; set it
   (set-node-type! acc real-type)
-  (send (output "out") (cons 'set-type (vector (node-id acc) type)))
   ; Get node information
   (define node #f)
   (define graph (load:load-graph (string->symbol real-type) (lambda () #f)))

@@ -8,7 +8,7 @@
   (node "load" ${hyperflow.graph.loader})
   (node "get-graph" ${fvm.get-graph})
   (edge "get-graph" "out" _ "load" "in" _)
-  (mesg "get-graph" "in" (g-agent "" "agents/hyperflow/graph.rkt"))
+  (mesg "get-graph" "in" (g-agent "" "agents/test/load.rkt"))
   (edge "load" "out" _ "model" "in" _)
 
 

@@ -15,10 +15,11 @@
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
-      [(cons 'init (vector id x y))
+      [(cons 'init (vector id x y mesg?))
        (set! acc (mesg id (+ x 50) (+ y 50) ""))
        (send (output "box") (cons 'init (vector x y "./box.png")))
-       (send (output "config") (cons 'init (list (cons 'label "Message:"))))]
+       (send (output "config") (cons 'init (list (cons 'label "Message:")
+                                                 (cons 'init-value mesg?))))]
       [(cons 'move-to (vector x y drag?))
        (set! x (+ x 50))
        (set! y (+ y 50))

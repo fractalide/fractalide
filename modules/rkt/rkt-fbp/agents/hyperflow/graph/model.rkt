@@ -44,6 +44,20 @@
        (define name (or name? (format "node~a" id)))
        (g:add-vertex! (raw-graph-graph acc) name)
        (hash-set! (raw-graph-nodes acc) name (g-agent name type?))
+
+       ; Type
+       (if type?
+           ; True
+           (begin
+             (send-dynamic-add
+              (make-graph
+               (node (string-append name "-typed") type?))
+              input output)
+             )
+           ; False
+           (void))
+
+       ; Display
        (send-dynamic-add
         (make-graph
          (node name ${hyperflow.graph.node})
@@ -51,27 +65,22 @@
          (edge name "config" _ "ph-config" "place" name)
          (mesg name "in" (cons 'init (vector name x y name type?))))
         input output)
-       ; Type
-       (if type?
-           ; True
-           (send-dynamic-add
-            (make-graph
-             (node (string-append name "-typed") type?))
-            input output)
-           ; False
-           (void))]
-      [(cons 'add-mesg (vector x y))
+       ]
+      [(cons 'add-mesg (vector x y mesg? in? port-in?))
        (define id (+ 1 (length (g:get-vertices (raw-graph-graph acc)))))
        (define name (format "mesg~a" id))
        (g:add-vertex! (raw-graph-graph acc) id)
-       (hash-set! (raw-graph-nodes acc) name (g-mesg #f #f #f))
+       (hash-set! (raw-graph-nodes acc) name (g-mesg #f #f mesg?))
        (send-dynamic-add
         (make-graph
          (node name ${hyperflow.graph.mesg})
          (edge name "out" _ "pb" "snip" name)
          (edge name "config" _ "ph-config" "place" name)
-         (mesg name "in" (cons 'init (vector name x y))))
-        input output)]
+         (mesg name "in" (cons 'init (vector name x y mesg?))))
+        input output)
+       (if (and in? port-in?)
+           (add-edge name #f #f in? port-in? #f acc input output)
+           (void))]
       [(cons 'build-edge (vector name n-x n-y m-x m-y))
        (define actual (raw-graph-build-edge acc))
        (cond
@@ -126,7 +135,8 @@
            (if (class-send event get-control-down)
                ; Add a Mesg
                (send (input "in") (cons 'add-mesg (vector (- (class-send event get-x) 50)
-                                                          (- (class-send event get-y) 50))))
+                                                          (- (class-send event get-y) 50)
+                                                          "" #f #f)))
                ; Add a Node
                (send (input "in") (cons 'add-node (vector (- (class-send event get-x) 50)
                                                           (- (class-send event get-y) 50)
