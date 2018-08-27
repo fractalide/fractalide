@@ -32,10 +32,12 @@ pkgs {
         inherit (channel) cargo;
       };
       inherit racket2nix;
-      inherit (racket2nix) buildRacket;
+      inherit (racket2nix) buildRacketPackage;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = self.buildRacket {
-        package = builtins.filterSource (path: type:
+      fractalide = self.buildRacketPackage (builtins.path {
+        name = "fractalide";
+        path = ./..;
+        filter = (path: type:
           let basePath = baseNameOf path; in
           (type != "symlink" || null == builtins.match "result.*" basePath) &&
           (null == builtins.match ".*[.]nix" basePath) &&
@@ -43,8 +45,8 @@ pkgs {
           (null == builtins.match "[.][#].*" basePath) &&
           (null == builtins.match "[#].*[#]" basePath) &&
           (null == builtins.match ".*~" basePath)
-        ) ./..;
-      };
+        );
+      });
 
       # fractalide/racket2nix#78 workaround
 
