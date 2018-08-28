@@ -35,8 +35,7 @@
                          0
                          x y
                          snp
-                         (lambda (event)
-                           (send (input "in") event)))))]
+                         )))]
      [(cons 'delete #t)
       (send (output "out") msg)]
      [else

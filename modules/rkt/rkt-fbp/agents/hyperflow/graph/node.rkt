@@ -16,6 +16,11 @@
   (edge "circle" "out" 'is-deleted "model" "in" _)
   (edge "circle" "out" 'select "model" "in" _)
 
+  ; Path
+  (node "get-path" ${fvm.get-path})
+  (edge "model" "get-path" _ "get-path" "in" _)
+  (edge "get-path" "out" _ "model" "get-path" _)
+
   ; Config
   (node "config" ${hyperflow.graph.node.config})
   (edge "model" "config" _ "config" "in" _)
