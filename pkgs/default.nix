@@ -58,7 +58,7 @@ pkgs {
           sha1 = "8921c26c498e920aca398df7afb0ab486636430f";
         })];
         # Remove compiler-lib from its own dependencies.
-        racketBuildInputs = builtins.filter (input: input.name != "compiler-lib") oldAttrs.racketBuildInputs;
+        racketBuildInputs = builtins.filter (input: input.pname or "" != "compiler-lib") oldAttrs.racketBuildInputs;
       })).overrideAttrs (oldAttrs: { name = "fractalide-rkt-tests"; });
 
       rkt-tests = let
