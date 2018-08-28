@@ -7,14 +7,24 @@
   (node "out" ${mesg.action})
   (edge "model" "out" _ "out" "in" _)
 
+  ; Draw
+  (node "pb" ${gui.snip.pasteboard})
+  (edge "pb" "out" _ "out" "in" _)
+  (edge "model" "pb" _ "pb" "in" _)
+  (edge "pb" "out" 'move-to "model" "in" _)
+  (edge "pb" "out" 'right-down "model" "in" _)
+  (edge "pb" "out" 'is-deleted "model" "in" _)
+  (edge "pb" "out" 'select "model" "in" _)
   ; Circle
   (node "circle" ${gui.snip.image})
-  (edge "circle" "out" _ "out" "in" _)
-  (edge "model" "circle" _ "circle" "in" _)
-  (edge "circle" "out" 'move-to "model" "in" _)
-  (edge "circle" "out" 'right-down "model" "in" _)
-  (edge "circle" "out" 'is-deleted "model" "in" _)
-  (edge "circle" "out" 'select "model" "in" _)
+  (edge "circle" "out" _ "pb" "snip" 0)
+  (mesg "circle" "in" (cons 'init (vector 0 0 "./circle.png")))
+  ; Text
+  (node "text" ${gui.snip.string})
+  (edge "text" "out" _ "pb" "snip" 1)
+  (edge "model" "text" _ "text" "in" _)
+  (node "drop" ${mesg.drop})
+  (edge "text" "out" 'is-deleted "drop" "in" _)
 
   ; Path
   (node "get-path" ${fvm.get-path})

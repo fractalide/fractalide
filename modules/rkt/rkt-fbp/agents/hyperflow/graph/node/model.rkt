@@ -11,7 +11,7 @@
 (define-agent
   #:input '("in" "get-path") ; in array port
   #:input-array '()
-  #:output '("out" "circle" "config" "get-path") ; out port
+  #:output '("out" "pb" "circle" "text" "config" "get-path") ; out port
   #:output-array '("out" "line-start" "line-end")
   (fun
     (define msg (recv (input "in")))
@@ -19,7 +19,8 @@
     (match msg
       [(cons 'init (vector id x y name type?))
        (set! acc (node id (+ x 50) (+ y 50) name "" #f))
-       (send (output "circle") (cons 'init (vector x y "./circle.png")))
+       (send (output "pb") (cons 'init (vector x y)))
+       (send (output "text") (cons 'init (vector 10 35 name)))
        (send (output "config") (cons 'init (vector name)))
        (if type?
            ; True
@@ -55,6 +56,8 @@
        (send (output "config") (cons 'display b))]
       [(cons 'set-name name)
        (set-node-name! acc name)
+       (send (output "text") (cons 'delete #t))
+       (send (output "text") (cons 'init (vector 10 35 name)))
        (send (output "out") (cons 'set-name (vector (node-id acc) name)))]
       [(cons 'set-type type)
        (set! type (string-split type "fractalide/modules/rkt/rkt-fbp/"))
