@@ -42,15 +42,13 @@
   (node "receive" ${cardano-wallet.receive})
   (edge "receive" "out" _ "stack" "place" 40)
 
-  (node "card-display-in" ${plumbing.option-transform})
-  (mesg "card-display-in" "option" (match-lambda [(cons dest _) (list* dest 'display #t)]))
+  (node "card-display" ${plumbing.demux})
+  (mesg "card-display" "option"
+        (match-lambda [(cons dest _) (list (list* dest 'display #t))]))
 
-  (node "card-display-out" ${plumbing.demux})
-  (edge "card-display-in" "out" _ "card-display-out" "in" _)
+  (edge "sidebar" "choice" _ "card-display" "in" _)
 
-  (edge "sidebar" "choice" _ "card-display-in" "in" _)
-
-  (with-node-name "card-display-out"
+  (with-node-name "card-display"
                   (edge "out" #:selection "summary" "summary" "in")
                   (edge "out" #:selection "send" "send" "in")
                   (edge "out" #:selection "receive" "receive" "in")
