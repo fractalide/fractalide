@@ -11,26 +11,17 @@
   (edge "headline" "out" _ "vp" "place" 10)
   (mesg "headline" "in" '(init . ((label . "Wallet settings"))))
 
-  (node "name-label" ${gui.message})
-  (edge "name-label" "out" _ "vp" "place" 20)
-  (mesg "name-label" "in" '(init . ((label . "Name"))))
+  (node "name" ${cardano-wallet.wsettings.name})
+  (edge "name" "out" _ "vp" "place" 20)
+  (edge-out "name" "name" "name")
 
-  (node "name" ${gui.text-field})
-  (edge "name" "out" _ "vp" "place" 30)
-  (mesg "name" "in" '(init . ((label . ""))))
-
-  (node "name-in" ${plumbing.demux})
-  (mesg "name-in" "option"
-        (lambda (new-name) (list (list* "name" 'set-value new-name)
+  (node "name-fan-out" ${plumbing.demux})
+  (mesg "name-fan-out" "option"
+        (lambda (new-name) (list (list* "name" new-name)
                                  (list* "delete" new-name))))
-  (edge "name-in" "out" "name" "name" "in" _)
-  (edge "name-in" "out" "delete" "delete" "wallet-name" _)
-  (edge-in "name" "name-in" "in")
-
-  (node "name-out" ${plumbing.option-transform})
-  (mesg "name-out" "option" cdr)
-  (edge "name" "out" 'text-field-enter "name-out" "in" _)
-  (edge-out "name-out" "out" "name")
+  (edge "name-fan-out" "out" "name" "name" "name" _)
+  (edge "name-fan-out" "out" "delete" "delete" "wallet-name" _)
+  (edge-in "name" "name-fan-out" "in")
 
   (node "assurance-level" ${cardano-wallet.assurance-level})
   (edge "assurance-level" "out" _ "vp" "place" 40)
