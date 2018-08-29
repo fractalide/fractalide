@@ -11,44 +11,22 @@
   (edge "headline" "out" _ "vp" "place" 10)
   (mesg "headline" "in" '(init . ((label . "Wallet settings"))))
 
-  (node "name-label" ${gui.message})
-  (edge "name-label" "out" _ "vp" "place" 20)
-  (mesg "name-label" "in" '(init . ((label . "Name"))))
+  (node "name" ${cardano-wallet.wsettings.name})
+  (edge "name" "out" _ "vp" "place" 20)
+  (edge-out "name" "name" "name")
 
-  (node "name" ${gui.text-field})
-  (edge "name" "out" _ "vp" "place" 30)
-  (mesg "name" "in" '(init . ((label . ""))))
-
-  (node "name-in" ${plumbing.demux})
-  (mesg "name-in" "option"
-        (lambda (new-name) (list (list* "name" 'set-value new-name)
+  (node "name-fan-out" ${plumbing.demux})
+  (mesg "name-fan-out" "option"
+        (lambda (new-name) (list (list* "name" new-name)
                                  (list* "delete" new-name))))
-  (edge "name-in" "out" "name" "name" "in" _)
-  (edge "name-in" "out" "delete" "delete" "wallet-name" _)
-  (edge-in "name" "name-in" "in")
+  (edge "name-fan-out" "out" "name" "name" "name" _)
+  (edge "name-fan-out" "out" "delete" "delete" "wallet-name" _)
+  (edge-in "name" "name-fan-out" "in")
 
-  (node "name-out" ${plumbing.option-transform})
-  (mesg "name-out" "option" cdr)
-  (edge "name" "out" 'text-field-enter "name-out" "in" _)
-  (edge-out "name-out" "out" "name")
-
-  (node "assurance-level-label" ${gui.message})
-  (edge "assurance-level-label" "out" _ "vp" "place" 40)
-  (mesg "assurance-level-label" "in" '(init . ((label . "Transaction assurance security level"))))
-
-  (node "assurance-level" ${gui.choice})
-  (edge "assurance-level" "out" _ "vp" "place" 50)
-  (mesg "assurance-level" "in" '(init . ((choices . ("Low" "Medium" "High")))))
-
-  (node "assurance-level-in" ${plumbing.option-transform})
-  (mesg "assurance-level-in" "option" (lambda (choice) (cons 'set-string-selection choice)))
-  (edge "assurance-level-in" "out" _  "assurance-level" "in" _)
-  (edge-in "assurance-level" "assurance-level-in" "in")
-
-  (node "assurance-level-out" ${plumbing.option-transform})
-  (mesg "assurance-level-out" "option" (match-lambda [(cons 'choice choice) choice]))
-  (edge "assurance-level" "out" 'choice "assurance-level-out" "in" _)
-  (edge-out "assurance-level-out" "out" "assurance-level")
+  (node "assurance-level" ${cardano-wallet.wsettings.assurance-level})
+  (edge "assurance-level" "out" _ "vp" "place" 40)
+  (edge-in "assurance-level" "assurance-level" "assurance-level")
+  (edge-out "assurance-level" "assurance-level" "assurance-level")
 
   (node "password-label" ${gui.message})
   (edge "password-label" "out" _ "vp" "place" 60)
