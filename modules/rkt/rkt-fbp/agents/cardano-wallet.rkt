@@ -5,25 +5,9 @@
 
 (define-graph
   (node "frame" ${gui.frame})
-  ; Menu
-  (node "menu-bar" ${gui.menu-bar})
-  (edge "menu-bar" "out" _ "frame" "in" _)
 
-  (node "menu-file" ${gui.menu})
-  (edge "menu-file" "out" _ "menu-bar" "place" 1)
-  (mesg "menu-file" "in" #t)
-  (mesg "menu-file" "option" "File")
-
-  (node "menu-quit" ${gui.menu-item})
-  (edge "menu-quit" "out" _ "menu-file" "place" 1)
-  (mesg "menu-quit" "option" (cons 'close #t))
-  (mesg "menu-quit" "in" '(init . ((label . "quit")
-                                   (shortcut . #\q))))
-
-  (node "menu-about" ${gui.menu})
-  (edge "menu-about" "out" _ "menu-bar" "place" 3)
-  (mesg "menu-about" "in" #t)
-  (mesg "menu-about" "option" "About")
+  (node "menu" ${cardano-wallet.menu})
+  (edge "menu" "out" _ "frame" "in" _)
 
   (node "app" ${gui.horizontal-panel})
   (edge "app" "out" _ "frame" "in" _)
