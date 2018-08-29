@@ -23,7 +23,7 @@
   (edge "name-fan-out" "out" "delete" "delete" "wallet-name" _)
   (edge-in "name" "name-fan-out" "in")
 
-  (node "assurance-level" ${cardano-wallet.assurance-level})
+  (node "assurance-level" ${cardano-wallet.wsettings.assurance-level})
   (edge "assurance-level" "out" _ "vp" "place" 40)
   (edge-in "assurance-level" "assurance-level" "assurance-level")
   (edge-out "assurance-level" "assurance-level" "assurance-level")
