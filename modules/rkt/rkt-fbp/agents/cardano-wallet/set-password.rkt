@@ -5,14 +5,13 @@
 (define-agent
   #:input '("in" "password")
   #:output '("out")
-  (fun
    (define maybe-passwd (try-recv (input "password")))
    (define maybe-acc (try-recv (input "acc")))
    (define password (or maybe-passwd maybe-acc))
    (define button-pushed? (try-recv (input "in")))
    (when (and button-pushed? (and password (> (string-length password) 0)))
          (send (output "out") password))
-   (send (output "acc") password)))
+   (send (output "acc") password))
 
 (module+ test
   (require rackunit)

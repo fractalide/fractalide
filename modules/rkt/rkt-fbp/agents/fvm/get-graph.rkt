@@ -8,7 +8,6 @@
 (define-agent
   #:input '("in")
   #:output '("out")
-  (fun
    (let* ([agt (recv (input "in"))]
           [name (g-agent-name agt)]
           [type (g-agent-type agt)])
@@ -33,4 +32,4 @@
            [new-mesg
             (for/list ([mesg (graph-mesg g)])
               (struct-copy g-mesg mesg [in (string-append name "-" (g-mesg-in mesg))]))])
-       (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-mesg))))))
+       (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-mesg)))))

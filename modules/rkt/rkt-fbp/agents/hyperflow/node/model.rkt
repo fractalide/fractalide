@@ -11,7 +11,6 @@
   #:input-array '("compute")
   #:output '("out" "code" "eval" "save") ; out port
   #:output-array '("compute")
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -50,5 +49,4 @@
                   '(refresh . #t))
             ]
            [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))

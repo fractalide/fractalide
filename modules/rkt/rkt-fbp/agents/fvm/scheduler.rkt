@@ -9,9 +9,7 @@
 (define-agent
   #:input '("in")
   #:output '("out")
-  (fun
    (let* ([sched (recv (input "acc"))]
           [msg (recv (input "in"))])
      (sched msg)
-     (send (output "acc") sched))
-   ))
+     (send (output "acc") sched)))

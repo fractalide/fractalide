@@ -9,7 +9,6 @@
 (define-agent
   #:input '("in" "jsend")
   #:output '("out" "state")
-  (fun
    (define state (make-hash))
    (define request (recv (input "in")))
    (match-define (http-get-request url _) request)
@@ -26,4 +25,4 @@
                                                             (totalEntries . 1)))))))))
    (define jsend-response (list (recv (input "jsend")) (recv (input "jsend"))))
    (hash-set! state 'jsend-response jsend-response)
-   (send (output "state") state)))
+   (send (output "state") state))

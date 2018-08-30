@@ -5,14 +5,13 @@
 (define-agent
   #:input-array '("in")
   #:output-array '("out")
-  (fun
    (define f (or (try-recv (input "option")) list))
    (for ([(selection port) (input-array "in")])
         (define in-msg (try-recv port))
         (when in-msg
               (for ([sel-msg (f (cons selection in-msg))])
                    (match-define (cons sel msg) sel-msg)
-                   (send (hash-ref (output-array "out") sel) msg))))))
+                   (send (hash-ref (output-array "out") sel) msg)))))
 
 (module+ test
   (require rackunit)

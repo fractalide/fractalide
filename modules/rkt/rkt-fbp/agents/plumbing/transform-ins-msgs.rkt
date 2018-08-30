@@ -5,13 +5,12 @@
 (define-agent
   #:input-array '("in")
   #:output '("out")
-  (fun
    (define latest-acc (or (try-recv (input "acc")) (make-hash)))
    (define acc (for/hash ([(k port) (in-hash (input-array "in"))]) (values k (or (try-recv port) (hash-ref latest-acc k #f)))))
    (when (for/and ([v (in-hash-values acc)]) v)
          (define msgs ((recv (input "option")) acc))
          (for ([msg msgs]) (send (output "out") msg)))
-   (send (output "acc") acc)))
+   (send (output "acc") acc))
 
 (module+ test
   (require rackunit)

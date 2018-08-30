@@ -16,7 +16,6 @@
 (define-agent
   #:input in-ports
   #:output out-ports
-  (fun
    (define acc (or (try-recv (input "acc")) #hash((selection . 0) (state . ()))))
    (match-define (hash-table ('selection selection) ('state state)) acc)
    (define action (for/or ([port in-ports])
@@ -73,7 +72,7 @@
                      (list (cons "acc" (hash-set acc 'selection new-selection))
                            (cons "out" (list-ref state new-selection)))])])
         (match-define (cons port msg) port-msg)
-        (send (output port) msg))))
+        (send (output port) msg)))
 
 (module+ test
   (require rackunit)

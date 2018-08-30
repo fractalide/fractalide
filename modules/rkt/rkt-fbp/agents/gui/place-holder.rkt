@@ -30,7 +30,6 @@
   #:input-array '("place")
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
     (define acc (try-recv (input "acc")))
     (define msg-in (try-recv (input "in")))
     ; Init the first time
@@ -85,4 +84,4 @@
                         [else (send-action output output-array msg)])
                  void)))
 
-    (send (output "acc") ph)))
+    (send (output "acc") ph))

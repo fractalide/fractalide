@@ -12,7 +12,6 @@
 (define-agent
   #:input '("in" "flat") ; in port
   #:output '("sched" "flat" "out" "halt") ; out port
-  (fun
    (let* ([try-acc (try-recv (input "acc"))]
           [acc (if try-acc try-acc (g:graph '() '() '() '() '()))]
           [msg (recv (input "in"))])
@@ -41,7 +40,7 @@
           (send (output "halt") #t)
           (send (output "sched") (msg-stop))
           acc]))
-     (send (output "acc") new-acc))))
+     (send (output "acc") new-acc)))
 
 (define (send-sched-remove rem actual input output)
   ; Flat the graph

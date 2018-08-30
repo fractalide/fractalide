@@ -5,8 +5,7 @@
 (define-agent
   #:input '("in")
   #:output '("out")
-  (fun
-   (send (output "out") ((recv (input "option")) (recv (input "in"))))))
+   (send (output "out") ((recv (input "option")) (recv (input "in")))))
 
 (module+ test
   (require rackunit)

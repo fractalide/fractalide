@@ -9,7 +9,6 @@
 (define-agent
   #:input '("in") ; in port
   #:output '("out" "acc") ; out port
-  (fun
    (define msg (recv (input "in")))
 
    ; Convert fractalide/graph -> g:graph
@@ -90,4 +89,4 @@
                                                   (g-edge-port-in edg)
                                                   (g-edge-selection-in edg)))))
 
-   (send (output "acc") msg)))
+   (send (output "acc") msg))

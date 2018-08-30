@@ -8,7 +8,7 @@
 (require/edge ${gui.widget})
 (require/edge ${gui.snip})
 
-(struct agt (place snip widget) #:prefab #:mutable)
+(struct snip-agt (place snip widget) #:prefab #:mutable)
 
 (define (my-pb% state)
   (class pasteboard% (super-new); The base class is canvas%
@@ -18,7 +18,7 @@
                               left top right bottom
                               dx dy
                               draw-caret)
-     (for ([wdg (agt-place state)])
+     (for ([wdg (snip-agt-place state)])
        ((widget-draw wdg) before? dc left top right bottom dx dy)))
 
     (define (after-select snip on?)
@@ -62,13 +62,12 @@
   #:input-array '("place" "snip")
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
    (define try-acc (try-recv (input "acc")))
    (define acc (or try-acc
-                   (agt '() '() #f)))
+                   (snip-agt '() '() #f)))
 
    ; input "in"
-   (define msg (if (not (agt-widget acc))
+   (define msg (if (not (snip-agt-widget acc))
                    (recv (input "in"))
                    (try-recv (input "in"))))
    (match msg
@@ -80,7 +79,7 @@
                        [editor editor]
                        [with-border? #f]))
       (class-send snp set-flags '(handles-all-mouse-events))
-      (set-agt-widget! acc snp)
+      (set-snip-agt-widget! acc snp)
       (send (output "out")
             (cons 'init (snip
                          0
@@ -103,10 +102,10 @@
         (add-ordered acc wdg)
         ]
        [(cons 'delete #t)
-        (set-agt-place! acc
+        (set-snip-agt-place! acc
                         (filter (lambda (x)
                                   (not (eq?  place (widget-id x))))
-                                (agt-place acc)))
+                                (snip-agt-place acc)))
         ]
        [else (send-action output output-array msg)]))
 
@@ -121,23 +120,23 @@
          ; Save in the acc, and retrieve the "before" snip
          (define before (add-ordered-snip acc wdg))
          ; Insert in pasteboard
-         (class-send (class-send (agt-widget acc) get-editor) insert
+         (class-send (class-send (snip-agt-widget acc) get-editor) insert
                      (snip-snip wdg)
                      before
                      (snip-x wdg) (snip-y wdg))
          ]
         [(cons 'delete #t)
-         (define snp (findf (lambda (x) (eq? id-snip (snip-id x))) (agt-snip acc)))
-         (define pb (class-send (agt-widget acc) get-editor))
+         (define snp (findf (lambda (x) (eq? id-snip (snip-id x))) (snip-agt-snip acc)))
+         (define pb (class-send (snip-agt-widget acc) get-editor))
          (class-send pb delete (snip-snip snp))
-         (set-agt-snip! acc
+         (set-snip-agt-snip! acc
                         (filter (lambda (x)
                                   (not (eq? id-snip (snip-id x))))
-                                (agt-snip acc)))
+                                (snip-agt-snip acc)))
          ]
         [else (send-action output output-array msg)]))
 
-   (send (output "acc") acc)))
+   (send (output "acc") acc))
 
 (define (add-ordered acc widget)
   (define (add-ordered ls acc)
@@ -152,7 +151,7 @@
             (append (reverse (cons widget acc)) ls)
             ; continue
             (add-ordered (cdr ls) (cons (car ls) acc)))]))
-  (set-agt-place! acc (add-ordered (agt-place acc) '())))
+  (set-snip-agt-place! acc (add-ordered (snip-agt-place acc) '())))
 
 (define (add-ordered-snip acc widget)
   (define before #f)
@@ -176,5 +175,5 @@
              (append (reverse (cons widget acc)) ls))
            ; continue
            (add-ordered (cdr ls) (cons (car ls) acc)))]))
-  (set-agt-snip! acc (add-ordered (agt-snip acc) '()))
+  (set-snip-agt-snip! acc (add-ordered (snip-agt-snip acc) '()))
   before)
