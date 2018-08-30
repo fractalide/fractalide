@@ -60,7 +60,6 @@
 (define-agent
   #:input '("in" "http")
   #:output '("out" "http")
-  (fun
    (define (do-get-request url accept)
      (send (output "http")
            (http-get-request (url->string url) (if accept accept #"application/json")))
@@ -95,7 +94,7 @@
 
    (define request (recv (input "in")))
    (match-define (http-get-request url accept) request)
-   (do-get-request (string->url url) accept)))
+   (do-get-request (string->url url) accept))
 
 (module+ test
   (require rackunit)
