@@ -12,7 +12,8 @@
          make-agent define-agent fun)
 
 (require racket/list
-         racket/match)
+         racket/match
+         (for-syntax syntax/parse))
 (require fractalide/modules/rkt/rkt-fbp/port)
 (require fractalide/modules/rkt/rkt-fbp/def)
 
@@ -207,32 +208,17 @@
         [sender (hash-ref input "acc")])
     (agent-connect agt "acc" sender)))
 
-; (->* (#:proc procedure)
-;      (#:input (Listof String)
-;       #:output (Listof String)
-;       #:input-array (Listof String)
-;       #:output-array (Listof String))
-;      opt-agent)
-(define (define-agent-priv
-          [proc #f]
-          #:proc [proc2 #f]
-          #:input [input '()]
-          #:output [output '()]
-          #:input-array [input-array '()]
-          #:output-array [output-array '()]
-          )
-  (opt-agent input input-array output output-array (or proc2 proc)))
-
 (define-syntax (define-agent stx)
-  (syntax-case stx ()
-    [(_ args ...)
-     #'(begin
-         (provide agt)
-         (define agt (define-agent-priv
-                       args ...)))
-     ]))
+  (syntax-parse stx
+    [(define-agent (~alt (~optional (~seq #:input input) #:defaults ([input #''()]))
+                         (~optional (~seq #:output output) #:defaults ([output #''()]))
+                         (~optional (~seq #:input-array input-array) #:defaults ([input-array #''()]))
+                         (~optional (~seq #:output-array output-array) #:defaults ([output-array #''()])))
+                   ... body ...)
+     (datum->syntax stx `(begin
+       (provide agt)
+       (define agt (,#'opt-agent ,#'input ,#'input-array ,#'output ,#'output-array
+                              (lambda (input output input-array output-array)
+                                      . ,#'(body ...))))))]))
 
-(define-syntax (fun stx)
-  (define ls (syntax->list stx))
-  (datum->syntax stx `(lambda (input output input-array output-array) (unquote-splicing (cdr ls))))
-  )
+(define-syntax-rule (fun body ...) (begin body ...))
