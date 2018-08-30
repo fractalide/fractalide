@@ -5,11 +5,10 @@
 (define-agent
   #:input '("in")
   #:output-array '("out")
-  (fun
    (define in-msg (recv (input "in")))
    (define f (or (try-recv (input "option")) list))
    (for ([msg (f in-msg)])
-        (send (hash-ref (output-array "out") (car msg)) (cdr msg)))))
+        (send (hash-ref (output-array "out") (car msg)) (cdr msg))))
 
 (module+ test
   (require rackunit)

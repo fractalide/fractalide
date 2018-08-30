@@ -11,7 +11,6 @@
   #:input '("in") ; in port
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
    (define msg (recv (input "in")))
    (match msg
      [(cons 'init (vector x y end-x end-y))
@@ -39,4 +38,4 @@
      [(cons 'delete #t)
       (send (output "out") msg)]
      [else
-      (send-action output output-array msg)])))
+      (send-action output output-array msg)]))

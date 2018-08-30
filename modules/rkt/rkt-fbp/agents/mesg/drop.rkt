@@ -4,5 +4,4 @@
 
 (define-agent
   #:input '("in") ; in array port
-  (fun
-    (recv (input "in"))))
+    (recv (input "in")))

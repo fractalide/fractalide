@@ -17,7 +17,6 @@
   #:input-array '("place")
   #:output '("out")
   #:output-array '("out")
-  (fun
    (define acc (try-recv (input "acc")))
    (set! acc (or acc
                  (begin
@@ -61,8 +60,7 @@
        )
      )
 
-   (send (output "acc") acc)
-   ))
+   (send (output "acc") acc))
 
 (define (add-ordered acc key val)
   (define (add-ordered ls acc)

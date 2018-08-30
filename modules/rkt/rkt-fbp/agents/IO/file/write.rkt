@@ -9,11 +9,10 @@
 (define-agent
   #:input '("in") ; in array port
   #:output '("out") ; out port
-  (fun
     (define data (recv (input "in")))
     (define option (recv (input "option")))
     (display-to-file data
                    (write-path option)
                    #:exists (write-exists option)
                    #:mode (write-mode option))
-    (send (output "out") (file->string (write-path option)))))
+    (send (output "out") (file->string (write-path option))))

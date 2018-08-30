@@ -10,7 +10,6 @@
   #:input-array '()
   #:output '("out" "line" "from" "to") ; out port
   #:output-array '("out")
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -40,8 +39,7 @@
       [(cons 'choice-outport to)
        (send (output "out") (cons 'set-inport (vector (line-id acc) to)))]
       [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))
 
 (define (redraw line output)
   (send (output "line") (cons 'delete #t))

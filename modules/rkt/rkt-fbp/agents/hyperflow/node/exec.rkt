@@ -8,7 +8,6 @@
 (define-agent
   #:input '("in") ; in array port
   #:output '("out") ; out port
-  (fun
     (define msg (recv (input "in")))
     (define exec
       (let ([out (open-output-string)])
@@ -16,4 +15,4 @@
                        [current-error-port out])
           (system (string-append "racket " msg)))
         (get-output-string out)))
-    (send (output "out") exec)))
+    (send (output "out") exec))

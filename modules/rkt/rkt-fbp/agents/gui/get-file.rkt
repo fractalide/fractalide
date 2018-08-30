@@ -7,8 +7,7 @@
 (define-agent
   #:input '("in") ; in port
   #:output '("out") ; out port
-  (fun
    (define msg (recv (input "in")))
    (define option (try-recv (input "option")))
    (define path (gui:get-file))
-   (send (output "out") (path->string path))))
+   (send (output "out") (path->string path)))

@@ -9,7 +9,7 @@
          agent-connect agent-connect-to-array agent-connect-array-to
          agent-disconnect agent-disconnect-to-array agent-disconnect-array-to
          agent-no-input?
-         make-agent define-agent fun)
+         make-agent define-agent)
 
 (require racket/list
          racket/match
@@ -220,5 +220,3 @@
        (define agt (,#'opt-agent ,#'input ,#'input-array ,#'output ,#'output-array
                               (lambda (input output input-array output-array)
                                       . ,#'(body ...))))))]))
-
-(define-syntax-rule (fun body ...) (begin body ...))

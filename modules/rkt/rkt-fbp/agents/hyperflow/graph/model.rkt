@@ -15,7 +15,6 @@
   #:input-array '()
   #:output '("out") ; out port
   #:output-array '()
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -185,8 +184,7 @@
        (hash-set! (raw-graph-nodes acc) id (struct-copy g-edge actual [port-out port]))
        (manage-edge id actual acc input output)]
       [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))
 
 (define (add-edge out port-out selec-out in port-in selec-in acc input output)
   (define edge-name (string-append "edge-" out "-" in))

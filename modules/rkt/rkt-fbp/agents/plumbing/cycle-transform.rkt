@@ -5,10 +5,9 @@
 (define-agent
   #:input '("in")
   #:output '("out")
-  (fun
    (define option (recv (input "option")))
    (send (input "option") (append (cdr option) (list (car option))))
-   (send (output "out") ((car option) (recv (input "in"))))))
+   (send (output "out") ((car option) (recv (input "in")))))
 
 (module+ test
   (require rackunit)

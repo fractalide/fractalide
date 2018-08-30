@@ -31,7 +31,6 @@
   #:input-array '("place")
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
     (define acc (try-recv (input "acc")))
     (define msg-in (try-recv (input "in")))
     ; Init the first time
@@ -75,7 +74,7 @@
                         [else (send-action output output-array msg)])
                  void)))
 
-    (send (output "acc") hp)))
+    (send (output "acc") hp))
 
 (define (add-ordered acc key val)
   (define (add-ordered ls acc)

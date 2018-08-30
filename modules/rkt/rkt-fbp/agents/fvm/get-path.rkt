@@ -19,9 +19,8 @@
 (define-agent
   #:input '("in")
   #:output '("out")
-  (fun
    (let* ([agt (recv (input "in"))])
      (define new-type (maybe-nix-string->module-path-or-passthrough (g-agent-type agt)))
      (define new-agent (struct-copy g-agent agt
                                     [type new-type]))
-     (send (output "out") new-agent))))
+     (send (output "out") new-agent)))

@@ -45,7 +45,6 @@
 (define-agent
   #:input '("in" "ask-path" "ask-graph")
   #:output '("out" "ask-path" "ask-graph")
-  (fun
    (let* ([msg (recv (input "in"))])
      (define flat (flat-graph msg input output))
-     (send (output "out") flat))))
+     (send (output "out") flat)))

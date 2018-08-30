@@ -10,7 +10,6 @@
   #:input '("in")
   #:output '("out")
   #:output-array '("out")
-  (fun
     (let* ([acc (try-recv (input "acc"))]
            [option (recv (input "option"))]
            [msg (recv (input "in"))])
@@ -48,4 +47,4 @@
                   ; false, do nothing
                   (void))]
              [else (send-action output output-array msg)])
-      (send (output "acc") new-acc))))
+      (send (output "acc") new-acc)))

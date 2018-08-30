@@ -45,8 +45,7 @@
   #:input '("in") ; in port
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
     (define acc (try-recv (input "acc")))
     (define msg (recv (input "in")))
     (set! acc (manage acc msg input output output-array generate process-msg))
-    (send (output "acc") acc)))
+    (send (output "acc") acc))

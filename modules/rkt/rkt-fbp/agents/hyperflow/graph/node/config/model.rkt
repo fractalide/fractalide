@@ -10,7 +10,6 @@
   #:input-array '()
   #:output '("out" "name") ; out port
   #:output-array '("out")
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -21,5 +20,4 @@
       [(cons 'text-field name)
        (send (output "out") (cons 'set-name name))]
       [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))

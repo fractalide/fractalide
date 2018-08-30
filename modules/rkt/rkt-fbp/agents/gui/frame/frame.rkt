@@ -9,7 +9,6 @@
 (define-agent
   #:input '("in") ; in port
   #:output '("out" "halt" "fvm") ; out port
-  (fun
    (define acc (try-recv (input "acc")))
    (define msg (recv (input "in")))
    (define fr (if acc
@@ -35,4 +34,4 @@
                 _))
       (void)]
      [else (display "msg: ") (displayln msg)])
-   (send (output "acc") fr)))
+   (send (output "acc") fr))

@@ -13,7 +13,6 @@
   #:input-array '()
   #:output '("out" "pb" "circle" "text" "config" "get-path") ; out port
   #:output-array '("out" "line-start" "line-end")
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -74,8 +73,7 @@
        (set-node-raw! acc node)
        (refresh output output-array acc)]
       [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))
 
 (define (set-type acc type input output output-array)
   ; retrieve the type path

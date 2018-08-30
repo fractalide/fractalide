@@ -62,7 +62,6 @@
   #:input-array '("place" "snip")
   #:output '("out") ; out port
   #:output-array '("out")
-  (fun
    (define try-acc (try-recv (input "acc")))
    (define acc (or try-acc
                    (agt '() '() #f)))
@@ -137,7 +136,7 @@
          ]
         [else (send-action output output-array msg)]))
 
-   (send (output "acc") acc)))
+   (send (output "acc") acc))
 
 (define (add-ordered acc widget)
   (define (add-ordered ls acc)

@@ -11,7 +11,6 @@
   #:input-array '()
   #:output '("out" "box" "config") ; out port
   #:output-array '("out" "line-start" "line-end")
-  (fun
     (define msg (recv (input "in")))
     (define acc (try-recv (input "acc")))
     (match msg
@@ -55,5 +54,4 @@
       [(cons 'button event)
        (send (output "out") (cons 'start-mesg (mesg-id acc)))]
       [else (send (output "out") msg)])
-    (send (output "acc") acc)
-    ))
+    (send (output "acc") acc))
