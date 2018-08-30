@@ -13,7 +13,7 @@
 (require/edge ${gui.widget})
 (require/edge ${gui.snip})
 
-(struct agt (place snip widget) #:prefab #:mutable)
+(struct snip-agt (place snip widget) #:prefab #:mutable)
 
 (define (my-pb% state)
   (class pasteboard% (super-new); The base class is canvas%
@@ -23,7 +23,7 @@
                               left top right bottom
                               dx dy
                               draw-caret)
-     (for ([wdg (agt-place state)])
+     (for ([wdg (snip-agt-place state)])
        ((widget-draw wdg) before? dc left top right bottom dx dy)))
 
     (define (after-select snip on?)
@@ -54,7 +54,7 @@
     ; Define overriding method to handle mouse events
     (define/override (on-event event)
       (define send? #f)
-      (for/or ([wdg (reverse (agt-place state))])
+      (for/or ([wdg (reverse (snip-agt-place state))])
         (if ((widget-box wdg)
              (class-send this get-dc)
              (class-send event get-x)
@@ -77,12 +77,12 @@
 
 (define (generate input)
   (lambda (frame)
-    (let* ([state (agt '() '() #f)]
+    (let* ([state (snip-agt '() '() #f)]
            [canvas (new (my-ed state input)
                         [parent frame]
                         [editor (new (my-pb% state))]
                                           )])
-      (set-agt-widget! state canvas)
+      (set-snip-agt-widget! state canvas)
       (send (input "acc") state))))
 
 (define (process-msg msg widget input output output-array)
@@ -112,7 +112,7 @@
     ; Input "in"
     (if msg-in
         ; TRUE : A message in the input port
-        (process-msg msg-in (agt-widget acc) input output output-array)
+        (process-msg msg-in (snip-agt-widget acc) input output output-array)
         void)
     ; Array input "place" (widget on the canvas)
     (for ([(place containee) (input-array "place")])
@@ -125,14 +125,14 @@
          ; Add it
          (add-ordered acc wdg)
          ; Redraw
-         (class-send (agt-widget acc) refresh)
+         (class-send (snip-agt-widget acc) refresh)
          ]
         [(cons 'delete #t)
-         (set-agt-place! acc
+         (set-snip-agt-place! acc
                          (filter (lambda (x)
                                    (not (eq?  place (widget-id x))))
-                                 (agt-place acc)))
-         (class-send (agt-widget acc) refresh)
+                                 (snip-agt-place acc)))
+         (class-send (snip-agt-widget acc) refresh)
          ]
         [else (send-action output output-array msg)])
       )
@@ -147,20 +147,20 @@
          ; Save in the acc, and retrieve the "before" snip
          (define before (add-ordered-snip acc wdg))
          ; Insert in pasteboard
-         (class-send (class-send (agt-widget acc) get-editor) insert
+         (class-send (class-send (snip-agt-widget acc) get-editor) insert
                      (snip-snip wdg)
                      before
                      (snip-x wdg) (snip-y wdg))
-         (class-send (agt-widget acc) refresh)]
+         (class-send (snip-agt-widget acc) refresh)]
         [(cons 'delete #t)
-         (define snp (findf (lambda (x) (eq? id-snip (snip-id x))) (agt-snip acc)))
-         (define pb (class-send (agt-widget acc) get-editor))
+         (define snp (findf (lambda (x) (eq? id-snip (snip-id x))) (snip-agt-snip acc)))
+         (define pb (class-send (snip-agt-widget acc) get-editor))
          (class-send pb delete (snip-snip snp))
-         (set-agt-snip! acc
+         (set-snip-agt-snip! acc
                         (filter (lambda (x)
                                   (not (eq? id-snip (snip-id x))))
-                                (agt-snip acc)))
-         (class-send (agt-widget acc) refresh)]
+                                (snip-agt-snip acc)))
+         (class-send (snip-agt-widget acc) refresh)]
         [else (send-action output output-array msg)]
         ))
 
@@ -179,7 +179,7 @@
             (append (reverse (cons widget acc)) ls)
             ; continue
             (add-ordered (cdr ls) (cons (car ls) acc)))]))
-  (set-agt-place! acc (add-ordered (agt-place acc) '())))
+  (set-snip-agt-place! acc (add-ordered (snip-agt-place acc) '())))
 
 (define (add-ordered-snip acc widget)
   (define before #f)
@@ -203,5 +203,5 @@
              (append (reverse (cons widget acc)) ls))
            ; continue
            (add-ordered (cdr ls) (cons (car ls) acc)))]))
-  (set-agt-snip! acc (add-ordered (agt-snip acc) '()))
+  (set-snip-agt-snip! acc (add-ordered (snip-agt-snip acc) '()))
   before)
