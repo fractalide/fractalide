@@ -3,6 +3,7 @@
 (provide make-scheduler (struct-out scheduler))
 
 (require racket/async-channel)
+(require racket/exn)
 
 (require racket/match)
 (require racket/function)
@@ -220,8 +221,8 @@
         ; change is-running to true and exec
         (begin
           (thread (lambda ()
-                    (with-handlers ([exn:fail? (lambda (v) (displayln (string-append "Agent " agt-name " fails with : "))
-                                                       (displayln v))])
+                    (with-handlers ([exn:fail?
+                                    (lambda (e) (eprintf "in agent ~a:~n~a" agt-name (exn->string e)))])
                       (proc
                        ((curry get-in) agt)
                        ((curry get-out) agt)
