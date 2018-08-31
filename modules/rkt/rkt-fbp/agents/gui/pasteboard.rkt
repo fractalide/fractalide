@@ -23,8 +23,10 @@
                               left top right bottom
                               dx dy
                               draw-caret)
-     (for ([wdg (snip-agt-place state)])
-       ((widget-draw wdg) before? dc left top right bottom dx dy)))
+     (if before?
+         (void)
+         (for ([wdg (snip-agt-place state)])
+           ((widget-draw wdg) before? dc left top right bottom dx dy))))
 
     (define (after-select snip on?)
       (class-send snip send-event (cons 'select on?)))
