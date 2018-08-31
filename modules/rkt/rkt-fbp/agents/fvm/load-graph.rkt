@@ -2,7 +2,6 @@
 
 (require racket/list)
 (require fractalide/modules/rkt/rkt-fbp/agent)
-(require fractalide/modules/rkt/rkt-fbp/loader)
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 ; (-> agent graph)
@@ -19,10 +18,10 @@
         ; False -> Visit the next node
         (let* ([next (car not-visited)]
                [next (begin (send (output "ask-path") next) (recv (input "ask-path")))]
-               [is-subnet? (load-graph (g-agent-type next) (lambda () #f))])
-          (if is-subnet?
+               [maybe-subgraph (get-graph next input output)])
+          (if maybe-subgraph
               ; It's a sub-graph. Get the new graph, add the nodes in not-visited, save the virtual port and save the rest of the graph
-              (let* ([new-graph (get-graph next input output)]
+              (let* ([new-graph maybe-subgraph]
                      ; Add the agents in the not-visited list
                      [new-not-visited (append (graph-agent new-graph) (cdr not-visited))]
                      ; add the virtual port

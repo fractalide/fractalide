@@ -12,9 +12,12 @@
           [name (g-agent-name agt)]
           [type (g-agent-type agt)])
      ; retrieve the graph struct
-     (define g (load-graph type))
-     ; rename the subgraph
-     (let ([new-agent
+     (define g (load-graph type (lambda () #f)))
+     (cond
+       [(not g) (send (output "out") #f)] ; not a graph
+       [else ; rename the nodes in the subgraph
+        (let
+          ([new-agent
             (for/list ([agent (graph-agent g)])
               (struct-copy g-agent agent [name (string-append name "-" (g-agent-name agent))]))]
            [new-edge
@@ -32,4 +35,4 @@
            [new-mesg
             (for/list ([mesg (graph-mesg g)])
               (struct-copy g-mesg mesg [in (string-append name "-" (g-mesg-in mesg))]))])
-       (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-mesg)))))
+        (send (output "out") (graph new-agent new-edge new-virtual-in new-virtual-out new-mesg)))])))

@@ -66,7 +66,17 @@
   (require fractalide/modules/rkt/rkt-fbp/def)
   (require fractalide/modules/rkt/rkt-fbp/fvm)
 
+  (define stop? #f)
+
+  (command-line
+    #:program "cardano-wallet"
+    #:once-each [("--stop") "Set up the window, then immediately quit. Only useful for profiling."
+                 (set! stop? #t)]
+    #:args args (void))
+
   (call-with-new-fvm-and-scheduler (lambda (fvm-sched sched)
     (define path (quote-module-path ".."))
     (define a-graph (make-graph (node "main" path)))
-    (fvm-sched (msg-mesg "fvm" "in" (cons 'add a-graph))))))
+    (fvm-sched (msg-mesg "fvm" "in" (cons 'add a-graph)))
+    (when stop? (fvm-sched (msg-mesg "fvm" "in"
+      (cons 'add (make-graph (mesg "main-frame" "in" (cons 'close #t))))))))))
