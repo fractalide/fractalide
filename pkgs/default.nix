@@ -34,7 +34,7 @@ pkgs {
       inherit racket2nix;
       inherit (racket2nix) buildRacketPackage;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = self.buildRacketPackage (builtins.path {
+      fractalide = (self.buildRacketPackage (builtins.path {
         name = "fractalide";
         path = ./..;
         filter = (path: type:
@@ -46,6 +46,12 @@ pkgs {
           (null == builtins.match "[#].*[#]" basePath) &&
           (null == builtins.match ".*~" basePath)
         );
+      })).overrideAttrs (oldAttrs: {
+        buildInputs = oldAttrs.buildInputs or [] ++ [ self.makeWrapper ];
+        inherit (self) graphviz;
+        postInstall = oldAttrs.postInstall or "" + ''
+          wrapProgram $env/bin/hyperflow --prefix PATH ":" $graphviz/bin
+        '';
       });
 
       # fractalide/racket2nix#78 workaround
