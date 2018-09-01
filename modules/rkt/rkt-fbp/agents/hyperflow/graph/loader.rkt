@@ -36,19 +36,18 @@
                          (g-mesg-in mesg)))
 
    ; Retrieve the position
-   (define opt-graph (string-split (g:graphviz g) "digraph G {"))
-   (set! opt-graph (string-append
-                    "digraph G { node [shape=circle, width=1];
-                                 rankdir=LR;"
-                    (car opt-graph)))
-   (define raw-json
-     (let ([out (open-output-string)]
-           [dot-file (make-temporary-file "graph~a.dot")])
-       (parameterize ([current-output-port out]
-                      [current-error-port out])
-         (display-to-file opt-graph dot-file #:exists 'replace)
-         (system (format "dot -Tjson ~a" dot-file))
-       (get-output-string out))))
+   (define opt-graph-tail (car (string-split (g:graphviz g) "digraph G {")))
+   (define opt-graph (string-append
+      "digraph G { node [shape=circle, width=1]; rankdir=LR;"
+      opt-graph-tail))
+
+   (define dot-path (find-executable-path "dot"))
+   (unless dot-path (error "'dot' not found on PATH"))
+
+   (define raw-json (with-output-to-string (lambda ()
+     (with-input-from-string opt-graph (lambda ()
+       (unless (equal? 0 (system*/exit-code dot-path "-Tjson"))
+         (error "Call to 'dot' failed.")))))))
    (define json (string->jsexpr raw-json))
 
    ; Send the new graph
