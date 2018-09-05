@@ -1,0 +1,3 @@
+[submodule "modules/rs/rust-cardano"]
+	path = modules/rs/rust-cardano
+	url = https://github.com/input-output-hk/rust-cardano

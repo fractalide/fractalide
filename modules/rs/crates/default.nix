@@ -5,7 +5,7 @@ let
   crates = import ./Cargo.nix { inherit lib buildPlatform buildRustCrate fetchgit; }; in
 crates // rec {
   rustfbp_0_3_34 = { features?(crates.rustfbp_0_3_34_features {}) }: (crates.rustfbp_0_3_34_ {
-    dependencies = mapFeatures features ([ crates.env_logger_0_5_10 libloading_0_5_0 crates.threadpool_1_7_1 ]);
+    dependencies = mapFeatures features ([ crates.env_logger_0_5_13 libloading_0_5_0 crates.threadpool_1_7_1 ]);
   }).override (args: {
     preConfigure = "cp ${edgesModule.out}/edges.rs src";
   });

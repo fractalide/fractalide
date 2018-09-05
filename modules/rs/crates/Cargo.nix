@@ -20,11 +20,11 @@ in
 rec {
   all_crates = f: all_crates_1_1_1 { features = all_crates_1_1_1_features { all_crates_1_1_1 = f; }; };
   __all = [ (all_crates {}) ];
-  aho_corasick_0_6_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  aho_corasick_0_6_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "aho-corasick";
-    version = "0.6.5";
+    version = "0.6.8";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0p5y2fwxj96f6kfk55j9chljm960kbg9r6qlpnvz2rwlkr04p36f";
+    sha256 = "04bz5m32ykyn946iwxgbrl8nwca7ssxsqma140hgmkchaay80nfr";
     libName = "aho_corasick";
     crateBin = [ {  name = "aho-corasick-dot";  path = "src/main.rs"; } ];
     inherit dependencies buildDependencies features;
@@ -36,39 +36,60 @@ rec {
     src = ./.;
     inherit dependencies buildDependencies features;
   };
-  atty_0_2_10_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  atty_0_2_11_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "atty";
-    version = "0.2.10";
+    version = "0.2.11";
     authors = [ "softprops <d.tangren@gmail.com>" ];
-    sha256 = "1h26lssj8rwaz0xhwwm5a645r49yly211amfmd243m3m0jl49i2c";
+    sha256 = "0by1bj2km9jxi4i4g76zzi76fc2rcm9934jpnyrqd95zw344pb20";
     inherit dependencies buildDependencies features;
   };
-  cc_1_0_17_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  cardano_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cardano";
+    version = "0.1.0";
+    authors = [ "vincent.hanquez@iohk.io" "nicolas.diprima@iohk.io" ];
+    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cardano;
+    inherit dependencies buildDependencies features;
+  };
+  cbor_event_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cbor_event";
+    version = "0.1.0";
+    authors = [ "Nicolas Di Prima <nicolas.diprima@iohk.io>" "Vincent Hanquez <vincent.hanquez@iohk.io>" ];
+    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cbor_event;
+    inherit dependencies buildDependencies features;
+  };
+  cc_1_0_23_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cc";
-    version = "1.0.17";
+    version = "1.0.23";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "0jb8rw68iy9fj3is5gimzwyr5nwj5ip6fmi04zm9flhml0wxzf44";
+    sha256 = "1zlh26mrrqlwb18ndzn8gpinfnvqw8qwkqs264s068y5lxrkdhs7";
     inherit dependencies buildDependencies features;
   };
-  cfg_if_0_1_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  cfg_if_0_1_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cfg-if";
-    version = "0.1.4";
+    version = "0.1.5";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "0n5baxk53dvqjymzwynq55wb805b24390qx1n16zi8fjzq90j7k4";
+    sha256 = "1i0w5v51fxnlfsfs9asrnx5bs2di4hcq363gbaw39wya3cmw6vky";
     inherit dependencies buildDependencies features;
   };
-  env_logger_0_5_10_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  cryptoxide_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cryptoxide";
+    version = "0.1.0";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" "The Rust-Crypto Project Developers" ];
+    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cryptoxide;
+    inherit dependencies buildDependencies features;
+  };
+  env_logger_0_5_13_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "env_logger";
-    version = "0.5.10";
+    version = "0.5.13";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "0any21l2x4h4h4ggc6r69k14i57pzqrm1pf89vfm3faxfpa23nhk";
+    sha256 = "1q6vylngcz4bn088b4hvsl879l8yz1k2bma75waljb5p4h4kbb72";
     inherit dependencies buildDependencies features;
   };
   generate_msg_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
-    src = ../generate-msg;
+    src = /home/stewart/dev/fractalide/fractalide/modules/rs/generate-msg;
     inherit dependencies buildDependencies features;
   };
   humantime_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -79,18 +100,19 @@ rec {
     libPath = "src/lib.rs";
     inherit dependencies buildDependencies features;
   };
-  lazy_static_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  lazy_static_1_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "lazy_static";
-    version = "1.0.1";
+    version = "1.1.0";
     authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
-    sha256 = "0c9f86fk0z18fzmjzkbx23wsah2lxpy09wcld5x4p6s9rkys3cj4";
+    sha256 = "1da2b6nxfc2l547qgl9kd1pn9sh1af96a6qx6xw8xdnv6hh5fag0";
+    build = "build.rs";
     inherit dependencies buildDependencies features;
   };
-  libc_0_2_42_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  libc_0_2_43_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "libc";
-    version = "0.2.42";
+    version = "0.2.43";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "064v49hz1zpl081w8c4vwikrkhaxp06y4i9l7x7wx6bjpwp19pjx";
+    sha256 = "0pshydmsq71kl9276zc2928ld50sp524ixcqkcqsgq410dx6c50b";
     inherit dependencies buildDependencies features;
   };
   libloading_0_5_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -101,11 +123,11 @@ rec {
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
-  log_0_4_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  log_0_4_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "log";
-    version = "0.4.3";
+    version = "0.4.5";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1gdmwrbm7s18zcdz4lcdhz975m4gwhi854c7j1rvj1gsr8aca250";
+    sha256 = "1hdcj17al94ga90q7jx2y1rmxi68n3akra1awv3hr3s9b9zipgq6";
     inherit dependencies buildDependencies features;
   };
   memchr_1_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -115,11 +137,11 @@ rec {
     sha256 = "0dfb8ifl9nrc9kzgd5z91q6qg87sh285q1ih7xgrsglmqfav9lg7";
     inherit dependencies buildDependencies features;
   };
-  memchr_2_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  memchr_2_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "memchr";
-    version = "2.0.1";
+    version = "2.0.2";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" "bluss" ];
-    sha256 = "0ls2y47rjwapjdax6bp974gdp06ggm1v8d1h69wyydmh1nhgm5gr";
+    sha256 = "1rjn5bjyn6wia7wm1cm0af5mjrd91sypnmwz5ndq4xnfmx52a67z";
     inherit dependencies buildDependencies features;
   };
   nom_3_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -143,6 +165,14 @@ rec {
     sha256 = "1y47qagi1r1f13b4b66xagr3dn9hjlvba7i6f5mcb77qhkn8yg9c";
     inherit dependencies buildDependencies features;
   };
+  proc_macro2_0_4_17_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "proc-macro2";
+    version = "0.4.17";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "0py0zn1xws3csi3p7nmiqaqdqxkns0vlyiaq6f4rhhvx4ml202w1";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
   quick_error_1_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "quick-error";
     version = "1.2.2";
@@ -155,6 +185,13 @@ rec {
     version = "0.4.2";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     sha256 = "0rzka356p113f9hdcdc8ha78qar3qd6jpap9wnf5dza9hfs2k4bc";
+    inherit dependencies buildDependencies features;
+  };
+  quote_0_6_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "quote";
+    version = "0.6.8";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "0dq6j23w6pmc4l6v490arixdwypy0b82z76nrzaingqhqri4p3mh";
     inherit dependencies buildDependencies features;
   };
   redox_syscall_0_1_40_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -173,25 +210,41 @@ rec {
     libPath = "src/lib.rs";
     inherit dependencies buildDependencies features;
   };
-  regex_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  regex_1_0_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "regex";
-    version = "1.0.1";
+    version = "1.0.4";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "0jr2i9iy05krxp70vyf02fhvnps6rgn3h9av5islhjrcbm6dizni";
+    sha256 = "0nsrn3b6bh9f9s1q6l6p5cbf73wrv1qna5bpp082nqfw9c63wpsd";
     inherit dependencies buildDependencies features;
   };
-  regex_syntax_0_6_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  regex_syntax_0_6_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "regex-syntax";
-    version = "0.6.1";
+    version = "0.6.2";
     authors = [ "The Rust Project Developers" ];
-    sha256 = "1scc3q31pqpm55k9851mkycxs7ybyihz9g1il6hw627ha6jn937z";
+    sha256 = "109426mj7nhwr6szdzbcvn1a8g5zy52f9maqxjd9agm8wg87ylyw";
     inherit dependencies buildDependencies features;
   };
   rustfbp_0_3_34_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "rustfbp";
     version = "0.3.34";
     authors = [ "Denis Michiels <dmichiels@gmail.com>" "Stewart Mackenzie <setori88@gmail.com>" ];
-    src = ../rustfbp;
+    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rustfbp;
+    inherit dependencies buildDependencies features;
+  };
+  serde_1_0_76_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "serde";
+    version = "1.0.76";
+    authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "036k26s39ckx4iq6hlbpxw71sn7j8ikz662fczr7n3if6xfjp4z8";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  serde_derive_1_0_76_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "serde_derive";
+    version = "1.0.76";
+    authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "153mayfyrp101kpf1ccxljm923j4hr4r0ngxx53ikpxjvb5gz469";
+    procMacro = true;
     inherit dependencies buildDependencies features;
   };
   syn_0_12_15_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -201,11 +254,18 @@ rec {
     sha256 = "0kkzav72yy0idzbh9zcg92dam3785xzrbxjjp8vxcis9z2zd6b13";
     inherit dependencies buildDependencies features;
   };
-  termcolor_0_3_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  syn_0_14_9_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "syn";
+    version = "0.14.9";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1ia0qbrnqz40s8886b2jpcjiqfbziigd96lqjfin06xk6i28vr7b";
+    inherit dependencies buildDependencies features;
+  };
+  termcolor_1_0_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "termcolor";
-    version = "0.3.6";
+    version = "1.0.3";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0w609sa1apl1kii67ln2g82r4rrycw45zgjq7mxxjrx1fa21v05z";
+    sha256 = "16gqgk2xk9ybwmjjxrdxx98k1gvy2nmybs7385hh6n8323a686lw";
     inherit dependencies buildDependencies features;
   };
   termion_1_5_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -215,11 +275,11 @@ rec {
     sha256 = "02gq4vd8iws1f3gjrgrgpajsk2bk43nds5acbbb4s8dvrdvr8nf1";
     inherit dependencies buildDependencies features;
   };
-  thread_local_0_3_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  thread_local_0_3_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "thread_local";
-    version = "0.3.5";
+    version = "0.3.6";
     authors = [ "Amanieu d'Antras <amanieu@gmail.com>" ];
-    sha256 = "0mkp0sp91aqsk7brgygai4igv751r1754rsxn37mig3ag5rx8np6";
+    sha256 = "02rksdwjmz2pw9bmgbb4c0bgkbq5z6nvg510sq1s6y2j1gam0c7i";
     inherit dependencies buildDependencies features;
   };
   threadpool_1_7_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -243,25 +303,18 @@ rec {
     sha256 = "05wdmwlfzxhq3nhsxn6wx4q8dhxzzfb9szsz6wiw092m1rjj01zj";
     inherit dependencies buildDependencies features;
   };
-  unreachable_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "unreachable";
-    version = "1.0.0";
-    authors = [ "Jonathan Reem <jonathan.reem@gmail.com>" ];
-    sha256 = "1am8czbk5wwr25gbp2zr007744fxjshhdqjz9liz7wl4pnv3whcf";
-    inherit dependencies buildDependencies features;
-  };
-  utf8_ranges_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  utf8_ranges_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "utf8-ranges";
-    version = "1.0.0";
+    version = "1.0.1";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0rzmqprwjv9yp1n0qqgahgm24872x6c0xddfym5pfndy7a36vkn0";
+    sha256 = "1s56ihd2c8ba6191078wivvv59247szaiszrh8x2rxqfsxlfrnpp";
     inherit dependencies buildDependencies features;
   };
-  void_1_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "void";
-    version = "1.0.2";
-    authors = [ "Jonathan Reem <jonathan.reem@gmail.com>" ];
-    sha256 = "0h1dm0dx8dhf56a83k68mijyxigqhizpskwxfdrs1drwv2cdclv3";
+  version_check_0_1_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "version_check";
+    version = "0.1.4";
+    authors = [ "Sergio Benitez <sb@sergio.bz>" ];
+    sha256 = "1ghi6bw2qsj53x2vyprs883dbrq8cjzmshlamjsxvmwd2zp13bck";
     inherit dependencies buildDependencies features;
   };
   winapi_0_3_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -280,6 +333,13 @@ rec {
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
+  winapi_util_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi-util";
+    version = "0.1.1";
+    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
+    sha256 = "10madanla73aagbklx6y73r2g2vwq9w8a0qcghbbbpn9vfr6a95f";
+    inherit dependencies buildDependencies features;
+  };
   winapi_x86_64_pc_windows_gnu_0_4_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "winapi-x86_64-pc-windows-gnu";
     version = "0.4.0";
@@ -288,39 +348,40 @@ rec {
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
-  wincolor_0_1_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  wincolor_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "wincolor";
-    version = "0.1.6";
+    version = "1.0.1";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
-    sha256 = "0f8m3l86pw6qi31jidqj78pgd15xj914850lyvsxkbln4f1drv47";
+    sha256 = "0gr7v4krmjba7yq16071rfacz42qbapas7mxk5nphjwb042a8gvz";
     inherit dependencies buildDependencies features;
   };
-  aho_corasick_0_6_5 = { features?(aho_corasick_0_6_5_features {}) }: aho_corasick_0_6_5_ {
-    dependencies = mapFeatures features ([ memchr_2_0_1 ]);
+  aho_corasick_0_6_8 = { features?(aho_corasick_0_6_8_features {}) }: aho_corasick_0_6_8_ {
+    dependencies = mapFeatures features ([ memchr_2_0_2 ]);
   };
-  aho_corasick_0_6_5_features = f: updateFeatures f (rec {
-    aho_corasick_0_6_5.default = (f.aho_corasick_0_6_5.default or true);
-    memchr_2_0_1.default = true;
-  }) [ memchr_2_0_1_features ];
+  aho_corasick_0_6_8_features = f: updateFeatures f (rec {
+    aho_corasick_0_6_8.default = (f.aho_corasick_0_6_8.default or true);
+    memchr_2_0_2.default = true;
+  }) [ memchr_2_0_2_features ];
   all_crates_1_1_1 = { features?(all_crates_1_1_1_features {}) }: all_crates_1_1_1_ {
-    dependencies = mapFeatures features ([ env_logger_0_5_10 generate_msg_0_1_0 log_0_4_3 nom_3_2_1 rustfbp_0_3_34 ]);
+    dependencies = mapFeatures features ([ cardano_0_1_0 env_logger_0_5_13 generate_msg_0_1_0 log_0_4_5 nom_3_2_1 rustfbp_0_3_34 ]);
   };
   all_crates_1_1_1_features = f: updateFeatures f (rec {
     all_crates_1_1_1.default = (f.all_crates_1_1_1.default or true);
-    env_logger_0_5_10.default = true;
+    cardano_0_1_0.default = true;
+    env_logger_0_5_13.default = true;
     generate_msg_0_1_0.default = true;
-    log_0_4_3.default = true;
+    log_0_4_5.default = true;
     nom_3_2_1.default = true;
     rustfbp_0_3_34.default = true;
-  }) [ env_logger_0_5_10_features generate_msg_0_1_0_features log_0_4_3_features nom_3_2_1_features rustfbp_0_3_34_features ];
-  atty_0_2_10 = { features?(atty_0_2_10_features {}) }: atty_0_2_10_ {
+  }) [ cardano_0_1_0_features env_logger_0_5_13_features generate_msg_0_1_0_features log_0_4_5_features nom_3_2_1_features rustfbp_0_3_34_features ];
+  atty_0_2_11 = { features?(atty_0_2_11_features {}) }: atty_0_2_11_ {
     dependencies = (if kernel == "redox" then mapFeatures features ([ termion_1_5_1 ]) else [])
-      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_42 ]) else [])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
       ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
   };
-  atty_0_2_10_features = f: updateFeatures f (rec {
-    atty_0_2_10.default = (f.atty_0_2_10.default or true);
-    libc_0_2_42.default = (f.libc_0_2_42.default or false);
+  atty_0_2_11_features = f: updateFeatures f (rec {
+    atty_0_2_11.default = (f.atty_0_2_11.default or true);
+    libc_0_2_43.default = (f.libc_0_2_43.default or false);
     termion_1_5_1.default = true;
     winapi_0_3_5.consoleapi = true;
     winapi_0_3_5.default = true;
@@ -328,40 +389,59 @@ rec {
     winapi_0_3_5.minwindef = true;
     winapi_0_3_5.processenv = true;
     winapi_0_3_5.winbase = true;
-  }) [ termion_1_5_1_features libc_0_2_42_features winapi_0_3_5_features ];
-  cc_1_0_17 = { features?(cc_1_0_17_features {}) }: cc_1_0_17_ {
+  }) [ termion_1_5_1_features libc_0_2_43_features winapi_0_3_5_features ];
+  cardano_0_1_0 = { features?(cardano_0_1_0_features {}) }: cardano_0_1_0_ {
+    dependencies = mapFeatures features ([ cbor_event_0_1_0 cryptoxide_0_1_0 serde_1_0_76 serde_derive_1_0_76 ]);
+    features = mkFeatures (features.cardano_0_1_0 or {});
+  };
+  cardano_0_1_0_features = f: updateFeatures f (rec {
+    cardano_0_1_0.default = (f.cardano_0_1_0.default or true);
+    cbor_event_0_1_0.default = true;
+    cryptoxide_0_1_0.default = true;
+    serde_1_0_76.default = true;
+    serde_derive_1_0_76.default = true;
+  }) [ cbor_event_0_1_0_features cryptoxide_0_1_0_features serde_1_0_76_features serde_derive_1_0_76_features ];
+  cbor_event_0_1_0 = { features?(cbor_event_0_1_0_features {}) }: cbor_event_0_1_0_ {};
+  cbor_event_0_1_0_features = f: updateFeatures f (rec {
+    cbor_event_0_1_0.default = (f.cbor_event_0_1_0.default or true);
+  }) [];
+  cc_1_0_23 = { features?(cc_1_0_23_features {}) }: cc_1_0_23_ {
     dependencies = mapFeatures features ([]);
-    features = mkFeatures (features.cc_1_0_17 or {});
+    features = mkFeatures (features.cc_1_0_23 or {});
   };
-  cc_1_0_17_features = f: updateFeatures f (rec {
-    cc_1_0_17.default = (f.cc_1_0_17.default or true);
-    cc_1_0_17.rayon =
-      (f.cc_1_0_17.rayon or false) ||
-      (f.cc_1_0_17.parallel or false) ||
-      (cc_1_0_17.parallel or false);
+  cc_1_0_23_features = f: updateFeatures f (rec {
+    cc_1_0_23.default = (f.cc_1_0_23.default or true);
+    cc_1_0_23.rayon =
+      (f.cc_1_0_23.rayon or false) ||
+      (f.cc_1_0_23.parallel or false) ||
+      (cc_1_0_23.parallel or false);
   }) [];
-  cfg_if_0_1_4 = { features?(cfg_if_0_1_4_features {}) }: cfg_if_0_1_4_ {};
-  cfg_if_0_1_4_features = f: updateFeatures f (rec {
-    cfg_if_0_1_4.default = (f.cfg_if_0_1_4.default or true);
+  cfg_if_0_1_5 = { features?(cfg_if_0_1_5_features {}) }: cfg_if_0_1_5_ {};
+  cfg_if_0_1_5_features = f: updateFeatures f (rec {
+    cfg_if_0_1_5.default = (f.cfg_if_0_1_5.default or true);
   }) [];
-  env_logger_0_5_10 = { features?(env_logger_0_5_10_features {}) }: env_logger_0_5_10_ {
-    dependencies = mapFeatures features ([ atty_0_2_10 humantime_1_1_1 log_0_4_3 termcolor_0_3_6 ]
-      ++ (if features.env_logger_0_5_10.regex or false then [ regex_1_0_1 ] else []));
-    features = mkFeatures (features.env_logger_0_5_10 or {});
+  cryptoxide_0_1_0 = { features?(cryptoxide_0_1_0_features {}) }: cryptoxide_0_1_0_ {};
+  cryptoxide_0_1_0_features = f: updateFeatures f (rec {
+    cryptoxide_0_1_0.default = (f.cryptoxide_0_1_0.default or true);
+  }) [];
+  env_logger_0_5_13 = { features?(env_logger_0_5_13_features {}) }: env_logger_0_5_13_ {
+    dependencies = mapFeatures features ([ atty_0_2_11 humantime_1_1_1 log_0_4_5 termcolor_1_0_3 ]
+      ++ (if features.env_logger_0_5_13.regex or false then [ regex_1_0_4 ] else []));
+    features = mkFeatures (features.env_logger_0_5_13 or {});
   };
-  env_logger_0_5_10_features = f: updateFeatures f (rec {
-    atty_0_2_10.default = true;
-    env_logger_0_5_10.default = (f.env_logger_0_5_10.default or true);
-    env_logger_0_5_10.regex =
-      (f.env_logger_0_5_10.regex or false) ||
-      (f.env_logger_0_5_10.default or false) ||
-      (env_logger_0_5_10.default or false);
+  env_logger_0_5_13_features = f: updateFeatures f (rec {
+    atty_0_2_11.default = true;
+    env_logger_0_5_13.default = (f.env_logger_0_5_13.default or true);
+    env_logger_0_5_13.regex =
+      (f.env_logger_0_5_13.regex or false) ||
+      (f.env_logger_0_5_13.default or false) ||
+      (env_logger_0_5_13.default or false);
     humantime_1_1_1.default = true;
-    log_0_4_3.default = true;
-    log_0_4_3.std = true;
-    regex_1_0_1.default = true;
-    termcolor_0_3_6.default = true;
-  }) [ atty_0_2_10_features humantime_1_1_1_features log_0_4_3_features regex_1_0_1_features termcolor_0_3_6_features ];
+    log_0_4_5.default = true;
+    log_0_4_5.std = true;
+    regex_1_0_4.default = true;
+    termcolor_1_0_3.default = true;
+  }) [ atty_0_2_11_features humantime_1_1_1_features log_0_4_5_features regex_1_0_4_features termcolor_1_0_3_features ];
   generate_msg_0_1_0 = { features?(generate_msg_0_1_0_features {}) }: generate_msg_0_1_0_ {
     dependencies = mapFeatures features ([ syn_0_12_15 ]);
   };
@@ -377,60 +457,62 @@ rec {
     humantime_1_1_1.default = (f.humantime_1_1_1.default or true);
     quick_error_1_2_2.default = true;
   }) [ quick_error_1_2_2_features ];
-  lazy_static_1_0_1 = { features?(lazy_static_1_0_1_features {}) }: lazy_static_1_0_1_ {
+  lazy_static_1_1_0 = { features?(lazy_static_1_1_0_features {}) }: lazy_static_1_1_0_ {
     dependencies = mapFeatures features ([]);
-    features = mkFeatures (features.lazy_static_1_0_1 or {});
+    buildDependencies = mapFeatures features ([ version_check_0_1_4 ]);
+    features = mkFeatures (features.lazy_static_1_1_0 or {});
   };
-  lazy_static_1_0_1_features = f: updateFeatures f (rec {
-    lazy_static_1_0_1.default = (f.lazy_static_1_0_1.default or true);
-    lazy_static_1_0_1.nightly =
-      (f.lazy_static_1_0_1.nightly or false) ||
-      (f.lazy_static_1_0_1.spin_no_std or false) ||
-      (lazy_static_1_0_1.spin_no_std or false);
-    lazy_static_1_0_1.spin =
-      (f.lazy_static_1_0_1.spin or false) ||
-      (f.lazy_static_1_0_1.spin_no_std or false) ||
-      (lazy_static_1_0_1.spin_no_std or false);
-  }) [];
-  libc_0_2_42 = { features?(libc_0_2_42_features {}) }: libc_0_2_42_ {
-    features = mkFeatures (features.libc_0_2_42 or {});
+  lazy_static_1_1_0_features = f: updateFeatures f (rec {
+    lazy_static_1_1_0.default = (f.lazy_static_1_1_0.default or true);
+    lazy_static_1_1_0.nightly =
+      (f.lazy_static_1_1_0.nightly or false) ||
+      (f.lazy_static_1_1_0.spin_no_std or false) ||
+      (lazy_static_1_1_0.spin_no_std or false);
+    lazy_static_1_1_0.spin =
+      (f.lazy_static_1_1_0.spin or false) ||
+      (f.lazy_static_1_1_0.spin_no_std or false) ||
+      (lazy_static_1_1_0.spin_no_std or false);
+    version_check_0_1_4.default = true;
+  }) [ version_check_0_1_4_features ];
+  libc_0_2_43 = { features?(libc_0_2_43_features {}) }: libc_0_2_43_ {
+    features = mkFeatures (features.libc_0_2_43 or {});
   };
-  libc_0_2_42_features = f: updateFeatures f (rec {
-    libc_0_2_42.default = (f.libc_0_2_42.default or true);
-    libc_0_2_42.use_std =
-      (f.libc_0_2_42.use_std or false) ||
-      (f.libc_0_2_42.default or false) ||
-      (libc_0_2_42.default or false);
+  libc_0_2_43_features = f: updateFeatures f (rec {
+    libc_0_2_43.default = (f.libc_0_2_43.default or true);
+    libc_0_2_43.use_std =
+      (f.libc_0_2_43.use_std or false) ||
+      (f.libc_0_2_43.default or false) ||
+      (libc_0_2_43.default or false);
   }) [];
   libloading_0_5_0 = { features?(libloading_0_5_0_features {}) }: libloading_0_5_0_ {
     dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
-    buildDependencies = mapFeatures features ([ cc_1_0_17 ]);
+    buildDependencies = mapFeatures features ([ cc_1_0_23 ]);
   };
   libloading_0_5_0_features = f: updateFeatures f (rec {
-    cc_1_0_17.default = true;
+    cc_1_0_23.default = true;
     libloading_0_5_0.default = (f.libloading_0_5_0.default or true);
     winapi_0_3_5.default = true;
     winapi_0_3_5.errhandlingapi = true;
     winapi_0_3_5.libloaderapi = true;
     winapi_0_3_5.winerror = true;
-  }) [ cc_1_0_17_features winapi_0_3_5_features ];
-  log_0_4_3 = { features?(log_0_4_3_features {}) }: log_0_4_3_ {
-    dependencies = mapFeatures features ([ cfg_if_0_1_4 ]);
-    features = mkFeatures (features.log_0_4_3 or {});
+  }) [ cc_1_0_23_features winapi_0_3_5_features ];
+  log_0_4_5 = { features?(log_0_4_5_features {}) }: log_0_4_5_ {
+    dependencies = mapFeatures features ([ cfg_if_0_1_5 ]);
+    features = mkFeatures (features.log_0_4_5 or {});
   };
-  log_0_4_3_features = f: updateFeatures f (rec {
-    cfg_if_0_1_4.default = true;
-    log_0_4_3.default = (f.log_0_4_3.default or true);
-  }) [ cfg_if_0_1_4_features ];
+  log_0_4_5_features = f: updateFeatures f (rec {
+    cfg_if_0_1_5.default = true;
+    log_0_4_5.default = (f.log_0_4_5.default or true);
+  }) [ cfg_if_0_1_5_features ];
   memchr_1_0_2 = { features?(memchr_1_0_2_features {}) }: memchr_1_0_2_ {
     dependencies = mapFeatures features ([ ]
-      ++ (if features.memchr_1_0_2.libc or false then [ libc_0_2_42 ] else []));
+      ++ (if features.memchr_1_0_2.libc or false then [ libc_0_2_43 ] else []));
     features = mkFeatures (features.memchr_1_0_2 or {});
   };
   memchr_1_0_2_features = f: updateFeatures f (rec {
-    libc_0_2_42.default = (f.libc_0_2_42.default or false);
-    libc_0_2_42.use_std =
-      (f.libc_0_2_42.use_std or false) ||
+    libc_0_2_43.default = (f.libc_0_2_43.default or false);
+    libc_0_2_43.use_std =
+      (f.libc_0_2_43.use_std or false) ||
       (memchr_1_0_2.use_std or false) ||
       (f.memchr_1_0_2.use_std or false);
     memchr_1_0_2.default = (f.memchr_1_0_2.default or true);
@@ -444,30 +526,30 @@ rec {
       (f.memchr_1_0_2.use_std or false) ||
       (f.memchr_1_0_2.default or false) ||
       (memchr_1_0_2.default or false);
-  }) [ libc_0_2_42_features ];
-  memchr_2_0_1 = { features?(memchr_2_0_1_features {}) }: memchr_2_0_1_ {
+  }) [ libc_0_2_43_features ];
+  memchr_2_0_2 = { features?(memchr_2_0_2_features {}) }: memchr_2_0_2_ {
     dependencies = mapFeatures features ([ ]
-      ++ (if features.memchr_2_0_1.libc or false then [ libc_0_2_42 ] else []));
-    features = mkFeatures (features.memchr_2_0_1 or {});
+      ++ (if features.memchr_2_0_2.libc or false then [ libc_0_2_43 ] else []));
+    features = mkFeatures (features.memchr_2_0_2 or {});
   };
-  memchr_2_0_1_features = f: updateFeatures f (rec {
-    libc_0_2_42.default = (f.libc_0_2_42.default or false);
-    libc_0_2_42.use_std =
-      (f.libc_0_2_42.use_std or false) ||
-      (memchr_2_0_1.use_std or false) ||
-      (f.memchr_2_0_1.use_std or false);
-    memchr_2_0_1.default = (f.memchr_2_0_1.default or true);
-    memchr_2_0_1.libc =
-      (f.memchr_2_0_1.libc or false) ||
-      (f.memchr_2_0_1.default or false) ||
-      (memchr_2_0_1.default or false) ||
-      (f.memchr_2_0_1.use_std or false) ||
-      (memchr_2_0_1.use_std or false);
-    memchr_2_0_1.use_std =
-      (f.memchr_2_0_1.use_std or false) ||
-      (f.memchr_2_0_1.default or false) ||
-      (memchr_2_0_1.default or false);
-  }) [ libc_0_2_42_features ];
+  memchr_2_0_2_features = f: updateFeatures f (rec {
+    libc_0_2_43.default = (f.libc_0_2_43.default or false);
+    libc_0_2_43.use_std =
+      (f.libc_0_2_43.use_std or false) ||
+      (memchr_2_0_2.use_std or false) ||
+      (f.memchr_2_0_2.use_std or false);
+    memchr_2_0_2.default = (f.memchr_2_0_2.default or true);
+    memchr_2_0_2.libc =
+      (f.memchr_2_0_2.libc or false) ||
+      (f.memchr_2_0_2.default or false) ||
+      (memchr_2_0_2.default or false) ||
+      (f.memchr_2_0_2.use_std or false) ||
+      (memchr_2_0_2.use_std or false);
+    memchr_2_0_2.use_std =
+      (f.memchr_2_0_2.use_std or false) ||
+      (f.memchr_2_0_2.default or false) ||
+      (memchr_2_0_2.default or false);
+  }) [ libc_0_2_43_features ];
   nom_3_2_1 = { features?(nom_3_2_1_features {}) }: nom_3_2_1_ {
     dependencies = mapFeatures features ([ memchr_1_0_2 ]);
     features = mkFeatures (features.nom_3_2_1 or {});
@@ -505,12 +587,12 @@ rec {
       (nom_3_2_1.default or false);
   }) [ memchr_1_0_2_features ];
   num_cpus_1_8_0 = { features?(num_cpus_1_8_0_features {}) }: num_cpus_1_8_0_ {
-    dependencies = mapFeatures features ([ libc_0_2_42 ]);
+    dependencies = mapFeatures features ([ libc_0_2_43 ]);
   };
   num_cpus_1_8_0_features = f: updateFeatures f (rec {
-    libc_0_2_42.default = true;
+    libc_0_2_43.default = true;
     num_cpus_1_8_0.default = (f.num_cpus_1_8_0.default or true);
-  }) [ libc_0_2_42_features ];
+  }) [ libc_0_2_43_features ];
   proc_macro2_0_2_3 = { features?(proc_macro2_0_2_3_features {}) }: proc_macro2_0_2_3_ {
     dependencies = mapFeatures features ([ unicode_xid_0_1_0 ]);
     features = mkFeatures (features.proc_macro2_0_2_3 or {});
@@ -525,6 +607,20 @@ rec {
       (proc_macro2_0_2_3.nightly or false);
     unicode_xid_0_1_0.default = true;
   }) [ unicode_xid_0_1_0_features ];
+  proc_macro2_0_4_17 = { features?(proc_macro2_0_4_17_features {}) }: proc_macro2_0_4_17_ {
+    dependencies = mapFeatures features ([ unicode_xid_0_1_0 ]);
+    features = mkFeatures (features.proc_macro2_0_4_17 or {});
+  };
+  proc_macro2_0_4_17_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_17.default = (f.proc_macro2_0_4_17.default or true);
+    proc_macro2_0_4_17.proc-macro =
+      (f.proc_macro2_0_4_17.proc-macro or false) ||
+      (f.proc_macro2_0_4_17.default or false) ||
+      (proc_macro2_0_4_17.default or false) ||
+      (f.proc_macro2_0_4_17.nightly or false) ||
+      (proc_macro2_0_4_17.nightly or false);
+    unicode_xid_0_1_0.default = true;
+  }) [ unicode_xid_0_1_0_features ];
   quick_error_1_2_2 = { features?(quick_error_1_2_2_features {}) }: quick_error_1_2_2_ {};
   quick_error_1_2_2_features = f: updateFeatures f (rec {
     quick_error_1_2_2.default = (f.quick_error_1_2_2.default or true);
@@ -536,6 +632,22 @@ rec {
     proc_macro2_0_2_3.default = true;
     quote_0_4_2.default = (f.quote_0_4_2.default or true);
   }) [ proc_macro2_0_2_3_features ];
+  quote_0_6_8 = { features?(quote_0_6_8_features {}) }: quote_0_6_8_ {
+    dependencies = mapFeatures features ([ proc_macro2_0_4_17 ]);
+    features = mkFeatures (features.quote_0_6_8 or {});
+  };
+  quote_0_6_8_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_17.default = (f.proc_macro2_0_4_17.default or false);
+    proc_macro2_0_4_17.proc-macro =
+      (f.proc_macro2_0_4_17.proc-macro or false) ||
+      (quote_0_6_8.proc-macro or false) ||
+      (f.quote_0_6_8.proc-macro or false);
+    quote_0_6_8.default = (f.quote_0_6_8.default or true);
+    quote_0_6_8.proc-macro =
+      (f.quote_0_6_8.proc-macro or false) ||
+      (f.quote_0_6_8.default or false) ||
+      (quote_0_6_8.default or false);
+  }) [ proc_macro2_0_4_17_features ];
   redox_syscall_0_1_40 = { features?(redox_syscall_0_1_40_features {}) }: redox_syscall_0_1_40_ {};
   redox_syscall_0_1_40_features = f: updateFeatures f (rec {
     redox_syscall_0_1_40.default = (f.redox_syscall_0_1_40.default or true);
@@ -547,42 +659,72 @@ rec {
     redox_syscall_0_1_40.default = true;
     redox_termios_0_1_1.default = (f.redox_termios_0_1_1.default or true);
   }) [ redox_syscall_0_1_40_features ];
-  regex_1_0_1 = { features?(regex_1_0_1_features {}) }: regex_1_0_1_ {
-    dependencies = mapFeatures features ([ aho_corasick_0_6_5 memchr_2_0_1 regex_syntax_0_6_1 thread_local_0_3_5 utf8_ranges_1_0_0 ]);
-    features = mkFeatures (features.regex_1_0_1 or {});
+  regex_1_0_4 = { features?(regex_1_0_4_features {}) }: regex_1_0_4_ {
+    dependencies = mapFeatures features ([ aho_corasick_0_6_8 memchr_2_0_2 regex_syntax_0_6_2 thread_local_0_3_6 utf8_ranges_1_0_1 ]);
+    features = mkFeatures (features.regex_1_0_4 or {});
   };
-  regex_1_0_1_features = f: updateFeatures f (rec {
-    aho_corasick_0_6_5.default = true;
-    memchr_2_0_1.default = true;
-    regex_1_0_1.default = (f.regex_1_0_1.default or true);
-    regex_1_0_1.pattern =
-      (f.regex_1_0_1.pattern or false) ||
-      (f.regex_1_0_1.unstable or false) ||
-      (regex_1_0_1.unstable or false);
-    regex_1_0_1.use_std =
-      (f.regex_1_0_1.use_std or false) ||
-      (f.regex_1_0_1.default or false) ||
-      (regex_1_0_1.default or false);
-    regex_syntax_0_6_1.default = true;
-    thread_local_0_3_5.default = true;
-    utf8_ranges_1_0_0.default = true;
-  }) [ aho_corasick_0_6_5_features memchr_2_0_1_features regex_syntax_0_6_1_features thread_local_0_3_5_features utf8_ranges_1_0_0_features ];
-  regex_syntax_0_6_1 = { features?(regex_syntax_0_6_1_features {}) }: regex_syntax_0_6_1_ {
+  regex_1_0_4_features = f: updateFeatures f (rec {
+    aho_corasick_0_6_8.default = true;
+    memchr_2_0_2.default = true;
+    regex_1_0_4.default = (f.regex_1_0_4.default or true);
+    regex_1_0_4.pattern =
+      (f.regex_1_0_4.pattern or false) ||
+      (f.regex_1_0_4.unstable or false) ||
+      (regex_1_0_4.unstable or false);
+    regex_1_0_4.use_std =
+      (f.regex_1_0_4.use_std or false) ||
+      (f.regex_1_0_4.default or false) ||
+      (regex_1_0_4.default or false);
+    regex_syntax_0_6_2.default = true;
+    thread_local_0_3_6.default = true;
+    utf8_ranges_1_0_1.default = true;
+  }) [ aho_corasick_0_6_8_features memchr_2_0_2_features regex_syntax_0_6_2_features thread_local_0_3_6_features utf8_ranges_1_0_1_features ];
+  regex_syntax_0_6_2 = { features?(regex_syntax_0_6_2_features {}) }: regex_syntax_0_6_2_ {
     dependencies = mapFeatures features ([ ucd_util_0_1_1 ]);
   };
-  regex_syntax_0_6_1_features = f: updateFeatures f (rec {
-    regex_syntax_0_6_1.default = (f.regex_syntax_0_6_1.default or true);
+  regex_syntax_0_6_2_features = f: updateFeatures f (rec {
+    regex_syntax_0_6_2.default = (f.regex_syntax_0_6_2.default or true);
     ucd_util_0_1_1.default = true;
   }) [ ucd_util_0_1_1_features ];
   rustfbp_0_3_34 = { features?(rustfbp_0_3_34_features {}) }: rustfbp_0_3_34_ {
-    dependencies = mapFeatures features ([ env_logger_0_5_10 libloading_0_5_0 threadpool_1_7_1 ]);
+    dependencies = mapFeatures features ([ env_logger_0_5_13 libloading_0_5_0 threadpool_1_7_1 ]);
   };
   rustfbp_0_3_34_features = f: updateFeatures f (rec {
-    env_logger_0_5_10.default = true;
+    env_logger_0_5_13.default = true;
     libloading_0_5_0.default = true;
     rustfbp_0_3_34.default = (f.rustfbp_0_3_34.default or true);
     threadpool_1_7_1.default = true;
-  }) [ env_logger_0_5_10_features libloading_0_5_0_features threadpool_1_7_1_features ];
+  }) [ env_logger_0_5_13_features libloading_0_5_0_features threadpool_1_7_1_features ];
+  serde_1_0_76 = { features?(serde_1_0_76_features {}) }: serde_1_0_76_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.serde_1_0_76 or {});
+  };
+  serde_1_0_76_features = f: updateFeatures f (rec {
+    serde_1_0_76.default = (f.serde_1_0_76.default or true);
+    serde_1_0_76.serde_derive =
+      (f.serde_1_0_76.serde_derive or false) ||
+      (f.serde_1_0_76.derive or false) ||
+      (serde_1_0_76.derive or false);
+    serde_1_0_76.std =
+      (f.serde_1_0_76.std or false) ||
+      (f.serde_1_0_76.default or false) ||
+      (serde_1_0_76.default or false);
+    serde_1_0_76.unstable =
+      (f.serde_1_0_76.unstable or false) ||
+      (f.serde_1_0_76.alloc or false) ||
+      (serde_1_0_76.alloc or false);
+  }) [];
+  serde_derive_1_0_76 = { features?(serde_derive_1_0_76_features {}) }: serde_derive_1_0_76_ {
+    dependencies = mapFeatures features ([ proc_macro2_0_4_17 quote_0_6_8 syn_0_14_9 ]);
+    features = mkFeatures (features.serde_derive_1_0_76 or {});
+  };
+  serde_derive_1_0_76_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_17.default = true;
+    quote_0_6_8.default = true;
+    serde_derive_1_0_76.default = (f.serde_derive_1_0_76.default or true);
+    syn_0_14_9.default = true;
+    syn_0_14_9.visit = true;
+  }) [ proc_macro2_0_4_17_features quote_0_6_8_features syn_0_14_9_features ];
   syn_0_12_15 = { features?(syn_0_12_15_features {}) }: syn_0_12_15_ {
     dependencies = mapFeatures features ([ proc_macro2_0_2_3 unicode_xid_0_1_0 ]
       ++ (if features.syn_0_12_15.quote or false then [ quote_0_4_2 ] else []));
@@ -614,31 +756,73 @@ rec {
       (syn_0_12_15.printing or false);
     unicode_xid_0_1_0.default = true;
   }) [ proc_macro2_0_2_3_features quote_0_4_2_features unicode_xid_0_1_0_features ];
-  termcolor_0_3_6 = { features?(termcolor_0_3_6_features {}) }: termcolor_0_3_6_ {
-    dependencies = (if kernel == "windows" then mapFeatures features ([ wincolor_0_1_6 ]) else []);
+  syn_0_14_9 = { features?(syn_0_14_9_features {}) }: syn_0_14_9_ {
+    dependencies = mapFeatures features ([ proc_macro2_0_4_17 unicode_xid_0_1_0 ]
+      ++ (if features.syn_0_14_9.quote or false then [ quote_0_6_8 ] else []));
+    features = mkFeatures (features.syn_0_14_9 or {});
   };
-  termcolor_0_3_6_features = f: updateFeatures f (rec {
-    termcolor_0_3_6.default = (f.termcolor_0_3_6.default or true);
-    wincolor_0_1_6.default = true;
-  }) [ wincolor_0_1_6_features ];
+  syn_0_14_9_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_17.default = (f.proc_macro2_0_4_17.default or false);
+    proc_macro2_0_4_17.proc-macro =
+      (f.proc_macro2_0_4_17.proc-macro or false) ||
+      (syn_0_14_9.proc-macro or false) ||
+      (f.syn_0_14_9.proc-macro or false);
+    quote_0_6_8.default = (f.quote_0_6_8.default or false);
+    quote_0_6_8.proc-macro =
+      (f.quote_0_6_8.proc-macro or false) ||
+      (syn_0_14_9.proc-macro or false) ||
+      (f.syn_0_14_9.proc-macro or false);
+    syn_0_14_9.clone-impls =
+      (f.syn_0_14_9.clone-impls or false) ||
+      (f.syn_0_14_9.default or false) ||
+      (syn_0_14_9.default or false);
+    syn_0_14_9.default = (f.syn_0_14_9.default or true);
+    syn_0_14_9.derive =
+      (f.syn_0_14_9.derive or false) ||
+      (f.syn_0_14_9.default or false) ||
+      (syn_0_14_9.default or false);
+    syn_0_14_9.parsing =
+      (f.syn_0_14_9.parsing or false) ||
+      (f.syn_0_14_9.default or false) ||
+      (syn_0_14_9.default or false);
+    syn_0_14_9.printing =
+      (f.syn_0_14_9.printing or false) ||
+      (f.syn_0_14_9.default or false) ||
+      (syn_0_14_9.default or false);
+    syn_0_14_9.proc-macro =
+      (f.syn_0_14_9.proc-macro or false) ||
+      (f.syn_0_14_9.default or false) ||
+      (syn_0_14_9.default or false);
+    syn_0_14_9.quote =
+      (f.syn_0_14_9.quote or false) ||
+      (f.syn_0_14_9.printing or false) ||
+      (syn_0_14_9.printing or false);
+    unicode_xid_0_1_0.default = true;
+  }) [ proc_macro2_0_4_17_features quote_0_6_8_features unicode_xid_0_1_0_features ];
+  termcolor_1_0_3 = { features?(termcolor_1_0_3_features {}) }: termcolor_1_0_3_ {
+    dependencies = (if kernel == "windows" then mapFeatures features ([ wincolor_1_0_1 ]) else []);
+  };
+  termcolor_1_0_3_features = f: updateFeatures f (rec {
+    termcolor_1_0_3.default = (f.termcolor_1_0_3.default or true);
+    wincolor_1_0_1.default = true;
+  }) [ wincolor_1_0_1_features ];
   termion_1_5_1 = { features?(termion_1_5_1_features {}) }: termion_1_5_1_ {
-    dependencies = (if !(kernel == "redox") then mapFeatures features ([ libc_0_2_42 ]) else [])
+    dependencies = (if !(kernel == "redox") then mapFeatures features ([ libc_0_2_43 ]) else [])
       ++ (if kernel == "redox" then mapFeatures features ([ redox_syscall_0_1_40 redox_termios_0_1_1 ]) else []);
   };
   termion_1_5_1_features = f: updateFeatures f (rec {
-    libc_0_2_42.default = true;
+    libc_0_2_43.default = true;
     redox_syscall_0_1_40.default = true;
     redox_termios_0_1_1.default = true;
     termion_1_5_1.default = (f.termion_1_5_1.default or true);
-  }) [ libc_0_2_42_features redox_syscall_0_1_40_features redox_termios_0_1_1_features ];
-  thread_local_0_3_5 = { features?(thread_local_0_3_5_features {}) }: thread_local_0_3_5_ {
-    dependencies = mapFeatures features ([ lazy_static_1_0_1 unreachable_1_0_0 ]);
+  }) [ libc_0_2_43_features redox_syscall_0_1_40_features redox_termios_0_1_1_features ];
+  thread_local_0_3_6 = { features?(thread_local_0_3_6_features {}) }: thread_local_0_3_6_ {
+    dependencies = mapFeatures features ([ lazy_static_1_1_0 ]);
   };
-  thread_local_0_3_5_features = f: updateFeatures f (rec {
-    lazy_static_1_0_1.default = true;
-    thread_local_0_3_5.default = (f.thread_local_0_3_5.default or true);
-    unreachable_1_0_0.default = true;
-  }) [ lazy_static_1_0_1_features unreachable_1_0_0_features ];
+  thread_local_0_3_6_features = f: updateFeatures f (rec {
+    lazy_static_1_1_0.default = true;
+    thread_local_0_3_6.default = (f.thread_local_0_3_6.default or true);
+  }) [ lazy_static_1_1_0_features ];
   threadpool_1_7_1 = { features?(threadpool_1_7_1_features {}) }: threadpool_1_7_1_ {
     dependencies = mapFeatures features ([ num_cpus_1_8_0 ]);
   };
@@ -656,26 +840,13 @@ rec {
   unicode_xid_0_1_0_features = f: updateFeatures f (rec {
     unicode_xid_0_1_0.default = (f.unicode_xid_0_1_0.default or true);
   }) [];
-  unreachable_1_0_0 = { features?(unreachable_1_0_0_features {}) }: unreachable_1_0_0_ {
-    dependencies = mapFeatures features ([ void_1_0_2 ]);
-  };
-  unreachable_1_0_0_features = f: updateFeatures f (rec {
-    unreachable_1_0_0.default = (f.unreachable_1_0_0.default or true);
-    void_1_0_2.default = (f.void_1_0_2.default or false);
-  }) [ void_1_0_2_features ];
-  utf8_ranges_1_0_0 = { features?(utf8_ranges_1_0_0_features {}) }: utf8_ranges_1_0_0_ {};
-  utf8_ranges_1_0_0_features = f: updateFeatures f (rec {
-    utf8_ranges_1_0_0.default = (f.utf8_ranges_1_0_0.default or true);
+  utf8_ranges_1_0_1 = { features?(utf8_ranges_1_0_1_features {}) }: utf8_ranges_1_0_1_ {};
+  utf8_ranges_1_0_1_features = f: updateFeatures f (rec {
+    utf8_ranges_1_0_1.default = (f.utf8_ranges_1_0_1.default or true);
   }) [];
-  void_1_0_2 = { features?(void_1_0_2_features {}) }: void_1_0_2_ {
-    features = mkFeatures (features.void_1_0_2 or {});
-  };
-  void_1_0_2_features = f: updateFeatures f (rec {
-    void_1_0_2.default = (f.void_1_0_2.default or true);
-    void_1_0_2.std =
-      (f.void_1_0_2.std or false) ||
-      (f.void_1_0_2.default or false) ||
-      (void_1_0_2.default or false);
+  version_check_0_1_4 = { features?(version_check_0_1_4_features {}) }: version_check_0_1_4_ {};
+  version_check_0_1_4_features = f: updateFeatures f (rec {
+    version_check_0_1_4.default = (f.version_check_0_1_4.default or true);
   }) [];
   winapi_0_3_5 = { features?(winapi_0_3_5_features {}) }: winapi_0_3_5_ {
     dependencies = (if kernel == "i686-pc-windows-gnu" then mapFeatures features ([ winapi_i686_pc_windows_gnu_0_4_0 ]) else [])
@@ -691,20 +862,34 @@ rec {
   winapi_i686_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
     winapi_i686_pc_windows_gnu_0_4_0.default = (f.winapi_i686_pc_windows_gnu_0_4_0.default or true);
   }) [];
+  winapi_util_0_1_1 = { features?(winapi_util_0_1_1_features {}) }: winapi_util_0_1_1_ {
+    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
+  };
+  winapi_util_0_1_1_features = f: updateFeatures f (rec {
+    winapi_0_3_5.consoleapi = true;
+    winapi_0_3_5.default = true;
+    winapi_0_3_5.errhandlingapi = true;
+    winapi_0_3_5.fileapi = true;
+    winapi_0_3_5.minwindef = true;
+    winapi_0_3_5.processenv = true;
+    winapi_0_3_5.std = true;
+    winapi_0_3_5.winbase = true;
+    winapi_0_3_5.wincon = true;
+    winapi_0_3_5.winerror = true;
+    winapi_util_0_1_1.default = (f.winapi_util_0_1_1.default or true);
+  }) [ winapi_0_3_5_features ];
   winapi_x86_64_pc_windows_gnu_0_4_0 = { features?(winapi_x86_64_pc_windows_gnu_0_4_0_features {}) }: winapi_x86_64_pc_windows_gnu_0_4_0_ {};
   winapi_x86_64_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
     winapi_x86_64_pc_windows_gnu_0_4_0.default = (f.winapi_x86_64_pc_windows_gnu_0_4_0.default or true);
   }) [];
-  wincolor_0_1_6 = { features?(wincolor_0_1_6_features {}) }: wincolor_0_1_6_ {
-    dependencies = mapFeatures features ([ winapi_0_3_5 ]);
+  wincolor_1_0_1 = { features?(wincolor_1_0_1_features {}) }: wincolor_1_0_1_ {
+    dependencies = mapFeatures features ([ winapi_0_3_5 winapi_util_0_1_1 ]);
   };
-  wincolor_0_1_6_features = f: updateFeatures f (rec {
-    winapi_0_3_5.consoleapi = true;
+  wincolor_1_0_1_features = f: updateFeatures f (rec {
     winapi_0_3_5.default = true;
     winapi_0_3_5.minwindef = true;
-    winapi_0_3_5.processenv = true;
-    winapi_0_3_5.winbase = true;
     winapi_0_3_5.wincon = true;
-    wincolor_0_1_6.default = (f.wincolor_0_1_6.default or true);
-  }) [ winapi_0_3_5_features ];
+    winapi_util_0_1_1.default = true;
+    wincolor_1_0_1.default = (f.wincolor_1_0_1.default or true);
+  }) [ winapi_0_3_5_features winapi_util_0_1_1_features ];
 }

@@ -7,6 +7,7 @@ version = "1.1.1"
 [dependencies]
 rustfbp = { path = "../rustfbp" }
 generate_msg = { path = "../generate-msg" }
+cardano = { path = "../rust-cardano/cardano" }
 nom = "3.2.1"
 log = "0.4"
 env_logger = "0.5"
