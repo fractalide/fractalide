@@ -47,14 +47,14 @@ rec {
     crateName = "cardano";
     version = "0.1.0";
     authors = [ "vincent.hanquez@iohk.io" "nicolas.diprima@iohk.io" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cardano;
+    src = ../rust-cardano/cardano;
     inherit dependencies buildDependencies features;
   };
   cbor_event_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cbor_event";
     version = "0.1.0";
     authors = [ "Nicolas Di Prima <nicolas.diprima@iohk.io>" "Vincent Hanquez <vincent.hanquez@iohk.io>" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cbor_event;
+    src = ../rust-cardano/cbor_event;
     inherit dependencies buildDependencies features;
   };
   cc_1_0_23_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -75,7 +75,7 @@ rec {
     crateName = "cryptoxide";
     version = "0.1.0";
     authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" "The Rust-Crypto Project Developers" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rust-cardano/cryptoxide;
+    src = ../rust-cardano/cryptoxide;
     inherit dependencies buildDependencies features;
   };
   env_logger_0_5_13_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -89,7 +89,7 @@ rec {
     crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/generate-msg;
+    src = ../generate-msg;
     inherit dependencies buildDependencies features;
   };
   humantime_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -228,7 +228,7 @@ rec {
     crateName = "rustfbp";
     version = "0.3.34";
     authors = [ "Denis Michiels <dmichiels@gmail.com>" "Stewart Mackenzie <setori88@gmail.com>" ];
-    src = /home/stewart/dev/fractalide/fractalide/modules/rs/rustfbp;
+    src = ../rustfbp;
     inherit dependencies buildDependencies features;
   };
   serde_1_0_76_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
