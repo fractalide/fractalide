@@ -32,9 +32,9 @@ pkgs {
         inherit (channel) cargo;
       };
       inherit racket2nix;
-      inherit (racket2nix) buildRacketPackage;
+      inherit (racket2nix) buildThinRacketPackage;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = (self.buildRacketPackage (builtins.path {
+      fractalide = (self.buildThinRacketPackage (builtins.path {
         name = "fractalide";
         path = ./..;
         filter = (path: type:
