@@ -69,7 +69,7 @@ pkgs {
 
         # parallel cannot quite handle full inline bash, and destroys quoting, so we can't use bash -c
         racoTest = builtins.toFile "raco-test.sh" ''
-          timeout 20 time -f '%e s' racket -l- raco test "$@" |&
+          timeout 60 time -f '%e s' racket -l- raco test "$@" |&
             grep -v -e "warning: tool .* registered twice" -e "@[(]test-responsible"
           exit ''${PIPESTATUS[0]}
         '';
