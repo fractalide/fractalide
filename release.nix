@@ -5,6 +5,7 @@ let
   genJobs = pkgs: {
     inherit (pkgs) fractalide rkt-tests;
     rs-tests = import ./tests;
+    rustfbp = (import ./. {}).mods.rs.rustfbp_0_3_34;
   };
 in
   (genJobs (import ./pkgs {})) //
