@@ -55,23 +55,21 @@ pkgs {
       });
 
       # fractalide/racket2nix#78 workaround
+      # For raco test to work, compiler-lib needs to be in the top derivation, so we flip it around
+      # and make compiler-lib depend on fractalide.
 
-      # This simple addition works because fractalide happens to depend on all of
-      # compiler-lib's dependencies (because it happens to depend on compiler-lib).
-      fractalide-rkt-tests = (fractalide.overrideRacketDerivation (oldAttrs: {
-        extraSrcs = [(fetchurl {
-          url = "https://download.racket-lang.org/releases/6.12/pkgs/compiler-lib.zip";
-          sha1 = "8921c26c498e920aca398df7afb0ab486636430f";
-        })];
-        # Remove compiler-lib from its own dependencies.
-        racketBuildInputs = builtins.filter (input: input.pname or "" != "compiler-lib") oldAttrs.racketBuildInputs;
-      })).overrideAttrs (oldAttrs: { name = "fractalide-rkt-tests"; });
+      inherit (fractalide.racket-packages.extend (self: super: { fractalide-rkt-tests = self.lib.mkRacketDerivation {
+        pname = "fractalide-rkt-tests";
+        src = self.compiler-lib.src;
+        racketBuildInputs = self.compiler-lib.racketBuildInputs ++ [ fractalide ] ++
+          (builtins.filter (drv: drv.pname or "" != "compiler-lib") fractalide.racketBuildInputs);
+      };})) fractalide-rkt-tests;
 
       rkt-tests = let
 
         # parallel cannot quite handle full inline bash, and destroys quoting, so we can't use bash -c
         racoTest = builtins.toFile "raco-test.sh" ''
-          timeout 20 time -f '%e s' racket -l- raco test "$@" |&
+          timeout 60 time -f '%e s' racket -l- raco test "$@" |&
             grep -v -e "warning: tool .* registered twice" -e "@[(]test-responsible"
           exit ''${PIPESTATUS[0]}
         '';
@@ -83,7 +81,7 @@ pkgs {
         # If we allow raco test to run on anything in agents/gui it will fail because
         # requiring (gui/...) fails on headless.
 
-        find ${fractalide-rkt-tests.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents \
+        find ${fractalide.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents \
           '(' -name gui -prune ')' -o '(' -name '*.rkt' -print ')' |
           parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
           tee $out
