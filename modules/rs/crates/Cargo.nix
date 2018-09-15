@@ -26,13 +26,13 @@ rec {
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
     sha256 = "04bz5m32ykyn946iwxgbrl8nwca7ssxsqma140hgmkchaay80nfr";
     libName = "aho_corasick";
-    crateBin = [ {  name = "aho-corasick-dot";  path = "src/main.rs"; } ];
+    crateBin = [ { name = "aho-corasick-dot"; path = "src/main.rs"; } ];
     inherit dependencies buildDependencies features;
   };
   all_crates_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "all_crates";
     version = "1.1.1";
-    authors = [  ];
+    authors = [ ];
     src = ./.;
     inherit dependencies buildDependencies features;
   };
@@ -47,14 +47,14 @@ rec {
     crateName = "cardano";
     version = "0.1.0";
     authors = [ "vincent.hanquez@iohk.io" "nicolas.diprima@iohk.io" ];
-    src = /home/clacke/git/fractalide/fractalide/modules/rs/rust-cardano/cardano;
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cardano";
     inherit dependencies buildDependencies features;
   };
   cbor_event_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cbor_event";
     version = "0.1.0";
     authors = [ "Nicolas Di Prima <nicolas.diprima@iohk.io>" "Vincent Hanquez <vincent.hanquez@iohk.io>" ];
-    src = /home/clacke/git/fractalide/fractalide/modules/rs/rust-cardano/cbor_event;
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cbor_event";
     inherit dependencies buildDependencies features;
   };
   cc_1_0_25_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -75,7 +75,7 @@ rec {
     crateName = "cryptoxide";
     version = "0.1.0";
     authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" "The Rust-Crypto Project Developers" ];
-    src = /home/clacke/git/fractalide/fractalide/modules/rs/rust-cardano/cryptoxide;
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cryptoxide";
     inherit dependencies buildDependencies features;
   };
   env_logger_0_5_13_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -89,7 +89,7 @@ rec {
     crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
-    src = /home/clacke/git/fractalide/fractalide/modules/rs/generate-msg;
+    src = "${../generate-msg}";
     inherit dependencies buildDependencies features;
   };
   humantime_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -228,7 +228,7 @@ rec {
     crateName = "rustfbp";
     version = "0.3.34";
     authors = [ "Denis Michiels <dmichiels@gmail.com>" "Stewart Mackenzie <setori88@gmail.com>" ];
-    src = /home/clacke/git/fractalide/fractalide/modules/rs/rustfbp;
+    src = "${../rustfbp}";
     inherit dependencies buildDependencies features;
   };
   serde_1_0_78_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
