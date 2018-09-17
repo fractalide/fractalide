@@ -305,7 +305,7 @@ impl Scheduler {
         let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
         let in_schema = self.cache.get_schema_input(&sort_in.sort, port_in)?;
         let out_schema = self.cache.get_schema_output(&sort_out.sort, &port_out)?;
-        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+        if in_schema != "BAny" && out_schema != "BAny" && in_schema != out_schema {
             return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
         }
 
@@ -338,7 +338,7 @@ impl Scheduler {
         let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
         let in_schema = self.cache.get_schema_input(&sort_in.sort, port_in)?;
         let out_schema = self.cache.get_schema_output_array(&sort_out.sort, &port_out)?;
-        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+        if in_schema != "BAny" && out_schema != "BAny" && in_schema != out_schema {
             return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
         }
 
@@ -371,7 +371,7 @@ impl Scheduler {
         let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
         let in_schema = self.cache.get_schema_input_array(&sort_in.sort, port_in)?;
         let out_schema = self.cache.get_schema_output(&sort_out.sort, &port_out)?;
-        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+        if in_schema != "BAny" && out_schema != "BAny" && in_schema != out_schema {
             return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
         }
 
@@ -406,7 +406,7 @@ impl Scheduler {
         let sort_out = self.agents.get(&comp_out).ok_or(result::Error::AgentNotFound(comp_out.clone()))?;
         let in_schema = self.cache.get_schema_input_array(&sort_in.sort, port_in)?;
         let out_schema = self.cache.get_schema_output_array(&sort_out.sort, &port_out)?;
-        if in_schema != "any" && out_schema != "any" && in_schema != out_schema {
+        if in_schema != "BAny" && out_schema != "BAny" && in_schema != out_schema {
             return Err(result::Error::BadSchema(comp_out.clone(), port_out.clone(), out_schema, comp_in.into(), port_in.into(), in_schema));
         }
 
