@@ -5,8 +5,8 @@ extern crate rustfbp;
 extern crate log;
 
 agent! {
-    input(input: any),
-    outarr(clone: any),
+    input(input: bool),
+    outarr(clone: bool),
     fn run(&mut self) -> Result<Signal> {
         debug!("{:?}", env!("CARGO_PKG_NAME"));
         let msg = try!(self.input.input.recv());
