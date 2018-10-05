@@ -36,6 +36,13 @@ rec {
     src = ./.;
     inherit dependencies buildDependencies features;
   };
+  arrayvec_0_4_7_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "arrayvec";
+    version = "0.4.7";
+    authors = [ "bluss" ];
+    sha256 = "0fzgv7z1x1qnyd7j32vdcadk4k9wfx897y06mr3bw1yi52iqf4z4";
+    inherit dependencies buildDependencies features;
+  };
   atty_0_2_11_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "atty";
     version = "0.2.11";
@@ -43,18 +50,53 @@ rec {
     sha256 = "0by1bj2km9jxi4i4g76zzi76fc2rcm9934jpnyrqd95zw344pb20";
     inherit dependencies buildDependencies features;
   };
+  base64_0_9_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "base64";
+    version = "0.9.3";
+    authors = [ "Alice Maz <alice@alicemaz.com>" "Marshall Pierce <marshall@mpierce.org>" ];
+    sha256 = "11hhz8ln4zbpn2h2gm9fbbb9j254wrd4fpmddlyah2rrnqsmmqkd";
+    inherit dependencies buildDependencies features;
+  };
+  bitflags_1_0_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "bitflags";
+    version = "1.0.4";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "1g1wmz2001qmfrd37dnd5qiss5njrw26aywmg6yhkmkbyrhjxb08";
+    inherit dependencies buildDependencies features;
+  };
+  byteorder_1_2_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "byteorder";
+    version = "1.2.6";
+    authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
+    sha256 = "12p5ms2jsqr5l1d3fskpqzjvnn4b41pzwbjbz9zfaj22ndhkk87d";
+    inherit dependencies buildDependencies features;
+  };
+  bytes_0_4_10_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "bytes";
+    version = "0.4.10";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0g7c9qc6g5vjajha0ykxv63fmpg39i9w204j6pc1lknr99i7w19a";
+    inherit dependencies buildDependencies features;
+  };
   cardano_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cardano";
     version = "0.1.0";
-    authors = [ "vincent.hanquez@iohk.io" "nicolas.diprima@iohk.io" ];
-    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cardano";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" ];
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "4403a9fbd156213fcee3c0611b4f225e96de28d5"; sha256 = "06gkfzhfswjdynm1pb4d9y085q3y171abd9d4sl87y1b80mfpw9j"; }}/cardano";
     inherit dependencies buildDependencies features;
   };
-  cbor_event_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
-    crateName = "cbor_event";
+  cardano_storage_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cardano-storage";
     version = "0.1.0";
-    authors = [ "Nicolas Di Prima <nicolas.diprima@iohk.io>" "Vincent Hanquez <vincent.hanquez@iohk.io>" ];
-    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cbor_event";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" ];
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "4403a9fbd156213fcee3c0611b4f225e96de28d5"; sha256 = "06gkfzhfswjdynm1pb4d9y085q3y171abd9d4sl87y1b80mfpw9j"; }}/storage";
+    inherit dependencies buildDependencies features;
+  };
+  cbor_event_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cbor_event";
+    version = "1.0.0";
+    authors = [ "Nicolas Di Prima <nicolas@primetype.co.uk>" "Vincent Hanquez <vincent@typed.io>" ];
+    sha256 = "1q0rjpq1gmw3bjcvz5rd1b0k9w33y8iw648vn0ly5gsjcp0n2cd5";
     inherit dependencies buildDependencies features;
   };
   cc_1_0_25_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -71,11 +113,47 @@ rec {
     sha256 = "1i0w5v51fxnlfsfs9asrnx5bs2di4hcq363gbaw39wya3cmw6vky";
     inherit dependencies buildDependencies features;
   };
+  cloudabi_0_0_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "cloudabi";
+    version = "0.0.3";
+    authors = [ "Nuxi (https://nuxi.nl/) and contributors" ];
+    sha256 = "1z9lby5sr6vslfd14d6igk03s7awf91mxpsfmsp3prxbxlk0x7h5";
+    libPath = "cloudabi.rs";
+    inherit dependencies buildDependencies features;
+  };
+  crossbeam_deque_0_6_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "crossbeam-deque";
+    version = "0.6.1";
+    authors = [ "The Crossbeam Project Developers" ];
+    sha256 = "00n2179ci0w3aw1k579y3g13rhckl631m41c25q689li8i36416m";
+    inherit dependencies buildDependencies features;
+  };
+  crossbeam_epoch_0_5_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "crossbeam-epoch";
+    version = "0.5.2";
+    authors = [ "The Crossbeam Project Developers" ];
+    sha256 = "1xv8ggicdjwsqsbawflyjwlq5nj4xks96yzp5w3sw9qby6l16wnd";
+    inherit dependencies buildDependencies features;
+  };
+  crossbeam_utils_0_5_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "crossbeam-utils";
+    version = "0.5.0";
+    authors = [ "The Crossbeam Project Developers" ];
+    sha256 = "1sx0s9lnv9ja3q9l649w7rn23d7mgvb3cl08zx69vp9x4rdpxdpn";
+    inherit dependencies buildDependencies features;
+  };
   cryptoxide_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "cryptoxide";
     version = "0.1.0";
-    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" "The Rust-Crypto Project Developers" ];
-    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "6d871ac5e2c574cfa84bbdd1200e38ea3bb0e2e3"; sha256="0x1jaf9w9zbpavsgc2z4m5ibi54r6lvyp7anaigd3dmp2j2cnm8g"; }}/cryptoxide";
+    authors = [ "Vincent Hanquez <vincent@typed.io>" "Nicolas Di Prima <nicolas@prime-type.co.uk>" "The Rust-Crypto Project Developers" ];
+    sha256 = "05ym36zpcywk9s2vj8az8d1w2x5harradnvrix5hiiav7ky8fq47";
+    inherit dependencies buildDependencies features;
+  };
+  dtoa_0_4_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "dtoa";
+    version = "0.4.3";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1xysdxdm24sk5ysim7lps4r2qaxfnj0sbakhmps4d42yssx30cw8";
     inherit dependencies buildDependencies features;
   };
   env_logger_0_5_13_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -85,11 +163,54 @@ rec {
     sha256 = "1q6vylngcz4bn088b4hvsl879l8yz1k2bma75waljb5p4h4kbb72";
     inherit dependencies buildDependencies features;
   };
+  exe_common_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "exe-common";
+    version = "0.1.0";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" ];
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "4403a9fbd156213fcee3c0611b4f225e96de28d5"; sha256 = "06gkfzhfswjdynm1pb4d9y085q3y171abd9d4sl87y1b80mfpw9j"; }}/exe-common";
+    inherit dependencies buildDependencies features;
+  };
+  fuchsia_zircon_0_3_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "fuchsia-zircon";
+    version = "0.3.3";
+    authors = [ "Raph Levien <raph@google.com>" ];
+    sha256 = "0jrf4shb1699r4la8z358vri8318w4mdi6qzfqy30p2ymjlca4gk";
+    inherit dependencies buildDependencies features;
+  };
+  fuchsia_zircon_sys_0_3_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "fuchsia-zircon-sys";
+    version = "0.3.3";
+    authors = [ "Raph Levien <raph@google.com>" ];
+    sha256 = "08jp1zxrm9jbrr6l26bjal4dbm8bxfy57ickdgibsqxr1n9j3hf5";
+    inherit dependencies buildDependencies features;
+  };
+  futures_0_1_24_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "futures";
+    version = "0.1.24";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "0dqdy4pnnfwpj6zjr22sc4yagym2wj7px1hnx1c0sc4ck4i01w54";
+    inherit dependencies buildDependencies features;
+  };
+  futures_cpupool_0_1_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "futures-cpupool";
+    version = "0.1.8";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "0ficd31n5ljiixy6x0vjglhq4fp0v1p4qzxm3v6ymsrb3z080l5c";
+    inherit dependencies buildDependencies features;
+  };
   generate_msg_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "generate_msg";
     version = "0.1.0";
     authors = [ "pe@pijul.org <pe@pijul.org>" ];
     src = "${../generate-msg}";
+    inherit dependencies buildDependencies features;
+  };
+  httparse_1_3_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "httparse";
+    version = "1.3.3";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "1jymxy4bl0mzgp2dx0pzqzbr72sw5jmr5sjqiry4xr88z4z9qlyx";
+    build = "build.rs";
     inherit dependencies buildDependencies features;
   };
   humantime_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -100,12 +221,49 @@ rec {
     libPath = "src/lib.rs";
     inherit dependencies buildDependencies features;
   };
+  hyper_0_11_27_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "hyper";
+    version = "0.11.27";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "0q5as4lhvh31bzk4qm7j84snrmxyxyaqk040rfk72b42dn98mryi";
+    inherit dependencies buildDependencies features;
+  };
+  iovec_0_1_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "iovec";
+    version = "0.1.2";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0vjymmb7wj4v4kza5jjn48fcdb85j3k37y7msjl3ifz0p9yiyp2r";
+    inherit dependencies buildDependencies features;
+  };
+  kernel32_sys_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "kernel32-sys";
+    version = "0.2.2";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1lrw1hbinyvr6cp28g60z97w32w8vsk6pahk64pmrv2fmby8srfj";
+    libName = "kernel32";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  language_tags_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "language-tags";
+    version = "0.2.2";
+    authors = [ "Pyfisch <pyfisch@gmail.com>" ];
+    sha256 = "1zkrdzsqzzc7509kd7nngdwrp461glm2g09kqpzaqksp82frjdvy";
+    inherit dependencies buildDependencies features;
+  };
   lazy_static_1_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "lazy_static";
     version = "1.1.0";
     authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
     sha256 = "1da2b6nxfc2l547qgl9kd1pn9sh1af96a6qx6xw8xdnv6hh5fag0";
     build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  lazycell_1_2_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "lazycell";
+    version = "1.2.0";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" "Nikita Pekin <contact@nikitapek.in>" ];
+    sha256 = "1lzdb3q17yjihw9hksynxgyg8wbph1h791wff8rrf1c2aqjwhmax";
     inherit dependencies buildDependencies features;
   };
   libc_0_2_43_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -123,6 +281,27 @@ rec {
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
+  linked_hash_map_0_5_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "linked-hash-map";
+    version = "0.5.1";
+    authors = [ "Stepan Koltsov <stepan.koltsov@gmail.com>" "Andrew Paseltiner <apaseltiner@gmail.com>" ];
+    sha256 = "1f29c7j53z7w5v0g115yii9dmmbsahr93ak375g48vi75v3p4030";
+    inherit dependencies buildDependencies features;
+  };
+  lock_api_0_1_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "lock_api";
+    version = "0.1.4";
+    authors = [ "Amanieu d'Antras <amanieu@gmail.com>" ];
+    sha256 = "055dl3crjiid0bsmrwp3z3s6ypgscv4zsqgdj0pmhxr6zaas1da2";
+    inherit dependencies buildDependencies features;
+  };
+  log_0_3_9_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "log";
+    version = "0.3.9";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "19i9pwp7lhaqgzangcpw00kc3zsgcqcx84crv07xgz3v7d3kvfa2";
+    inherit dependencies buildDependencies features;
+  };
   log_0_4_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "log";
     version = "0.4.5";
@@ -137,11 +316,60 @@ rec {
     sha256 = "0dfb8ifl9nrc9kzgd5z91q6qg87sh285q1ih7xgrsglmqfav9lg7";
     inherit dependencies buildDependencies features;
   };
-  memchr_2_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  memchr_2_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "memchr";
-    version = "2.0.2";
+    version = "2.1.0";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" "bluss" ];
-    sha256 = "1rjn5bjyn6wia7wm1cm0af5mjrd91sypnmwz5ndq4xnfmx52a67z";
+    sha256 = "02w1fc5z1ccx8fbzgcr0mpk0xf2i9g4vbx9q5c2g8pjddbaqvjjq";
+    inherit dependencies buildDependencies features;
+  };
+  memoffset_0_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "memoffset";
+    version = "0.2.1";
+    authors = [ "Gilad Naaman <gilad.naaman@gmail.com>" ];
+    sha256 = "00vym01jk9slibq2nsiilgffp7n6k52a4q3n4dqp0xf5kzxvffcf";
+    inherit dependencies buildDependencies features;
+  };
+  mime_0_3_9_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "mime";
+    version = "0.3.9";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "0fns19sr62gqdzw3jy6pwqm1iy1q1ainb6cdvsg0kfwzy7nvyjww";
+    inherit dependencies buildDependencies features;
+  };
+  mio_0_6_16_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "mio";
+    version = "0.6.16";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "14vyrlmf0w984pi7ad9qvmlfj6vrb0wn6i8ik9j87w5za2r3rban";
+    inherit dependencies buildDependencies features;
+  };
+  mio_uds_0_6_7_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "mio-uds";
+    version = "0.6.7";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "1gff9908pvvysv7zgxvyxy7x34fnhs088cr0j8mgwj8j24mswrhm";
+    inherit dependencies buildDependencies features;
+  };
+  miow_0_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "miow";
+    version = "0.2.1";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "14f8zkc6ix7mkyis1vsqnim8m29b6l55abkba3p2yz7j1ibcvrl0";
+    inherit dependencies buildDependencies features;
+  };
+  net2_0_2_33_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "net2";
+    version = "0.2.33";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "1qnmajafgybj5wyxz9iffa8x5wgbwd2znfklmhqj7vl6lw1m65mq";
+    inherit dependencies buildDependencies features;
+  };
+  nodrop_0_1_12_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "nodrop";
+    version = "0.1.12";
+    authors = [ "bluss" ];
+    sha256 = "1b9rxvdg8061gxjc239l9slndf0ds3m6fy2sf3gs8f9kknqgl49d";
     inherit dependencies buildDependencies features;
   };
   nom_3_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -158,6 +386,35 @@ rec {
     sha256 = "1y6qnd9r8ga6y8mvlabdrr73nc8cshjjlzbvnanzyj9b8zzkfwk2";
     inherit dependencies buildDependencies features;
   };
+  owning_ref_0_3_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "owning_ref";
+    version = "0.3.3";
+    authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
+    sha256 = "13ivn0ydc0hf957ix0f5si9nnplzzykbr70hni1qz9m19i9kvmrh";
+    inherit dependencies buildDependencies features;
+  };
+  parking_lot_0_6_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "parking_lot";
+    version = "0.6.4";
+    authors = [ "Amanieu d'Antras <amanieu@gmail.com>" ];
+    sha256 = "0qwfysx8zfkj72sfcrqvd6pp7lgjmklyixsi3y0g6xjspw876rax";
+    inherit dependencies buildDependencies features;
+  };
+  parking_lot_core_0_3_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "parking_lot_core";
+    version = "0.3.1";
+    authors = [ "Amanieu d'Antras <amanieu@gmail.com>" ];
+    sha256 = "0h5p7dys8cx9y6ii4i57ampf7qdr8zmkpn543kd3h7nkhml8bw72";
+    inherit dependencies buildDependencies features;
+  };
+  percent_encoding_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "percent-encoding";
+    version = "1.0.1";
+    authors = [ "The rust-url developers" ];
+    sha256 = "04ahrp7aw4ip7fmadb0bknybmkfav0kk0gw4ps3ydq5w6hr0ib5i";
+    libPath = "lib.rs";
+    inherit dependencies buildDependencies features;
+  };
   proc_macro2_0_2_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "proc-macro2";
     version = "0.2.3";
@@ -165,12 +422,19 @@ rec {
     sha256 = "1y47qagi1r1f13b4b66xagr3dn9hjlvba7i6f5mcb77qhkn8yg9c";
     inherit dependencies buildDependencies features;
   };
-  proc_macro2_0_4_19_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  proc_macro2_0_4_20_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "proc-macro2";
-    version = "0.4.19";
+    version = "0.4.20";
     authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
-    sha256 = "1k76q9qfgyhqv0w80f0r4hv4dfm0sk751pm9bc1v40qq1sp6jypn";
+    sha256 = "0yr74b00d3wzg21kjvfln7vzzvf9aghbaff4c747i3grbd997ys2";
     build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  protocol_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "protocol";
+    version = "0.1.0";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" ];
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "4403a9fbd156213fcee3c0611b4f225e96de28d5"; sha256 = "06gkfzhfswjdynm1pb4d9y085q3y171abd9d4sl87y1b80mfpw9j"; }}/protocol";
     inherit dependencies buildDependencies features;
   };
   quick_error_1_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -192,6 +456,41 @@ rec {
     version = "0.6.8";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
     sha256 = "0dq6j23w6pmc4l6v490arixdwypy0b82z76nrzaingqhqri4p3mh";
+    inherit dependencies buildDependencies features;
+  };
+  rand_0_3_22_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rand";
+    version = "0.3.22";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "0wrj12acx7l4hr7ag3nz8b50yhp8ancyq988bzmnnsxln67rsys0";
+    inherit dependencies buildDependencies features;
+  };
+  rand_0_4_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rand";
+    version = "0.4.3";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "1644wri45l147822xy7dgdm4k7myxzs66cb795ga0x7dan11ci4f";
+    inherit dependencies buildDependencies features;
+  };
+  rand_0_5_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rand";
+    version = "0.5.5";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "0d7pnsh57qxhz1ghrzk113ddkn13kf2g758ffnbxq4nhwjfzhlc9";
+    inherit dependencies buildDependencies features;
+  };
+  rand_core_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rand_core";
+    version = "0.2.2";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "1cxnaxmsirz2wxsajsjkd1wk6lqfqbcprqkha4bq3didznrl22sc";
+    inherit dependencies buildDependencies features;
+  };
+  rand_core_0_3_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rand_core";
+    version = "0.3.0";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "1vafw316apjys9va3j987s02djhqp7y21v671v3ix0p5j9bjq339";
     inherit dependencies buildDependencies features;
   };
   redox_syscall_0_1_40_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -224,6 +523,20 @@ rec {
     sha256 = "109426mj7nhwr6szdzbcvn1a8g5zy52f9maqxjd9agm8wg87ylyw";
     inherit dependencies buildDependencies features;
   };
+  relay_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "relay";
+    version = "0.1.1";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "16csfaslbmj25iaxs88p8wcfh2zfpkh9isg9adid0nxjxvknh07r";
+    inherit dependencies buildDependencies features;
+  };
+  rustc_version_0_2_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "rustc_version";
+    version = "0.2.3";
+    authors = [ "Marvin Löbel <loebel.marvin@gmail.com>" ];
+    sha256 = "0rgwzbgs3i9fqjm1p4ra3n7frafmpwl29c8lw85kv1rxn7n2zaa7";
+    inherit dependencies buildDependencies features;
+  };
   rustfbp_0_3_34_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "rustfbp";
     version = "0.3.34";
@@ -231,20 +544,106 @@ rec {
     src = "${../rustfbp}";
     inherit dependencies buildDependencies features;
   };
-  serde_1_0_78_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  safemem_0_3_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "safemem";
+    version = "0.3.0";
+    authors = [ "Austin Bonander <austin.bonander@gmail.com>" ];
+    sha256 = "0pr39b468d05f6m7m4alsngmj5p7an8df21apsxbi57k0lmwrr18";
+    inherit dependencies buildDependencies features;
+  };
+  scoped_tls_0_1_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "scoped-tls";
+    version = "0.1.2";
+    authors = [ "Alex Crichton <alex@alexcrichton.com>" ];
+    sha256 = "0nblksgki698cqsclsnd6f1pq4yy34350dn2slaah9dlmx9z5xla";
+    inherit dependencies buildDependencies features;
+  };
+  scopeguard_0_3_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "scopeguard";
+    version = "0.3.3";
+    authors = [ "bluss" ];
+    sha256 = "0i1l013csrqzfz6c68pr5pi01hg5v5yahq8fsdmaxy6p8ygsjf3r";
+    inherit dependencies buildDependencies features;
+  };
+  semver_0_9_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "semver";
+    version = "0.9.0";
+    authors = [ "Steve Klabnik <steve@steveklabnik.com>" "The Rust Project Developers" ];
+    sha256 = "0azak2lb2wc36s3x15az886kck7rpnksrw14lalm157rg9sc9z63";
+    inherit dependencies buildDependencies features;
+  };
+  semver_parser_0_7_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "semver-parser";
+    version = "0.7.0";
+    authors = [ "Steve Klabnik <steve@steveklabnik.com>" ];
+    sha256 = "1da66c8413yakx0y15k8c055yna5lyb6fr0fw9318kdwkrk5k12h";
+    inherit dependencies buildDependencies features;
+  };
+  serde_1_0_79_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "serde";
-    version = "1.0.78";
+    version = "1.0.79";
     authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "0iz8fb8a8gp24yk8i9k5vgycas4283cpxifn7yvz2wh0jcwwbbxy";
+    sha256 = "123jh1h8a7r1qk61n97arm1rwkzfg35a0j5a9nbmcy6y7xc4rbsc";
     build = "build.rs";
     inherit dependencies buildDependencies features;
   };
-  serde_derive_1_0_78_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  serde_derive_1_0_79_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "serde_derive";
-    version = "1.0.78";
+    version = "1.0.79";
     authors = [ "Erick Tryzelaar <erick.tryzelaar@gmail.com>" "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "0z2hgx2ingrm0nanvh19a4y2b8rjhaz9xv2b8hsrn7l5876zpn9y";
+    sha256 = "1waika12l2ibqyak53xq46rvh70zk9ql3m84aa4vkvjbl0z93qab";
     procMacro = true;
+    inherit dependencies buildDependencies features;
+  };
+  serde_yaml_0_7_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "serde_yaml";
+    version = "0.7.5";
+    authors = [ "David Tolnay <dtolnay@gmail.com>" ];
+    sha256 = "1ai03b8gii88kziljn4ja3ayd6mc3zy0y8aq2wncxwkh0gd707gd";
+    inherit dependencies buildDependencies features;
+  };
+  slab_0_3_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "slab";
+    version = "0.3.0";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0y6lhjggksh57hyfd3l6p9wgv5nhvw9c6djrysq7jnalz8fih21k";
+    inherit dependencies buildDependencies features;
+  };
+  slab_0_4_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "slab";
+    version = "0.4.1";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0njmznhcjp4aiznybxm7wacnb4q49ch98wizyf4lpn3rg6sjrak4";
+    inherit dependencies buildDependencies features;
+  };
+  smallvec_0_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "smallvec";
+    version = "0.2.1";
+    authors = [ "Simon Sapin <simon.sapin@exyr.org>" ];
+    sha256 = "0rnsll9af52bpjngz0067dpm1ndqmh76i64a58fc118l4lvnjxw2";
+    libPath = "lib.rs";
+    inherit dependencies buildDependencies features;
+  };
+  smallvec_0_6_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "smallvec";
+    version = "0.6.5";
+    authors = [ "Simon Sapin <simon.sapin@exyr.org>" ];
+    sha256 = "0jx49nb1c91936jaq30axc96wncdp2wdmspf1qc8iv85f1i44vvf";
+    libPath = "lib.rs";
+    inherit dependencies buildDependencies features;
+  };
+  stable_deref_trait_1_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "stable_deref_trait";
+    version = "1.1.1";
+    authors = [ "Robert Grosse <n210241048576@gmail.com>" ];
+    sha256 = "1xy9slzslrzr31nlnw52sl1d820b09y61b7f13lqgsn8n7y0l4g8";
+    inherit dependencies buildDependencies features;
+  };
+  storage_units_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "storage-units";
+    version = "0.1.0";
+    authors = [ "Vincent Hanquez <vincent.hanquez@iohk.io>" "Nicolas Di Prima <nicolas.diprima@iohk.io>" ];
+    src = "${fetchgit { url = "https://github.com/input-output-hk/rust-cardano.git"; rev = "4403a9fbd156213fcee3c0611b4f225e96de28d5"; sha256 = "06gkfzhfswjdynm1pb4d9y085q3y171abd9d4sl87y1b80mfpw9j"; }}/storage-units";
     inherit dependencies buildDependencies features;
   };
   syn_0_12_15_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -254,11 +653,18 @@ rec {
     sha256 = "0kkzav72yy0idzbh9zcg92dam3785xzrbxjjp8vxcis9z2zd6b13";
     inherit dependencies buildDependencies features;
   };
-  syn_0_15_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  syn_0_15_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "syn";
-    version = "0.15.4";
+    version = "0.15.8";
     authors = [ "David Tolnay <dtolnay@gmail.com>" ];
-    sha256 = "1kjpz5rw8fr53if153yxczx02yijf05x6q5ynvwz47h8wyf8vxcb";
+    sha256 = "00zvgjkqwfb303x2z2f9wydbqpny6lwjhxh26g41imld2wf0l93z";
+    inherit dependencies buildDependencies features;
+  };
+  take_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "take";
+    version = "0.1.0";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "17rfh39di5n8w9aghpic2r94cndi3dr04l60nkjylmxfxr3iwlhd";
     inherit dependencies buildDependencies features;
   };
   termcolor_1_0_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -289,11 +695,138 @@ rec {
     sha256 = "09g715plrn59kasvigqjrjqzcgqnaf6v6pia0xx03f18kvfmkq06";
     inherit dependencies buildDependencies features;
   };
+  time_0_1_40_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "time";
+    version = "0.1.40";
+    authors = [ "The Rust Project Developers" ];
+    sha256 = "0wgnbjamljz6bqxsd5axc4p2mmhkqfrryj4gf2yswjaxiw5dd01m";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_0_1_11_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio";
+    version = "0.1.11";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "1qzmy07idzv5klgv7yv92q0a528y8z2l97zm7daj2vxzbqp57amx";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_codec_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-codec";
+    version = "0.1.1";
+    authors = [ "Carl Lerche <me@carllerche.com>" "Bryan Burgers <bryan@burgers.io>" ];
+    sha256 = "0jc9lik540zyj4chbygg1rjh37m3zax8pd4bwcrwjmi1v56qwi4h";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_core_0_1_17_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-core";
+    version = "0.1.17";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "1j6c5q3aakvb1hjx4r95xwl5ms8rp19k4qsr6v6ngwbvr6f9z6rs";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_current_thread_0_1_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-current-thread";
+    version = "0.1.3";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0nay6ar70s5xqx1hjqcpd1k3dp2n5r5smlkgjbfyyw5sjkfzf3kz";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_executor_0_1_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-executor";
+    version = "0.1.5";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "15j2ybs8w38gncgbxkvp2qsp6wl62ibi3rns0vlwggx7svmx4bf3";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_fs_0_1_3_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-fs";
+    version = "0.1.3";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "10xy1qzc975xp1bjfr62k4rlwm0v9p57mfzfb3yr6zpr4a7hjdbg";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_io_0_1_9_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-io";
+    version = "0.1.9";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "1rr4y9zkxcvwww7lyaashvv295km6rabfhp7dwhwxvcy7cr4j7b3";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_proto_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-proto";
+    version = "0.1.1";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "030q9h8pn1ngm80klff5irglxxki60hf5maw0mppmmr46k773z66";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_reactor_0_1_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-reactor";
+    version = "0.1.6";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0xjy2b4pfyiyhb8whm0b1xxa3n6v5w8hl0p0cjqqrasci6v53n3s";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_service_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-service";
+    version = "0.1.0";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0c85wm5qz9fabg0k6k763j89m43n6max72d3a8sxcs940id6qmih";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_tcp_0_1_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-tcp";
+    version = "0.1.2";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0yvfwybqnyca24aj9as8rgydamjq0wrd9xbxxkjcasvsdmsv6z1d";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_threadpool_0_1_7_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-threadpool";
+    version = "0.1.7";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "18i3fx3kzqwhaakg17q1kxh75l4m728zzb1jcqh5gpaf4ff5gydd";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_timer_0_2_7_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-timer";
+    version = "0.2.7";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0xajkivlrmg7ygc46jh24bv35vpw51kfm95b6bhnpifl5g04cc1f";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_udp_0_1_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-udp";
+    version = "0.1.2";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "0wl30g8i66pylg1xgaqa5vwjg4hw7m714r6qx7jz0a42dc11ij48";
+    inherit dependencies buildDependencies features;
+  };
+  tokio_uds_0_2_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "tokio-uds";
+    version = "0.2.2";
+    authors = [ "Carl Lerche <me@carllerche.com>" ];
+    sha256 = "1amm71fbrq10dlr64b0ayrwmm52vh8md3m86515kk0hld0444rfp";
+    inherit dependencies buildDependencies features;
+  };
+  try_lock_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "try-lock";
+    version = "0.1.0";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "0kfrqrb2xkjig54s3qfy80dpldknr19p3rmp0n82yk5929j879k3";
+    inherit dependencies buildDependencies features;
+  };
   ucd_util_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "ucd-util";
     version = "0.1.1";
     authors = [ "Andrew Gallant <jamslam@gmail.com>" ];
     sha256 = "02a8h3siipx52b832xc8m8rwasj6nx9jpiwfldw8hp6k205hgkn0";
+    inherit dependencies buildDependencies features;
+  };
+  unicase_2_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "unicase";
+    version = "2.1.0";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "1zzn16hh8fdx5pnbbnl32q8m2mh4vpd1jm9pdcv969ik83dw4byp";
+    build = "build.rs";
     inherit dependencies buildDependencies features;
   };
   unicode_xid_0_1_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -303,6 +836,13 @@ rec {
     sha256 = "05wdmwlfzxhq3nhsxn6wx4q8dhxzzfb9szsz6wiw092m1rjj01zj";
     inherit dependencies buildDependencies features;
   };
+  unreachable_1_0_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "unreachable";
+    version = "1.0.0";
+    authors = [ "Jonathan Reem <jonathan.reem@gmail.com>" ];
+    sha256 = "1am8czbk5wwr25gbp2zr007744fxjshhdqjz9liz7wl4pnv3whcf";
+    inherit dependencies buildDependencies features;
+  };
   utf8_ranges_1_0_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "utf8-ranges";
     version = "1.0.1";
@@ -310,19 +850,48 @@ rec {
     sha256 = "1s56ihd2c8ba6191078wivvv59247szaiszrh8x2rxqfsxlfrnpp";
     inherit dependencies buildDependencies features;
   };
-  version_check_0_1_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  version_check_0_1_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "version_check";
-    version = "0.1.4";
+    version = "0.1.5";
     authors = [ "Sergio Benitez <sb@sergio.bz>" ];
-    sha256 = "1ghi6bw2qsj53x2vyprs883dbrq8cjzmshlamjsxvmwd2zp13bck";
+    sha256 = "1yrx9xblmwbafw2firxyqbj8f771kkzfd24n3q7xgwiqyhi0y8qd";
     inherit dependencies buildDependencies features;
   };
-  winapi_0_3_5_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+  void_1_0_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "void";
+    version = "1.0.2";
+    authors = [ "Jonathan Reem <jonathan.reem@gmail.com>" ];
+    sha256 = "0h1dm0dx8dhf56a83k68mijyxigqhizpskwxfdrs1drwv2cdclv3";
+    inherit dependencies buildDependencies features;
+  };
+  want_0_0_4_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "want";
+    version = "0.0.4";
+    authors = [ "Sean McArthur <sean@seanmonstar.com>" ];
+    sha256 = "1l1qy4pvg5q71nrzfjldw9xzqhhgicj4slly1bal89hr2aaibpy0";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_0_2_8_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
     crateName = "winapi";
-    version = "0.3.5";
+    version = "0.2.8";
     authors = [ "Peter Atashian <retep998@gmail.com>" ];
-    sha256 = "0cfdsxa5yf832r5i2z7dhdvnryyvhfp3nb32gpcaq502zgjdm3w6";
+    sha256 = "0a45b58ywf12vb7gvj6h3j264nydynmzyqz8d8rqxsj6icqv82as";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_0_3_6_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi";
+    version = "0.3.6";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1d9jfp4cjd82sr1q4dgdlrkvm33zhhav9d7ihr0nivqbncr059m4";
     build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  winapi_build_0_1_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "winapi-build";
+    version = "0.1.1";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1lxlpi87rkhxcwp2ykf1ldw3p108hwm24nywf3jfrvmff4rjhqga";
+    libName = "build";
     inherit dependencies buildDependencies features;
   };
   winapi_i686_pc_windows_gnu_0_4_0_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
@@ -355,55 +924,149 @@ rec {
     sha256 = "0gr7v4krmjba7yq16071rfacz42qbapas7mxk5nphjwb042a8gvz";
     inherit dependencies buildDependencies features;
   };
+  ws2_32_sys_0_2_1_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "ws2_32-sys";
+    version = "0.2.1";
+    authors = [ "Peter Atashian <retep998@gmail.com>" ];
+    sha256 = "1zpy9d9wk11sj17fczfngcj28w4xxjs3b4n036yzpy38dxp4f7kc";
+    libName = "ws2_32";
+    build = "build.rs";
+    inherit dependencies buildDependencies features;
+  };
+  yaml_rust_0_4_2_ = { dependencies?[], buildDependencies?[], features?[] }: buildRustCrate {
+    crateName = "yaml-rust";
+    version = "0.4.2";
+    authors = [ "Yuheng Chen <yuhengchen@sensetime.com>" ];
+    sha256 = "1bxc5hhky8rk5r8hrv4ynppsfkivq07jbj458i3h8zkhc1ca33lk";
+    inherit dependencies buildDependencies features;
+  };
   aho_corasick_0_6_8 = { features?(aho_corasick_0_6_8_features {}) }: aho_corasick_0_6_8_ {
-    dependencies = mapFeatures features ([ memchr_2_0_2 ]);
+    dependencies = mapFeatures features ([ memchr_2_1_0 ]);
   };
   aho_corasick_0_6_8_features = f: updateFeatures f (rec {
     aho_corasick_0_6_8.default = (f.aho_corasick_0_6_8.default or true);
-    memchr_2_0_2.default = true;
-  }) [ memchr_2_0_2_features ];
+    memchr_2_1_0.default = true;
+  }) [ memchr_2_1_0_features ];
   all_crates_1_1_1 = { features?(all_crates_1_1_1_features {}) }: all_crates_1_1_1_ {
-    dependencies = mapFeatures features ([ cardano_0_1_0 env_logger_0_5_13 generate_msg_0_1_0 log_0_4_5 nom_3_2_1 rustfbp_0_3_34 ]);
+    dependencies = mapFeatures features ([ cardano_0_1_0 cardano_storage_0_1_0 env_logger_0_5_13 exe_common_0_1_0 generate_msg_0_1_0 log_0_4_5 nom_3_2_1 protocol_0_1_0 rustfbp_0_3_34 storage_units_0_1_0 ]);
   };
   all_crates_1_1_1_features = f: updateFeatures f (rec {
     all_crates_1_1_1.default = (f.all_crates_1_1_1.default or true);
     cardano_0_1_0.default = true;
+    cardano_storage_0_1_0.default = true;
     env_logger_0_5_13.default = true;
+    exe_common_0_1_0.default = true;
     generate_msg_0_1_0.default = true;
     log_0_4_5.default = true;
     nom_3_2_1.default = true;
+    protocol_0_1_0.default = true;
     rustfbp_0_3_34.default = true;
-  }) [ cardano_0_1_0_features env_logger_0_5_13_features generate_msg_0_1_0_features log_0_4_5_features nom_3_2_1_features rustfbp_0_3_34_features ];
+    storage_units_0_1_0.default = true;
+  }) [ cardano_0_1_0_features cardano_storage_0_1_0_features env_logger_0_5_13_features exe_common_0_1_0_features generate_msg_0_1_0_features log_0_4_5_features nom_3_2_1_features protocol_0_1_0_features rustfbp_0_3_34_features storage_units_0_1_0_features ];
+  arrayvec_0_4_7 = { features?(arrayvec_0_4_7_features {}) }: arrayvec_0_4_7_ {
+    dependencies = mapFeatures features ([ nodrop_0_1_12 ]);
+    features = mkFeatures (features.arrayvec_0_4_7 or {});
+  };
+  arrayvec_0_4_7_features = f: updateFeatures f (rec {
+    arrayvec_0_4_7.default = (f.arrayvec_0_4_7.default or true);
+    arrayvec_0_4_7.serde =
+      (f.arrayvec_0_4_7.serde or false) ||
+      (f.arrayvec_0_4_7.serde-1 or false) ||
+      (arrayvec_0_4_7.serde-1 or false);
+    arrayvec_0_4_7.std =
+      (f.arrayvec_0_4_7.std or false) ||
+      (f.arrayvec_0_4_7.default or false) ||
+      (arrayvec_0_4_7.default or false);
+    nodrop_0_1_12.default = (f.nodrop_0_1_12.default or false);
+  }) [ nodrop_0_1_12_features ];
   atty_0_2_11 = { features?(atty_0_2_11_features {}) }: atty_0_2_11_ {
     dependencies = (if kernel == "redox" then mapFeatures features ([ termion_1_5_1 ]) else [])
       ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
-      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
   };
   atty_0_2_11_features = f: updateFeatures f (rec {
     atty_0_2_11.default = (f.atty_0_2_11.default or true);
     libc_0_2_43.default = (f.libc_0_2_43.default or false);
     termion_1_5_1.default = true;
-    winapi_0_3_5.consoleapi = true;
-    winapi_0_3_5.default = true;
-    winapi_0_3_5.minwinbase = true;
-    winapi_0_3_5.minwindef = true;
-    winapi_0_3_5.processenv = true;
-    winapi_0_3_5.winbase = true;
-  }) [ termion_1_5_1_features libc_0_2_43_features winapi_0_3_5_features ];
+    winapi_0_3_6.consoleapi = true;
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.minwinbase = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.processenv = true;
+    winapi_0_3_6.winbase = true;
+  }) [ termion_1_5_1_features libc_0_2_43_features winapi_0_3_6_features ];
+  base64_0_9_3 = { features?(base64_0_9_3_features {}) }: base64_0_9_3_ {
+    dependencies = mapFeatures features ([ byteorder_1_2_6 safemem_0_3_0 ]);
+  };
+  base64_0_9_3_features = f: updateFeatures f (rec {
+    base64_0_9_3.default = (f.base64_0_9_3.default or true);
+    byteorder_1_2_6.default = true;
+    safemem_0_3_0.default = true;
+  }) [ byteorder_1_2_6_features safemem_0_3_0_features ];
+  bitflags_1_0_4 = { features?(bitflags_1_0_4_features {}) }: bitflags_1_0_4_ {
+    features = mkFeatures (features.bitflags_1_0_4 or {});
+  };
+  bitflags_1_0_4_features = f: updateFeatures f (rec {
+    bitflags_1_0_4.default = (f.bitflags_1_0_4.default or true);
+  }) [];
+  byteorder_1_2_6 = { features?(byteorder_1_2_6_features {}) }: byteorder_1_2_6_ {
+    features = mkFeatures (features.byteorder_1_2_6 or {});
+  };
+  byteorder_1_2_6_features = f: updateFeatures f (rec {
+    byteorder_1_2_6.default = (f.byteorder_1_2_6.default or true);
+    byteorder_1_2_6.std =
+      (f.byteorder_1_2_6.std or false) ||
+      (f.byteorder_1_2_6.default or false) ||
+      (byteorder_1_2_6.default or false);
+  }) [];
+  bytes_0_4_10 = { features?(bytes_0_4_10_features {}) }: bytes_0_4_10_ {
+    dependencies = mapFeatures features ([ byteorder_1_2_6 iovec_0_1_2 ]);
+    features = mkFeatures (features.bytes_0_4_10 or {});
+  };
+  bytes_0_4_10_features = f: updateFeatures f (rec {
+    byteorder_1_2_6.default = true;
+    byteorder_1_2_6.i128 =
+      (f.byteorder_1_2_6.i128 or false) ||
+      (bytes_0_4_10.i128 or false) ||
+      (f.bytes_0_4_10.i128 or false);
+    bytes_0_4_10.default = (f.bytes_0_4_10.default or true);
+    iovec_0_1_2.default = true;
+  }) [ byteorder_1_2_6_features iovec_0_1_2_features ];
   cardano_0_1_0 = { features?(cardano_0_1_0_features {}) }: cardano_0_1_0_ {
-    dependencies = mapFeatures features ([ cbor_event_0_1_0 cryptoxide_0_1_0 serde_1_0_78 serde_derive_1_0_78 ]);
+    dependencies = mapFeatures features ([ cbor_event_1_0_0 cryptoxide_0_1_0 ]
+      ++ (if features.cardano_0_1_0.serde or false then [ serde_1_0_79 ] else [])
+      ++ (if features.cardano_0_1_0.serde_derive or false then [ serde_derive_1_0_79 ] else []));
     features = mkFeatures (features.cardano_0_1_0 or {});
   };
   cardano_0_1_0_features = f: updateFeatures f (rec {
     cardano_0_1_0.default = (f.cardano_0_1_0.default or true);
-    cbor_event_0_1_0.default = true;
+    cardano_0_1_0.serde =
+      (f.cardano_0_1_0.serde or false) ||
+      (f.cardano_0_1_0.generic-serialization or false) ||
+      (cardano_0_1_0.generic-serialization or false);
+    cardano_0_1_0.serde_derive =
+      (f.cardano_0_1_0.serde_derive or false) ||
+      (f.cardano_0_1_0.generic-serialization or false) ||
+      (cardano_0_1_0.generic-serialization or false);
+    cbor_event_1_0_0.default = true;
     cryptoxide_0_1_0.default = true;
-    serde_1_0_78.default = true;
-    serde_derive_1_0_78.default = true;
-  }) [ cbor_event_0_1_0_features cryptoxide_0_1_0_features serde_1_0_78_features serde_derive_1_0_78_features ];
-  cbor_event_0_1_0 = { features?(cbor_event_0_1_0_features {}) }: cbor_event_0_1_0_ {};
-  cbor_event_0_1_0_features = f: updateFeatures f (rec {
-    cbor_event_0_1_0.default = (f.cbor_event_0_1_0.default or true);
+    serde_1_0_79.default = true;
+    serde_derive_1_0_79.default = true;
+  }) [ cbor_event_1_0_0_features cryptoxide_0_1_0_features serde_1_0_79_features serde_derive_1_0_79_features ];
+  cardano_storage_0_1_0 = { features?(cardano_storage_0_1_0_features {}) }: cardano_storage_0_1_0_ {
+    dependencies = mapFeatures features ([ cardano_0_1_0 cbor_event_1_0_0 log_0_4_5 rand_0_4_3 storage_units_0_1_0 ]);
+  };
+  cardano_storage_0_1_0_features = f: updateFeatures f (rec {
+    cardano_0_1_0.default = true;
+    cardano_storage_0_1_0.default = (f.cardano_storage_0_1_0.default or true);
+    cbor_event_1_0_0.default = true;
+    log_0_4_5.default = true;
+    rand_0_4_3.default = true;
+    storage_units_0_1_0.default = true;
+  }) [ cardano_0_1_0_features cbor_event_1_0_0_features log_0_4_5_features rand_0_4_3_features storage_units_0_1_0_features ];
+  cbor_event_1_0_0 = { features?(cbor_event_1_0_0_features {}) }: cbor_event_1_0_0_ {};
+  cbor_event_1_0_0_features = f: updateFeatures f (rec {
+    cbor_event_1_0_0.default = (f.cbor_event_1_0_0.default or true);
   }) [];
   cc_1_0_25 = { features?(cc_1_0_25_features {}) }: cc_1_0_25_ {
     dependencies = mapFeatures features ([]);
@@ -420,9 +1083,74 @@ rec {
   cfg_if_0_1_5_features = f: updateFeatures f (rec {
     cfg_if_0_1_5.default = (f.cfg_if_0_1_5.default or true);
   }) [];
+  cloudabi_0_0_3 = { features?(cloudabi_0_0_3_features {}) }: cloudabi_0_0_3_ {
+    dependencies = mapFeatures features ([ ]
+      ++ (if features.cloudabi_0_0_3.bitflags or false then [ bitflags_1_0_4 ] else []));
+    features = mkFeatures (features.cloudabi_0_0_3 or {});
+  };
+  cloudabi_0_0_3_features = f: updateFeatures f (rec {
+    bitflags_1_0_4.default = true;
+    cloudabi_0_0_3.bitflags =
+      (f.cloudabi_0_0_3.bitflags or false) ||
+      (f.cloudabi_0_0_3.default or false) ||
+      (cloudabi_0_0_3.default or false);
+    cloudabi_0_0_3.default = (f.cloudabi_0_0_3.default or true);
+  }) [ bitflags_1_0_4_features ];
+  crossbeam_deque_0_6_1 = { features?(crossbeam_deque_0_6_1_features {}) }: crossbeam_deque_0_6_1_ {
+    dependencies = mapFeatures features ([ crossbeam_epoch_0_5_2 crossbeam_utils_0_5_0 ]);
+  };
+  crossbeam_deque_0_6_1_features = f: updateFeatures f (rec {
+    crossbeam_deque_0_6_1.default = (f.crossbeam_deque_0_6_1.default or true);
+    crossbeam_epoch_0_5_2.default = true;
+    crossbeam_utils_0_5_0.default = true;
+  }) [ crossbeam_epoch_0_5_2_features crossbeam_utils_0_5_0_features ];
+  crossbeam_epoch_0_5_2 = { features?(crossbeam_epoch_0_5_2_features {}) }: crossbeam_epoch_0_5_2_ {
+    dependencies = mapFeatures features ([ arrayvec_0_4_7 cfg_if_0_1_5 crossbeam_utils_0_5_0 memoffset_0_2_1 scopeguard_0_3_3 ]
+      ++ (if features.crossbeam_epoch_0_5_2.lazy_static or false then [ lazy_static_1_1_0 ] else []));
+    features = mkFeatures (features.crossbeam_epoch_0_5_2 or {});
+  };
+  crossbeam_epoch_0_5_2_features = f: updateFeatures f (rec {
+    arrayvec_0_4_7.default = (f.arrayvec_0_4_7.default or false);
+    arrayvec_0_4_7.use_union =
+      (f.arrayvec_0_4_7.use_union or false) ||
+      (crossbeam_epoch_0_5_2.nightly or false) ||
+      (f.crossbeam_epoch_0_5_2.nightly or false);
+    cfg_if_0_1_5.default = true;
+    crossbeam_epoch_0_5_2.default = (f.crossbeam_epoch_0_5_2.default or true);
+    crossbeam_epoch_0_5_2.lazy_static =
+      (f.crossbeam_epoch_0_5_2.lazy_static or false) ||
+      (f.crossbeam_epoch_0_5_2.use_std or false) ||
+      (crossbeam_epoch_0_5_2.use_std or false);
+    crossbeam_epoch_0_5_2.use_std =
+      (f.crossbeam_epoch_0_5_2.use_std or false) ||
+      (f.crossbeam_epoch_0_5_2.default or false) ||
+      (crossbeam_epoch_0_5_2.default or false);
+    crossbeam_utils_0_5_0.default = (f.crossbeam_utils_0_5_0.default or false);
+    crossbeam_utils_0_5_0.use_std =
+      (f.crossbeam_utils_0_5_0.use_std or false) ||
+      (crossbeam_epoch_0_5_2.use_std or false) ||
+      (f.crossbeam_epoch_0_5_2.use_std or false);
+    lazy_static_1_1_0.default = true;
+    memoffset_0_2_1.default = true;
+    scopeguard_0_3_3.default = (f.scopeguard_0_3_3.default or false);
+  }) [ arrayvec_0_4_7_features cfg_if_0_1_5_features crossbeam_utils_0_5_0_features lazy_static_1_1_0_features memoffset_0_2_1_features scopeguard_0_3_3_features ];
+  crossbeam_utils_0_5_0 = { features?(crossbeam_utils_0_5_0_features {}) }: crossbeam_utils_0_5_0_ {
+    features = mkFeatures (features.crossbeam_utils_0_5_0 or {});
+  };
+  crossbeam_utils_0_5_0_features = f: updateFeatures f (rec {
+    crossbeam_utils_0_5_0.default = (f.crossbeam_utils_0_5_0.default or true);
+    crossbeam_utils_0_5_0.use_std =
+      (f.crossbeam_utils_0_5_0.use_std or false) ||
+      (f.crossbeam_utils_0_5_0.default or false) ||
+      (crossbeam_utils_0_5_0.default or false);
+  }) [];
   cryptoxide_0_1_0 = { features?(cryptoxide_0_1_0_features {}) }: cryptoxide_0_1_0_ {};
   cryptoxide_0_1_0_features = f: updateFeatures f (rec {
     cryptoxide_0_1_0.default = (f.cryptoxide_0_1_0.default or true);
+  }) [];
+  dtoa_0_4_3 = { features?(dtoa_0_4_3_features {}) }: dtoa_0_4_3_ {};
+  dtoa_0_4_3_features = f: updateFeatures f (rec {
+    dtoa_0_4_3.default = (f.dtoa_0_4_3.default or true);
   }) [];
   env_logger_0_5_13 = { features?(env_logger_0_5_13_features {}) }: env_logger_0_5_13_ {
     dependencies = mapFeatures features ([ atty_0_2_11 humantime_1_1_1 log_0_4_5 termcolor_1_0_4 ]
@@ -442,6 +1170,70 @@ rec {
     regex_1_0_5.default = true;
     termcolor_1_0_4.default = true;
   }) [ atty_0_2_11_features humantime_1_1_1_features log_0_4_5_features regex_1_0_5_features termcolor_1_0_4_features ];
+  exe_common_0_1_0 = { features?(exe_common_0_1_0_features {}) }: exe_common_0_1_0_ {
+    dependencies = mapFeatures features ([ cardano_0_1_0 cardano_storage_0_1_0 cbor_event_1_0_0 futures_0_1_24 hyper_0_11_27 log_0_4_5 protocol_0_1_0 rand_0_4_3 serde_1_0_79 serde_derive_1_0_79 serde_yaml_0_7_5 storage_units_0_1_0 tokio_core_0_1_17 ]);
+  };
+  exe_common_0_1_0_features = f: updateFeatures f (rec {
+    cardano_0_1_0.default = true;
+    cardano_0_1_0.generic-serialization = true;
+    cardano_storage_0_1_0.default = true;
+    cbor_event_1_0_0.default = true;
+    exe_common_0_1_0.default = (f.exe_common_0_1_0.default or true);
+    futures_0_1_24.default = true;
+    hyper_0_11_27.default = true;
+    log_0_4_5.default = true;
+    protocol_0_1_0.default = true;
+    rand_0_4_3.default = true;
+    serde_1_0_79.default = true;
+    serde_derive_1_0_79.default = true;
+    serde_yaml_0_7_5.default = true;
+    storage_units_0_1_0.default = true;
+    tokio_core_0_1_17.default = true;
+  }) [ cardano_0_1_0_features cardano_storage_0_1_0_features cbor_event_1_0_0_features futures_0_1_24_features hyper_0_11_27_features log_0_4_5_features protocol_0_1_0_features rand_0_4_3_features serde_1_0_79_features serde_derive_1_0_79_features serde_yaml_0_7_5_features storage_units_0_1_0_features tokio_core_0_1_17_features ];
+  fuchsia_zircon_0_3_3 = { features?(fuchsia_zircon_0_3_3_features {}) }: fuchsia_zircon_0_3_3_ {
+    dependencies = mapFeatures features ([ bitflags_1_0_4 fuchsia_zircon_sys_0_3_3 ]);
+  };
+  fuchsia_zircon_0_3_3_features = f: updateFeatures f (rec {
+    bitflags_1_0_4.default = true;
+    fuchsia_zircon_0_3_3.default = (f.fuchsia_zircon_0_3_3.default or true);
+    fuchsia_zircon_sys_0_3_3.default = true;
+  }) [ bitflags_1_0_4_features fuchsia_zircon_sys_0_3_3_features ];
+  fuchsia_zircon_sys_0_3_3 = { features?(fuchsia_zircon_sys_0_3_3_features {}) }: fuchsia_zircon_sys_0_3_3_ {};
+  fuchsia_zircon_sys_0_3_3_features = f: updateFeatures f (rec {
+    fuchsia_zircon_sys_0_3_3.default = (f.fuchsia_zircon_sys_0_3_3.default or true);
+  }) [];
+  futures_0_1_24 = { features?(futures_0_1_24_features {}) }: futures_0_1_24_ {
+    features = mkFeatures (features.futures_0_1_24 or {});
+  };
+  futures_0_1_24_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = (f.futures_0_1_24.default or true);
+    futures_0_1_24.use_std =
+      (f.futures_0_1_24.use_std or false) ||
+      (f.futures_0_1_24.default or false) ||
+      (futures_0_1_24.default or false);
+    futures_0_1_24.with-deprecated =
+      (f.futures_0_1_24.with-deprecated or false) ||
+      (f.futures_0_1_24.default or false) ||
+      (futures_0_1_24.default or false);
+  }) [];
+  futures_cpupool_0_1_8 = { features?(futures_cpupool_0_1_8_features {}) }: futures_cpupool_0_1_8_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 num_cpus_1_8_0 ]);
+    features = mkFeatures (features.futures_cpupool_0_1_8 or {});
+  };
+  futures_cpupool_0_1_8_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = (f.futures_0_1_24.default or false);
+    futures_0_1_24.use_std = true;
+    futures_0_1_24.with-deprecated =
+      (f.futures_0_1_24.with-deprecated or false) ||
+      (futures_cpupool_0_1_8.with-deprecated or false) ||
+      (f.futures_cpupool_0_1_8.with-deprecated or false);
+    futures_cpupool_0_1_8.default = (f.futures_cpupool_0_1_8.default or true);
+    futures_cpupool_0_1_8.with-deprecated =
+      (f.futures_cpupool_0_1_8.with-deprecated or false) ||
+      (f.futures_cpupool_0_1_8.default or false) ||
+      (futures_cpupool_0_1_8.default or false);
+    num_cpus_1_8_0.default = true;
+  }) [ futures_0_1_24_features num_cpus_1_8_0_features ];
   generate_msg_0_1_0 = { features?(generate_msg_0_1_0_features {}) }: generate_msg_0_1_0_ {
     dependencies = mapFeatures features ([ syn_0_12_15 ]);
   };
@@ -450,6 +1242,16 @@ rec {
     syn_0_12_15.default = true;
     syn_0_12_15.full = true;
   }) [ syn_0_12_15_features ];
+  httparse_1_3_3 = { features?(httparse_1_3_3_features {}) }: httparse_1_3_3_ {
+    features = mkFeatures (features.httparse_1_3_3 or {});
+  };
+  httparse_1_3_3_features = f: updateFeatures f (rec {
+    httparse_1_3_3.default = (f.httparse_1_3_3.default or true);
+    httparse_1_3_3.std =
+      (f.httparse_1_3_3.std or false) ||
+      (f.httparse_1_3_3.default or false) ||
+      (httparse_1_3_3.default or false);
+  }) [];
   humantime_1_1_1 = { features?(humantime_1_1_1_features {}) }: humantime_1_1_1_ {
     dependencies = mapFeatures features ([ quick_error_1_2_2 ]);
   };
@@ -457,9 +1259,81 @@ rec {
     humantime_1_1_1.default = (f.humantime_1_1_1.default or true);
     quick_error_1_2_2.default = true;
   }) [ quick_error_1_2_2_features ];
+  hyper_0_11_27 = { features?(hyper_0_11_27_features {}) }: hyper_0_11_27_ {
+    dependencies = mapFeatures features ([ base64_0_9_3 bytes_0_4_10 futures_0_1_24 futures_cpupool_0_1_8 httparse_1_3_3 iovec_0_1_2 language_tags_0_2_2 log_0_4_5 mime_0_3_9 net2_0_2_33 percent_encoding_1_0_1 relay_0_1_1 time_0_1_40 tokio_core_0_1_17 tokio_io_0_1_9 tokio_service_0_1_0 unicase_2_1_0 want_0_0_4 ]
+      ++ (if features.hyper_0_11_27.tokio-proto or false then [ tokio_proto_0_1_1 ] else []));
+    features = mkFeatures (features.hyper_0_11_27 or {});
+  };
+  hyper_0_11_27_features = f: updateFeatures f (rec {
+    base64_0_9_3.default = true;
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    futures_cpupool_0_1_8.default = true;
+    httparse_1_3_3.default = true;
+    hyper_0_11_27.default = (f.hyper_0_11_27.default or true);
+    hyper_0_11_27.http =
+      (f.hyper_0_11_27.http or false) ||
+      (f.hyper_0_11_27.compat or false) ||
+      (hyper_0_11_27.compat or false);
+    hyper_0_11_27.server-proto =
+      (f.hyper_0_11_27.server-proto or false) ||
+      (f.hyper_0_11_27.default or false) ||
+      (hyper_0_11_27.default or false);
+    hyper_0_11_27.tokio-proto =
+      (f.hyper_0_11_27.tokio-proto or false) ||
+      (f.hyper_0_11_27.server-proto or false) ||
+      (hyper_0_11_27.server-proto or false);
+    iovec_0_1_2.default = true;
+    language_tags_0_2_2.default = true;
+    log_0_4_5.default = true;
+    mime_0_3_9.default = true;
+    net2_0_2_33.default = true;
+    percent_encoding_1_0_1.default = true;
+    relay_0_1_1.default = true;
+    time_0_1_40.default = true;
+    tokio_core_0_1_17.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_proto_0_1_1.default = true;
+    tokio_service_0_1_0.default = true;
+    unicase_2_1_0.default = true;
+    want_0_0_4.default = true;
+  }) [ base64_0_9_3_features bytes_0_4_10_features futures_0_1_24_features futures_cpupool_0_1_8_features httparse_1_3_3_features iovec_0_1_2_features language_tags_0_2_2_features log_0_4_5_features mime_0_3_9_features net2_0_2_33_features percent_encoding_1_0_1_features relay_0_1_1_features time_0_1_40_features tokio_core_0_1_17_features tokio_io_0_1_9_features tokio_proto_0_1_1_features tokio_service_0_1_0_features unicase_2_1_0_features want_0_0_4_features ];
+  iovec_0_1_2 = { features?(iovec_0_1_2_features {}) }: iovec_0_1_2_ {
+    dependencies = (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_2_8 ]) else []);
+  };
+  iovec_0_1_2_features = f: updateFeatures f (rec {
+    iovec_0_1_2.default = (f.iovec_0_1_2.default or true);
+    libc_0_2_43.default = true;
+    winapi_0_2_8.default = true;
+  }) [ libc_0_2_43_features winapi_0_2_8_features ];
+  kernel32_sys_0_2_2 = { features?(kernel32_sys_0_2_2_features {}) }: kernel32_sys_0_2_2_ {
+    dependencies = mapFeatures features ([ winapi_0_2_8 ]);
+    buildDependencies = mapFeatures features ([ winapi_build_0_1_1 ]);
+  };
+  kernel32_sys_0_2_2_features = f: updateFeatures f (rec {
+    kernel32_sys_0_2_2.default = (f.kernel32_sys_0_2_2.default or true);
+    winapi_0_2_8.default = true;
+    winapi_build_0_1_1.default = true;
+  }) [ winapi_0_2_8_features winapi_build_0_1_1_features ];
+  language_tags_0_2_2 = { features?(language_tags_0_2_2_features {}) }: language_tags_0_2_2_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.language_tags_0_2_2 or {});
+  };
+  language_tags_0_2_2_features = f: updateFeatures f (rec {
+    language_tags_0_2_2.default = (f.language_tags_0_2_2.default or true);
+    language_tags_0_2_2.heapsize =
+      (f.language_tags_0_2_2.heapsize or false) ||
+      (f.language_tags_0_2_2.heap_size or false) ||
+      (language_tags_0_2_2.heap_size or false);
+    language_tags_0_2_2.heapsize_plugin =
+      (f.language_tags_0_2_2.heapsize_plugin or false) ||
+      (f.language_tags_0_2_2.heap_size or false) ||
+      (language_tags_0_2_2.heap_size or false);
+  }) [];
   lazy_static_1_1_0 = { features?(lazy_static_1_1_0_features {}) }: lazy_static_1_1_0_ {
     dependencies = mapFeatures features ([]);
-    buildDependencies = mapFeatures features ([ version_check_0_1_4 ]);
+    buildDependencies = mapFeatures features ([ version_check_0_1_5 ]);
     features = mkFeatures (features.lazy_static_1_1_0 or {});
   };
   lazy_static_1_1_0_features = f: updateFeatures f (rec {
@@ -472,8 +1346,23 @@ rec {
       (f.lazy_static_1_1_0.spin or false) ||
       (f.lazy_static_1_1_0.spin_no_std or false) ||
       (lazy_static_1_1_0.spin_no_std or false);
-    version_check_0_1_4.default = true;
-  }) [ version_check_0_1_4_features ];
+    version_check_0_1_5.default = true;
+  }) [ version_check_0_1_5_features ];
+  lazycell_1_2_0 = { features?(lazycell_1_2_0_features {}) }: lazycell_1_2_0_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.lazycell_1_2_0 or {});
+  };
+  lazycell_1_2_0_features = f: updateFeatures f (rec {
+    lazycell_1_2_0.clippy =
+      (f.lazycell_1_2_0.clippy or false) ||
+      (f.lazycell_1_2_0.nightly-testing or false) ||
+      (lazycell_1_2_0.nightly-testing or false);
+    lazycell_1_2_0.default = (f.lazycell_1_2_0.default or true);
+    lazycell_1_2_0.nightly =
+      (f.lazycell_1_2_0.nightly or false) ||
+      (f.lazycell_1_2_0.nightly-testing or false) ||
+      (lazycell_1_2_0.nightly-testing or false);
+  }) [];
   libc_0_2_43 = { features?(libc_0_2_43_features {}) }: libc_0_2_43_ {
     features = mkFeatures (features.libc_0_2_43 or {});
   };
@@ -485,17 +1374,110 @@ rec {
       (libc_0_2_43.default or false);
   }) [];
   libloading_0_5_0 = { features?(libloading_0_5_0_features {}) }: libloading_0_5_0_ {
-    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
+    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
     buildDependencies = mapFeatures features ([ cc_1_0_25 ]);
   };
   libloading_0_5_0_features = f: updateFeatures f (rec {
     cc_1_0_25.default = true;
     libloading_0_5_0.default = (f.libloading_0_5_0.default or true);
-    winapi_0_3_5.default = true;
-    winapi_0_3_5.errhandlingapi = true;
-    winapi_0_3_5.libloaderapi = true;
-    winapi_0_3_5.winerror = true;
-  }) [ cc_1_0_25_features winapi_0_3_5_features ];
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.errhandlingapi = true;
+    winapi_0_3_6.libloaderapi = true;
+    winapi_0_3_6.winerror = true;
+  }) [ cc_1_0_25_features winapi_0_3_6_features ];
+  linked_hash_map_0_5_1 = { features?(linked_hash_map_0_5_1_features {}) }: linked_hash_map_0_5_1_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.linked_hash_map_0_5_1 or {});
+  };
+  linked_hash_map_0_5_1_features = f: updateFeatures f (rec {
+    linked_hash_map_0_5_1.default = (f.linked_hash_map_0_5_1.default or true);
+    linked_hash_map_0_5_1.heapsize =
+      (f.linked_hash_map_0_5_1.heapsize or false) ||
+      (f.linked_hash_map_0_5_1.heapsize_impl or false) ||
+      (linked_hash_map_0_5_1.heapsize_impl or false);
+    linked_hash_map_0_5_1.serde =
+      (f.linked_hash_map_0_5_1.serde or false) ||
+      (f.linked_hash_map_0_5_1.serde_impl or false) ||
+      (linked_hash_map_0_5_1.serde_impl or false);
+    linked_hash_map_0_5_1.serde_test =
+      (f.linked_hash_map_0_5_1.serde_test or false) ||
+      (f.linked_hash_map_0_5_1.serde_impl or false) ||
+      (linked_hash_map_0_5_1.serde_impl or false);
+  }) [];
+  lock_api_0_1_4 = { features?(lock_api_0_1_4_features {}) }: lock_api_0_1_4_ {
+    dependencies = mapFeatures features ([ scopeguard_0_3_3 ]
+      ++ (if features.lock_api_0_1_4.owning_ref or false then [ owning_ref_0_3_3 ] else []));
+    features = mkFeatures (features.lock_api_0_1_4 or {});
+  };
+  lock_api_0_1_4_features = f: updateFeatures f (rec {
+    lock_api_0_1_4.default = (f.lock_api_0_1_4.default or true);
+    owning_ref_0_3_3.default = true;
+    scopeguard_0_3_3.default = (f.scopeguard_0_3_3.default or false);
+  }) [ owning_ref_0_3_3_features scopeguard_0_3_3_features ];
+  log_0_3_9 = { features?(log_0_3_9_features {}) }: log_0_3_9_ {
+    dependencies = mapFeatures features ([ log_0_4_5 ]);
+    features = mkFeatures (features.log_0_3_9 or {});
+  };
+  log_0_3_9_features = f: updateFeatures f (rec {
+    log_0_3_9.default = (f.log_0_3_9.default or true);
+    log_0_3_9.use_std =
+      (f.log_0_3_9.use_std or false) ||
+      (f.log_0_3_9.default or false) ||
+      (log_0_3_9.default or false);
+    log_0_4_5.default = true;
+    log_0_4_5.max_level_debug =
+      (f.log_0_4_5.max_level_debug or false) ||
+      (log_0_3_9.max_level_debug or false) ||
+      (f.log_0_3_9.max_level_debug or false);
+    log_0_4_5.max_level_error =
+      (f.log_0_4_5.max_level_error or false) ||
+      (log_0_3_9.max_level_error or false) ||
+      (f.log_0_3_9.max_level_error or false);
+    log_0_4_5.max_level_info =
+      (f.log_0_4_5.max_level_info or false) ||
+      (log_0_3_9.max_level_info or false) ||
+      (f.log_0_3_9.max_level_info or false);
+    log_0_4_5.max_level_off =
+      (f.log_0_4_5.max_level_off or false) ||
+      (log_0_3_9.max_level_off or false) ||
+      (f.log_0_3_9.max_level_off or false);
+    log_0_4_5.max_level_trace =
+      (f.log_0_4_5.max_level_trace or false) ||
+      (log_0_3_9.max_level_trace or false) ||
+      (f.log_0_3_9.max_level_trace or false);
+    log_0_4_5.max_level_warn =
+      (f.log_0_4_5.max_level_warn or false) ||
+      (log_0_3_9.max_level_warn or false) ||
+      (f.log_0_3_9.max_level_warn or false);
+    log_0_4_5.release_max_level_debug =
+      (f.log_0_4_5.release_max_level_debug or false) ||
+      (log_0_3_9.release_max_level_debug or false) ||
+      (f.log_0_3_9.release_max_level_debug or false);
+    log_0_4_5.release_max_level_error =
+      (f.log_0_4_5.release_max_level_error or false) ||
+      (log_0_3_9.release_max_level_error or false) ||
+      (f.log_0_3_9.release_max_level_error or false);
+    log_0_4_5.release_max_level_info =
+      (f.log_0_4_5.release_max_level_info or false) ||
+      (log_0_3_9.release_max_level_info or false) ||
+      (f.log_0_3_9.release_max_level_info or false);
+    log_0_4_5.release_max_level_off =
+      (f.log_0_4_5.release_max_level_off or false) ||
+      (log_0_3_9.release_max_level_off or false) ||
+      (f.log_0_3_9.release_max_level_off or false);
+    log_0_4_5.release_max_level_trace =
+      (f.log_0_4_5.release_max_level_trace or false) ||
+      (log_0_3_9.release_max_level_trace or false) ||
+      (f.log_0_3_9.release_max_level_trace or false);
+    log_0_4_5.release_max_level_warn =
+      (f.log_0_4_5.release_max_level_warn or false) ||
+      (log_0_3_9.release_max_level_warn or false) ||
+      (f.log_0_3_9.release_max_level_warn or false);
+    log_0_4_5.std =
+      (f.log_0_4_5.std or false) ||
+      (log_0_3_9.use_std or false) ||
+      (f.log_0_3_9.use_std or false);
+  }) [ log_0_4_5_features ];
   log_0_4_5 = { features?(log_0_4_5_features {}) }: log_0_4_5_ {
     dependencies = mapFeatures features ([ cfg_if_0_1_5 ]);
     features = mkFeatures (features.log_0_4_5 or {});
@@ -527,29 +1509,123 @@ rec {
       (f.memchr_1_0_2.default or false) ||
       (memchr_1_0_2.default or false);
   }) [ libc_0_2_43_features ];
-  memchr_2_0_2 = { features?(memchr_2_0_2_features {}) }: memchr_2_0_2_ {
-    dependencies = mapFeatures features ([ ]
-      ++ (if features.memchr_2_0_2.libc or false then [ libc_0_2_43 ] else []));
-    features = mkFeatures (features.memchr_2_0_2 or {});
+  memchr_2_1_0 = { features?(memchr_2_1_0_features {}) }: memchr_2_1_0_ {
+    dependencies = mapFeatures features ([ cfg_if_0_1_5 ]
+      ++ (if features.memchr_2_1_0.libc or false then [ libc_0_2_43 ] else []));
+    buildDependencies = mapFeatures features ([ version_check_0_1_5 ]);
+    features = mkFeatures (features.memchr_2_1_0 or {});
   };
-  memchr_2_0_2_features = f: updateFeatures f (rec {
+  memchr_2_1_0_features = f: updateFeatures f (rec {
+    cfg_if_0_1_5.default = true;
     libc_0_2_43.default = (f.libc_0_2_43.default or false);
     libc_0_2_43.use_std =
       (f.libc_0_2_43.use_std or false) ||
-      (memchr_2_0_2.use_std or false) ||
-      (f.memchr_2_0_2.use_std or false);
-    memchr_2_0_2.default = (f.memchr_2_0_2.default or true);
-    memchr_2_0_2.libc =
-      (f.memchr_2_0_2.libc or false) ||
-      (f.memchr_2_0_2.default or false) ||
-      (memchr_2_0_2.default or false) ||
-      (f.memchr_2_0_2.use_std or false) ||
-      (memchr_2_0_2.use_std or false);
-    memchr_2_0_2.use_std =
-      (f.memchr_2_0_2.use_std or false) ||
-      (f.memchr_2_0_2.default or false) ||
-      (memchr_2_0_2.default or false);
-  }) [ libc_0_2_43_features ];
+      (memchr_2_1_0.use_std or false) ||
+      (f.memchr_2_1_0.use_std or false);
+    memchr_2_1_0.default = (f.memchr_2_1_0.default or true);
+    memchr_2_1_0.libc =
+      (f.memchr_2_1_0.libc or false) ||
+      (f.memchr_2_1_0.default or false) ||
+      (memchr_2_1_0.default or false) ||
+      (f.memchr_2_1_0.use_std or false) ||
+      (memchr_2_1_0.use_std or false);
+    memchr_2_1_0.use_std =
+      (f.memchr_2_1_0.use_std or false) ||
+      (f.memchr_2_1_0.default or false) ||
+      (memchr_2_1_0.default or false);
+    version_check_0_1_5.default = true;
+  }) [ cfg_if_0_1_5_features libc_0_2_43_features version_check_0_1_5_features ];
+  memoffset_0_2_1 = { features?(memoffset_0_2_1_features {}) }: memoffset_0_2_1_ {};
+  memoffset_0_2_1_features = f: updateFeatures f (rec {
+    memoffset_0_2_1.default = (f.memoffset_0_2_1.default or true);
+  }) [];
+  mime_0_3_9 = { features?(mime_0_3_9_features {}) }: mime_0_3_9_ {
+    dependencies = mapFeatures features ([ unicase_2_1_0 ]);
+  };
+  mime_0_3_9_features = f: updateFeatures f (rec {
+    mime_0_3_9.default = (f.mime_0_3_9.default or true);
+    unicase_2_1_0.default = true;
+  }) [ unicase_2_1_0_features ];
+  mio_0_6_16 = { features?(mio_0_6_16_features {}) }: mio_0_6_16_ {
+    dependencies = mapFeatures features ([ iovec_0_1_2 lazycell_1_2_0 log_0_4_5 net2_0_2_33 slab_0_4_1 ])
+      ++ (if kernel == "fuchsia" then mapFeatures features ([ fuchsia_zircon_0_3_3 fuchsia_zircon_sys_0_3_3 ]) else [])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ kernel32_sys_0_2_2 miow_0_2_1 winapi_0_2_8 ]) else []);
+    features = mkFeatures (features.mio_0_6_16 or {});
+  };
+  mio_0_6_16_features = f: updateFeatures f (rec {
+    fuchsia_zircon_0_3_3.default = true;
+    fuchsia_zircon_sys_0_3_3.default = true;
+    iovec_0_1_2.default = true;
+    kernel32_sys_0_2_2.default = true;
+    lazycell_1_2_0.default = true;
+    libc_0_2_43.default = true;
+    log_0_4_5.default = true;
+    mio_0_6_16.default = (f.mio_0_6_16.default or true);
+    mio_0_6_16.with-deprecated =
+      (f.mio_0_6_16.with-deprecated or false) ||
+      (f.mio_0_6_16.default or false) ||
+      (mio_0_6_16.default or false);
+    miow_0_2_1.default = true;
+    net2_0_2_33.default = true;
+    slab_0_4_1.default = true;
+    winapi_0_2_8.default = true;
+  }) [ iovec_0_1_2_features lazycell_1_2_0_features log_0_4_5_features net2_0_2_33_features slab_0_4_1_features fuchsia_zircon_0_3_3_features fuchsia_zircon_sys_0_3_3_features libc_0_2_43_features kernel32_sys_0_2_2_features miow_0_2_1_features winapi_0_2_8_features ];
+  mio_uds_0_6_7 = { features?(mio_uds_0_6_7_features {}) }: mio_uds_0_6_7_ {
+    dependencies = (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ iovec_0_1_2 libc_0_2_43 mio_0_6_16 ]) else []);
+  };
+  mio_uds_0_6_7_features = f: updateFeatures f (rec {
+    iovec_0_1_2.default = true;
+    libc_0_2_43.default = true;
+    mio_0_6_16.default = true;
+    mio_uds_0_6_7.default = (f.mio_uds_0_6_7.default or true);
+  }) [ iovec_0_1_2_features libc_0_2_43_features mio_0_6_16_features ];
+  miow_0_2_1 = { features?(miow_0_2_1_features {}) }: miow_0_2_1_ {
+    dependencies = mapFeatures features ([ kernel32_sys_0_2_2 net2_0_2_33 winapi_0_2_8 ws2_32_sys_0_2_1 ]);
+  };
+  miow_0_2_1_features = f: updateFeatures f (rec {
+    kernel32_sys_0_2_2.default = true;
+    miow_0_2_1.default = (f.miow_0_2_1.default or true);
+    net2_0_2_33.default = (f.net2_0_2_33.default or false);
+    winapi_0_2_8.default = true;
+    ws2_32_sys_0_2_1.default = true;
+  }) [ kernel32_sys_0_2_2_features net2_0_2_33_features winapi_0_2_8_features ws2_32_sys_0_2_1_features ];
+  net2_0_2_33 = { features?(net2_0_2_33_features {}) }: net2_0_2_33_ {
+    dependencies = mapFeatures features ([ cfg_if_0_1_5 ])
+      ++ (if kernel == "redox" || (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
+    features = mkFeatures (features.net2_0_2_33 or {});
+  };
+  net2_0_2_33_features = f: updateFeatures f (rec {
+    cfg_if_0_1_5.default = true;
+    libc_0_2_43.default = true;
+    net2_0_2_33.default = (f.net2_0_2_33.default or true);
+    net2_0_2_33.duration =
+      (f.net2_0_2_33.duration or false) ||
+      (f.net2_0_2_33.default or false) ||
+      (net2_0_2_33.default or false);
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.handleapi = true;
+    winapi_0_3_6.winsock2 = true;
+    winapi_0_3_6.ws2def = true;
+    winapi_0_3_6.ws2ipdef = true;
+    winapi_0_3_6.ws2tcpip = true;
+  }) [ cfg_if_0_1_5_features libc_0_2_43_features winapi_0_3_6_features ];
+  nodrop_0_1_12 = { features?(nodrop_0_1_12_features {}) }: nodrop_0_1_12_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.nodrop_0_1_12 or {});
+  };
+  nodrop_0_1_12_features = f: updateFeatures f (rec {
+    nodrop_0_1_12.default = (f.nodrop_0_1_12.default or true);
+    nodrop_0_1_12.nodrop-union =
+      (f.nodrop_0_1_12.nodrop-union or false) ||
+      (f.nodrop_0_1_12.use_union or false) ||
+      (nodrop_0_1_12.use_union or false);
+    nodrop_0_1_12.std =
+      (f.nodrop_0_1_12.std or false) ||
+      (f.nodrop_0_1_12.default or false) ||
+      (nodrop_0_1_12.default or false);
+  }) [];
   nom_3_2_1 = { features?(nom_3_2_1_features {}) }: nom_3_2_1_ {
     dependencies = mapFeatures features ([ memchr_1_0_2 ]);
     features = mkFeatures (features.nom_3_2_1 or {});
@@ -593,6 +1669,80 @@ rec {
     libc_0_2_43.default = true;
     num_cpus_1_8_0.default = (f.num_cpus_1_8_0.default or true);
   }) [ libc_0_2_43_features ];
+  owning_ref_0_3_3 = { features?(owning_ref_0_3_3_features {}) }: owning_ref_0_3_3_ {
+    dependencies = mapFeatures features ([ stable_deref_trait_1_1_1 ]);
+  };
+  owning_ref_0_3_3_features = f: updateFeatures f (rec {
+    owning_ref_0_3_3.default = (f.owning_ref_0_3_3.default or true);
+    stable_deref_trait_1_1_1.default = true;
+  }) [ stable_deref_trait_1_1_1_features ];
+  parking_lot_0_6_4 = { features?(parking_lot_0_6_4_features {}) }: parking_lot_0_6_4_ {
+    dependencies = mapFeatures features ([ lock_api_0_1_4 parking_lot_core_0_3_1 ]);
+    features = mkFeatures (features.parking_lot_0_6_4 or {});
+  };
+  parking_lot_0_6_4_features = f: updateFeatures f (rec {
+    lock_api_0_1_4.default = true;
+    lock_api_0_1_4.nightly =
+      (f.lock_api_0_1_4.nightly or false) ||
+      (parking_lot_0_6_4.nightly or false) ||
+      (f.parking_lot_0_6_4.nightly or false);
+    lock_api_0_1_4.owning_ref =
+      (f.lock_api_0_1_4.owning_ref or false) ||
+      (parking_lot_0_6_4.owning_ref or false) ||
+      (f.parking_lot_0_6_4.owning_ref or false);
+    parking_lot_0_6_4.default = (f.parking_lot_0_6_4.default or true);
+    parking_lot_0_6_4.owning_ref =
+      (f.parking_lot_0_6_4.owning_ref or false) ||
+      (f.parking_lot_0_6_4.default or false) ||
+      (parking_lot_0_6_4.default or false);
+    parking_lot_core_0_3_1.deadlock_detection =
+      (f.parking_lot_core_0_3_1.deadlock_detection or false) ||
+      (parking_lot_0_6_4.deadlock_detection or false) ||
+      (f.parking_lot_0_6_4.deadlock_detection or false);
+    parking_lot_core_0_3_1.default = true;
+    parking_lot_core_0_3_1.nightly =
+      (f.parking_lot_core_0_3_1.nightly or false) ||
+      (parking_lot_0_6_4.nightly or false) ||
+      (f.parking_lot_0_6_4.nightly or false);
+  }) [ lock_api_0_1_4_features parking_lot_core_0_3_1_features ];
+  parking_lot_core_0_3_1 = { features?(parking_lot_core_0_3_1_features {}) }: parking_lot_core_0_3_1_ {
+    dependencies = mapFeatures features ([ rand_0_5_5 smallvec_0_6_5 ])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ libc_0_2_43 ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
+    buildDependencies = mapFeatures features ([ rustc_version_0_2_3 ]);
+    features = mkFeatures (features.parking_lot_core_0_3_1 or {});
+  };
+  parking_lot_core_0_3_1_features = f: updateFeatures f (rec {
+    libc_0_2_43.default = true;
+    parking_lot_core_0_3_1.backtrace =
+      (f.parking_lot_core_0_3_1.backtrace or false) ||
+      (f.parking_lot_core_0_3_1.deadlock_detection or false) ||
+      (parking_lot_core_0_3_1.deadlock_detection or false);
+    parking_lot_core_0_3_1.default = (f.parking_lot_core_0_3_1.default or true);
+    parking_lot_core_0_3_1.petgraph =
+      (f.parking_lot_core_0_3_1.petgraph or false) ||
+      (f.parking_lot_core_0_3_1.deadlock_detection or false) ||
+      (parking_lot_core_0_3_1.deadlock_detection or false);
+    parking_lot_core_0_3_1.thread-id =
+      (f.parking_lot_core_0_3_1.thread-id or false) ||
+      (f.parking_lot_core_0_3_1.deadlock_detection or false) ||
+      (parking_lot_core_0_3_1.deadlock_detection or false);
+    rand_0_5_5.default = true;
+    rustc_version_0_2_3.default = true;
+    smallvec_0_6_5.default = true;
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.errhandlingapi = true;
+    winapi_0_3_6.handleapi = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.ntstatus = true;
+    winapi_0_3_6.winbase = true;
+    winapi_0_3_6.winerror = true;
+    winapi_0_3_6.winnt = true;
+  }) [ rand_0_5_5_features smallvec_0_6_5_features rustc_version_0_2_3_features libc_0_2_43_features winapi_0_3_6_features ];
+  percent_encoding_1_0_1 = { features?(percent_encoding_1_0_1_features {}) }: percent_encoding_1_0_1_ {};
+  percent_encoding_1_0_1_features = f: updateFeatures f (rec {
+    percent_encoding_1_0_1.default = (f.percent_encoding_1_0_1.default or true);
+  }) [];
   proc_macro2_0_2_3 = { features?(proc_macro2_0_2_3_features {}) }: proc_macro2_0_2_3_ {
     dependencies = mapFeatures features ([ unicode_xid_0_1_0 ]);
     features = mkFeatures (features.proc_macro2_0_2_3 or {});
@@ -607,20 +1757,29 @@ rec {
       (proc_macro2_0_2_3.nightly or false);
     unicode_xid_0_1_0.default = true;
   }) [ unicode_xid_0_1_0_features ];
-  proc_macro2_0_4_19 = { features?(proc_macro2_0_4_19_features {}) }: proc_macro2_0_4_19_ {
+  proc_macro2_0_4_20 = { features?(proc_macro2_0_4_20_features {}) }: proc_macro2_0_4_20_ {
     dependencies = mapFeatures features ([ unicode_xid_0_1_0 ]);
-    features = mkFeatures (features.proc_macro2_0_4_19 or {});
+    features = mkFeatures (features.proc_macro2_0_4_20 or {});
   };
-  proc_macro2_0_4_19_features = f: updateFeatures f (rec {
-    proc_macro2_0_4_19.default = (f.proc_macro2_0_4_19.default or true);
-    proc_macro2_0_4_19.proc-macro =
-      (f.proc_macro2_0_4_19.proc-macro or false) ||
-      (f.proc_macro2_0_4_19.default or false) ||
-      (proc_macro2_0_4_19.default or false) ||
-      (f.proc_macro2_0_4_19.nightly or false) ||
-      (proc_macro2_0_4_19.nightly or false);
+  proc_macro2_0_4_20_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_20.default = (f.proc_macro2_0_4_20.default or true);
+    proc_macro2_0_4_20.proc-macro =
+      (f.proc_macro2_0_4_20.proc-macro or false) ||
+      (f.proc_macro2_0_4_20.default or false) ||
+      (proc_macro2_0_4_20.default or false) ||
+      (f.proc_macro2_0_4_20.nightly or false) ||
+      (proc_macro2_0_4_20.nightly or false);
     unicode_xid_0_1_0.default = true;
   }) [ unicode_xid_0_1_0_features ];
+  protocol_0_1_0 = { features?(protocol_0_1_0_features {}) }: protocol_0_1_0_ {
+    dependencies = mapFeatures features ([ cardano_0_1_0 cbor_event_1_0_0 log_0_4_5 ]);
+  };
+  protocol_0_1_0_features = f: updateFeatures f (rec {
+    cardano_0_1_0.default = true;
+    cbor_event_1_0_0.default = true;
+    log_0_4_5.default = true;
+    protocol_0_1_0.default = (f.protocol_0_1_0.default or true);
+  }) [ cardano_0_1_0_features cbor_event_1_0_0_features log_0_4_5_features ];
   quick_error_1_2_2 = { features?(quick_error_1_2_2_features {}) }: quick_error_1_2_2_ {};
   quick_error_1_2_2_features = f: updateFeatures f (rec {
     quick_error_1_2_2.default = (f.quick_error_1_2_2.default or true);
@@ -633,13 +1792,13 @@ rec {
     quote_0_4_2.default = (f.quote_0_4_2.default or true);
   }) [ proc_macro2_0_2_3_features ];
   quote_0_6_8 = { features?(quote_0_6_8_features {}) }: quote_0_6_8_ {
-    dependencies = mapFeatures features ([ proc_macro2_0_4_19 ]);
+    dependencies = mapFeatures features ([ proc_macro2_0_4_20 ]);
     features = mkFeatures (features.quote_0_6_8 or {});
   };
   quote_0_6_8_features = f: updateFeatures f (rec {
-    proc_macro2_0_4_19.default = (f.proc_macro2_0_4_19.default or false);
-    proc_macro2_0_4_19.proc-macro =
-      (f.proc_macro2_0_4_19.proc-macro or false) ||
+    proc_macro2_0_4_20.default = (f.proc_macro2_0_4_20.default or false);
+    proc_macro2_0_4_20.proc-macro =
+      (f.proc_macro2_0_4_20.proc-macro or false) ||
       (quote_0_6_8.proc-macro or false) ||
       (f.quote_0_6_8.proc-macro or false);
     quote_0_6_8.default = (f.quote_0_6_8.default or true);
@@ -647,7 +1806,167 @@ rec {
       (f.quote_0_6_8.proc-macro or false) ||
       (f.quote_0_6_8.default or false) ||
       (quote_0_6_8.default or false);
-  }) [ proc_macro2_0_4_19_features ];
+  }) [ proc_macro2_0_4_20_features ];
+  rand_0_3_22 = { features?(rand_0_3_22_features {}) }: rand_0_3_22_ {
+    dependencies = mapFeatures features ([ libc_0_2_43 rand_0_4_3 ])
+      ++ (if kernel == "fuchsia" then mapFeatures features ([ fuchsia_zircon_0_3_3 ]) else []);
+    features = mkFeatures (features.rand_0_3_22 or {});
+  };
+  rand_0_3_22_features = f: updateFeatures f (rec {
+    fuchsia_zircon_0_3_3.default = true;
+    libc_0_2_43.default = true;
+    rand_0_3_22.default = (f.rand_0_3_22.default or true);
+    rand_0_3_22.i128_support =
+      (f.rand_0_3_22.i128_support or false) ||
+      (f.rand_0_3_22.nightly or false) ||
+      (rand_0_3_22.nightly or false);
+    rand_0_4_3.default = true;
+  }) [ libc_0_2_43_features rand_0_4_3_features fuchsia_zircon_0_3_3_features ];
+  rand_0_4_3 = { features?(rand_0_4_3_features {}) }: rand_0_4_3_ {
+    dependencies = (if kernel == "fuchsia" then mapFeatures features ([ fuchsia_zircon_0_3_3 ]) else [])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ ]
+      ++ (if features.rand_0_4_3.libc or false then [ libc_0_2_43 ] else [])) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
+    features = mkFeatures (features.rand_0_4_3 or {});
+  };
+  rand_0_4_3_features = f: updateFeatures f (rec {
+    fuchsia_zircon_0_3_3.default = true;
+    libc_0_2_43.default = true;
+    rand_0_4_3.default = (f.rand_0_4_3.default or true);
+    rand_0_4_3.i128_support =
+      (f.rand_0_4_3.i128_support or false) ||
+      (f.rand_0_4_3.nightly or false) ||
+      (rand_0_4_3.nightly or false);
+    rand_0_4_3.libc =
+      (f.rand_0_4_3.libc or false) ||
+      (f.rand_0_4_3.std or false) ||
+      (rand_0_4_3.std or false);
+    rand_0_4_3.std =
+      (f.rand_0_4_3.std or false) ||
+      (f.rand_0_4_3.default or false) ||
+      (rand_0_4_3.default or false);
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.ntsecapi = true;
+    winapi_0_3_6.profileapi = true;
+    winapi_0_3_6.winnt = true;
+  }) [ fuchsia_zircon_0_3_3_features libc_0_2_43_features winapi_0_3_6_features ];
+  rand_0_5_5 = { features?(rand_0_5_5_features {}) }: rand_0_5_5_ {
+    dependencies = mapFeatures features ([ rand_core_0_2_2 ])
+      ++ (if kernel == "cloudabi" then mapFeatures features ([ ]
+      ++ (if features.rand_0_5_5.cloudabi or false then [ cloudabi_0_0_3 ] else [])) else [])
+      ++ (if kernel == "fuchsia" then mapFeatures features ([ ]
+      ++ (if features.rand_0_5_5.fuchsia-zircon or false then [ fuchsia_zircon_0_3_3 ] else [])) else [])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ ]
+      ++ (if features.rand_0_5_5.libc or false then [ libc_0_2_43 ] else [])) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ ]
+      ++ (if features.rand_0_5_5.winapi or false then [ winapi_0_3_6 ] else [])) else [])
+      ++ (if kernel == "wasm32-unknown-unknown" then mapFeatures features ([]) else []);
+    features = mkFeatures (features.rand_0_5_5 or {});
+  };
+  rand_0_5_5_features = f: updateFeatures f (rec {
+    cloudabi_0_0_3.default = true;
+    fuchsia_zircon_0_3_3.default = true;
+    libc_0_2_43.default = true;
+    rand_0_5_5.alloc =
+      (f.rand_0_5_5.alloc or false) ||
+      (f.rand_0_5_5.std or false) ||
+      (rand_0_5_5.std or false);
+    rand_0_5_5.cloudabi =
+      (f.rand_0_5_5.cloudabi or false) ||
+      (f.rand_0_5_5.std or false) ||
+      (rand_0_5_5.std or false);
+    rand_0_5_5.default = (f.rand_0_5_5.default or true);
+    rand_0_5_5.fuchsia-zircon =
+      (f.rand_0_5_5.fuchsia-zircon or false) ||
+      (f.rand_0_5_5.std or false) ||
+      (rand_0_5_5.std or false);
+    rand_0_5_5.i128_support =
+      (f.rand_0_5_5.i128_support or false) ||
+      (f.rand_0_5_5.nightly or false) ||
+      (rand_0_5_5.nightly or false);
+    rand_0_5_5.libc =
+      (f.rand_0_5_5.libc or false) ||
+      (f.rand_0_5_5.std or false) ||
+      (rand_0_5_5.std or false);
+    rand_0_5_5.serde =
+      (f.rand_0_5_5.serde or false) ||
+      (f.rand_0_5_5.serde1 or false) ||
+      (rand_0_5_5.serde1 or false);
+    rand_0_5_5.serde_derive =
+      (f.rand_0_5_5.serde_derive or false) ||
+      (f.rand_0_5_5.serde1 or false) ||
+      (rand_0_5_5.serde1 or false);
+    rand_0_5_5.std =
+      (f.rand_0_5_5.std or false) ||
+      (f.rand_0_5_5.default or false) ||
+      (rand_0_5_5.default or false);
+    rand_0_5_5.winapi =
+      (f.rand_0_5_5.winapi or false) ||
+      (f.rand_0_5_5.std or false) ||
+      (rand_0_5_5.std or false);
+    rand_core_0_2_2.alloc =
+      (f.rand_core_0_2_2.alloc or false) ||
+      (rand_0_5_5.alloc or false) ||
+      (f.rand_0_5_5.alloc or false);
+    rand_core_0_2_2.default = (f.rand_core_0_2_2.default or false);
+    rand_core_0_2_2.serde1 =
+      (f.rand_core_0_2_2.serde1 or false) ||
+      (rand_0_5_5.serde1 or false) ||
+      (f.rand_0_5_5.serde1 or false);
+    rand_core_0_2_2.std =
+      (f.rand_core_0_2_2.std or false) ||
+      (rand_0_5_5.std or false) ||
+      (f.rand_0_5_5.std or false);
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.ntsecapi = true;
+    winapi_0_3_6.profileapi = true;
+    winapi_0_3_6.winnt = true;
+  }) [ rand_core_0_2_2_features cloudabi_0_0_3_features fuchsia_zircon_0_3_3_features libc_0_2_43_features winapi_0_3_6_features ];
+  rand_core_0_2_2 = { features?(rand_core_0_2_2_features {}) }: rand_core_0_2_2_ {
+    dependencies = mapFeatures features ([ rand_core_0_3_0 ]);
+    features = mkFeatures (features.rand_core_0_2_2 or {});
+  };
+  rand_core_0_2_2_features = f: updateFeatures f (rec {
+    rand_core_0_2_2.default = (f.rand_core_0_2_2.default or true);
+    rand_core_0_3_0.alloc =
+      (f.rand_core_0_3_0.alloc or false) ||
+      (rand_core_0_2_2.alloc or false) ||
+      (f.rand_core_0_2_2.alloc or false);
+    rand_core_0_3_0.default = (f.rand_core_0_3_0.default or false);
+    rand_core_0_3_0.serde1 =
+      (f.rand_core_0_3_0.serde1 or false) ||
+      (rand_core_0_2_2.serde1 or false) ||
+      (f.rand_core_0_2_2.serde1 or false);
+    rand_core_0_3_0.std =
+      (f.rand_core_0_3_0.std or false) ||
+      (rand_core_0_2_2.std or false) ||
+      (f.rand_core_0_2_2.std or false);
+  }) [ rand_core_0_3_0_features ];
+  rand_core_0_3_0 = { features?(rand_core_0_3_0_features {}) }: rand_core_0_3_0_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.rand_core_0_3_0 or {});
+  };
+  rand_core_0_3_0_features = f: updateFeatures f (rec {
+    rand_core_0_3_0.alloc =
+      (f.rand_core_0_3_0.alloc or false) ||
+      (f.rand_core_0_3_0.std or false) ||
+      (rand_core_0_3_0.std or false);
+    rand_core_0_3_0.default = (f.rand_core_0_3_0.default or true);
+    rand_core_0_3_0.serde =
+      (f.rand_core_0_3_0.serde or false) ||
+      (f.rand_core_0_3_0.serde1 or false) ||
+      (rand_core_0_3_0.serde1 or false);
+    rand_core_0_3_0.serde_derive =
+      (f.rand_core_0_3_0.serde_derive or false) ||
+      (f.rand_core_0_3_0.serde1 or false) ||
+      (rand_core_0_3_0.serde1 or false);
+    rand_core_0_3_0.std =
+      (f.rand_core_0_3_0.std or false) ||
+      (f.rand_core_0_3_0.default or false) ||
+      (rand_core_0_3_0.default or false);
+  }) [];
   redox_syscall_0_1_40 = { features?(redox_syscall_0_1_40_features {}) }: redox_syscall_0_1_40_ {};
   redox_syscall_0_1_40_features = f: updateFeatures f (rec {
     redox_syscall_0_1_40.default = (f.redox_syscall_0_1_40.default or true);
@@ -660,12 +1979,12 @@ rec {
     redox_termios_0_1_1.default = (f.redox_termios_0_1_1.default or true);
   }) [ redox_syscall_0_1_40_features ];
   regex_1_0_5 = { features?(regex_1_0_5_features {}) }: regex_1_0_5_ {
-    dependencies = mapFeatures features ([ aho_corasick_0_6_8 memchr_2_0_2 regex_syntax_0_6_2 thread_local_0_3_6 utf8_ranges_1_0_1 ]);
+    dependencies = mapFeatures features ([ aho_corasick_0_6_8 memchr_2_1_0 regex_syntax_0_6_2 thread_local_0_3_6 utf8_ranges_1_0_1 ]);
     features = mkFeatures (features.regex_1_0_5 or {});
   };
   regex_1_0_5_features = f: updateFeatures f (rec {
     aho_corasick_0_6_8.default = true;
-    memchr_2_0_2.default = true;
+    memchr_2_1_0.default = true;
     regex_1_0_5.default = (f.regex_1_0_5.default or true);
     regex_1_0_5.pattern =
       (f.regex_1_0_5.pattern or false) ||
@@ -678,7 +1997,7 @@ rec {
     regex_syntax_0_6_2.default = true;
     thread_local_0_3_6.default = true;
     utf8_ranges_1_0_1.default = true;
-  }) [ aho_corasick_0_6_8_features memchr_2_0_2_features regex_syntax_0_6_2_features thread_local_0_3_6_features utf8_ranges_1_0_1_features ];
+  }) [ aho_corasick_0_6_8_features memchr_2_1_0_features regex_syntax_0_6_2_features thread_local_0_3_6_features utf8_ranges_1_0_1_features ];
   regex_syntax_0_6_2 = { features?(regex_syntax_0_6_2_features {}) }: regex_syntax_0_6_2_ {
     dependencies = mapFeatures features ([ ucd_util_0_1_1 ]);
   };
@@ -686,6 +2005,20 @@ rec {
     regex_syntax_0_6_2.default = (f.regex_syntax_0_6_2.default or true);
     ucd_util_0_1_1.default = true;
   }) [ ucd_util_0_1_1_features ];
+  relay_0_1_1 = { features?(relay_0_1_1_features {}) }: relay_0_1_1_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 ]);
+  };
+  relay_0_1_1_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    relay_0_1_1.default = (f.relay_0_1_1.default or true);
+  }) [ futures_0_1_24_features ];
+  rustc_version_0_2_3 = { features?(rustc_version_0_2_3_features {}) }: rustc_version_0_2_3_ {
+    dependencies = mapFeatures features ([ semver_0_9_0 ]);
+  };
+  rustc_version_0_2_3_features = f: updateFeatures f (rec {
+    rustc_version_0_2_3.default = (f.rustc_version_0_2_3.default or true);
+    semver_0_9_0.default = true;
+  }) [ semver_0_9_0_features ];
   rustfbp_0_3_34 = { features?(rustfbp_0_3_34_features {}) }: rustfbp_0_3_34_ {
     dependencies = mapFeatures features ([ env_logger_0_5_13 libloading_0_5_0 threadpool_1_7_1 ]);
   };
@@ -695,36 +2028,130 @@ rec {
     rustfbp_0_3_34.default = (f.rustfbp_0_3_34.default or true);
     threadpool_1_7_1.default = true;
   }) [ env_logger_0_5_13_features libloading_0_5_0_features threadpool_1_7_1_features ];
-  serde_1_0_78 = { features?(serde_1_0_78_features {}) }: serde_1_0_78_ {
-    dependencies = mapFeatures features ([]);
-    features = mkFeatures (features.serde_1_0_78 or {});
+  safemem_0_3_0 = { features?(safemem_0_3_0_features {}) }: safemem_0_3_0_ {
+    features = mkFeatures (features.safemem_0_3_0 or {});
   };
-  serde_1_0_78_features = f: updateFeatures f (rec {
-    serde_1_0_78.default = (f.serde_1_0_78.default or true);
-    serde_1_0_78.serde_derive =
-      (f.serde_1_0_78.serde_derive or false) ||
-      (f.serde_1_0_78.derive or false) ||
-      (serde_1_0_78.derive or false);
-    serde_1_0_78.std =
-      (f.serde_1_0_78.std or false) ||
-      (f.serde_1_0_78.default or false) ||
-      (serde_1_0_78.default or false);
-    serde_1_0_78.unstable =
-      (f.serde_1_0_78.unstable or false) ||
-      (f.serde_1_0_78.alloc or false) ||
-      (serde_1_0_78.alloc or false);
+  safemem_0_3_0_features = f: updateFeatures f (rec {
+    safemem_0_3_0.default = (f.safemem_0_3_0.default or true);
+    safemem_0_3_0.std =
+      (f.safemem_0_3_0.std or false) ||
+      (f.safemem_0_3_0.default or false) ||
+      (safemem_0_3_0.default or false);
   }) [];
-  serde_derive_1_0_78 = { features?(serde_derive_1_0_78_features {}) }: serde_derive_1_0_78_ {
-    dependencies = mapFeatures features ([ proc_macro2_0_4_19 quote_0_6_8 syn_0_15_4 ]);
-    features = mkFeatures (features.serde_derive_1_0_78 or {});
+  scoped_tls_0_1_2 = { features?(scoped_tls_0_1_2_features {}) }: scoped_tls_0_1_2_ {
+    features = mkFeatures (features.scoped_tls_0_1_2 or {});
   };
-  serde_derive_1_0_78_features = f: updateFeatures f (rec {
-    proc_macro2_0_4_19.default = true;
+  scoped_tls_0_1_2_features = f: updateFeatures f (rec {
+    scoped_tls_0_1_2.default = (f.scoped_tls_0_1_2.default or true);
+  }) [];
+  scopeguard_0_3_3 = { features?(scopeguard_0_3_3_features {}) }: scopeguard_0_3_3_ {
+    features = mkFeatures (features.scopeguard_0_3_3 or {});
+  };
+  scopeguard_0_3_3_features = f: updateFeatures f (rec {
+    scopeguard_0_3_3.default = (f.scopeguard_0_3_3.default or true);
+    scopeguard_0_3_3.use_std =
+      (f.scopeguard_0_3_3.use_std or false) ||
+      (f.scopeguard_0_3_3.default or false) ||
+      (scopeguard_0_3_3.default or false);
+  }) [];
+  semver_0_9_0 = { features?(semver_0_9_0_features {}) }: semver_0_9_0_ {
+    dependencies = mapFeatures features ([ semver_parser_0_7_0 ]);
+    features = mkFeatures (features.semver_0_9_0 or {});
+  };
+  semver_0_9_0_features = f: updateFeatures f (rec {
+    semver_0_9_0.default = (f.semver_0_9_0.default or true);
+    semver_0_9_0.serde =
+      (f.semver_0_9_0.serde or false) ||
+      (f.semver_0_9_0.ci or false) ||
+      (semver_0_9_0.ci or false);
+    semver_parser_0_7_0.default = true;
+  }) [ semver_parser_0_7_0_features ];
+  semver_parser_0_7_0 = { features?(semver_parser_0_7_0_features {}) }: semver_parser_0_7_0_ {};
+  semver_parser_0_7_0_features = f: updateFeatures f (rec {
+    semver_parser_0_7_0.default = (f.semver_parser_0_7_0.default or true);
+  }) [];
+  serde_1_0_79 = { features?(serde_1_0_79_features {}) }: serde_1_0_79_ {
+    dependencies = mapFeatures features ([]);
+    features = mkFeatures (features.serde_1_0_79 or {});
+  };
+  serde_1_0_79_features = f: updateFeatures f (rec {
+    serde_1_0_79.default = (f.serde_1_0_79.default or true);
+    serde_1_0_79.serde_derive =
+      (f.serde_1_0_79.serde_derive or false) ||
+      (f.serde_1_0_79.derive or false) ||
+      (serde_1_0_79.derive or false);
+    serde_1_0_79.std =
+      (f.serde_1_0_79.std or false) ||
+      (f.serde_1_0_79.default or false) ||
+      (serde_1_0_79.default or false);
+    serde_1_0_79.unstable =
+      (f.serde_1_0_79.unstable or false) ||
+      (f.serde_1_0_79.alloc or false) ||
+      (serde_1_0_79.alloc or false);
+  }) [];
+  serde_derive_1_0_79 = { features?(serde_derive_1_0_79_features {}) }: serde_derive_1_0_79_ {
+    dependencies = mapFeatures features ([ proc_macro2_0_4_20 quote_0_6_8 syn_0_15_8 ]);
+    features = mkFeatures (features.serde_derive_1_0_79 or {});
+  };
+  serde_derive_1_0_79_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_20.default = true;
     quote_0_6_8.default = true;
-    serde_derive_1_0_78.default = (f.serde_derive_1_0_78.default or true);
-    syn_0_15_4.default = true;
-    syn_0_15_4.visit = true;
-  }) [ proc_macro2_0_4_19_features quote_0_6_8_features syn_0_15_4_features ];
+    serde_derive_1_0_79.default = (f.serde_derive_1_0_79.default or true);
+    syn_0_15_8.default = true;
+    syn_0_15_8.visit = true;
+  }) [ proc_macro2_0_4_20_features quote_0_6_8_features syn_0_15_8_features ];
+  serde_yaml_0_7_5 = { features?(serde_yaml_0_7_5_features {}) }: serde_yaml_0_7_5_ {
+    dependencies = mapFeatures features ([ dtoa_0_4_3 linked_hash_map_0_5_1 serde_1_0_79 yaml_rust_0_4_2 ]);
+  };
+  serde_yaml_0_7_5_features = f: updateFeatures f (rec {
+    dtoa_0_4_3.default = true;
+    linked_hash_map_0_5_1.default = true;
+    serde_1_0_79.default = true;
+    serde_yaml_0_7_5.default = (f.serde_yaml_0_7_5.default or true);
+    yaml_rust_0_4_2.default = true;
+  }) [ dtoa_0_4_3_features linked_hash_map_0_5_1_features serde_1_0_79_features yaml_rust_0_4_2_features ];
+  slab_0_3_0 = { features?(slab_0_3_0_features {}) }: slab_0_3_0_ {};
+  slab_0_3_0_features = f: updateFeatures f (rec {
+    slab_0_3_0.default = (f.slab_0_3_0.default or true);
+  }) [];
+  slab_0_4_1 = { features?(slab_0_4_1_features {}) }: slab_0_4_1_ {};
+  slab_0_4_1_features = f: updateFeatures f (rec {
+    slab_0_4_1.default = (f.slab_0_4_1.default or true);
+  }) [];
+  smallvec_0_2_1 = { features?(smallvec_0_2_1_features {}) }: smallvec_0_2_1_ {};
+  smallvec_0_2_1_features = f: updateFeatures f (rec {
+    smallvec_0_2_1.default = (f.smallvec_0_2_1.default or true);
+  }) [];
+  smallvec_0_6_5 = { features?(smallvec_0_6_5_features {}) }: smallvec_0_6_5_ {
+    dependencies = mapFeatures features ([ unreachable_1_0_0 ]);
+    features = mkFeatures (features.smallvec_0_6_5 or {});
+  };
+  smallvec_0_6_5_features = f: updateFeatures f (rec {
+    smallvec_0_6_5.default = (f.smallvec_0_6_5.default or true);
+    smallvec_0_6_5.std =
+      (f.smallvec_0_6_5.std or false) ||
+      (f.smallvec_0_6_5.default or false) ||
+      (smallvec_0_6_5.default or false);
+    unreachable_1_0_0.default = true;
+  }) [ unreachable_1_0_0_features ];
+  stable_deref_trait_1_1_1 = { features?(stable_deref_trait_1_1_1_features {}) }: stable_deref_trait_1_1_1_ {
+    features = mkFeatures (features.stable_deref_trait_1_1_1 or {});
+  };
+  stable_deref_trait_1_1_1_features = f: updateFeatures f (rec {
+    stable_deref_trait_1_1_1.default = (f.stable_deref_trait_1_1_1.default or true);
+    stable_deref_trait_1_1_1.std =
+      (f.stable_deref_trait_1_1_1.std or false) ||
+      (f.stable_deref_trait_1_1_1.default or false) ||
+      (stable_deref_trait_1_1_1.default or false);
+  }) [];
+  storage_units_0_1_0 = { features?(storage_units_0_1_0_features {}) }: storage_units_0_1_0_ {
+    dependencies = mapFeatures features ([ cryptoxide_0_1_0 rand_0_5_5 ]);
+  };
+  storage_units_0_1_0_features = f: updateFeatures f (rec {
+    cryptoxide_0_1_0.default = true;
+    rand_0_5_5.default = true;
+    storage_units_0_1_0.default = (f.storage_units_0_1_0.default or true);
+  }) [ cryptoxide_0_1_0_features rand_0_5_5_features ];
   syn_0_12_15 = { features?(syn_0_12_15_features {}) }: syn_0_12_15_ {
     dependencies = mapFeatures features ([ proc_macro2_0_2_3 unicode_xid_0_1_0 ]
       ++ (if features.syn_0_12_15.quote or false then [ quote_0_4_2 ] else []));
@@ -756,49 +2183,53 @@ rec {
       (syn_0_12_15.printing or false);
     unicode_xid_0_1_0.default = true;
   }) [ proc_macro2_0_2_3_features quote_0_4_2_features unicode_xid_0_1_0_features ];
-  syn_0_15_4 = { features?(syn_0_15_4_features {}) }: syn_0_15_4_ {
-    dependencies = mapFeatures features ([ proc_macro2_0_4_19 unicode_xid_0_1_0 ]
-      ++ (if features.syn_0_15_4.quote or false then [ quote_0_6_8 ] else []));
-    features = mkFeatures (features.syn_0_15_4 or {});
+  syn_0_15_8 = { features?(syn_0_15_8_features {}) }: syn_0_15_8_ {
+    dependencies = mapFeatures features ([ proc_macro2_0_4_20 unicode_xid_0_1_0 ]
+      ++ (if features.syn_0_15_8.quote or false then [ quote_0_6_8 ] else []));
+    features = mkFeatures (features.syn_0_15_8 or {});
   };
-  syn_0_15_4_features = f: updateFeatures f (rec {
-    proc_macro2_0_4_19.default = (f.proc_macro2_0_4_19.default or false);
-    proc_macro2_0_4_19.proc-macro =
-      (f.proc_macro2_0_4_19.proc-macro or false) ||
-      (syn_0_15_4.proc-macro or false) ||
-      (f.syn_0_15_4.proc-macro or false);
+  syn_0_15_8_features = f: updateFeatures f (rec {
+    proc_macro2_0_4_20.default = (f.proc_macro2_0_4_20.default or false);
+    proc_macro2_0_4_20.proc-macro =
+      (f.proc_macro2_0_4_20.proc-macro or false) ||
+      (syn_0_15_8.proc-macro or false) ||
+      (f.syn_0_15_8.proc-macro or false);
     quote_0_6_8.default = (f.quote_0_6_8.default or false);
     quote_0_6_8.proc-macro =
       (f.quote_0_6_8.proc-macro or false) ||
-      (syn_0_15_4.proc-macro or false) ||
-      (f.syn_0_15_4.proc-macro or false);
-    syn_0_15_4.clone-impls =
-      (f.syn_0_15_4.clone-impls or false) ||
-      (f.syn_0_15_4.default or false) ||
-      (syn_0_15_4.default or false);
-    syn_0_15_4.default = (f.syn_0_15_4.default or true);
-    syn_0_15_4.derive =
-      (f.syn_0_15_4.derive or false) ||
-      (f.syn_0_15_4.default or false) ||
-      (syn_0_15_4.default or false);
-    syn_0_15_4.parsing =
-      (f.syn_0_15_4.parsing or false) ||
-      (f.syn_0_15_4.default or false) ||
-      (syn_0_15_4.default or false);
-    syn_0_15_4.printing =
-      (f.syn_0_15_4.printing or false) ||
-      (f.syn_0_15_4.default or false) ||
-      (syn_0_15_4.default or false);
-    syn_0_15_4.proc-macro =
-      (f.syn_0_15_4.proc-macro or false) ||
-      (f.syn_0_15_4.default or false) ||
-      (syn_0_15_4.default or false);
-    syn_0_15_4.quote =
-      (f.syn_0_15_4.quote or false) ||
-      (f.syn_0_15_4.printing or false) ||
-      (syn_0_15_4.printing or false);
+      (syn_0_15_8.proc-macro or false) ||
+      (f.syn_0_15_8.proc-macro or false);
+    syn_0_15_8.clone-impls =
+      (f.syn_0_15_8.clone-impls or false) ||
+      (f.syn_0_15_8.default or false) ||
+      (syn_0_15_8.default or false);
+    syn_0_15_8.default = (f.syn_0_15_8.default or true);
+    syn_0_15_8.derive =
+      (f.syn_0_15_8.derive or false) ||
+      (f.syn_0_15_8.default or false) ||
+      (syn_0_15_8.default or false);
+    syn_0_15_8.parsing =
+      (f.syn_0_15_8.parsing or false) ||
+      (f.syn_0_15_8.default or false) ||
+      (syn_0_15_8.default or false);
+    syn_0_15_8.printing =
+      (f.syn_0_15_8.printing or false) ||
+      (f.syn_0_15_8.default or false) ||
+      (syn_0_15_8.default or false);
+    syn_0_15_8.proc-macro =
+      (f.syn_0_15_8.proc-macro or false) ||
+      (f.syn_0_15_8.default or false) ||
+      (syn_0_15_8.default or false);
+    syn_0_15_8.quote =
+      (f.syn_0_15_8.quote or false) ||
+      (f.syn_0_15_8.printing or false) ||
+      (syn_0_15_8.printing or false);
     unicode_xid_0_1_0.default = true;
-  }) [ proc_macro2_0_4_19_features quote_0_6_8_features unicode_xid_0_1_0_features ];
+  }) [ proc_macro2_0_4_20_features quote_0_6_8_features unicode_xid_0_1_0_features ];
+  take_0_1_0 = { features?(take_0_1_0_features {}) }: take_0_1_0_ {};
+  take_0_1_0_features = f: updateFeatures f (rec {
+    take_0_1_0.default = (f.take_0_1_0.default or true);
+  }) [];
   termcolor_1_0_4 = { features?(termcolor_1_0_4_features {}) }: termcolor_1_0_4_ {
     dependencies = (if kernel == "windows" then mapFeatures features ([ wincolor_1_0_1 ]) else []);
   };
@@ -830,66 +2261,329 @@ rec {
     num_cpus_1_8_0.default = true;
     threadpool_1_7_1.default = (f.threadpool_1_7_1.default or true);
   }) [ num_cpus_1_8_0_features ];
+  time_0_1_40 = { features?(time_0_1_40_features {}) }: time_0_1_40_ {
+    dependencies = mapFeatures features ([ libc_0_2_43 ])
+      ++ (if kernel == "redox" then mapFeatures features ([ redox_syscall_0_1_40 ]) else [])
+      ++ (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
+  };
+  time_0_1_40_features = f: updateFeatures f (rec {
+    libc_0_2_43.default = true;
+    redox_syscall_0_1_40.default = true;
+    time_0_1_40.default = (f.time_0_1_40.default or true);
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.minwinbase = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.ntdef = true;
+    winapi_0_3_6.profileapi = true;
+    winapi_0_3_6.std = true;
+    winapi_0_3_6.sysinfoapi = true;
+    winapi_0_3_6.timezoneapi = true;
+  }) [ libc_0_2_43_features redox_syscall_0_1_40_features winapi_0_3_6_features ];
+  tokio_0_1_11 = { features?(tokio_0_1_11_features {}) }: tokio_0_1_11_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 mio_0_6_16 tokio_codec_0_1_1 tokio_current_thread_0_1_3 tokio_executor_0_1_5 tokio_fs_0_1_3 tokio_io_0_1_9 tokio_reactor_0_1_6 tokio_tcp_0_1_2 tokio_threadpool_0_1_7 tokio_timer_0_2_7 tokio_udp_0_1_2 ])
+      ++ (if (kernel == "linux" || kernel == "darwin") then mapFeatures features ([ tokio_uds_0_2_2 ]) else []);
+    features = mkFeatures (features.tokio_0_1_11 or {});
+  };
+  tokio_0_1_11_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    mio_0_6_16.default = true;
+    tokio_0_1_11.default = (f.tokio_0_1_11.default or true);
+    tokio_codec_0_1_1.default = true;
+    tokio_current_thread_0_1_3.default = true;
+    tokio_executor_0_1_5.default = true;
+    tokio_fs_0_1_3.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = true;
+    tokio_tcp_0_1_2.default = true;
+    tokio_threadpool_0_1_7.default = true;
+    tokio_timer_0_2_7.default = true;
+    tokio_udp_0_1_2.default = true;
+    tokio_uds_0_2_2.default = true;
+  }) [ bytes_0_4_10_features futures_0_1_24_features mio_0_6_16_features tokio_codec_0_1_1_features tokio_current_thread_0_1_3_features tokio_executor_0_1_5_features tokio_fs_0_1_3_features tokio_io_0_1_9_features tokio_reactor_0_1_6_features tokio_tcp_0_1_2_features tokio_threadpool_0_1_7_features tokio_timer_0_2_7_features tokio_udp_0_1_2_features tokio_uds_0_2_2_features ];
+  tokio_codec_0_1_1 = { features?(tokio_codec_0_1_1_features {}) }: tokio_codec_0_1_1_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 tokio_io_0_1_9 ]);
+  };
+  tokio_codec_0_1_1_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    tokio_codec_0_1_1.default = (f.tokio_codec_0_1_1.default or true);
+    tokio_io_0_1_9.default = true;
+  }) [ bytes_0_4_10_features futures_0_1_24_features tokio_io_0_1_9_features ];
+  tokio_core_0_1_17 = { features?(tokio_core_0_1_17_features {}) }: tokio_core_0_1_17_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 iovec_0_1_2 log_0_4_5 mio_0_6_16 scoped_tls_0_1_2 tokio_0_1_11 tokio_executor_0_1_5 tokio_io_0_1_9 tokio_reactor_0_1_6 tokio_timer_0_2_7 ]);
+  };
+  tokio_core_0_1_17_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    iovec_0_1_2.default = true;
+    log_0_4_5.default = true;
+    mio_0_6_16.default = true;
+    scoped_tls_0_1_2.default = true;
+    tokio_0_1_11.default = true;
+    tokio_core_0_1_17.default = (f.tokio_core_0_1_17.default or true);
+    tokio_executor_0_1_5.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = true;
+    tokio_timer_0_2_7.default = true;
+  }) [ bytes_0_4_10_features futures_0_1_24_features iovec_0_1_2_features log_0_4_5_features mio_0_6_16_features scoped_tls_0_1_2_features tokio_0_1_11_features tokio_executor_0_1_5_features tokio_io_0_1_9_features tokio_reactor_0_1_6_features tokio_timer_0_2_7_features ];
+  tokio_current_thread_0_1_3 = { features?(tokio_current_thread_0_1_3_features {}) }: tokio_current_thread_0_1_3_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 tokio_executor_0_1_5 ]);
+  };
+  tokio_current_thread_0_1_3_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    tokio_current_thread_0_1_3.default = (f.tokio_current_thread_0_1_3.default or true);
+    tokio_executor_0_1_5.default = true;
+  }) [ futures_0_1_24_features tokio_executor_0_1_5_features ];
+  tokio_executor_0_1_5 = { features?(tokio_executor_0_1_5_features {}) }: tokio_executor_0_1_5_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 ]);
+  };
+  tokio_executor_0_1_5_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    tokio_executor_0_1_5.default = (f.tokio_executor_0_1_5.default or true);
+  }) [ futures_0_1_24_features ];
+  tokio_fs_0_1_3 = { features?(tokio_fs_0_1_3_features {}) }: tokio_fs_0_1_3_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 tokio_io_0_1_9 tokio_threadpool_0_1_7 ]);
+  };
+  tokio_fs_0_1_3_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    tokio_fs_0_1_3.default = (f.tokio_fs_0_1_3.default or true);
+    tokio_io_0_1_9.default = true;
+    tokio_threadpool_0_1_7.default = true;
+  }) [ futures_0_1_24_features tokio_io_0_1_9_features tokio_threadpool_0_1_7_features ];
+  tokio_io_0_1_9 = { features?(tokio_io_0_1_9_features {}) }: tokio_io_0_1_9_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 log_0_4_5 ]);
+  };
+  tokio_io_0_1_9_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    log_0_4_5.default = true;
+    tokio_io_0_1_9.default = (f.tokio_io_0_1_9.default or true);
+  }) [ bytes_0_4_10_features futures_0_1_24_features log_0_4_5_features ];
+  tokio_proto_0_1_1 = { features?(tokio_proto_0_1_1_features {}) }: tokio_proto_0_1_1_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 log_0_3_9 net2_0_2_33 rand_0_3_22 slab_0_3_0 smallvec_0_2_1 take_0_1_0 tokio_core_0_1_17 tokio_io_0_1_9 tokio_service_0_1_0 ]);
+  };
+  tokio_proto_0_1_1_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    log_0_3_9.default = true;
+    net2_0_2_33.default = true;
+    rand_0_3_22.default = true;
+    slab_0_3_0.default = true;
+    smallvec_0_2_1.default = true;
+    take_0_1_0.default = true;
+    tokio_core_0_1_17.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_proto_0_1_1.default = (f.tokio_proto_0_1_1.default or true);
+    tokio_service_0_1_0.default = true;
+  }) [ futures_0_1_24_features log_0_3_9_features net2_0_2_33_features rand_0_3_22_features slab_0_3_0_features smallvec_0_2_1_features take_0_1_0_features tokio_core_0_1_17_features tokio_io_0_1_9_features tokio_service_0_1_0_features ];
+  tokio_reactor_0_1_6 = { features?(tokio_reactor_0_1_6_features {}) }: tokio_reactor_0_1_6_ {
+    dependencies = mapFeatures features ([ crossbeam_utils_0_5_0 futures_0_1_24 lazy_static_1_1_0 log_0_4_5 mio_0_6_16 num_cpus_1_8_0 parking_lot_0_6_4 slab_0_4_1 tokio_executor_0_1_5 tokio_io_0_1_9 ]);
+  };
+  tokio_reactor_0_1_6_features = f: updateFeatures f (rec {
+    crossbeam_utils_0_5_0.default = true;
+    futures_0_1_24.default = true;
+    lazy_static_1_1_0.default = true;
+    log_0_4_5.default = true;
+    mio_0_6_16.default = true;
+    num_cpus_1_8_0.default = true;
+    parking_lot_0_6_4.default = true;
+    slab_0_4_1.default = true;
+    tokio_executor_0_1_5.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = (f.tokio_reactor_0_1_6.default or true);
+  }) [ crossbeam_utils_0_5_0_features futures_0_1_24_features lazy_static_1_1_0_features log_0_4_5_features mio_0_6_16_features num_cpus_1_8_0_features parking_lot_0_6_4_features slab_0_4_1_features tokio_executor_0_1_5_features tokio_io_0_1_9_features ];
+  tokio_service_0_1_0 = { features?(tokio_service_0_1_0_features {}) }: tokio_service_0_1_0_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 ]);
+  };
+  tokio_service_0_1_0_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    tokio_service_0_1_0.default = (f.tokio_service_0_1_0.default or true);
+  }) [ futures_0_1_24_features ];
+  tokio_tcp_0_1_2 = { features?(tokio_tcp_0_1_2_features {}) }: tokio_tcp_0_1_2_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 iovec_0_1_2 mio_0_6_16 tokio_io_0_1_9 tokio_reactor_0_1_6 ]);
+  };
+  tokio_tcp_0_1_2_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    iovec_0_1_2.default = true;
+    mio_0_6_16.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = true;
+    tokio_tcp_0_1_2.default = (f.tokio_tcp_0_1_2.default or true);
+  }) [ bytes_0_4_10_features futures_0_1_24_features iovec_0_1_2_features mio_0_6_16_features tokio_io_0_1_9_features tokio_reactor_0_1_6_features ];
+  tokio_threadpool_0_1_7 = { features?(tokio_threadpool_0_1_7_features {}) }: tokio_threadpool_0_1_7_ {
+    dependencies = mapFeatures features ([ crossbeam_deque_0_6_1 crossbeam_utils_0_5_0 futures_0_1_24 log_0_4_5 num_cpus_1_8_0 rand_0_5_5 tokio_executor_0_1_5 ]);
+  };
+  tokio_threadpool_0_1_7_features = f: updateFeatures f (rec {
+    crossbeam_deque_0_6_1.default = true;
+    crossbeam_utils_0_5_0.default = true;
+    futures_0_1_24.default = true;
+    log_0_4_5.default = true;
+    num_cpus_1_8_0.default = true;
+    rand_0_5_5.default = true;
+    tokio_executor_0_1_5.default = true;
+    tokio_threadpool_0_1_7.default = (f.tokio_threadpool_0_1_7.default or true);
+  }) [ crossbeam_deque_0_6_1_features crossbeam_utils_0_5_0_features futures_0_1_24_features log_0_4_5_features num_cpus_1_8_0_features rand_0_5_5_features tokio_executor_0_1_5_features ];
+  tokio_timer_0_2_7 = { features?(tokio_timer_0_2_7_features {}) }: tokio_timer_0_2_7_ {
+    dependencies = mapFeatures features ([ crossbeam_utils_0_5_0 futures_0_1_24 slab_0_4_1 tokio_executor_0_1_5 ]);
+  };
+  tokio_timer_0_2_7_features = f: updateFeatures f (rec {
+    crossbeam_utils_0_5_0.default = true;
+    futures_0_1_24.default = true;
+    slab_0_4_1.default = true;
+    tokio_executor_0_1_5.default = true;
+    tokio_timer_0_2_7.default = (f.tokio_timer_0_2_7.default or true);
+  }) [ crossbeam_utils_0_5_0_features futures_0_1_24_features slab_0_4_1_features tokio_executor_0_1_5_features ];
+  tokio_udp_0_1_2 = { features?(tokio_udp_0_1_2_features {}) }: tokio_udp_0_1_2_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 log_0_4_5 mio_0_6_16 tokio_codec_0_1_1 tokio_io_0_1_9 tokio_reactor_0_1_6 ]);
+  };
+  tokio_udp_0_1_2_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    log_0_4_5.default = true;
+    mio_0_6_16.default = true;
+    tokio_codec_0_1_1.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = true;
+    tokio_udp_0_1_2.default = (f.tokio_udp_0_1_2.default or true);
+  }) [ bytes_0_4_10_features futures_0_1_24_features log_0_4_5_features mio_0_6_16_features tokio_codec_0_1_1_features tokio_io_0_1_9_features tokio_reactor_0_1_6_features ];
+  tokio_uds_0_2_2 = { features?(tokio_uds_0_2_2_features {}) }: tokio_uds_0_2_2_ {
+    dependencies = mapFeatures features ([ bytes_0_4_10 futures_0_1_24 iovec_0_1_2 libc_0_2_43 log_0_4_5 mio_0_6_16 mio_uds_0_6_7 tokio_io_0_1_9 tokio_reactor_0_1_6 ]);
+  };
+  tokio_uds_0_2_2_features = f: updateFeatures f (rec {
+    bytes_0_4_10.default = true;
+    futures_0_1_24.default = true;
+    iovec_0_1_2.default = true;
+    libc_0_2_43.default = true;
+    log_0_4_5.default = true;
+    mio_0_6_16.default = true;
+    mio_uds_0_6_7.default = true;
+    tokio_io_0_1_9.default = true;
+    tokio_reactor_0_1_6.default = true;
+    tokio_uds_0_2_2.default = (f.tokio_uds_0_2_2.default or true);
+  }) [ bytes_0_4_10_features futures_0_1_24_features iovec_0_1_2_features libc_0_2_43_features log_0_4_5_features mio_0_6_16_features mio_uds_0_6_7_features tokio_io_0_1_9_features tokio_reactor_0_1_6_features ];
+  try_lock_0_1_0 = { features?(try_lock_0_1_0_features {}) }: try_lock_0_1_0_ {};
+  try_lock_0_1_0_features = f: updateFeatures f (rec {
+    try_lock_0_1_0.default = (f.try_lock_0_1_0.default or true);
+  }) [];
   ucd_util_0_1_1 = { features?(ucd_util_0_1_1_features {}) }: ucd_util_0_1_1_ {};
   ucd_util_0_1_1_features = f: updateFeatures f (rec {
     ucd_util_0_1_1.default = (f.ucd_util_0_1_1.default or true);
   }) [];
+  unicase_2_1_0 = { features?(unicase_2_1_0_features {}) }: unicase_2_1_0_ {
+    buildDependencies = mapFeatures features ([ version_check_0_1_5 ]);
+    features = mkFeatures (features.unicase_2_1_0 or {});
+  };
+  unicase_2_1_0_features = f: updateFeatures f (rec {
+    unicase_2_1_0.default = (f.unicase_2_1_0.default or true);
+    version_check_0_1_5.default = true;
+  }) [ version_check_0_1_5_features ];
   unicode_xid_0_1_0 = { features?(unicode_xid_0_1_0_features {}) }: unicode_xid_0_1_0_ {
     features = mkFeatures (features.unicode_xid_0_1_0 or {});
   };
   unicode_xid_0_1_0_features = f: updateFeatures f (rec {
     unicode_xid_0_1_0.default = (f.unicode_xid_0_1_0.default or true);
   }) [];
+  unreachable_1_0_0 = { features?(unreachable_1_0_0_features {}) }: unreachable_1_0_0_ {
+    dependencies = mapFeatures features ([ void_1_0_2 ]);
+  };
+  unreachable_1_0_0_features = f: updateFeatures f (rec {
+    unreachable_1_0_0.default = (f.unreachable_1_0_0.default or true);
+    void_1_0_2.default = (f.void_1_0_2.default or false);
+  }) [ void_1_0_2_features ];
   utf8_ranges_1_0_1 = { features?(utf8_ranges_1_0_1_features {}) }: utf8_ranges_1_0_1_ {};
   utf8_ranges_1_0_1_features = f: updateFeatures f (rec {
     utf8_ranges_1_0_1.default = (f.utf8_ranges_1_0_1.default or true);
   }) [];
-  version_check_0_1_4 = { features?(version_check_0_1_4_features {}) }: version_check_0_1_4_ {};
-  version_check_0_1_4_features = f: updateFeatures f (rec {
-    version_check_0_1_4.default = (f.version_check_0_1_4.default or true);
+  version_check_0_1_5 = { features?(version_check_0_1_5_features {}) }: version_check_0_1_5_ {};
+  version_check_0_1_5_features = f: updateFeatures f (rec {
+    version_check_0_1_5.default = (f.version_check_0_1_5.default or true);
   }) [];
-  winapi_0_3_5 = { features?(winapi_0_3_5_features {}) }: winapi_0_3_5_ {
+  void_1_0_2 = { features?(void_1_0_2_features {}) }: void_1_0_2_ {
+    features = mkFeatures (features.void_1_0_2 or {});
+  };
+  void_1_0_2_features = f: updateFeatures f (rec {
+    void_1_0_2.default = (f.void_1_0_2.default or true);
+    void_1_0_2.std =
+      (f.void_1_0_2.std or false) ||
+      (f.void_1_0_2.default or false) ||
+      (void_1_0_2.default or false);
+  }) [];
+  want_0_0_4 = { features?(want_0_0_4_features {}) }: want_0_0_4_ {
+    dependencies = mapFeatures features ([ futures_0_1_24 log_0_4_5 try_lock_0_1_0 ]);
+  };
+  want_0_0_4_features = f: updateFeatures f (rec {
+    futures_0_1_24.default = true;
+    log_0_4_5.default = true;
+    try_lock_0_1_0.default = true;
+    want_0_0_4.default = (f.want_0_0_4.default or true);
+  }) [ futures_0_1_24_features log_0_4_5_features try_lock_0_1_0_features ];
+  winapi_0_2_8 = { features?(winapi_0_2_8_features {}) }: winapi_0_2_8_ {};
+  winapi_0_2_8_features = f: updateFeatures f (rec {
+    winapi_0_2_8.default = (f.winapi_0_2_8.default or true);
+  }) [];
+  winapi_0_3_6 = { features?(winapi_0_3_6_features {}) }: winapi_0_3_6_ {
     dependencies = (if kernel == "i686-pc-windows-gnu" then mapFeatures features ([ winapi_i686_pc_windows_gnu_0_4_0 ]) else [])
       ++ (if kernel == "x86_64-pc-windows-gnu" then mapFeatures features ([ winapi_x86_64_pc_windows_gnu_0_4_0 ]) else []);
-    features = mkFeatures (features.winapi_0_3_5 or {});
+    features = mkFeatures (features.winapi_0_3_6 or {});
   };
-  winapi_0_3_5_features = f: updateFeatures f (rec {
-    winapi_0_3_5.default = (f.winapi_0_3_5.default or true);
+  winapi_0_3_6_features = f: updateFeatures f (rec {
+    winapi_0_3_6.default = (f.winapi_0_3_6.default or true);
     winapi_i686_pc_windows_gnu_0_4_0.default = true;
     winapi_x86_64_pc_windows_gnu_0_4_0.default = true;
   }) [ winapi_i686_pc_windows_gnu_0_4_0_features winapi_x86_64_pc_windows_gnu_0_4_0_features ];
+  winapi_build_0_1_1 = { features?(winapi_build_0_1_1_features {}) }: winapi_build_0_1_1_ {};
+  winapi_build_0_1_1_features = f: updateFeatures f (rec {
+    winapi_build_0_1_1.default = (f.winapi_build_0_1_1.default or true);
+  }) [];
   winapi_i686_pc_windows_gnu_0_4_0 = { features?(winapi_i686_pc_windows_gnu_0_4_0_features {}) }: winapi_i686_pc_windows_gnu_0_4_0_ {};
   winapi_i686_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
     winapi_i686_pc_windows_gnu_0_4_0.default = (f.winapi_i686_pc_windows_gnu_0_4_0.default or true);
   }) [];
   winapi_util_0_1_1 = { features?(winapi_util_0_1_1_features {}) }: winapi_util_0_1_1_ {
-    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_5 ]) else []);
+    dependencies = (if kernel == "windows" then mapFeatures features ([ winapi_0_3_6 ]) else []);
   };
   winapi_util_0_1_1_features = f: updateFeatures f (rec {
-    winapi_0_3_5.consoleapi = true;
-    winapi_0_3_5.default = true;
-    winapi_0_3_5.errhandlingapi = true;
-    winapi_0_3_5.fileapi = true;
-    winapi_0_3_5.minwindef = true;
-    winapi_0_3_5.processenv = true;
-    winapi_0_3_5.std = true;
-    winapi_0_3_5.winbase = true;
-    winapi_0_3_5.wincon = true;
-    winapi_0_3_5.winerror = true;
+    winapi_0_3_6.consoleapi = true;
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.errhandlingapi = true;
+    winapi_0_3_6.fileapi = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.processenv = true;
+    winapi_0_3_6.std = true;
+    winapi_0_3_6.winbase = true;
+    winapi_0_3_6.wincon = true;
+    winapi_0_3_6.winerror = true;
     winapi_util_0_1_1.default = (f.winapi_util_0_1_1.default or true);
-  }) [ winapi_0_3_5_features ];
+  }) [ winapi_0_3_6_features ];
   winapi_x86_64_pc_windows_gnu_0_4_0 = { features?(winapi_x86_64_pc_windows_gnu_0_4_0_features {}) }: winapi_x86_64_pc_windows_gnu_0_4_0_ {};
   winapi_x86_64_pc_windows_gnu_0_4_0_features = f: updateFeatures f (rec {
     winapi_x86_64_pc_windows_gnu_0_4_0.default = (f.winapi_x86_64_pc_windows_gnu_0_4_0.default or true);
   }) [];
   wincolor_1_0_1 = { features?(wincolor_1_0_1_features {}) }: wincolor_1_0_1_ {
-    dependencies = mapFeatures features ([ winapi_0_3_5 winapi_util_0_1_1 ]);
+    dependencies = mapFeatures features ([ winapi_0_3_6 winapi_util_0_1_1 ]);
   };
   wincolor_1_0_1_features = f: updateFeatures f (rec {
-    winapi_0_3_5.default = true;
-    winapi_0_3_5.minwindef = true;
-    winapi_0_3_5.wincon = true;
+    winapi_0_3_6.default = true;
+    winapi_0_3_6.minwindef = true;
+    winapi_0_3_6.wincon = true;
     winapi_util_0_1_1.default = true;
     wincolor_1_0_1.default = (f.wincolor_1_0_1.default or true);
-  }) [ winapi_0_3_5_features winapi_util_0_1_1_features ];
+  }) [ winapi_0_3_6_features winapi_util_0_1_1_features ];
+  ws2_32_sys_0_2_1 = { features?(ws2_32_sys_0_2_1_features {}) }: ws2_32_sys_0_2_1_ {
+    dependencies = mapFeatures features ([ winapi_0_2_8 ]);
+    buildDependencies = mapFeatures features ([ winapi_build_0_1_1 ]);
+  };
+  ws2_32_sys_0_2_1_features = f: updateFeatures f (rec {
+    winapi_0_2_8.default = true;
+    winapi_build_0_1_1.default = true;
+    ws2_32_sys_0_2_1.default = (f.ws2_32_sys_0_2_1.default or true);
+  }) [ winapi_0_2_8_features winapi_build_0_1_1_features ];
+  yaml_rust_0_4_2 = { features?(yaml_rust_0_4_2_features {}) }: yaml_rust_0_4_2_ {
+    dependencies = mapFeatures features ([ linked_hash_map_0_5_1 ]);
+  };
+  yaml_rust_0_4_2_features = f: updateFeatures f (rec {
+    linked_hash_map_0_5_1.default = true;
+    yaml_rust_0_4_2.default = (f.yaml_rust_0_4_2.default or true);
+  }) [ linked_hash_map_0_5_1_features ];
 }
