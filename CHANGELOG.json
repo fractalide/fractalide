@@ -10,7 +10,7 @@
         "features": [
           {
             "title": "Hyperflow Minimal",
-            "progress-bar": 40,
+            "progress-bar": 60,
             "Objectives": [
               "Racket Flow-based programming scheduler",
               "Node, agent and graph interfaces",
@@ -27,7 +27,9 @@
               "Graph interfaces are completed, this includes virtual ports between agents",
               "Minimal Graph description language is completed and surprisingly succinct, we might just keep this as the primary inerface for composing graphs",
               "Agent interfaces are completed, we've reduced an agent's interface to the minimal amount of code allowing for fast programming. Agents support input and output array ports, simple input and output ports along with an accumulator and option port",
-              "Card Paradigm, interacting with racket/gui and the Card Paradigm works, we can get simple applications running that dynamically change"
+              "Card Paradigm, interacting with racket/gui and the Card Paradigm works, we can get simple applications running that dynamically change",
+              "Graph mode displays a set of nodes which can link together",
+              "Graph mode can load an existing hierarchy of nodes"
             ]
           },
           {
@@ -70,17 +72,44 @@
         "title": "FIBONACCI",
         "default-expand-on-website": true,
         "render-features-on-website": true,
-        "description": "The Fibonacci release builds out the first user facing Fractalide applications. Primarily this will be a Cardano Wallet implementation. It'll be a functional wallet that will implement features similar to that of Daedalus. The only other wallet on the Cardano system",
+        "description": "The Fibonacci release builds out the first user facing Fractalide applications. Primarily this will be a Cardano Wallet (Cantor) implementation. It'll be a functional wallet that will implement features similar to that of Daedalus. The only other wallet on the Cardano system",
         "features": [
           {
-            "title": "Cardano Wallet",
-            "progress-bar": 5,
+            "title": "Cantor Wallet",
+            "progress-bar": 45,
             "Objectives": [
-              "Stand alone Cardano Wallet",
+              "Stand alone Cantor Wallet",
               "Multiple platform support (Linux, Windows 10, MacOS, Android, iOS)",
               "Hyperflow support"
             ],
-            "Work Done": []
+            "Work Done": [
+              "Created a frontend for the Cantor wallet"
+            ]
+          },
+          {
+            "title": "Tezos Stakepool",
+            "progress-bar": 90,
+            "Objectives": [
+              "Tezos stakepool setup and running"
+            ],
+            "Work Done": [
+              "Nix expressions complete",
+              "Machines setup in secure locations",
+              "Hardware wallets setup in secure locations"
+            ]
+          },
+          {
+            "title": "Luceo Token Generation Event",
+            "progress-bar": 80,
+            "Objectives": [
+              "Website completed ready to promote LUCEO",
+              "Dry run the entire process to ensure our process is sound"
+            ],
+            "Work Done": [
+              "Graphics completed",
+              "ICO details page completed",
+              "Easter eggs installed"
+            ]
           }
         ]
       }
