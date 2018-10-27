@@ -8,7 +8,7 @@
     rev    = "7e54fb37cd177e6d83e4e2b7d3e3b03bd6de0e0f";
     sha256 = "1shz56l19kgk05p2xvhb7jg1whhfjix6njx1q4rvrc5p1lvyvizd";
   }
-, racket2nix ? import ./racket2nix { inherit system; }
+, racket2nix ? import (import ./racket2nix) { inherit system; }
 }:
 
 pkgs {
