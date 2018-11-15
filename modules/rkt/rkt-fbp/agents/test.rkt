@@ -3,10 +3,16 @@
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define-graph
-   (node "nand" ${math.nand})
-   (node "and" ${math.and})
-   (node "disp" ${displayer})
-   (edge "and" "out" _ "disp" "in" _)
-   (edge "nand" "out" _ "and" "in" _)
-   (mesg "nand" "a" #f)
-   (mesg "nand" "b" #t))
+  (node "disp" ${displayer})
+  ;; (node "list" ${cardano-cli.blockchain.list})
+
+  ;; (node "new" ${cardano-cli.blockchain.pull})
+  ;; (mesg "new" "name" "testfromracket")
+
+  ;; (edge "new" "out" _ "list" "trigger" _)
+  (node "create" ${cardano-cli.wallet.create})
+  (edge "create" "out" _ "disp" "in" _)
+  (mesg "create" "name" "fromfracta2")
+  (mesg "create" "passwd" "fractalide")
+  ;; (edge "list" "out" _ "disp" "in" _)
+  )

@@ -1,0 +1,19 @@
+set name [lindex $argv 0]
+set passwd [lindex $argv 1]
+
+set timeout -1
+spawn cardano-cli wallet create $name
+match_max 100000
+expect -exact "
+\[0m\rrecovery password: "
+send -- "\r"
+expect -exact "\r
+\rconfirm password: "
+send -- "\r"
+expect -exact "\r
+\[0m\rspending password: "
+send -- "$passwd\r"
+expect -exact "\r
+\rconfirm spending password: "
+send -- "$passwd\r"
+expect eof
