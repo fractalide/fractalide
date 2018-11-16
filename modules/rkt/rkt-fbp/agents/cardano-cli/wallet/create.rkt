@@ -17,7 +17,8 @@
   (define raw (with-output-to-string (lambda ()
                                        (unless (equal? 0 (system*/exit-code expect-path "./agents/cardano-cli/wallet/create.exp" name passwd))
                                          (error "Call to blockhain list failed.")))))
-  (define res (car (string-split(cadr (string-split raw "english: ")) "\n")))
+  (define res (string-trim (car (string-split(cadr (string-split raw "english: ")) "\n"))))
+  (set! res (substring res 4))
 
   (send (output "out") res))
 
