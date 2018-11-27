@@ -18,6 +18,7 @@
                                        (unless (equal? 0 (system*/exit-code expect-path "./agents/cardano-cli/wallet/create.exp" name passwd))
                                          (error "Call to blockhain list failed.")))))
   (define res (string-trim (car (string-split(cadr (string-split raw "english: ")) "\n"))))
+  ; Remove the terminal color code
   (set! res (substring res 4))
 
   (send (output "out") res))

@@ -5,7 +5,14 @@
 (define-graph
   (node "hp" ${gui.horizontal-panel})
   (edge-out "hp" "out" "out")
-  (edge-in "in" "hp" "in")
+
+  (node "model" ${cardano-wallet.wallet.model})
+  (edge-in "in" "model" "in")
+  (edge "model" "out" _ "hp" "in" _)
+
+  (node "update" ${cardano-wallet.wallet.update})
+  (edge "model" "update" _ "update" "in" _)
+  (edge "update" "out" _ "model" "in" _)
 
   (node "ph" ${gui.place-holder})
   (edge "ph" "out" _ "hp" "place" 2)
@@ -32,4 +39,6 @@
   (node "send" ${cardano-wallet.wallet.send})
   (edge "send" "out" _ "ph" "place" 2)
   (edge "b-send" "out" 'display "send" "in" _)
+
+  (edge "model" "balance" _ "summary" "balance" _)
 )
