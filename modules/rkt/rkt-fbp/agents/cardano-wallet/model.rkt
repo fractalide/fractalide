@@ -22,7 +22,19 @@
       input output)
      (send (output "test") (struct-copy model acc))]
     [(cons 'set msg)
-     (change-wallet acc msg input output)]
+     (change-wallet acc msg input output)
+     (set! acc msg)]
+    [(cons 'update-wallet new-w)
+     (set-model-wallets! acc (list->set (set-map (model-wallets acc)
+                                                 (lambda(w)
+                                                   (if (eq? (wallet-id w) (wallet-id new-w))
+                                                       (begin
+                                                         (send-dynamic-add
+                                                          (make-graph
+                                                           (mesg (wallet-name new-w) "in" (cons 'set new-w)))
+                                                          input output)
+                                                         new-w)
+                                                       w)))))]
     [else (send (output "out") msg)])
     (send (output "acc") acc))
 
@@ -30,18 +42,21 @@
   (define added (set-subtract (model-wallets new) (model-wallets old)))
   (define deleted (set-subtract (model-wallets old) (model-wallets new)))
   (for ([i deleted])
-    (define name (string-append (wallet-name i)))
+    (define name (wallet-name i))
     (dynamic-remove
      (make-graph
       (node name ${cardano-wallet.wallet})
       (edge name "out" _ "tab" "place" (string-append (number->string (wallet-id i)) ";" name)))
      input output))
   (for ([i added])
-    (define name (string-append (wallet-name i)))
+    (define name (wallet-name i))
     (send-dynamic-add
      (make-graph
       (node name ${cardano-wallet.wallet})
       (edge name "out" _ "tab" "place" (string-append (number->string (wallet-id i)) ";" name))
-      (mesg name "in" (cons 'init i))
+      (mesg name "in" (cons 'init (struct-copy wallet i)))
       )
      input output)))
+
+(define (get-wallet-name wallet)
+  (string-append (wallet-name wallet) (number->string (wallet-id wallet))))

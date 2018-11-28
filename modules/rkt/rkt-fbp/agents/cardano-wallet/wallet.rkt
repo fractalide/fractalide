@@ -29,7 +29,6 @@
   (node "summary" ${cardano-wallet.wallet.summary})
   (edge "summary" "out" _ "ph" "place" 1)
   (edge "b-summary" "out" 'display "summary" "in" _)
-  (mesg "summary" "in" '(display . #t))
 
   (node "b-send" ${gui.button})
   (edge "b-send" "out" _ "menu" "place" 2)
@@ -40,5 +39,5 @@
   (edge "send" "out" _ "ph" "place" 2)
   (edge "b-send" "out" 'display "send" "in" _)
 
-  (edge "model" "balance" _ "summary" "balance" _)
+  (edge "model" "summary" _ "summary" "in" _)
 )

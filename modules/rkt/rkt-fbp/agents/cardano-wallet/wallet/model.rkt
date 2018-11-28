@@ -7,7 +7,7 @@
 
 (define-agent
   #:input '("in") ; in array port
-  #:output '("out" "update" "balance") ; out port
+  #:output '("out" "update" "summary") ; out port
   (define msg (recv (input "in")))
   (define acc (try-recv (input "acc")))
   (match msg
@@ -16,7 +16,6 @@
                          (send (output "update") (struct-copy wallet w))]
     [(cons 'set w)
      (set! acc w)
-     (send (output "balance") (cons 'set-label (number->string (wallet-balance acc))))
-     ]
+     (send (output "summary") (cons 'init w))]
     [else (send (output "out") msg)])
     (send (output "acc") acc))

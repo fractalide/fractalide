@@ -18,5 +18,5 @@
   (define y (car (string-split x "\n")))
   (define z (substring y 2))
   (set-wallet-balance! msg (string->number z))
-  (send (output "out") (cons 'set msg)))
+  (send (output "out") (cons 'update-wallet msg)))
 
