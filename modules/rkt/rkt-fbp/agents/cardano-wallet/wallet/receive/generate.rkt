@@ -20,6 +20,5 @@
   (define res (recv (input "res")))
   ; Add the res in the wallet
   (define new-w (struct-copy wallet opt [addresses (cons res (wallet-addresses opt))]))
-  (displayln new-w)
   (send (output "out") (cons 'update-wallet new-w))
   )
