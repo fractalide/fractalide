@@ -1,8 +1,8 @@
-{ lib, buildPlatform, buildRustCrate, fetchgit, edgesModule, rustc, makeWrapper, stdenv }:
+{ lib, buildPlatform, buildRustCrate, buildRustCrateHelpers, cratesIO, fetchgit, edgesModule, rustc, makeWrapper, stdenv }:
 
 let
   mapFeatures = features: map (fun: fun { features = features; });
-  crates = import ./Cargo.nix { inherit lib buildPlatform buildRustCrate fetchgit; }; in
+  crates = import ./Cargo.nix { inherit lib buildPlatform buildRustCrate buildRustCrateHelpers cratesIO fetchgit; }; in
 crates // rec {
   rustfbp_0_3_34 = { features?(crates.rustfbp_0_3_34_features {}) }: (crates.rustfbp_0_3_34_ {
     dependencies = mapFeatures features ([ crates.env_logger_0_5_13 libloading_0_5_0 crates.threadpool_1_7_1 ]);
