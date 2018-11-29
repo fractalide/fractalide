@@ -39,5 +39,16 @@
   (edge "send" "out" _ "ph" "place" 2)
   (edge "b-send" "out" 'display "send" "in" _)
 
+  (node "b-receive" ${gui.button})
+  (edge "b-receive" "out" _ "menu" "place" 3)
+  (mesg "b-receive" "in" '(init . ((label . "Receive")
+                                   (stretchable-width . #t))))
+  (mesg "b-receive" "option" (cons 'display #t))
+  (node "receive" ${cardano-wallet.wallet.receive})
+  (edge "receive" "out" _ "ph" "place" 3)
+  (edge "b-receive" "out" 'display "receive" "in" _)
+
+
   (edge "model" "summary" _ "summary" "in" _)
+  (edge "model" "receive" _ "receive" "in" _)
 )

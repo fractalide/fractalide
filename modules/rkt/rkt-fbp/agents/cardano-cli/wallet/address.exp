@@ -1,0 +1,12 @@
+set name [lindex $argv 0]
+set passwd [lindex $argv 1]
+set account [lindex $argv 2]
+set address [lindex $argv 3]
+
+set timeout -1
+spawn cardano-cli wallet address $name $account $address --color never
+match_max 100000
+expect -exact "Enter the wallet password.\r
+\rwallet password: : "
+send -- "$passwd\r"
+expect eof

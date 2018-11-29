@@ -25,16 +25,18 @@
      (change-wallet acc msg input output)
      (set! acc msg)]
     [(cons 'update-wallet new-w)
-     (set-model-wallets! acc (list->set (set-map (model-wallets acc)
-                                                 (lambda(w)
-                                                   (if (eq? (wallet-id w) (wallet-id new-w))
-                                                       (begin
-                                                         (send-dynamic-add
-                                                          (make-graph
-                                                           (mesg (wallet-name new-w) "in" (cons 'set new-w)))
-                                                          input output)
-                                                         new-w)
-                                                       w)))))]
+     (define new-wallets (list->set (set-map (model-wallets acc)
+                                             (lambda(w)
+                                               (if (eq? (wallet-id w) (wallet-id new-w))
+                                                   (begin
+                                                     (send-dynamic-add
+                                                      (make-graph
+                                                       (mesg (wallet-name new-w) "in" (cons 'set new-w)))
+                                                      input output)
+                                                     new-w)
+                                                   w)))))
+     (set! acc (struct-copy model acc
+                            [wallets new-wallets]))]
     [else (send (output "out") msg)])
     (send (output "acc") acc))
 

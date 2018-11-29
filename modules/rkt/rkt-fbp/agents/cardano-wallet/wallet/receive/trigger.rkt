@@ -1,14 +1,15 @@
 #lang racket
 
 (require fractalide/modules/rkt/rkt-fbp/agent
+         fractalide/modules/rkt/rkt-fbp/graph
          fractalide/modules/rkt/rkt-fbp/def)
 
 (require/edge ${cardano-wallet.model})
+(require/edge ${fvm.dynamic-add})
 
 (define-agent
   #:input '("in") ; in array port
   #:output '("out") ; out port
   (define msg (recv (input "in")))
-  (define new-model (model-add-wallet msg (wallet 0 "denis" 0 (list "agada" "agadou"))))
-  (send (output "out") (cons 'set new-model)))
-
+  (define opt (recv (input "option")))
+  (send (output "out") (cdr opt)))

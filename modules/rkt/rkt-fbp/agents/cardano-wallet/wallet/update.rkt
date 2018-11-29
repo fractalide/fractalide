@@ -17,6 +17,6 @@
   (define x (cadr (string-split raw "balance")))
   (define y (car (string-split x "\n")))
   (define z (substring y 2))
-  (set-wallet-balance! msg (string->number z))
-  (send (output "out") (cons 'update-wallet msg)))
+  (define new-w (struct-copy wallet msg [balance (string->number z)]))
+  (send (output "out") (cons 'update-wallet new-w)))
 

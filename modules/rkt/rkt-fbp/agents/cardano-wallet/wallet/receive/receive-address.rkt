@@ -10,6 +10,7 @@
 
 (define-graph
   (node "vp" ${gui.vertical-panel})
+  (mesg "vp" "in" '(set-stretchable-height . #f))
   (edge-out "vp" "out" "out")
   (edge-in "in" "vp" "in")
 
@@ -25,6 +26,7 @@
   (mesg "qr" "in" `(init . ((label . ,address-qr))))
 
   (node "right" ${gui.vertical-panel})
+  (mesg "right" "in" '(set-stretchable-height . #f))
   (edge "right" "out" _ "hp" "place" 20)
 
   (node "address" ${gui.message})
@@ -45,4 +47,20 @@
 
   (node "button" ${gui.button})
   (edge "button" "out" _ "down" "place" 20)
-  (mesg "button" "in" '(init . ((label . "Generate")))))
+  (mesg "button" "in" '(init . ((label . "Generate"))))
+
+  (node "trigger" ${cardano-wallet.wallet.receive.trigger})
+  (node "generate" ${cardano-wallet.wallet.receive.generate})
+  (edge-in "build" "generate" "option")
+  (edge "button" "out" 'button "trigger" "in" _)
+  (edge "trigger" "out" _ "generate" "passwd" _)
+  (edge "password" "out" 'text-field "trigger" "option" _)
+
+  (node "cli" ${cardano-cli.wallet.address})
+  (edge "generate" "passwd" _ "cli" "passwd" _)
+  (edge "generate" "name" _ "cli" "name" _)
+  (edge "generate" "account-index" _ "cli" "account-index" _)
+  (edge "generate" "address-index" _ "cli" "address-index" _)
+  (edge "cli" "out" _ "generate" "res" _)
+  (edge "generate" "out" _ "vp" "in" _)
+  )
