@@ -22,18 +22,8 @@ function main() {
 
 
 function build() {
-  local nixpkgs_paths=()
-
-  for path in \
-    $HOME/.nix-defexpr/channels/nixpkgs \
-    /nix/var/nix/profiles/per-user/root/channels/nixpkgs \
-  ; do
-    [[ -e $path ]] &&
-    nixpkgs_paths+=(-I "$(readlink "$path")")
-  done
-
   nix-build --fallback --option restrict-eval true --arg isTravis true \
-    "${nixpkgs_paths[@]}" \
+    -I nixpkgs=$(nix-instantiate --eval -E 'with import <nixpkgs> {}; path') \
     --show-trace "$@" |& subfold ${!#}
 }
 
