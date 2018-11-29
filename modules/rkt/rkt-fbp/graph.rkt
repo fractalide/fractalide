@@ -56,6 +56,8 @@
     (for/fold ([acc (graph '() '() '() '() '())])
               ([act (flatten actions)])
       (match act
+        [g #:when (graph? g)
+           g]
         [(g-agent name type)
          (struct-copy graph acc [agent (cons act (graph-agent acc))])]
         [(mesg in in-p msg)
