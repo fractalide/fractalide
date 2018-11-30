@@ -24,7 +24,4 @@
   (node "address" ${cardano-wallet.wallet.receive.receive-address})
   (edge "address" "out" _ "vp" "place" 30)
   (edge "model" "build" _ "address" "build" _)
-
-  ; (node "used-addresses" ${cardano-wallet.wallet.receive.used-addresses})
-  ; (edge "used-addresses" "out" _ "vp" "place" 40))
   )

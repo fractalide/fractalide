@@ -31,7 +31,7 @@
 
   (node "address" ${gui.message})
   (edge "address" "out" _ "right" "place" 10)
-  (mesg "address" "in" '(init . ((label . "asdfjLKWJEFLKASDFqweLRKJasdfLQWKEJ"))))
+  (mesg "address" "in" '(init . ((label . "please fill password"))))
 
   (node "generate-label" ${gui.message})
   (edge "generate-label" "out" _ "right" "place" 20)
@@ -52,9 +52,12 @@
   (node "trigger" ${cardano-wallet.wallet.receive.trigger})
   (node "generate" ${cardano-wallet.wallet.receive.generate})
   (edge-in "build" "generate" "option")
+  (edge "password" "out" 'text-field "trigger" "option" _)
+
+  ; Manage the click
   (edge "button" "out" 'button "trigger" "in" _)
   (edge "trigger" "out" _ "generate" "passwd" _)
-  (edge "password" "out" 'text-field "trigger" "option" _)
+  (edge "trigger" "text-field" _ "password" "in" _)
 
   (node "cli" ${cardano-cli.wallet.address})
   (edge "generate" "passwd" _ "cli" "passwd" _)
@@ -63,4 +66,6 @@
   (edge "generate" "address-index" _ "cli" "address-index" _)
   (edge "cli" "out" _ "generate" "res" _)
   (edge "generate" "out" _ "vp" "in" _)
+  (edge "generate" "address" _ "address" "in" _)
+  (edge "generate" "qr" _ "qr" "in" _)
   )
