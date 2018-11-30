@@ -7,7 +7,8 @@
 
 (define-agent
   #:input '("name" "pwd" "pwd-cfm" "next") ; in array port
-  #:output '("error" "name" "pwd" "next") ; out port
+  #:output '("error" "name" "pwd" "next" "destroy" "attach") ; out port
+  #:output-array '("clean-field")
   (define acc (try-recv (input "acc")))
   (unless acc
     (set! acc (wcreate "" "" "")))
@@ -36,6 +37,12 @@
       [else
        (send (output "name") (wcreate-name acc))
        (send (output "pwd") (wcreate-pwd acc))
-       (send (output "next") (cons 'display #t))]))
+       (send (output "next") (cons 'display #t))
+       (send (output "destroy") (wcreate-name acc))
+       (send (output "attach") (wcreate-name acc))
+       (set-wcreate-pwd! acc "")
+       (set-wcreate-pwd-cfm! acc "")
+       (for ([(k v) (output-array "clean-field")])
+         (send v `(set-value . ,"")))]))
 
   (send (output "acc") acc))

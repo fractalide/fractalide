@@ -1,0 +1,7 @@
+set name [lindex $argv 0]
+
+set timeout -1
+spawn cardano-cli wallet destroy $name
+match_max 100000
+send -- "y\r"
+expect eof

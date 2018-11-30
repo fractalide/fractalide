@@ -1,0 +1,7 @@
+set name [lindex $argv 0]
+set blockchain [lindex $argv 1]
+
+set timeout -1
+spawn cardano-cli wallet attach $name $blockchain
+match_max 100000
+expect eof
