@@ -18,7 +18,9 @@
      (send-dynamic-add
       (make-graph
        (node "tab" ${gui.tab-panel})
-       (edge-out "tab" "out" "dynamic-out"))
+       (edge-out "tab" "out" "dynamic-out")
+       (node "+" ${cardano-wallet.wcreate})
+       (edge "+" "out" _ "tab" "place" "9999;+"))
       input output)
      (send (output "test") (struct-copy model acc))]
     [(cons 'set msg)
@@ -37,6 +39,10 @@
                                                    w)))))
      (set! acc (struct-copy model acc
                             [wallets new-wallets]))]
+    [(cons 'add-wallet name)
+     (define new-acc (model-add-wallet acc (wallet 0 name 0 (list))))
+     (change-wallet acc new-acc input output)
+     (set! acc new-acc)]
     [else (send (output "out") msg)])
     (send (output "acc") acc))
 

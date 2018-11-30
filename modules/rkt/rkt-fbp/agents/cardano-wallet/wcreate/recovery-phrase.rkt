@@ -8,6 +8,8 @@
   (edge-out "vp" "out" "out")
 
   (node "model" ${cardano-wallet.wcreate.recovery-phrase.model})
+  (edge "model" "out" _ "vp" "in" _)
+  (edge-in "attach" "model" "name")
 
   (node "headline" ${gui.message})
   (edge "headline" "out" _ "vp" "place" 1)
@@ -58,9 +60,15 @@
   (edge "back" "out" 'button "set-back" "in" _)
   (mesg "set-back" "option" (cons 'display #t))
   (edge-out "set-back" "out" "back")
+  (edge-out "model" "finalize" "finalize")
 
   (node "next" ${gui.button})
   (edge "next" "out" _ "hp" "place" 2)
   (mesg "next" "in" '(init . ((label . "&Next"))))
   (edge "next" "out" 'button "model" "next" _)
+
+  (node "attach" ${cardano-cli.wallet.attach})
+  (edge "model" "attach" _ "attach" "name" _)
+  (edge "model" "attach-blockchain" _ "attach" "blockchain" _)
+
   )

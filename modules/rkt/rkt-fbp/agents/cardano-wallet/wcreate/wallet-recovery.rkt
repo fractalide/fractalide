@@ -24,8 +24,12 @@ Please make sure nobody looking at your screen unless you want them to have acce
   (node "back" ${gui.button})
   (edge "back" "out" _ "hp" "place" 1)
   (mesg "back" "in" '(init . ((label . "&Back"))))
+
+  (node "clone-back" ${clone})
+  (edge "back" "out" 'button "clone-back" "in" _)
+
   (node "set-back" ${mesg.set-mesg})
-  (edge "back" "out" 'button "set-back" "in" _)
+  (edge "clone-back" "out" 1 "set-back" "in" _)
   (mesg "set-back" "option" (cons 'display #t))
   (edge-out "set-back" "out" "back")
 
@@ -37,4 +41,11 @@ Please make sure nobody looking at your screen unless you want them to have acce
   (edge "next" "out" 'button "set-display" "in" _)
   (mesg "set-display" "option" (cons 'display #t))
   (edge-out "set-display" "out" "next")
+
+  (node "destroy" ${cardano-cli.wallet.destroy})
+  (node "trigger" ${mesg.set-mesg})
+  (edge-in "destroy" "trigger" "option")
+  (edge "trigger" "out" _ "destroy" "name" _)
+  (edge "clone-back" "out" 2 "trigger" "in" _)
+
   )
