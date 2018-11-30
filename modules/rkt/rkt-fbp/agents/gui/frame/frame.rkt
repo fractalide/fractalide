@@ -2,9 +2,9 @@
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
 
-(require racket/gui/base
+(require (rename-in racket/gui [send class-send])
          racket/match)
-(require (rename-in racket/class [send class-send]))
+; (require (rename-in racket/class [send class-send]))
 
 (define-agent
   #:input '("in") ; in port
@@ -25,6 +25,8 @@
       (send (output "fvm") msg)]
      [(cons 'dynamic-remove graph)
       (send (output "fvm") msg)]
+     [(cons 'set-clipboard-string msg)
+      (class-send the-clipboard set-clipboard-string msg 0)]
      [(cons 'close #t) (send (output "halt") #t) (send (output "fvm") (cons 'stop #t))]
      [(or #t
           (cons (or 'motion 'leave 'enter 'left-down 'left-up 'subwindow-focus
