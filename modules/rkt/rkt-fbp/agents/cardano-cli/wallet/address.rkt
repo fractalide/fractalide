@@ -19,7 +19,7 @@
   (define raw (with-output-to-string (lambda ()
                                        (unless (equal? 0 (system*/exit-code expect-path "./agents/cardano-cli/wallet/address.exp" name passwd account-index address-index))
                                          (error "Call to wallet address failed.")))))
-  (define res (last (string-split raw "\n")))
+  (define res (string-trim (last (string-split raw "\n"))))
 
   (send (output "out") res))
 

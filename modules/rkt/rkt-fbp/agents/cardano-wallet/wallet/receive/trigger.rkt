@@ -9,7 +9,8 @@
 
 (define-agent
   #:input '("in") ; in array port
-  #:output '("out") ; out port
+  #:output '("out" "text-field") ; out port
   (define msg (recv (input "in")))
   (define opt (recv (input "option")))
+  (send (output "text-field") '(set-value . ""))
   (send (output "out") (cdr opt)))

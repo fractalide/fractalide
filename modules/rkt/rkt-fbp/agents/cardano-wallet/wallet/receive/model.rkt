@@ -47,12 +47,24 @@
                     (for ([i (in-naturals 1)]
                           [a (wallet-addresses w)])
                       (define name (number->string i))
-                      (set! acc (cons (car acc) (cons name (cdr acc))))
+                      (define namehp (string-append name "hp"))
+                      (define nameclip (string-append name "clip"))
+                      (set! acc (cons (car acc) (append (list name namehp nameclip) (cdr acc))))
                       (set! g (make-graph
                                g
+                               (node namehp ${gui.horizontal-panel})
+                               (edge namehp "out" _ "show" "place" i)
+                               (mesg namehp "in" '(set-stretchable-height . #f))
+                               (mesg namehp "in" '(set-alignment . (center . center)))
+
                                (node name ${gui.message})
-                               (edge name "out" _ "show" "place" i)
-                               (mesg name "in" (cons 'init (list (cons 'label a)))))))
+                               (edge name "out" _ namehp "place" 1)
+                               (mesg name "in" (cons 'init (list (cons 'label a))))
+
+                               (node nameclip ${gui.button})
+                               (edge nameclip "out" _ namehp "place" 2)
+                               (mesg nameclip "in" '(init . ((label . "copy"))))
+                               (mesg nameclip "option" `(set-clipboard-string . ,a)))))
                     (send-dynamic-add g input output)]
 
     [(cons 'toggle #t)
