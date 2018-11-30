@@ -6,6 +6,7 @@
 
 (require/edge ${cardano-wallet.model})
 (define-runtime-path qr-path "./qrcode.png")
+(define-runtime-path blank-qr-path "./baconipsum.png")
 
 (define-agent
   #:input '("passwd" "res") ; in array port
@@ -20,14 +21,17 @@
   (send (output "passwd") passwd)
 
   (define res (recv (input "res")))
-  ; Add the res in the wallet
-  (define new-w (struct-copy wallet opt [addresses (cons res (wallet-addresses opt))]))
+
+  (if (string-contains? res "Invalid")
+      (let ([qr (read-bitmap blank-qr-path)])
+        (send (output "qr") `(set-label . ,qr)))
+      (let ([new-w (struct-copy wallet opt [addresses (cons res (wallet-addresses opt))])]
+            [qr (read-bitmap qr-path)])
+        ; Add the res in the wallet
+        (send (output "out") (cons 'update-wallet new-w))
+        ; Display
+        (qr-write res qr-path)
+        (send (output "qr") `(set-label . ,qr))))
 
   ; Quick display
-  (send (output "address") `(set-label . ,res))
-  (qr-write res qr-path)
-  (define qr (read-bitmap qr-path))
-  (send (output "qr") `(set-label . ,qr))
-
-  (send (output "out") (cons 'update-wallet new-w))
-  )
+  (send (output "address") `(set-label . ,res)))
