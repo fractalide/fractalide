@@ -48,7 +48,17 @@
   (edge "receive" "out" _ "ph" "place" 3)
   (edge "b-receive" "out" 'display "receive" "in" _)
 
+  (node "b-settings" ${gui.button})
+  (edge "b-settings" "out" _ "menu" "place" 10)
+  (mesg "b-settings" "in" '(init . ((label . "Settings")
+                                    (stretchable-width . #t))))
+  (mesg "b-settings" "option" (cons 'display #t))
+  (node "settings" ${cardano-wallet.wsettings})
+  (edge "settings" "out" _ "ph" "place" 10)
+  (edge "b-settings" "out" 'display "settings" "in" _)
+
 
   (edge "model" "summary" _ "summary" "in" _)
   (edge "model" "receive" _ "receive" "in" _)
+  (edge "model" "settings" _ "settings" "in" _)
 )
