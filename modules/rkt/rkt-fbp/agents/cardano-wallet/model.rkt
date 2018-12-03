@@ -43,14 +43,28 @@
      (define new-acc (model-add-wallet acc (wallet 0 name 0 (list))))
      (change-wallet acc new-acc input output)
      (set! acc new-acc)]
+    [(cons 'delete-wallet w)
+     (define new-acc (model-rem-wallet acc w))
+     (change-wallet acc new-acc input output)
+     (set! acc new-acc)]
     [else (send (output "out") msg)])
     (send (output "acc") acc))
 
 (define (change-wallet old new input output)
   (define added (set-subtract (model-wallets new) (model-wallets old)))
   (define deleted (set-subtract (model-wallets old) (model-wallets new)))
+  (define first
+    (if (not (set-empty? (model-wallets new)))
+        (wallet-name (car (set->list (model-wallets new))))
+        "+"))
   (for ([i deleted])
     (define name (wallet-name i))
+    (send-dynamic-add
+     (make-graph
+      (mesg first "in" '(display . #t))
+      (mesg name "in" '(delete . #t)))
+     input output)
+    (sleep 0.1)
     (dynamic-remove
      (make-graph
       (node name ${cardano-wallet.wallet})

@@ -69,7 +69,8 @@
                          (update-choices (car ph) (cdr ph))]
                         ; Drop the children, but no change in display
                         [(cons 'delete #t)
-                         (set! ph (cons (remove (car ph) place)
+                         (set! ph (cons (filter (lambda(ch) (not (string=? (choices-full-name ch) place)))
+                                                (car ph))
                                         (cdr ph)))
                          (update-choices (car ph) (cdr ph))]
                         ; Display a new children
