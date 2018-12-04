@@ -1,64 +1,24 @@
 #!/usr/bin/env racket
-#lang racket
+#lang racket/base
 
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
 (define-graph
   (node "frame" ${gui.frame})
+  ;; (node "wcreate" ${cardano-wallet.wcreate})
+  ;; (edge "wcreate" "out" _ "frame" "in" _)
+  (node "model" ${cardano-wallet.model})
+  (edge "model" "out" _ "frame" "in" _)
 
-  (node "menu" ${cardano-wallet.menu})
-  (edge "menu" "out" _ "frame" "in" _)
+  (node "test" ${cardano-wallet.temp.add})
+  (edge "model" "test" _ "test" "in" _)
+  (edge "test" "out" _ "model" "in" _)
 
-  (node "app" ${gui.horizontal-panel})
-  (edge "app" "out" _ "frame" "in" _)
+  (mesg "model" "in" '(init . #t))
 
-  (node "sidebar" ${cardano-wallet.sidebar})
-  (edge "sidebar" "out" _ "app" "place" 10)
-
-  (node "stack" ${gui.place-holder})
-  (edge "stack" "out" _ "app" "place" 20)
-
-  (node "welcome" ${cardano-wallet.welcome})
-  (edge "welcome" "out" _ "stack" "place" 10)
-
-  (node "summary" ${cardano-wallet.summary})
-  (edge "summary" "out" _ "stack" "place" 20)
-
-  (node "wsettings" ${cardano-wallet.wsettings})
-  (edge "wsettings" "out" _ "stack" "place" 30)
-  (edge "sidebar" "data" "wallet-name" "wsettings" "name" _)
-
-  (node "display-assurance-level" ${displayer})
-  (mesg "display-assurance-level" "option" "display-assurance-level: ")
-  (edge "wsettings" "assurance-level" _ "display-assurance-level" "in" _)
-  (mesg "wsettings" "assurance-level" "Medium")
-
-  (edge "wsettings" "name" _ "sidebar" "data" "wallet-name")
-  (edge "wsettings" "delete" _ "sidebar" "data" "delete")
-
-  (with-node-name "send" (node ${cardano-wallet.send})
-                         (edge "out" "stack" "place" #:selection 35))
-
-  (node "receive" ${cardano-wallet.receive})
-  (edge "receive" "out" _ "stack" "place" 40)
-
-  (node "card-display" ${plumbing.demux})
-  (mesg "card-display" "option"
-        (match-lambda [(cons dest _) (list (list* dest 'display #t))]))
-
-  (edge "sidebar" "choice" _ "card-display" "in" _)
-
-  (with-node-name "card-display"
-                  (edge "out" #:selection "summary" "summary" "in")
-                  (edge "out" #:selection "send" "send" "in")
-                  (edge "out" #:selection "receive" "receive" "in")
-                  (edge "out" #:selection "wsettings" "wsettings" "in")
-                  (edge "out" #:selection "new" "welcome" "in"))
-
-  (mesg "sidebar" "in" '(init . ()))
-  (mesg "sidebar" "init" '(#hash((name . "my wallet"))
-                           #hash((name . "my other wallet is also a wallet")))))
-
+  ; (node "wallet" ${cardano-wallet.wallet})
+  ; (edge "wallet" "out" _ "frame" "in" _)
+  )
 
 (module+ main
   (require syntax/location)
