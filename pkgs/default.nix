@@ -48,9 +48,10 @@ pkgs {
         );
       })).overrideAttrs (oldAttrs: {
         buildInputs = oldAttrs.buildInputs or [] ++ [ self.makeWrapper ];
-        inherit (self) graphviz;
+        inherit (self) expect graphviz;
         postInstall = oldAttrs.postInstall or "" + ''
           wrapProgram $env/bin/hyperflow --prefix PATH ":" $graphviz/bin
+          wrapProgram $env/bin/cardano-wallet --prefix PATH ":" $expect/bin
         '';
       });
 
