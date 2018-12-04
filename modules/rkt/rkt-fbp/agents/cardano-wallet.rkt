@@ -1,5 +1,5 @@
 #!/usr/bin/env racket
-#lang racket/base
+#lang racket
 
 (require fractalide/modules/rkt/rkt-fbp/graph)
 
