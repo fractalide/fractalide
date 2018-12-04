@@ -1,6 +1,9 @@
 #lang racket
 
 (require fractalide/modules/rkt/rkt-fbp/agent)
+(require racket/runtime-path)
+
+(define-runtime-path address-exp "./address.exp")
 
 (define-agent
   #:input '("name" "passwd" "account-index" "address-index")
@@ -17,7 +20,8 @@
   (unless expect-path (error "'expect' not found on PATH"))
 
   (define raw (with-output-to-string (lambda ()
-                                       (unless (equal? 0 (system*/exit-code expect-path "./agents/cardano-cli/wallet/address.exp" name passwd account-index address-index))
+                                       (unless (equal? 0 (system*/exit-code expect-path address-exp
+                                                                            name passwd account-index address-index))
                                          (error "Call to wallet address failed.")))))
   (define res (string-trim (last (string-split raw "\n"))))
 
