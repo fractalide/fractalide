@@ -1,6 +1,6 @@
 # Documentation
-* [Nodes](../nodes/README.md)
-* [Edges](../edges/README.md)
-* [Services](../services/README.md)
-* [Fractals](../fractals/README.md)
+* [Nodes](../nodes/README.adoc)
+* [Edges](../edges/README.adoc)
+* [Services](../services/README.adoc)
+* [Fractals](../fractals/README.adoc)
 * [RustFBP](https://docs.rs/rustfbp)
