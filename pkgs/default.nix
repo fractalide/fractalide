@@ -83,8 +83,8 @@ pkgs {
         # If we allow raco test to run on anything in agents/gui it will fail because
         # requiring (gui/...) fails on headless.
 
-        find ${fractalide.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents \
-          '(' -name gui -prune ')' -o '(' -name '*.rkt' -print ')' |
+        find ${fractalide.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents -name '*.rkt' |
+          xargs grep -l 'module[+] test' |
           parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
           tee $out
         exit ''${PIPESTATUS[1]}
