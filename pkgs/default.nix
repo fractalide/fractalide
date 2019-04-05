@@ -34,7 +34,7 @@ pkgs {
       inherit racket2nix;
       inherit (racket2nix) buildThinRacketPackage;
       rustPlatform = super.recurseIntoAttrs (super.makeRustPlatform rust);
-      fractalide = (self.buildThinRacketPackage (builtins.path {
+      fractalide = ((self.buildThinRacketPackage (builtins.path {
         name = "fractalide";
         path = ./..;
         filter = (path: type:
@@ -47,6 +47,12 @@ pkgs {
           (null == builtins.match "[#].*[#]" basePath) &&
           (null == builtins.match ".*~" basePath)
         );
+      })).overrideRacketDerivation (oldAttrs: {
+        doInstallCheck = true;
+        installCheckFileFinder = ''
+          find $env/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents -name '*.rkt' |
+            xargs grep -Zl 'module[+] test'
+        '';
       })).overrideAttrs (oldAttrs: {
         buildInputs = oldAttrs.buildInputs or [] ++ [ self.makeWrapper ];
         inherit (self) expect graphviz;
@@ -55,40 +61,6 @@ pkgs {
           wrapProgram $env/bin/cardano-wallet --prefix PATH ":" $expect/bin
         '';
       });
-
-      # fractalide/racket2nix#78 workaround
-      # For raco test to work, compiler-lib needs to be in the top derivation, so we flip it around
-      # and make compiler-lib depend on fractalide.
-
-      inherit (fractalide.racket-packages.extend (self: super: { fractalide-rkt-tests = self.lib.mkRacketDerivation {
-        pname = "fractalide-rkt-tests";
-        src = self.compiler-lib.src;
-        racketBuildInputs = self.compiler-lib.racketBuildInputs ++ [ fractalide ] ++
-          (builtins.filter (drv: drv.pname or "" != "compiler-lib") fractalide.racketBuildInputs);
-      };})) fractalide-rkt-tests;
-
-      rkt-tests = let
-
-        # parallel cannot quite handle full inline bash, and destroys quoting, so we can't use bash -c
-        racoTest = builtins.toFile "raco-test.sh" ''
-          timeout 60 time -f '%e s' racket -l- raco test "$@" |&
-            grep -v -e "warning: tool .* registered twice" -e "@[(]test-responsible"
-          exit ''${PIPESTATUS[0]}
-        '';
-      in self.runCommand "rkt-tests" {
-        buildInputs = [ fractalide-rkt-tests.env self.coreutils self.parallel self.time ];
-        inherit racoTest;
-      } ''
-        # If we do raco test <directory> the discovery process will try to mkdir $HOME.
-        # If we allow raco test to run on anything in agents/gui it will fail because
-        # requiring (gui/...) fails on headless.
-
-        find ${fractalide.env}/share/racket/pkgs/*/modules/rkt/rkt-fbp/agents -name '*.rkt' |
-          xargs grep -l 'module[+] test' |
-          parallel -n 1 -j ''${NIX_BUILD_CORES:-1} bash $racoTest |
-          tee $out
-        exit ''${PIPESTATUS[1]}
-      '';
     })
   ];
 }
