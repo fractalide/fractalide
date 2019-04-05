@@ -3,7 +3,7 @@
 
 let
   genJobs = pkgs: {
-    inherit (pkgs) fractalide rkt-tests;
+    inherit (pkgs) fractalide;
     rs-tests = import ./tests;
     cardano = (import ./. { inherit pkgs; }).mods.rs.deps.cardano."0.1.0";
     rustfbp = (import ./. {}).mods.rs.deps.rustfbp."0.3.34";
@@ -16,5 +16,5 @@ in
       latest-nixpkgs = genJobs (import ./pkgs { system = "x86_64-darwin"; pkgs = import <nixpkgs>; });
     };
   } // (import <nixpkgs> {}).lib.optionalAttrs isTravis {
-    travisOrder = [ "rs-tests" "rkt-tests" ];
+    travisOrder = [ "rs-tests" "fractalide" ];
   }
