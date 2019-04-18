@@ -1,7 +1,7 @@
 {
   "url": "https://github.com/fractalide/racket2nix.git",
-  "rev": "4c1e6bd2337d67913e977d900e3d2a067d293713",
-  "date": "2019-04-05T05:41:38+08:00",
-  "sha256": "1yhf5743v23g826bmkgw6gavpcmyigr1q1hbni4qyw3lvdx6zkva",
+  "rev": "746bcc7793d8d851a3c1e57a31711c94882f0ba4",
+  "date": "2019-04-18T16:10:28+08:00",
+  "sha256": "1glm2cblg687js3nrn5p0ywm3sqlvndf499wrg9wrw6lccjnm25j",
   "fetchSubmodules": false
 }
