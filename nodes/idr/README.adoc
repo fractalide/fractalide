@@ -9,7 +9,7 @@ Executable `Subgraphs` are defined as a network of `Agents`, which exchange type
 
 Functions in a programming language should be placed in a content addressable store, this is the horizontal plane. The vertical plane should be constructed using unique addresses into this content addressable store, critically each address should solve a single problem, and may do so by referencing multiple other unique addresses in the content addressable store. Users must not have knowledge of these unique addresses but a translation process should occur from a human readable name to a universally unique address. Read http://erlang.org/pipermail/erlang-questions/2011-May/058768.html[more] about the problem.
 
-Nix gives us the content addressable store which allows for `reproducibility`, and these `agents` give us `reusablility`. The combination is particularly potent form of programming.
+Nix gives us the content addressable store which allows for `reproducibility`, and these `agents` give us `reusability`. The combination is particularly potent form of programming.
 
 Once you have the above, you have truly reusable and reproducible functions. Fractalide nodes are just this, and it makes the below so much easier to achieve:
 
