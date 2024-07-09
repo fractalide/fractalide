@@ -8,7 +8,7 @@
 == Why?
 
 `Services` allow programmers to collaborate and distill common configurable patterns that solve general problems.
-Essentially a `service` in this context is no different from a top level `subgraph`, albeit the interface has been `nix`'ified. The `nix` interface is required because this is where `nixos` takes over and declaratively handles conguent configuration management. It does things like sets up dependencies such as database and other services that might need to be run for the `subgraph` to operate properly. This layer of software has been well tested by the `nix` community and ties in with every other service created by the `nixos` community.
+Essentially a `service` in this context is no different from a top level `subgraph`, albeit the interface has been `nix`'ified. The `nix` interface is required because this is where `nixos` takes over and declaratively handles congruent configuration management. It does things like set up dependencies such as databases and other services that might need to be run for the `subgraph` to operate properly. This layer of software has been well tested by the `nix` community and ties in with every other service created by the `nixos` community.
 
 This abstraction allows you to pull in legacy services, plug a Cap'n Proto functionality and start talking to Fractalide services.
 

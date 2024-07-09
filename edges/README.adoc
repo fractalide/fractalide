@@ -17,7 +17,7 @@ There are three phases building up to a successful `Edge` formation:
 
 Once an `edge` is formed, it becomes a bounded buffer message passing channel, which can only contain `messages` with data in the shape of whatever the Cap'n Proto schema is.
 
-So despite you seeing only Cap'n Proto schema in this directory, the concept of an `Edge` is  more profound. Hence we would prefer naming this concept after it's grandest manifestation, and in the process, the name encapsulates all of the above information. The name should also tie in with the concept of a `node` in graph theory, as such we use `nodes` and `edges` to construct `subgraphs`.
+So despite you seeing only Cap'n Proto schema in this directory, the concept of an `Edge` is  more profound. Hence we would prefer naming this concept after its grandest manifestation, and in the process, the name encapsulates all of the above information. The name should also tie in with the concept of a `node` in graph theory, as such we use `nodes` and `edges` to construct `subgraphs`.
 
 === Exposed Edge or iMsg
 
@@ -35,13 +35,13 @@ subgraph {
 }
 ----
 
-`Exposed edges` or `imsgs` kick start `agents` into action, otherwise they won't start. Due to the dataflow nature of `agents` they will politely wait for data before they start doing anything. This is the equivalent of passing the path of a data source to some executable on the command line. Without the argument the program would just sit or fail. Another way of looking at it might be a pipeline that has come to the surface to accept some form of input.
+`Exposed edges` or `imsgs` kickstart `agents` into action, otherwise they won't start. Due to the dataflow nature of `agents` they will politely wait for data before they start doing anything. This is the equivalent of passing the path of a data source to some executable on the command line. Without the argument the program would just sit or fail. Another way of looking at it might be a pipeline that has come to the surface to accept some form of input.
 
 We use the name `exposed edge` to differentiate between a `hidden edge`, but by far the most common usage is `imsg` and `edge`.
 
 === Hidden Edge or Edge
 
-`Hidden edges` are represented with this syntax `+->+` and `+=>+`, and are used to control the direction flowing data. Hence the process of programming a `subgraph` is essentially digging ditches and laying pipelines between buildings.
+`Hidden edges` are represented with this syntax `+->+` and `+=>+`, and are used to control the direction of flowing data. Hence the process of programming a `subgraph` is essentially digging ditches and laying pipelines between buildings.
 
 Examples of `hidden edges`
 
@@ -90,8 +90,8 @@ subgraph {
 == Why?
 
 * Contracts between components are critical for creating https://hintjens.gitbooks.io/social-architecture/content/chapter6.html[living systems].
-* Schema ensure we do not need to parse strangely formatted `stdin` data.
-* A `node` does one and only one thing, and the schema represents a language the `node` speaks. If you want a `node` to do something, you have to speak it's language.
+* Schemas ensure we do not need to parse strangely formatted `stdin` data.
+* A `node` does one and only one thing, and the schema represents a language the `node` speaks. If you want a `node` to do something, you have to speak its language.
 
 == Who?
 
@@ -99,7 +99,7 @@ Typically `subgraph` developers will be interested in `hidden and exposed edges`
 
 == Where?
 
-The `edges` directory is where all the schema go:
+The `edges` directory is where all the schemas go:
 
 [source]
 ----
@@ -130,7 +130,7 @@ The `{ edge, edges }:` lambda passes in two arguments, the `edge` builder and `e
 The `edge` building function accepts these arguments:
 
 * The `src` attribute is used to derive an `Edge` name based on location in the directory hierarchy.
-* The `edges` attribute resolve transitive dependencies and ensures your `agent` has all the needed files to type check.
+* The `edges` attribute resolves transitive dependencies and ensures your `agent` has all the needed files to type check.
 * a https://capnproto.org[Cap 'n Proto] `schema`. This is the heart of the contract, this is where you may create potentially complex deep hierarchies of structured data. Please read more about the https://capnproto.org/language.html[schema language].
 
 [source, nix, subs="none"]
@@ -154,15 +154,15 @@ edge {
 
 Please use CamelCase for `struct` and `enum` names. The naming should reflect this manner:
 
-* if the schema is in folder `/edges/maths/boolean` then the `struct` should have name `MathsBoolean`.
-* if the schema is in `fractal` `/edges/net/http/response` then the `struct` should have name `NetHttpResponse`.
+* if the schema is in the folder `/edges/maths/boolean` then the `struct` should have the name `MathsBoolean`.
+* if the schema is in th folder `/edges/net/http/response` then the `struct` should have the name `NetHttpResponse`.
 
 The same naming applies for Cap'n Proto `enums` and `interfaces`. It's crucial this naming is adopted.
 
 === One struct per Fractalide schema
 
-We prefer composition of schema, and the schema must have fully qualified struct names.
-Hence, this is example shouldn't be used:
+Each schema should have one struct with a fully qualified name.
+Hence, this example should not be used:
 
 [source, nix, subs="none"]
 ----
@@ -205,7 +205,7 @@ The `Date` name can collide!
 
 Schema are pulled into ``agent``'s scope just before compile time, now we are unable to predict what combinations will happen.
 So if we have two schema that have `struct Date ...` then a name collision will take place.
-Therefore to avoid this scenario please put `struct Date ...` into it's own schema and import it via this mechanism.
+Therefore to avoid this scenario please put `struct Date ...` into its own schema and import it via this mechanism.
 
 === Cap'n Proto import
 

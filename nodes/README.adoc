@@ -46,7 +46,7 @@ See the above `default.nix` files? Those are `Subgraphs` and they hide the entir
 
 === How?
 
-The `Subgraph` `default.nix` requires you make decisions about two types of dependencies.
+The `Subgraph` `default.nix` requires you to make decisions about two types of dependencies.
 
 * What `Nodes` are needed?
 * What `Edges` are needed?
