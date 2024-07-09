@@ -17,7 +17,7 @@ Anyone making high quality, documented nodes, subgraphs and edges may plug into 
 
 == Where?
 
-Each `fractal` needs to have it's own hierarchical folder. For example, HTTP would be placed in the `fractalide/fractals/net/http` folder.
+Each `fractal` needs to have its own hierarchical folder. For example, HTTP would be placed in the `fractalide/fractals/net/http` folder.
 
 == How?
 
@@ -106,7 +106,7 @@ You'd use a https://github.com/fractalide/fractalide/blob/2312ac77fbb09f7a6cb2d2
 Incremental Builds speed up the development process, so that one doesn't have to compile the entire crate from scratch each time you make a change to the source code.
 
 Fractalide expands the nix-build system for incremental builds. The Incremental Builds only work when debug is enabled. They also need the path to a cache folder.
-The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system. Incremental Builds permit you to compile a crate without having to recompiled the crate dependency tree.
+The cache folder can be created from an old result by the `buildCache.sh` script. Per default the cache folder is saved in the `/tmp` folder of your system. Incremental Builds permit you to compile a crate without having to recompile the crate dependency tree.
 
 Here is an example how you can build with the Incremental Build System:
 
