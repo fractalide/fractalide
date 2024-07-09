@@ -80,7 +80,7 @@ Indeed it's these simple `derivations` that allow python 2.7 and 3.0 to exist si
 
 ===== Reusability
 
-Flow-based programming in our books has delivered on its promise. In our system FBP components are known as a `nodes` and they are reusable, clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
+Flow-based programming in our books has delivered on its promise. In our system FBP components are known as `nodes` and they are reusable, clean and composable. It's a very nice way to program computers. Though, we've found, the larger the network of `nodes`, the more overhead required to build, manage, version, package, connect, test and distribute all these moving pieces. This really doesn't weigh well against FBP's advantages. Still, there is this beautiful reusable side that is highly advantageous! If only we could take the good parts?
 
 ===== Reproducibility + Reusability
 
@@ -106,7 +106,7 @@ It's this feature that sets us apart from Google TensorFlow and Apache-NiFi. It 
 
 The vast majority of system configuration management solutions use either the divergent or convergent model.
 
-We're going to quote Steve Traugott's excellent work vebatim.
+We're going to quote Steve Traugott's excellent work verbatim.
 
 ==== Divergent
 
@@ -159,7 +159,7 @@ A language needed to be chosen to implement Fractalide. Now as Fractalide is pri
 
 ==== Solution
 
-Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existance, no harm to anyone.
+Rust was a perfect fit. The concept of ownership is critical in Flow-based Programming. The Flow-based scheduler is typically responsible for tracking every Information Packet (IP) as it flows through the system. Fortunately Rust excels at getting the concept of ownership right. To the point of leveraging this concept that a garbage collector is not needed. Indeed, different forms of concurrency can be layered on Rust's ownership concept. One very neat advantage Rust gives us is that we can very elegantly implement Flow-based Programming's idea of concurrency. This makes our scheduler extremely lightweight as it doesn't need to track IPs at all. Once an IP isn't owned by any component, Rust makes it wink out of existence, no harm to anyone.
 
 === API contracts
 
@@ -204,7 +204,7 @@ boolean : false
 * Read the link:./CONTRIBUTING.md[C4.2 (Collective Code Construction Contract)] and the https://github.com/Blockrazor/blockrazor/blob/master/DESCRIPTIVE_C4.MD[line by line explanation] of the protocol.
 * Fork this github repository under your own github account.
 * Clone _your_ fork locally on your development machine.
-* Choose _one_ problem to solve. If you aren't solving a problem that's already in the issue tracker you should describe the problem there (and your idea of the solution) first to see if anyone else has something to say about it (maybe someone is already working on a solution, or maybe you're doing somthing wrong). **If the issue is in the issue tracker, you should comment on the issue to say you're working on the solution so that other people don't work on the same thing.**
+* Choose _one_ problem to solve. If you aren't solving a problem that's already in the issue tracker you should describe the problem there (and your idea of the solution) first to see if anyone else has something to say about it (maybe someone is already working on a solution, or maybe you're doing something wrong). **If the issue is in the issue tracker, you should comment on the issue to say you're working on the solution so that other people don't work on the same thing.**
 * Add the Fractalide repository as an upstream source and pull any changes:
 [source, sh]
 ----
@@ -250,7 +250,7 @@ $ git checkout master
 ----
 
 #### Q: Can I be paid to contribute to Fractalide?
-Yes, this is sometimes possible. Your first step is to _very carefully read and understand everything above_, including the linked files, then start fixing problems and sending pull requests! If your code is amazing and brilliant but you don't understand the contribution process we cannot consider you for a paid position. Make sure you follow the project on Github so you get updates. Contact Fractalide's BDFL (Benevolent Dictator For Life): mailto:setori88@gmail.com[Stewart Mackenzie] if you've been contributing code to Fractalide and want to keep doing it but but you require financial assistance.
+Yes, this is sometimes possible. Your first step is to _very carefully read and understand everything above_, including the linked files, then start fixing problems and sending pull requests! If your code is amazing and brilliant but you don't understand the contribution process we cannot consider you for a paid position. Make sure you follow the project on Github so you get updates. Contact Fractalide's BDFL (Benevolent Dictator For Life): mailto:setori88@gmail.com[Stewart Mackenzie] if you've been contributing code to Fractalide and want to keep doing it but you require financial assistance.
 
 == Consulting and Support
 
